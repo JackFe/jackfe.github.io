@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 尾递归 | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/wei-di-gui/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[hello erlang, part 2]]></title>
+    <link href="http://mccxj.github.com/blog/20120715_hello-erlang-2.html"/>
+    <updated>2012-07-15T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/hello-erlang-2</id>
+    <content type="html"><![CDATA[<h3>练习重点</h3>
+
+<ol>
+<li>依然是熟悉erlang匹配模式的编程方式，对于用习惯了判断，循环操作的人来说，这个变化很大</li>
+<li>熟悉erlang列表操作</li>
+<li>为后面学习高阶函数fun，还有更多高级数据类型打好基础</li>
+</ol>
+
+
+<h3>练习1:压缩有序列表</h3>
+
+<p>类似搜索里边的倒排索引，需要对词对应的文档列表进行存放。
+在这里，我们将一个有序列表转换成另外一种形式，如
+<div class="highlight"><pre><code class="erlang"><span class="c">%% 原始形式</span>
+<span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">98</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">101</span><span class="p">,</span><span class="mi">102</span><span class="p">,</span><span class="mi">102</span><span class="p">].</span>
+<span class="c">%% 最终形式</span>
+<span class="p">[{</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">},{</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">},{</span><span class="mi">98</span><span class="p">,</span><span class="mi">98</span><span class="p">},{</span><span class="mi">100</span><span class="p">,</span><span class="mi">102</span><span class="p">}].</span>
+</code></pre></div></p>
+
+<h3>示例代码</h3>
+
+<p><div class="highlight"><pre><code class="erlang"><span class="nf">multi</span><span class="p">(</span><span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">reverse</span><span class="p">(</span><span class="n">multi_local</span><span class="p">(</span><span class="nv">L</span><span class="p">,</span> <span class="p">[])).</span>
+<span class="nf">multi_local</span><span class="p">([],</span> <span class="nv">R</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">R</span><span class="p">;</span>
+<span class="nf">multi_local</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">L</span><span class="p">],</span> <span class="nv">R</span><span class="p">)</span> <span class="o">-&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="p">{</span><span class="nv">LL</span><span class="p">,</span> <span class="nv">E</span><span class="p">}</span> <span class="o">=</span> <span class="n">multi_r</span><span class="p">(</span><span class="nv">L</span><span class="p">,</span> <span class="nv">H</span><span class="p">),</span>
+<span class="nf">multi_local</span><span class="p">(</span><span class="nv">LL</span><span class="p">,</span> <span class="p">[{</span><span class="nv">H</span><span class="p">,</span> <span class="nv">E</span><span class="p">}|</span><span class="nv">R</span><span class="p">]).</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c">%% 获取L里边里边和H同属一组的最后一个数,同时返回剩余的列表</span>
+<span class="c">%% 如果L以H开头，表示出现重复数</span>
+<span class="c">%% 如果L以H+1开头，表示出现序列数</span>
+<span class="nf">multi_r</span><span class="p">(</span><span class="nv">L</span><span class="p">,</span> <span class="nv">H</span><span class="p">)</span> <span class="o">-&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nv">N</span> <span class="o">=</span> <span class="nv">H</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+<span class="k">case</span> <span class="nv">L</span> <span class="k">of</span>
+    <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">LL</span><span class="p">]</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">multi_r</span><span class="p">(</span><span class="nv">LL</span><span class="p">,</span> <span class="nv">H</span><span class="p">);</span>
+    <span class="p">[</span><span class="nv">N</span><span class="p">|</span><span class="nv">LL</span><span class="p">]</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">multi_r</span><span class="p">(</span><span class="nv">LL</span><span class="p">,</span> <span class="nv">N</span><span class="p">);</span>
+    <span class="p">[]</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">{[],</span> <span class="nv">H</span><span class="p">};</span>
+    <span class="p">_</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">{</span><span class="nv">L</span><span class="p">,</span> <span class="nv">H</span><span class="p">}</span>
+<span class="k">end</span><span class="p">.</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</code></pre></div></p>
+
+<h3>效率问题</h3>
+
+<p>这里和上次不一样的是，这里没有使用lists:append方法，而是在最后使用了reverse.</p>
+
+<p><div class="highlight"><pre><code class="erlang"><span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;20120712_horse-riding-chessboard.html&quot;</span><span class="o">&gt;</span><span class="mi">1</span><span class="o">&lt;/</span><span class="n">a</span><span class="o">&gt;</span> <span class="o">++</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">].</span>
+<span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">(</span><span class="o">&lt;</span><span class="n">a</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;20120712_horse-riding-chessboard.html&quot;</span><span class="o">&gt;</span><span class="mi">1</span><span class="o">&lt;/</span><span class="n">a</span><span class="o">&gt;</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]).</span>
+<span class="nn">lists</span><span class="p">:</span><span class="nf">reverse</span><span class="p">([</span><span class="mi">3</span><span class="p">|[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]).</span>
+</code></pre></div>
+上面三种方式得到的结果是一样的。前面两种，每增加一个元素，都会遍历左边的列表，所以在递归里边处理的话，
+效率并不好。把元素添加到表头，在递归完成后进行反转，效果就会好些。</p>
+
+<h3>练习2:马踏棋盘</h3>
+
+<p>作为一个阶段的学习总结，对<a href="20120712_horse-riding-chessboard.html">马踏棋盘的算法思考</a>用erlang实现。</p>
+
+<p>代码比较悲剧，我选择了array，用了一些fun函数，从这么个例子就可以看出，自己还没掌握好erlang惯用法。
+感觉数据结构没有选好，并且用了命令语言的一些编程思路，有些东西或许可以用列表解析来弄，
+等再掌握多一些东西，再回头来体会一把!
+<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">horse</span><span class="p">).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c">%% Exported Functions</span>
+<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">walkboard</span><span class="o">/</span><span class="mi">0</span><span class="p">]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c">%% API Functions</span>
+<span class="nf">walkboard</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="c">%% lists:foreach(fun(I) -&gt; lists:foreach(fun(J) -&gt; walkboard({I, J}) end, lists:seq(0,7)) end, lists:seq(0,7)).</span>
+  <span class="n">walkboard</span><span class="p">({</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">}).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">walkboard</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">})</span> <span class="o">-&gt;</span>
+  <span class="p">{</span><span class="nv">ARR</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">}</span> <span class="o">=</span> <span class="n">init</span><span class="p">(),</span>
+  <span class="k">catch</span> <span class="n">walk</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">setvalue</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span> <span class="nv">J</span><span class="p">},</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">),</span> <span class="nn">array</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">{</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">PATH</span><span class="p">),</span> <span class="nv">POSS</span><span class="p">).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">walk</span><span class="p">(</span><span class="mi">63</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">throw</span><span class="p">(</span><span class="nv">PATH</span><span class="p">);</span>
+<span class="nf">walk</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">{</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">JP</span><span class="p">}</span> <span class="o">=</span> <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">),</span>
+  <span class="nv">WC</span> <span class="o">=</span> <span class="k">fun</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">,_})</span> <span class="o">-&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>     <span class="n">walk</span><span class="p">(</span><span class="nv">MARK</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">setvalue</span><span class="p">({</span><span class="nv">I</span><span class="o">+</span><span class="nv">IP</span><span class="p">,</span><span class="nv">J</span><span class="o">+</span><span class="nv">JP</span><span class="p">},</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">),</span> <span class="nn">array</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="nv">MARK</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="nv">I</span><span class="o">+</span><span class="nv">IP</span><span class="p">,</span><span class="nv">J</span><span class="o">+</span><span class="nv">JP</span><span class="p">},</span> <span class="nv">PATH</span><span class="p">),</span> <span class="nv">POSS</span><span class="p">)</span>
+   <span class="k">end</span><span class="p">,</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>  <span class="nn">lists</span><span class="p">:</span><span class="nf">foreach</span><span class="p">(</span><span class="nv">WC</span><span class="p">,</span> <span class="n">filter</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c">%%</span>
+<span class="c">%% Local Functions</span>
+<span class="c">%%</span>
+<span class="nf">init</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="nv">ARR</span> <span class="o">=</span> <span class="nn">array</span><span class="p">:</span><span class="nf">new</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="p">{</span><span class="n">default</span><span class="p">,</span><span class="nn">array</span><span class="p">:</span><span class="nf">new</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="p">{</span><span class="n">default</span><span class="p">,</span><span class="mi">0</span><span class="p">})}),</span>
+  <span class="nv">PATH</span> <span class="o">=</span> <span class="nn">array</span><span class="p">:</span><span class="nf">new</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
+  <span class="nv">POSS</span> <span class="o">=</span> <span class="p">[{</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">}],</span>
+  <span class="p">{</span><span class="nv">ARR</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">}.</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">filter</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">{</span><span class="nv">I</span><span class="p">,</span> <span class="nv">J</span><span class="p">}</span> <span class="o">=</span> <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">),</span>
+  <span class="nv">Fun1</span> <span class="o">=</span> <span class="k">fun</span><span class="p">({</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">JP</span><span class="p">})</span> <span class="o">-&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>       <span class="p">{</span><span class="nv">IXP</span><span class="p">,</span> <span class="nv">JXP</span><span class="p">}</span> <span class="o">=</span> <span class="p">{</span><span class="nv">I</span><span class="o">+</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">J</span><span class="o">+</span><span class="nv">JP</span><span class="p">},</span>
+       <span class="k">case</span> <span class="n">valid</span><span class="p">({</span><span class="nv">IXP</span><span class="p">,</span> <span class="nv">JXP</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="k">of</span>
+         <span class="n">false</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">{</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">JP</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">};</span>
+         <span class="n">true</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> 
+         <span class="c">%% 计算空点数</span>
+         <span class="nv">CAL</span> <span class="o">=</span> <span class="k">fun</span><span class="p">({</span><span class="nv">IP2</span><span class="p">,</span> <span class="nv">JP2</span><span class="p">},</span> <span class="nv">Sum</span><span class="p">)</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> 
+                 <span class="k">case</span> <span class="n">valid</span><span class="p">({</span><span class="nv">IXP</span><span class="o">+</span><span class="nv">IP2</span><span class="p">,</span> <span class="nv">JXP</span><span class="o">+</span><span class="nv">JP2</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="k">of</span>
+                   <span class="n">true</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="mi">1</span> <span class="o">+</span> <span class="nv">Sum</span><span class="p">;</span>
+                   <span class="n">false</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">Sum</span>
+                 <span class="k">end</span>
+               <span class="k">end</span><span class="p">,</span>
+               <span class="p">{</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">JP</span><span class="p">,</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">foldl</span><span class="p">(</span><span class="nv">CAL</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">)}</span>
+       <span class="k">end</span>
+     <span class="k">end</span><span class="p">,</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>  <span class="c">%% 最后进行排序</span>
+  <span class="nv">T</span> <span class="o">=</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">map</span><span class="p">(</span><span class="nv">Fun1</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">),</span>
+  <span class="nv">S</span> <span class="o">=</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">({</span><span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span><span class="p">,</span> <span class="nv">Z</span><span class="p">})</span> <span class="o">-&gt;</span> <span class="nv">Z</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">end</span><span class="p">,</span> <span class="nv">T</span><span class="p">),</span>
+  <span class="nv">LEN</span> <span class="o">=</span> <span class="nb">length</span><span class="p">(</span><span class="nv">S</span><span class="p">),</span>
+  <span class="k">if</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nv">LEN</span> <span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="mi">1</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">[];</span>
+<span class="nv">LEN</span> <span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="mi">0</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">S</span><span class="p">;</span>
+<span class="n">true</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">SS</span> <span class="o">=</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">({_,</span> <span class="p">_,</span> <span class="nv">Z</span><span class="p">})</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">Z</span> <span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span><span class="o">=</span> <span class="mi">0</span> <span class="k">end</span><span class="p">,</span> <span class="nv">T</span><span class="p">),</span>
+    <span class="nn">lists</span><span class="p">:</span><span class="nf">sort</span><span class="p">(</span><span class="k">fun</span><span class="p">({_,</span> <span class="p">_,</span> <span class="nv">Z1</span><span class="p">},</span> <span class="p">{_,</span> <span class="p">_,</span> <span class="nv">Z2</span><span class="p">})</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">Z1</span> <span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="nv">Z2</span> <span class="k">end</span><span class="p">,</span> <span class="nv">SS</span><span class="p">)</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>  <span class="k">end</span><span class="p">.</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">valid</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">I</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">andalso</span> <span class="nv">I</span><span class="o">&lt;</span><span class="mi">8</span> <span class="ow">andalso</span> <span class="nv">J</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="ow">andalso</span> <span class="nv">J</span><span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="mi">8</span> <span class="ow">andalso</span> <span class="n">getvalue</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">.</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">getvalue</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">J</span><span class="p">,</span> <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">I</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">setvalue</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">VAL</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nn">array</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="nv">I</span><span class="p">,</span> <span class="nn">array</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="nv">J</span><span class="p">,</span> <span class="nv">VAL</span><span class="p">,</span> <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">I</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)),</span> <span class="nv">ARR</span><span class="p">).</span>
+</code></pre></div></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[hello erlang, part 1]]></title>
+    <link href="http://mccxj.github.com/blog/20120714_hello-erlang-1.html"/>
+    <updated>2012-07-14T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/hello-erlang-1</id>
+    <content type="html"><![CDATA[<h3>练习重点</h3>
+
+<ol>
+<li>erlang是单赋值的，就好像都经过java里边的final修饰过</li>
+<li>erlang没有内置的循环结构，这个和大多数语言是不一样的</li>
+<li>erlang是函数式语言，需要理解模式匹配编程方式</li>
+<li>erlang经常会遇到递归, 并且支持尾递归函数调用</li>
+</ol>
+
+
+<h3>练习1:数据库demo</h3>
+
+<p>作为学习erlang里边的模式匹配，熟悉语法。
+编写一个数据库模块db.erl，它能够存储、检索、删除元素。我们需要实现的接口有:
+<div class="highlight"><pre><code class="erlang"><span class="nn">db</span><span class="p">:</span><span class="nf">new</span><span class="p">()</span>                   <span class="c">%% Db.</span>
+<span class="nn">db</span><span class="p">:</span><span class="nf">destroy</span><span class="p">(</span><span class="nv">Db</span><span class="p">)</span>             <span class="c">%% ok.</span>
+<span class="nn">db</span><span class="p">:</span><span class="nf">write</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Element</span><span class="p">,</span> <span class="nv">Db</span><span class="p">)</span> <span class="c">%% NewDb.</span>
+<span class="nn">db</span><span class="p">:</span><span class="nf">delete</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Db</span><span class="p">)</span>         <span class="c">%% NewDb.</span>
+<span class="nn">db</span><span class="p">:</span><span class="nf">read</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Db</span><span class="p">)</span>           <span class="c">%% {ok, Element} | {error, instance}.</span>
+<span class="nn">db</span><span class="p">:</span><span class="nf">match</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">Db</span><span class="p">)</span>      <span class="c">%% [Key1, ..., KeyN].</span>
+</code></pre></div></p>
+
+<h3>实现代码</h3>
+
+<p><div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">db</span><span class="p">).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c">%% Exported Functions</span>
+<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">new</span><span class="o">/</span><span class="mi">0</span><span class="p">,</span> <span class="n">write</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="n">read</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">match</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">delete</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">destroy</span><span class="o">/</span><span class="mi">1</span><span class="p">]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c">%% API Functions</span>
+<span class="nf">new</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[].</span>
+<span class="nf">destroy</span><span class="p">(_)</span> <span class="o">-&gt;</span> <span class="n">ok</span><span class="p">.</span>
+<span class="nf">write</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Element</span><span class="p">,</span> <span class="nv">DB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[{</span><span class="nv">Key</span><span class="p">,</span><span class="nv">Element</span><span class="p">}|</span><span class="nv">DB</span><span class="p">].</span>
+<span class="nf">delete</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">DB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">DB</span><span class="p">,</span> <span class="p">[]).</span>
+<span class="nf">read</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">DB</span><span class="p">)</span> <span class="o">-&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">case</span> <span class="nv">DB</span> <span class="k">of</span>
+    <span class="p">[{</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Element</span><span class="p">}|_]</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">{</span><span class="n">oKey</span><span class="p">,</span> <span class="nv">Element</span><span class="p">};</span>
+    <span class="p">[_|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">read</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">);</span>
+    <span class="p">_</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">{</span><span class="n">error</span><span class="p">,</span> <span class="n">instance</span><span class="p">}</span>
+<span class="k">end</span><span class="p">.</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">match</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">DB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">match_local</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">DB</span><span class="p">,</span> <span class="p">[]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c">%% Local Functions</span>
+<span class="nf">match_local</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">DB</span><span class="p">,</span> <span class="nv">LIST</span><span class="p">)</span> <span class="o">-&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">case</span> <span class="nv">DB</span> <span class="k">of</span>
+    <span class="p">[{</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Element</span><span class="p">}|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">match_local</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="p">[</span><span class="nv">Key</span><span class="p">|</span><span class="nv">LIST</span><span class="p">]);</span>
+    <span class="p">[_|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">match_local</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="nv">LIST</span><span class="p">);</span>
+    <span class="p">_</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">LIST</span>
+<span class="k">end</span><span class="p">.</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">DB</span><span class="p">,</span> <span class="nv">NDB</span><span class="p">)</span> <span class="o">-&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">case</span> <span class="nv">DB</span> <span class="k">of</span>
+    <span class="p">[{</span><span class="nv">Key</span><span class="p">,</span> <span class="p">_}|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="nv">NDB</span><span class="p">);</span>
+    <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">NDB</span><span class="p">]);</span>
+    <span class="p">_</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">NDB</span>
+<span class="k">end</span><span class="p">.</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</code></pre></div></p>
+
+<p>当然，case语句同样可以用如下代码替代：其中第三行的Key因为没有使用就换成<em>,
+不然会提示警告variable 'Key' is unused。
+<div class="highlight"><pre><code class="erlang"><span class="nf">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="p">[{</span><span class="n">key</span><span class="p">,</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span><span class="p">}|</span><span class="nv">ODB</span><span class="p">],</span> <span class="nv">NDB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="nv">NDB</span><span class="p">);</span>
+<span class="nf">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">ODB</span><span class="p">],</span> <span class="nv">NDB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">NDB</span><span class="p">]);</span>
+<span class="nf">delete_local</span><span class="p">(</span><span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;</span><span class="p">,</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span><span class="p">,</span> <span class="nv">NDB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">NDB</span><span class="p">;</span>
+</code></pre></div></p>
+
+<h3>练习2:排序算法</h3>
+
+<p>下面练习一下快速排序和归并排序，再熟悉一下模式匹配和递归的写法。
+<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">sort</span><span class="p">).</span>
+<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">quicksort</span><span class="o">/</span><span class="mi">1</span><span class="p">,</span> <span class="n">mergesort</span><span class="o">/</span><span class="mi">1</span><span class="p">]).</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c">%% 快速排序</span>
+<span class="nf">quicksort</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">Tail</span><span class="p">])</span> <span class="o">-&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="n">quicksort</span><span class="p">(</span><span class="nn">lists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">X</span><span class="p">)</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">X</span> <span class="err">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="nv">H</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Tail</span><span class="p">)),</span> 
+              <span class="p">[</span><span class="nv">H</span><span class="p">],</span> 
+              <span class="n">quicksort</span><span class="p">(</span><span class="nn">lists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">X</span><span class="p">)</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">X</span> <span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span><span class="o">=</span> <span class="nv">H</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Tail</span><span class="p">))]);</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">quicksort</span><span class="p">(</span><span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">L</span><span class="p">.</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c">%% 归并排序</span>
+<span class="nf">mergesort</span><span class="p">(</span><span class="nv">A</span><span class="p">)</span> <span class="o">-&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">case</span> <span class="nb">length</span><span class="p">(</span><span class="nv">A</span><span class="p">)</span> <span class="k">of</span>
+    <span class="mi">0</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="p">[];</span>
+    <span class="mi">1</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">A</span><span class="p">;</span>
+    <span class="nv">LEN</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">M</span> <span class="o">=</span> <span class="nb">length</span><span class="p">(</span><span class="nv">A</span><span class="p">)</span> <span class="ow">div</span> <span class="mi">2</span><span class="p">,</span>
+           <span class="n">merge</span><span class="p">(</span><span class="n">mergesort</span><span class="p">(</span><span class="nn">lists</span><span class="p">:</span><span class="nf">sublist</span><span class="p">(</span><span class="nv">A</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">M</span><span class="p">)),</span> 
+                 <span class="n">mergesort</span><span class="p">(</span><span class="nn">lists</span><span class="p">:</span><span class="nf">sublist</span><span class="p">(</span><span class="nv">A</span><span class="p">,</span> <span class="nv">M</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">LEN</span> <span class="o">-</span> <span class="nv">M</span><span class="p">)),</span> <span class="p">[])</span>
+<span class="k">end</span><span class="p">.</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">merge</span><span class="p">(</span><span class="nv">A</span><span class="p">,</span> <span class="p">[],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="nv">L</span><span class="p">,</span> <span class="nv">A</span><span class="p">]);</span>
+<span class="nf">merge</span><span class="p">([],</span> <span class="nv">B</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="nv">L</span><span class="p">,</span> <span class="nv">B</span><span class="p">]);</span>
+<span class="nf">merge</span><span class="p">([</span><span class="nv">HA</span><span class="p">|</span><span class="nv">TA</span><span class="p">],</span> <span class="p">[</span><span class="nv">HB</span><span class="p">|</span><span class="nv">TB</span><span class="p">],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">if</span>
+    <span class="nv">HA</span> <span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="nv">HB</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">merge</span><span class="p">([</span><span class="nv">HA</span><span class="p">|</span><span class="nv">TA</span><span class="p">],</span> <span class="nv">TB</span><span class="p">,</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="nv">L</span><span class="p">,</span> <span class="p">[</span><span class="nv">HB</span><span class="p">]]));</span>
+    <span class="n">true</span> <span class="o">-</span><span class="err">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="n">merge</span><span class="p">(</span><span class="nv">TA</span><span class="p">,</span> <span class="p">[</span><span class="nv">HB</span><span class="p">|</span><span class="nv">TB</span><span class="p">],</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="nv">L</span><span class="p">,</span> <span class="p">[</span><span class="nv">HA</span><span class="p">]]))</span>
+<span class="k">end</span><span class="p">.</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span>
+</code></pre></div></p>
+]]></content>
+  </entry>
+  
+</feed>

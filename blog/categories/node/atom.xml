@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: node | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/node/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Node.js Best practices]]></title>
+    <link href="http://mccxj.github.com/blog/20130102_nodejs-best-practices.html"/>
+    <updated>2013-01-02T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/nodejs-best-practices</id>
+    <content type="html"><![CDATA[<p><strong>完整的ppt来源于<a href="http://www.slideshare.net/the_undefined/nodejs-best-practices-10428790">Node.js Best practices</a>,作者<a href="http://www.slideshare.net/the_undefined">Felix Geisendörfer</a>,需翻越</strong></p>
+
+<h3>Callbacks</h3>
+
+<p>下面是关于解析json文件的示例代码:
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs);</span>
+<span class="s1">function readJSON(path, cb){</span>
+<span class="s1">  fs.readFile(path, &#39;</span><span class="nx">utf8</span><span class="err">&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">cb</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">));</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></p>
+
+<p>显然，上面的代码没有处理异常情况，因此再加个异常处理逻辑上去:
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs);</span>
+<span class="s1">function readJSON(path, cb){</span>
+<span class="s1">  fs.readFile(path, &#39;</span><span class="nx">utf8</span><span class="err">&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+<span class="nx">cb</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">));</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></p>
+
+<p>还没有结束，我们还没考虑到文件内容不是json这种情况，会导致parse出现异常，因此再处理一下：
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs);</span>
+<span class="s1">function readJSON(path, cb){</span>
+<span class="s1">  fs.readFile(path, &#39;</span><span class="nx">utf8</span><span class="err">&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+<span class="k">try</span><span class="p">{</span>
+  <span class="nx">cb</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">));</span>
+<span class="p">}</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+  <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></p>
+
+<p>对于cb来说，仍然无法区分正常结果和异常内容，这个问题通常可以通过增加一个err参数来处理，如:
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs);</span>
+<span class="s1">function readJSON(path, cb){</span>
+<span class="s1">  fs.readFile(path, &#39;</span><span class="nx">utf8</span><span class="err">&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+<span class="k">try</span><span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">json</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+<span class="p">}</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+  <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">json</span><span class="p">);</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></p>
+
+<p><strong>这个示例告诉我们，对于callback，需要时刻准备应付正常结果和异常情况的处理。</strong></p>
+
+<p>再来看看另外一个常见错误:
+<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">readJSONFiles</span><span class="p">(</span><span class="nx">files</span><span class="p">,</span> <span class="nx">cb</span><span class="p">){</span>
+  <span class="kd">var</span> <span class="nx">results</span> <span class="o">=</span> <span class="p">{};</span>
+  <span class="kd">var</span> <span class="nx">remaining</span> <span class="o">=</span> <span class="nx">files</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">files</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">file</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">readJSON</span><span class="p">(</span><span class="nx">file</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">json</span><span class="p">){</span>
+  <span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+
+  <span class="nx">results</span><span class="p">[</span><span class="nx">file</span><span class="p">]</span> <span class="o">=</span> <span class="nx">json</span><span class="p">;</span>
+  <span class="k">if</span><span class="p">(</span><span class="o">!--</span><span class="nx">remaining</span><span class="p">)</span> <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">results</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div></p>
+
+<p>这里隐含了一个常见的场景:<strong>批量处理时，任意一个失败，及时退出</strong>。有时候可以用标识符，这里采用另外一种手法：<strong>重置回调方法</strong>。
+<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">readJSONFiles</span><span class="p">(</span><span class="nx">files</span><span class="p">,</span> <span class="nx">cb</span><span class="p">){</span>
+  <span class="kd">var</span> <span class="nx">results</span> <span class="o">=</span> <span class="p">{};</span>
+  <span class="kd">var</span> <span class="nx">remaining</span> <span class="o">=</span> <span class="nx">files</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">files</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">file</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">readJSON</span><span class="p">(</span><span class="nx">file</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">json</span><span class="p">){</span>
+  <span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+    <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+    <span class="nx">cb</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){};</span>
+    <span class="k">return</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="nx">results</span><span class="p">[</span><span class="nx">file</span><span class="p">]</span> <span class="o">=</span> <span class="nx">json</span><span class="p">;</span>
+  <span class="k">if</span><span class="p">(</span><span class="o">!--</span><span class="nx">remaining</span><span class="p">)</span> <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">results</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div></p>
+
+<h3>Nested Callbacks</h3>
+
+<p>先看看一个恐怖的例子:
+<div class="highlight"><pre><code class="javascript"><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT A ...&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+  <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT B ...&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT C ...&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+  <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT D ...&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div></p>
+
+<p>活生生就是一个怪物:)，多层嵌套的回调不是很好的风格，我们需要一些流程控制的东西来辅助，例如Control Flow Libs:
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">async</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;async&#39;</span><span class="p">);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">async</span><span class="p">.</span><span class="nx">series</span><span class="p">({</span>
+  <span class="nx">queryA</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">next</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT A ...&#39;</span><span class="p">,</span> <span class="nx">next</span><span class="p">);</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">},</span>
+  <span class="nx">queryB</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">next</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT B ...&#39;</span><span class="p">,</span> <span class="nx">next</span><span class="p">);</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">},</span>
+  <span class="nx">queryA</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">next</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT C ...&#39;</span><span class="p">,</span> <span class="nx">next</span><span class="p">);</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}</span>
+  <span class="c1">// ...</span>
+<span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">results</span><span class="p">){</span>
+  <span class="c1">//...</span>
+<span class="p">});</span>
+</code></pre></div></p>
+
+<p>像上面的代码，最明显的地方就是异常处理被完全隔离出来。<strong>如果要把代码分布到很多小方法里边的话，Node.js的确不是很容易做到</strong>。</p>
+
+<h3>Exceptions</h3>
+
+<p>通常throw new Error(msg)可以让你的程序进行异常退出，并在控制台上输入错误信息和堆栈信息。</p>
+
+<p>但有时候我们要考虑的是，<strong>一些未知的bug</strong>，例如下面一个有bug的示例:
+<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">MyClass</span><span class="p">(){}</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">MyClass</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">myMethod</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+  <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="k">this</span><span class="p">.</span><span class="nx">myOtherMethod</span><span class="p">();</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">},</span> <span class="mi">10</span><span class="p">);</span>
+<span class="p">}</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">MyClass</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">myOtherMethod</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){};</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="p">(</span><span class="k">new</span> <span class="nx">MyClass</span><span class="p">).</span><span class="nx">myMethod</span><span class="p">();</span>
+</code></pre></div></p>
+
+<p>我们可以采用Global Catch的方式:
+<div class="highlight"><pre><code class="javascript"><span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;uncaughtException&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">err</span><span class="p">(</span><span class="s1">&#39;uncaught exception: &#39;</span> <span class="o">+</span> <span class="nx">err</span><span class="p">.</span><span class="nx">stack</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre></div></p>
+
+<p>更好的处理方式是:<strong>进程挂了，认栽了，到更高层面上去处理</strong>。
+<div class="highlight"><pre><code class="javascript"><span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;uncaughtException&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+  <span class="c1">// You could use node-airbake for this</span>
+  <span class="nx">sendErrorToLog</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="c1">// Once the error was logged, kill the process</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">err</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nx">stack</span><span class="p">);</span>
+<span class="nx">process</span><span class="p">.</span><span class="nx">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div></p>
+
+<h3>Deployment</h3>
+
+<p>比较初级的方式是采用node直接运行或在后台运行。老手可能会采用一个脚本来搞:
+<div class="highlight"><pre><code class="bash">&lt;/p&gt;
+
+&lt;h1&gt;! /bin/bash&lt;/h1&gt;
+
+&lt;p&gt;while :
+<span class="k">do</span>
+<span class="k">  </span>node server.js
+  <span class="nb">echo</span> <span class="s2">&quot;Server crashed!&quot;</span>
+  sleep 1
+<span class="k">done</span>
+</code></pre></div></p>
+
+<p>专家级采用的方式可能是(借助成熟的集成工具):
+<div class="highlight"><pre><code class="bash">&lt;/p&gt;
+
+&lt;h1&gt;!upstart&lt;/h1&gt;
+
+&lt;p&gt;description <span class="s2">&quot;myapp&quot;</span>
+author <span class="s2">&quot;felix&quot;</span>&lt;/p&gt;
+
+&lt;p&gt;start on<span class="o">(</span><span class="nb">local</span>-filesystems and net-device-up <span class="nv">IFACE</span><span class="o">=</span>eth0<span class="o">)</span>
+stop on shutdown&lt;/p&gt;
+
+&lt;p&gt;respawn <span class="c"># restart when job dies</span>
+respawn limit 5 60 <span class="c"># give up restart after 5 respawns in 60 seconds&lt;/p&gt;</span>
+
+&lt;p&gt;script
+  <span class="nb">exec </span>sudo -u www-data /path/to/server.js &gt;&gt; /var/log/myapp.log 2&gt;&amp;amp;1
+end script
+</code></pre></div></p>
+
+<p>当然，还有些创新风格的(基于托管平台的):
+<div class="highlight"><pre><code class="bash"><span class="nv">$git</span> push joyent master
+<span class="nv">$git</span> push nodejitsu master
+<span class="nv">$git</span> push heroku master
+</code></pre></div></p>
+
+<p><strong>没有托管平台的话，借助成熟的工具应该是最好的选择，性价比高。</strong></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[书评-Node Web开发]]></title>
+    <link href="http://mccxj.github.com/blog/20120815_thought-read-node-web-development.html"/>
+    <updated>2012-08-15T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/thought-read-node-web-development</id>
+    <content type="html"><![CDATA[<p><img src="/assets/images/node_web_development.jpg" alt="Node Web开发" /></p>
+
+<p><strong>2012-05-10@oschina.net</strong>
+<a href="http://www.oschina.net/question/244461_53105?sort=default&amp;p=2#answers">书评链接</a></p>
+
+<p>这本书，其实我是看的英文版的。算是一本不错的入门书，相对于官网上那硬邦邦的api手册，
+的确是很不错了，里边有些内容有点旧了(例如npm介绍中关于require.path的说法)。
+书里边关于node的模块系统的描述是比较好的，非常清晰，是我觉得写得最好的一章，
+另外关于node的异步编程模型的介绍也比较好(例如有个关于Fibonacci数列的例子)，
+因为最重要就是理解编程模型，即使很多人熟悉客户端javascript编程，
+但是刚刚开始node的javascript编程，就会感到非常纠结。</p>
+
+<p>书里边也引用了一些现有比较出名的开源库，例如express和connect，用来构建web应用。
+关于这个，我觉得没什么必要，因为这两个库的在线帮助文档是做得非常好的。
+我更感兴趣的是书里边一些step by step的demo，可以比较清晰得看到关键的代码是如何实现的。</p>
+
+<p>总体来说，这书是一本不错的入门书，内容少不是问题，
+比较现在还没有关于node的更多最佳实践的资料，而且node关注的就是高访问量，小请求，
+业务逻辑较少，快响应的特殊场景，需要关注的领域并不是很多，
+写得太多反而会埋没重点。有兴趣的同学，真的值得一看。</p>
+
+<p>
+
+
+<h2>"书评"系列文章:</h2>
+<ul>
+ 
+  
+  <li><a href="/blog/20120815_thought-read-javascript-idea.html">2012-08-15 书评-JavaScript语言精髓与编程实践</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_thought-read-node-web-development.html">2012-08-15 书评-Node Web开发</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120818_thought-read-jolt-book.html">2012-08-18 书评-Jolt大奖精选丛书</a></li>
+  
+
+</ul>
+
+
+
+</p>
+]]></content>
+  </entry>
+  
+</feed>

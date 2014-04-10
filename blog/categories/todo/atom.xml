@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: todo | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/todo/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[使用wunderlist进行TODO管理]]></title>
+    <link href="http://mccxj.github.com/blog/20130103_how-to-wunderlist.html"/>
+    <updated>2013-01-03T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/how-to-wunderlist</id>
+    <content type="html"><![CDATA[<p><img src="/assets/images/2013/wunderlist.jpg" alt="Wunderlist" /></p>
+
+<p>Wunderlist是一个TODO管理工具，支持多种客户端的同步，在多个客户端中的界面风格不会差别很大，实用性、可操作性都相当不错。
+关于这类TODO工具的具体使用，我就不再长篇累牍了。<strong>这里主要结合wundeler，讲讲自己对TODO管理的经验教训</strong>。</p>
+
+<p>首先，要焦距于你需要处理的事情，而不是你使用的工具。无论使用怎样的工具，都应该把焦点放在TODO事项上。
+有些人喜欢玩弄软件的新功能，我也经常迷恋于寻找软件的功能而忽略事情的本身，导致浪费在使用软件上的时间太多。
+所以使用TODO工具，<strong>关键是TODO事项是否能够有计划的进行</strong>。</p>
+
+<p>其次，<strong>工具尽量要简单实用</strong>，在使用某个工具的时候，有时候感觉功能有所缺失，所以有些人可能会尝试不同的工具或者在多个工具换来换去，
+试图寻找那完美的工具。说实在，这个成本太高了，多关注待处理的问题本身吧，多反向思考:真的需要这个功能么?频繁使用么?
+就wunderlist来说，我也感觉缺少些功能，例如结合日历功能，有时候同步会有些问题。不过这些都不影响我使用关键功能，也让我能够
+焦距于TODO本身。</p>
+
+<p>最后，说说我使用wunderlist的方式吧。一般来说，我会在某天当做一个周期的开始，<strong>把我能够想到的TODO事项记录上去</strong>，不区分轻重缓急，
+也不考虑工作量和时间因素，也不管是工作、生活还是学习的范畴。总之有多少就写多少，如果事项比较大并且有些明显的分割点，<strong>我也会拆分成多个TODO</strong>。
+然后开始对任务进行挑选，得到需要处理的事情列表，如果列表太长，会把某些重要和紧急的进行加星。这样就可以<strong>让关注的事情就在一定的范围之内</strong>。
+从这部分列表中挑选事项，<strong>集中精神逐项处理</strong>。周而复始，这样<strong>让每天都可以看到成果</strong>，激发自己的动力。</p>
+
+<p>ps: 我不是什么GTD专家，仅供参考。不过wunderlist真的是不错的TODO工具，推荐使用。</p>
+]]></content>
+  </entry>
+  
+</feed>

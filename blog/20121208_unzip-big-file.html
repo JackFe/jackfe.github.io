@@ -1,0 +1,324 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>unzip引起disk full问题(旧) - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="unzip引起disk full问题">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20121208_unzip-big-file.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Unzip引起disk Full问题(旧)</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-08T00:00:00+08:00" pubdate data-updated="true">Dec 8<span>th</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>很早的记录了，以前瞎整过很多东西，还好很多资料有整理，所以看上去还有点小用的就迁移过来吧。:)</p>
+
+<p>因为184解压一个oracle dmp文件的时候出错，导致数据无法同步。今天尝试解决这个问题，在日志中看到是解压的时候，
+出现write error (disk full?).continue?(y/m/<sup>C)&#8221;。发现db.dmp原大小是2.05g，压缩后400m，但是使用unzip解压到2g的时候，就出现上述错误。</sup>
+但是通过df也没有看到磁盘空间不足。这就有几样可能，有可能是系统限制了或者解压工具限制了。使用ulimit发现文件大小是没有做特别限制的。
+搜索一番,有可能是出现unzip的对大文件解压的限制，参考http://osde.info/HowToUnzipLargeFiles，对unzip进行重新编译，结果就可以了。
+后来使用which的时候，发现oracle的bin自带了一个unzip，而这个版本也是不支持大文件解压的，但是有人却把这个路径放到path上去了。
+最后嘛，我担心改动path路径对oracle造成影响，就修改了恢复脚本的unzip路径。结果总算搞定了。</p>
+
+<p>简略翻译修改版:</p>
+
+<div class="highlight"><pre><code class="bash"><span class="c"># 从http://www.info-zip.org/下载源代码</span>
+<span class="nb">cd </span>unzip-5.52
+vi unix/Makefile
+
+<span class="c"># 使用:/Linux on查找到下面这段描述</span>
+<span class="c"># Linux on 386 platform, using the assembler replacement for crc32.c. (-O4 and</span>
+<span class="c"># -fno-strength-reduce have virtually no effect beyond -O3. Add &quot;-m486</span>
+<span class="c"># -malign-functions=2 -malign-jumps=2 -malign-loops=2&quot; for Pentium [Pro]</span>
+<span class="c"># systems.)</span>
+linux: unix_make
+
+<span class="c"># 在这段的下面可以找到并进行替换</span>
+<span class="nv">CF</span><span class="o">=</span><span class="s2">&quot;-O3 -Wall -I. -DASM_CRC $(LOC)&quot;</span><span class="se">\</span>
+<span class="nv">CF</span><span class="o">=</span><span class="s2">&quot;-O3 -Wall -I. -DASM_CRC -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 $(LOC)&quot;</span><span class="se">\</span>
+
+<span class="c"># 保存后下面就是一些编译替换的后续工作了</span>
+make -f unix/Makefile linux
+which unzip
+cp unzip /usr/bin/unzip
+</code></pre></div>
+
+
+<h3>关于gcc -D_FILE_OFFSET_BITS=64的描述(找不到原始出处了)</h3>
+
+<p>In a nutshell for using LFS you can choose either of the following: Compile your programs with
+&#8220;gcc -D_FILE_OFFSET_BITS=64&#8221;. This forces all file access calls to use the 64 bit variants.
+Several types change also, e.g. off_t becomes off64_t. It&#8217;s therefore important to always
+use the correct types and to not use e.g. int instead of off_t. For portability with other
+platforms you should use getconf LFS_CFLAGS which will return -D_FILE_OFFSET_BITS=64 on Linux
+platforms but might return something else on e.g. Solaris. For linking, you should use the link
+flags that are reported via getconf LFS_LDFLAGS. On Linux systems, you do not need special link flags.
+Define <em>LARGEFILE_SOURCE and </em>LARGEFILE64_SOURCE. With these defines you can use the LFS functions like open64 directly.
+Use the O_LARGEFILE flag with open to operate on large files. A complete documentation of the feature test macros like <em>FILE_OFFSET_BITS
+and </em>LARGEFILE_SOURCE is in the glibc manual (run e.g. &#8220;info libc &#8216;Feature Test Macros&#8217;&#8221;).</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-08T00:00:00+08:00" pubdate data-updated="true">Dec 8<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/unzip/'>unzip</a>, <a class='category' href='/blog/categories/zong-jie/'>总结</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20121208_servlet-study-log.html" title="Previous Post: 学习和理解servlet(旧)">&laquo; 学习和理解servlet(旧)</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20121215_hello-coffeescript.html" title="Next Post: hello,coffeescript">hello,coffeescript &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20121208_unzip-big-file.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20121208_unzip-big-file.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

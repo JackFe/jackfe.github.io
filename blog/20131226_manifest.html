@@ -1,0 +1,364 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>由于MANIFEST.MF不规范导致程序无法启动的问题 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="昨晚发现某个jar程序启动不了，包类没找到。
+这个是由于我增加了一个新的jar包，并且依赖于xwork.jar。
+所以在build.xml里边增加这个jar包。 1
+2
+3
+4
+5
+6 &lt;fatjar.build output=&quot;ibossproc.jar&quot;&gt &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20131226_manifest.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">由于MANIFEST.MF不规范导致程序无法启动的问题</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-12-26T00:00:00+08:00" pubdate data-updated="true">Dec 26<span>th</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>昨晚发现某个jar程序启动不了，包类没找到。
+这个是由于我增加了一个新的jar包，并且依赖于xwork.jar。
+所以在build.xml里边增加这个jar包。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>  <span class="nt">&lt;fatjar.build</span> <span class="na">output=</span><span class="s">&quot;ibossproc.jar&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  ...
+</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/jsse.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/cipher14.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/xwork-2.0.4.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'><span class="nt">&lt;/fatjar.build&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>不过还是出错，出错信息挺诡异的(用星号对某些信息进行屏蔽)：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">mccxj</span><span class="nd">@XXX</span><span class="o">:/</span><span class="n">work</span><span class="o">/</span><span class="n">procs</span><span class="o">/</span><span class="n">log</span><span class="o">&gt;</span> <span class="n">cat</span> <span class="o">*</span>
+</span><span class='line'><span class="err">线程</span> <span class="s">&quot;main&quot;</span> <span class="err">中发生异常</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">NoClassDefFoundError</span><span class="o">:</span> <span class="n">com</span><span class="o">.*.*.*.*</span><span class="n">Entry</span>
+</span><span class='line'><span class="n">Caused</span> <span class="nl">by:</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">ClassNotFoundException</span><span class="o">:</span> <span class="n">com</span><span class="o">.*.*.*.*</span><span class="n">Entry</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">java</span><span class="o">.</span><span class="na">net</span><span class="o">.</span><span class="na">URLClassLoader</span><span class="o">.</span><span class="na">findClass</span><span class="o">(</span><span class="n">URLClassLoader</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">421</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">ClassLoader</span><span class="o">.</span><span class="na">loadClass</span><span class="o">(</span><span class="n">ClassLoader</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">652</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">sun</span><span class="o">.</span><span class="na">misc</span><span class="o">.</span><span class="na">Launcher</span><span class="n">$AppClassLoader</span><span class="o">.</span><span class="na">loadClass</span><span class="o">(</span><span class="n">Launcher</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">346</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">ClassLoader</span><span class="o">.</span><span class="na">loadClass</span><span class="o">(</span><span class="n">ClassLoader</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">618</span><span class="o">)</span>
+</span><span class='line'><span class="n">Could</span> <span class="n">not</span> <span class="n">find</span> <span class="n">the</span> <span class="n">main</span> <span class="nl">class:</span> <span class="n">com</span><span class="o">.*.*.*.*</span><span class="n">Entry</span><span class="o">.</span>  <span class="n">Program</span> <span class="n">will</span> <span class="n">exit</span><span class="o">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这个类是程序里边的代码，应该是存在的。把jar解压了，也的确看到jar包里边有这个类。</p>
+
+<p>于是把以前能跑的jar拿来进行对比，发现META-INF/MANIFEST.MF稍稍有点不同，新的在最后多了2个空行。
+简单调整了一下打包脚本（用的一个fatjar.jar的工具）,最后两行进行调整顺序，发现就可以了。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>  <span class="nt">&lt;fatjar.build</span> <span class="na">output=</span><span class="s">&quot;xx.jar&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  ...
+</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/jsse.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/xwork-2.0.4.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/cipher14.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'><span class="nt">&lt;/fatjar.build&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>一开始感觉是fatjar.jar的bug，不过回过头来看，其实是cipher14.jar这个包的问题。<br/>
+因为这个包的META-INF/MANIFEST.MF的最后一样是个问号，根据<a href="http://docs.oracle.com/javase/7/docs/technotes/guides/jar/jar.html#JAR%20Manifest">规范文档</a>,
+这个是不规范的。如：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">Manifest</span><span class="o">-</span><span class="nl">Version:</span> <span class="mf">1.0</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">?</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>而fatjar会把所有的MANIFEST.MF进行合并，但是奇怪的地方就在这里了。如果问号是在最后一样，能够正常启动。 <br/>
+如果问号后面还有内容，就启动不了。所以调整顺序之后，能够正常启动。<br/>
+后来，我把cipher14.jar的MANIFEST.MF中的问号去掉，不需要调整顺序也是可以正常的。</p>
+
+<p>这个包应该是第三方厂商提供的，又踩地雷了。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-12-26T00:00:00+08:00" pubdate data-updated="true">Dec 26<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/manifest/'>MANIFEST</a>, <a class='category' href='/blog/categories/java/'>java</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20131126_connection-leak.html" title="Previous Post: 连接池泄露定位案例">&laquo; 连接池泄露定位案例</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20131227_android-tcpdump-netcat-addon.html" title="Next Post: 对UC文章《实时监控Android设备网络包》的补充">对UC文章《实时监控Android设备网络包》的补充 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20131226_manifest.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20131226_manifest.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

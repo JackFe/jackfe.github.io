@@ -1,0 +1,576 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>性能优化:Trove集合库 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="1 初见Trove 昨天在Startup News上看到一篇文章:优化技巧分享：把内存消耗降低至原来的1/20。里边提到了一个案例，Java应用中如何降低内存消耗，总结了他的优化过程: 开始时,存放1.3M个Person对象，消耗堆空间1.5GB
+修改为java.util.HashMap&lt; &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20130602_introduce-to-trove.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">性能优化:Trove集合库</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-02T00:00:00+08:00" pubdate data-updated="true">Jun 2<span>nd</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h2>1 初见Trove</h2>
+
+<p>昨天在<a href="http://news.dbanotes.net/news">Startup News</a>上看到一篇文章:<a href="http://blog.jobbole.com/40666/">优化技巧分享：把内存消耗降低至原来的1/20</a>。里边提到了一个案例，Java应用中如何降低内存消耗，总结了他的优化过程:</p>
+
+<ul>
+<li>开始时,存放1.3M个Person对象，消耗堆空间1.5GB</li>
+<li>修改为java.util.HashMap&lt;Long, Person>进行缓存,从1.5GB降低为214MB</li>
+<li>修改HashMap为Trove的TLongObjectHashMap<Person>，从214MB降低为143MB</li>
+<li>优化Person内部结构,减少重复字段,从143MB降低为93MB</li>
+<li>开启64位JDK的XX:UseCompressedOops参数进行指针压缩,从93MB降低为73MB</li>
+</ul>
+
+
+<p>优化经常得针对具体的场景、数据特性来优化，上述提到的<a href="http://trove.starlight-systems.com/">Trove</a>集合库就是这么一个典型例子,它针对的是JDK集合类中处理原生类型的场景。</p>
+
+<h2>2 使用Trove</h2>
+
+<ul>
+<li>如果使用Maven的话,可使用下面的配置</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;dependency&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;groupId&gt;</span>net.sf.trove4j<span class="nt">&lt;/groupId&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;artifactId&gt;</span>trove4j<span class="nt">&lt;/artifactId&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;version&gt;</span>3.0.3<span class="nt">&lt;/version&gt;</span>
+</span><span class='line'><span class="nt">&lt;/dependency&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>常用方法和JDK集合类是一样的，方便迁移</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">TIntObjectMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">ints</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TIntObjectHashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;();</span>
+</span><span class='line'><span class="n">ints</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="mi">100</span><span class="o">,</span> <span class="s">&quot;John&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">ints</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="mi">101</span><span class="o">,</span> <span class="s">&quot;Tom&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">ints</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">100</span><span class="o">));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Trove相当于把JDK集合类都针对原生类型处理了一遍，例如int，常见的类有
+TIntList、TIntObjectMap<V>、TObjectIntMap<K>、TIntSet，可想而知，<strong>维护Trove的工作量是挺大的</strong>。</p>
+
+<p>Trove还提供了开放寻址法的Map,Set,LinkedList实现,可以参考<a href="http://www.onjava.com/pub/a/onjava/2002/06/12/trove.html?page=2">Enhance Collection Performance with this Treasure Trove</a>的做法,类似于:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CollectionFactory</span> <span class="o">{</span>
+</span><span class='line'>  <span class="kd">static</span> <span class="kt">boolean</span> <span class="n">useTrove</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">  *  Return a hashmap based on the properties</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="n">Map</span> <span class="nf">getHashMap</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>      <span class="k">if</span> <span class="o">(</span> <span class="n">useTrove</span> <span class="o">)</span> <span class="k">return</span> <span class="k">new</span> <span class="n">THashMap</span><span class="o">();</span>
+</span><span class='line'>      <span class="k">else</span>            <span class="k">return</span> <span class="k">new</span> <span class="nf">HashMap</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/**</span>
+</span><span class='line'><span class="cm">  *  Return a hashset based on the properties</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="n">Set</span> <span class="nf">getHashSet</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>      <span class="k">if</span> <span class="o">(</span> <span class="n">useTrove</span> <span class="o">)</span> <span class="k">return</span> <span class="k">new</span> <span class="n">THashSet</span><span class="o">();</span>
+</span><span class='line'>      <span class="k">else</span>            <span class="k">return</span> <span class="k">new</span> <span class="nf">HashSet</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/**</span>
+</span><span class='line'><span class="cm">  *  Return a linkedlist based on the properties</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="n">List</span> <span class="nf">getLinkedList</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>      <span class="k">if</span> <span class="o">(</span> <span class="n">useTrove</span> <span class="o">)</span> <span class="k">return</span> <span class="k">new</span> <span class="n">TLinkedList</span><span class="o">();</span>
+</span><span class='line'>      <span class="k">else</span>            <span class="k">return</span> <span class="k">new</span> <span class="nf">LinkedList</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>迭代集合中的元素</li>
+</ul>
+
+
+<p><strong>Trove不推荐JDK的entryXX的做法，而是采用了forEach的回调方式</strong>。
+代码显得更好看些，另外内存方面也有优势，因为使用entryXX的做法，需要创建一个新的数组。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">TIntObjectMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">ints</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TIntObjectHashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;();</span>
+</span><span class='line'><span class="n">ints</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="mi">100</span><span class="o">,</span> <span class="s">&quot;John&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">ints</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="mi">101</span><span class="o">,</span> <span class="s">&quot;Tom&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">ints</span><span class="o">.</span><span class="na">forEachEntry</span><span class="o">(</span><span class="k">new</span> <span class="n">TIntObjectProcedure</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">execute</span><span class="o">(</span><span class="kt">int</span> <span class="n">a</span><span class="o">,</span> <span class="n">String</span> <span class="n">b</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;key: &quot;</span> <span class="o">+</span> <span class="n">a</span> <span class="o">+</span> <span class="s">&quot;, val: &quot;</span> <span class="o">+</span> <span class="n">b</span><span class="o">);</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">});</span>
+</span><span class='line'><span class="n">ints</span><span class="o">.</span><span class="na">forEachKey</span><span class="o">(</span><span class="k">new</span> <span class="n">TIntProcedure</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">execute</span><span class="o">(</span><span class="kt">int</span> <span class="n">value</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;key: &quot;</span> <span class="o">+</span> <span class="n">value</span><span class="o">);</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">});</span>
+</span><span class='line'><span class="n">ints</span><span class="o">.</span><span class="na">forEachValue</span><span class="o">(</span><span class="k">new</span> <span class="n">TObjectProcedure</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">execute</span><span class="o">(</span><span class="n">String</span> <span class="n">object</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;val: &quot;</span> <span class="o">+</span> <span class="n">object</span><span class="o">);</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>自定义Hash策略</li>
+</ul>
+
+
+<p>我们知道，在JDK集合类里边，有时候是没法自定义Hash策略的，例如String。
+<strong>不过Trove提供了自定义Hash策略的功能，让你可以根据数据特性进行优化</strong>。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kt">char</span><span class="o">[]</span> <span class="n">foo</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[]{</span><span class="sc">&#39;a&#39;</span><span class="o">,</span> <span class="sc">&#39;b&#39;</span><span class="o">,</span> <span class="sc">&#39;c&#39;</span><span class="o">};</span>
+</span><span class='line'>    <span class="kt">char</span><span class="o">[]</span> <span class="n">bar</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[]{</span><span class="sc">&#39;a&#39;</span><span class="o">,</span> <span class="sc">&#39;b&#39;</span><span class="o">,</span> <span class="sc">&#39;c&#39;</span><span class="o">};</span>
+</span><span class='line'>    <span class="n">TCustomHashMap</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">[],</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">ch</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TCustomHashMap</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">[],</span> <span class="n">String</span><span class="o">&gt;(</span><span class="k">new</span> <span class="n">CharArrayStrategy</span><span class="o">());</span>
+</span><span class='line'>    <span class="n">ch</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">foo</span><span class="o">,</span> <span class="s">&quot;John&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">ch</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">bar</span><span class="o">,</span> <span class="s">&quot;Tom&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">class</span> <span class="nc">CharArrayStrategy</span> <span class="kd">implements</span> <span class="n">HashingStrategy</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">[]&gt;</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">computeHashCode</span><span class="o">(</span><span class="kt">char</span><span class="o">[]</span> <span class="n">c</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="c1">// use the shift-add-xor class of string hashing functions</span>
+</span><span class='line'>        <span class="c1">// cf. Ramakrishna and Zobel, &quot;Performance in Practice</span>
+</span><span class='line'>        <span class="c1">// of String Hashing Functions&quot;</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">h</span> <span class="o">=</span> <span class="mi">31</span><span class="o">;</span> <span class="c1">// seed chosen at random</span>
+</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">c</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span> <span class="c1">// could skip invariants</span>
+</span><span class='line'>            <span class="n">h</span> <span class="o">=</span> <span class="n">h</span> <span class="o">^</span> <span class="o">((</span><span class="n">h</span> <span class="o">&lt;&lt;</span> <span class="mi">5</span><span class="o">)</span> <span class="o">+</span> <span class="o">(</span><span class="n">h</span> <span class="o">&gt;&gt;</span> <span class="mi">2</span><span class="o">)</span> <span class="o">+</span> <span class="n">c</span><span class="o">[</span><span class="n">i</span><span class="o">]);</span> <span class="c1">// L=5, R=2 works well for</span>
+</span><span class='line'>                                                  <span class="c1">// ASCII input</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">h</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="kt">char</span><span class="o">[]</span> <span class="n">c1</span><span class="o">,</span> <span class="kt">char</span><span class="o">[]</span> <span class="n">c2</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">c1</span><span class="o">.</span><span class="na">length</span> <span class="o">!=</span> <span class="n">c2</span><span class="o">.</span><span class="na">length</span><span class="o">)</span> <span class="o">{</span> <span class="c1">// could drop this check for fixed-length</span>
+</span><span class='line'>                                      <span class="c1">// keys</span>
+</span><span class='line'>            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">,</span> <span class="n">len</span> <span class="o">=</span> <span class="n">c1</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">len</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span> <span class="c1">// could skip</span>
+</span><span class='line'>                                                         <span class="c1">// invariants</span>
+</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">c1</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">!=</span> <span class="n">c2</span><span class="o">[</span><span class="n">i</span><span class="o">])</span> <span class="o">{</span>
+</span><span class='line'>                <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>3 Trove内幕</h2>
+
+<p>Trove是以减少内存消耗为主要目的的，同时也要保持性能。我们这里简单描述一下Trove的实现内幕。
+这里有有另外一篇文章可以参考：<a href="http://www.ibm.com/developerworks/cn/java/j-perf09284.html">性能观察: Trove 集合类</a></p>
+
+<ul>
+<li>直接使用原生类型,而不是包装类型</li>
+</ul>
+
+
+<p>JDK5的自动封箱机制，让我们可以暂时忽略原生类型和包准类型的区别。自动封箱机制只是一种语法糖，实际上并没有提高效率。
+直接使用原生类型替代包装类型，明显可以占用更小的内存、运行起来也更有效率。对于基本类型的集合组合，Trove都提供了
+等价的集合类。</p>
+
+<ul>
+<li>使用开放寻址法，而不是链地址法</li>
+</ul>
+
+
+<p>大多数的JDK集合类都是采用链地址法实现的，它需要一个地址表，并且元素之间需要链表结点，而Trove采用开放寻址法，
+虽然需要保持足够的空闲位置(装载因子小于0.5),但因为不需要链表结点，所以总体上内存占用要更少，性能还要更快一些。</p>
+
+<ul>
+<li>HashSet不再通过内置HashMap实现</li>
+</ul>
+
+
+<p>JDK的HashSet是通过内置一个HashSet来实现的，所以白白浪费了value的空间。
+Trove提供的THashSet和其他基本类型的HashSet,都不再采用这种方式，直接使用开放地址存储。</p>
+
+<ul>
+<li>采用素数长度大小的数组</li>
+</ul>
+
+
+<p>为了最大程度避免hash冲突，除了保持较小的装载因子，还采用了素数长度大小的数组。具体见gnu.trove.impl.PrimeFinder</p>
+
+<ul>
+<li>采用代码生成进行维护</li>
+</ul>
+
+
+<p>虽然这个和性能没什么关系。但是我们也知道要维护这么多的原生类型集合类，重复的逻辑多但没法重用，是个很纠结的事情。
+Trove采用代码模板，生成大量的类，通过这种方式，可以大大减少维护的工作量。</p>
+
+<h2>4 总结</h2>
+
+<p>JDK作为通用集合类，大多数情况下我们还是会优先选择的。不过，在一些性能敏感的地方，或者Trove可以提供更好的选择。
+作为靠谱的java开发人员，Trove应该像apache commons、google guava那样，存放在你的工具箱里边。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-02T00:00:00+08:00" pubdate data-updated="true">Jun 2<span>nd</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/collections/'>collections</a>, <a class='category' href='/blog/categories/trove/'>trove</a>, <a class='category' href='/blog/categories/you-hua/'>优化</a>, <a class='category' href='/blog/categories/xing-neng/'>性能</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20130531_introduce-to-fiddler.html" title="Previous Post: Web开发利器-Fiddler简介">&laquo; Web开发利器-Fiddler简介</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20130615_java-string-constant-pool.html" title="Next Post: 初探Java字符串">初探Java字符串 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20130602_introduce-to-trove.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20130602_introduce-to-trove.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

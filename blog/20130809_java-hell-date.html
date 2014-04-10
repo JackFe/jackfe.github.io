@@ -1,0 +1,359 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>java中的日期工具 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="蹩脚的日期API 众所周知，jdk自带的日期API用起来非常蹩脚，属于JDK中设计较差的典型。 首先我们来看看常见类的分工： Calendar实现的是日期和时间之间的转换,其他就没什么用了
+DateFormat用来格式化和解析日期字符串
+Date用来表示日期和时间信息 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20130809_java-hell-date.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Java中的日期工具</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-09T00:00:00+08:00" pubdate data-updated="true">Aug 9<span>th</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h3>蹩脚的日期API</h3>
+
+<p>众所周知，jdk自带的日期API用起来非常蹩脚，属于JDK中设计较差的典型。</p>
+
+<p>首先我们来看看常见类的分工：</p>
+
+<ul>
+<li>Calendar实现的是日期和时间之间的转换,其他就没什么用了</li>
+<li>DateFormat用来格式化和解析日期字符串</li>
+<li>Date用来表示日期和时间信息</li>
+</ul>
+
+
+<p>下面我们再看看其中很混淆的一些设计:</p>
+
+<ul>
+<li>有两个Date类，分别是java.sql.Date和java.util.Date，前一个继承后一个，不要搞混了，通常我们是使用后一个。*</li>
+<li>java.sql是用于数据库类型的，这个Date是一个单纯的日期类型，意思是没有时间的概念，如果要时间，应该选择java.sql.Timestamp。这是个很悲催的设计，把原来的Date功能阉割了。</li>
+<li>注意Date的构造方法参数是很神奇的，年份是减去1900的数，月份是从0到11来表示的。</li>
+<li>Date的getTime返回的时间是相对于“1970-01-01 00:00:00”的毫秒数差值</li>
+<li>日期的调整、差距计算非常麻烦</li>
+<li>这些类都不是线程安全的，特别是格式化功能，经常有人掉坑，是重灾区来的</li>
+</ul>
+
+
+<h3>API的替代品</h3>
+
+<p>日期API实在是太烂了，幸好有其他开源选择，例如著名的Joda-Time，有兴趣的可以去试试。</p>
+
+<p>另外，还有最新的关于日期API的规范:JSR-310。官方的描述叫做“This JSR will provide a new and improved date and time API for Java.”，JSR-310将解决许多现有Java日期API的设计问题。比如Date和Calendar目前是可变对象，你可以随意改变对象的日期或者时间，而Joda就将DateTime对象设计成String对象一样地不可变，能够带来线程安全等等的好处，因此这一点也将被JSR-310采纳。</p>
+
+<h3>时间的度量</h3>
+
+<p>有两个特殊的API是和计时有关的，就是System.currentTimeMillis和System.nanoTime。两个的区别和用法如下:</p>
+
+<p>currentTimeMillis的值是相对于“1970-01-01 00:00:00”的毫秒数差值，跟new Date().getTime是一样的，因为new Date()就调用currentTimeMillis作为参数。大家应该对这个是比较熟悉的。</p>
+
+<p>nanaTime是jdk5才增加的API，能够提供更为精确的时间度量(纳秒呀，精度太高了，应该是系统时钟的近似值)。不过，它返回的是一个相对时间，而不像currentTimeMillis是一直增长的。所以要让时间有意义，必须用上时间差，就是用两个nanaTime来相减。</p>
+
+<p>简单来说，currentTimeMillis表示的是精确时间点的概念，nanaTime表示的是相对时间差的概念。用来表示一段时间差的话，nanoTime可以提供更好的精度。</p>
+
+<p>顺便提一下，JDK没有度量微妙的API，需要的话只能自己模拟了。</p>
+
+<h3>更多时间工具</h3>
+
+<p>如果是多线程编程的话，就不能不忽视java.util.concurrent工具包。它也提供了一些时间方面的工具，如TimeUnit类，简单来说，它是一个单位转换的辅助类，可以用更加直观的时间单位来操作。例如休眠3s,可以用下面的代码:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">TimeUnit</span><span class="o">.</span><span class="na">SECONDS</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="mi">3</span><span class="n">d</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这个类也用于这个包里边许多带超时机制的API中，例如使用lock的API是这样使用的的:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">Lock</span> <span class="n">lock</span> <span class="o">=</span> <span class="o">...;</span>
+</span><span class='line'><span class="k">if</span> <span class="o">(</span><span class="n">lock</span><span class="o">.</span><span class="na">tryLock</span><span class="o">(</span><span class="mi">50L</span><span class="o">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="na">MILLISECONDS</span><span class="o">))</span> <span class="o">{</span>
+</span><span class='line'>    <span class="k">try</span> <span class="o">{</span>
+</span><span class='line'>        <span class="c1">// manipulate protected state</span>
+</span><span class='line'>    <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">lock</span><span class="o">.</span><span class="na">unlock</span><span class="o">();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span><span class='line'>    <span class="c1">// perform alternative actions</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>关于这个并发工具包的内容，以后有机会再介绍。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-09T00:00:00+08:00" pubdate data-updated="true">Aug 9<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/date/'>date</a>, <a class='category' href='/blog/categories/java/'>java</a>, <a class='category' href='/blog/categories/java-hell/'>java hell</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20130807_dom-operation-is-not-sync.html" title="Previous Post: Dom操作和渲染并不是同步的">&laquo; Dom操作和渲染并不是同步的</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20130809_java-hell-parameter.html" title="Next Post: 怎么理解java参数传递只是传值方式">怎么理解java参数传递只是传值方式 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20130809_java-hell-date.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20130809_java-hell-date.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,414 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>improve bitter code: '不可避免'的重复 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="关于编码规范，代码评审，改进质量方面的总结">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20120729_improve-bitter-code-4.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Improve Bitter Code: '不可避免'的重复</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-29T00:00:00+08:00" pubdate data-updated="true">Jul 29<span>th</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>一段分批处理的逻辑</h3>
+
+<p>周六做code diff的时候发现B项目一段颇长的处理逻辑(40行左右)。处理流程是这样的，
+从页面上取到一批数据之后，用这批数据封装参数进行后台调用(远程调用)。为了避免数据调用超时，
+对这批数据进行分批多次调用。代码如下所示(现实的代码比这个要复杂些，并且没有使用subList方法)：</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">List</span> <span class="n">batchdatas</span> <span class="o">=</span> <span class="o">...;</span>
+<span class="kt">int</span> <span class="n">batchsize</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span> <span class="c1">// load from parameter</span>
+
+<span class="kt">int</span> <span class="n">datasize</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+<span class="k">if</span><span class="o">(</span><span class="n">datasize</span> <span class="o">&gt;</span> <span class="n">batchsize</span><span class="o">){</span>
+    <span class="kt">int</span> <span class="n">batch</span> <span class="o">=</span> <span class="n">datasize</span> <span class="o">/</span> <span class="n">batchsize</span><span class="o">;</span>
+    <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">batch</span><span class="o">;</span><span class="n">i</span><span class="o">++){</span>
+        <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+        <span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">batchsize</span><span class="o">*</span><span class="n">i</span><span class="o">,</span> <span class="n">batchsize</span><span class="o">*(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">));</span>
+        <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
+        <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kt">int</span> <span class="n">left</span> <span class="o">=</span> <span class="n">datasize</span> <span class="o">%</span> <span class="n">batchsize</span><span class="o">;</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">left</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">){</span>
+        <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+        <span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">batchsize</span><span class="o">*</span><span class="n">batch</span><span class="o">,</span> <span class="n">datasize</span><span class="o">);</span>
+        <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
+        <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="k">else</span> <span class="o">{</span>
+    <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+    <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdatas</span><span class="o">));</span>
+    <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>从代码的实现看，思路还是比较清晰的。如果不足一次，就一次提交。否则计算出一共要分多少次，
+然后逐次处理提交，最后还要判断是否还有剩余的，如果有就再处理一次。</p>
+
+<p>代码显现出来的问题也比较明显，就是远程调用的逻辑出现了重复。</p>
+
+<h3>算法小调整，避免重复</h3>
+
+<p>有没什么办法可以避免重复? 或许有些童鞋第一反应是给这几句代码抽取成小方法。
+不过这里有更好的办法，首先细想一下就会发现不足一次的判断(datasize > batchsize)不是必要的，
+如果计算批次而是计算每次的起始点和结束点，上面两个分支也可以合并一下。调整后代码如下：</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">List</span> <span class="n">batchdatas</span> <span class="o">=</span> <span class="o">...;</span>
+<span class="kt">int</span> <span class="n">batchsize</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span> <span class="c1">// load from parameter</span>
+
+<span class="kt">int</span> <span class="n">datasize</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+<span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">startidx</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">startidx</span><span class="o">&lt;</span><span class="n">datasize</span><span class="o">;</span><span class="n">startidx</span><span class="o">+=</span><span class="n">batchsize</span><span class="o">){</span>
+    <span class="kt">int</span> <span class="n">endidx</span> <span class="o">=</span> <span class="o">(</span><span class="n">startidx</span><span class="o">+</span><span class="n">batchsize</span><span class="o">)</span> <span class="o">&gt;</span> <span class="n">datasize</span> <span class="o">?</span> <span class="n">datasize</span> <span class="o">:</span> <span class="o">(</span><span class="n">startidx</span><span class="o">+</span><span class="n">batchsize</span><span class="o">);</span>
+
+    <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+    <span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">startidx</span><span class="o">,</span> <span class="n">endidx</span><span class="o">);</span>
+    <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
+    <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>其中计算endidx使用了一个三元表达式，使用三元表达式用来替代一些简单的if-else语句是个实用的小技巧。
+代码量缩小为原来的三分之一，代码少了，维护量也轻松了。</p>
+
+<p>类似这样的代码也并不少见，例如计算总页数的分页逻辑有下面的写法</p>
+
+<div class="highlight"><pre><code class="java"><span class="c1">// 常用做法</span>
+<span class="kt">int</span> <span class="n">totalpage</span> <span class="o">=</span> <span class="n">totalsize</span> <span class="o">/</span> <span class="n">pagesize</span><span class="o">;</span>
+<span class="k">if</span><span class="o">(</span><span class="n">totalsize</span> <span class="o">%</span> <span class="n">pagesize</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">){</span>
+    <span class="n">totalpage</span><span class="o">++;</span>
+<span class="o">}</span>
+
+<span class="c1">// 另外一种写法</span>
+<span class="kt">int</span> <span class="n">totalpage</span> <span class="o">=</span> <span class="o">(</span><span class="n">totalsize</span> <span class="o">+</span> <span class="n">pagesize</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">/</span> <span class="n">pagesize</span><span class="o">;</span>
+</code></pre></div>
+
+
+<h3>基本功很重要</h3>
+
+<p>java是一门比较古板的语言，大多数情况下，写出来的代码也是大同小异的。
+同时，java相关框架又特别的多，很容易拣了芝麻丢了西瓜。
+以来面试的童鞋为例，连基本算法的时间复杂度都没弄清楚的人不在少数，所以
+在项目代码中，经常看到化简为繁的代码，现在也很习惯了。</p>
+
+<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
+
+
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li>2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-29T00:00:00+08:00" pubdate data-updated="true">Jul 29<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/improve-bitter-code/'>improve bitter code</a>, <a class='category' href='/blog/categories/ke-du-xing/'>可读性</a>, <a class='category' href='/blog/categories/suan-fa/'>算法</a>, <a class='category' href='/blog/categories/zhi-liang-gai-jin/'>质量改进</a>, <a class='category' href='/blog/categories/zhong-fu/'>重复</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20120728_improve-bitter-code-3.html" title="Previous Post: improve bitter code: 看不懂的正则表达式">&laquo; improve bitter code: 看不懂的正则表达式</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20120729_improve-bitter-code-5.html" title="Next Post: improve bitter code: 拘泥于单出口方法">improve bitter code: 拘泥于单出口方法 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20120729_improve-bitter-code-4.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20120729_improve-bitter-code-4.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

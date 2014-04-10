@@ -1,0 +1,355 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>avtivemq和规则引擎资料(旧) - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="以前收集的一些资料">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20121202_avtivemq-and-rule-engine.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Avtivemq和规则引擎资料(旧)</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-02T00:00:00+08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>10年时接触activemq和drools时收集的一些资料</p>
+
+<h2>activeMQ资料</h2>
+
+<p><a href="http://activemq.apache.org/">activeMQ官方网站</a><br/>
+<a href="http://andyao.javaeye.com/blog/153173">JMS消息类型模型</a><br/>
+<a href="http://www.javaeye.com/topic/275045">实战activeMQ</a><br/>
+<a href="http://wiki.springside.org.cn/display/springside/ActiveMQ">ActiveMQ4.1 +Spring2.0的POJO JMS方案(上)整理版</a><br/>
+<a href="http://wiki.springside.org.cn/display/springside/ActiveMQ-part2">ActiveMQ4.1 +Spring2.0的POJO JMS方案(下)整理版</a><br/>
+<a href="http://www.javaeye.com/topic/153171">ActiveMQ5.0实战一: 安装配置ActiveMQ5.0</a><br/>
+<a href="http://www.javaeye.com/topic/154092">ActiveMQ5.0实战二: 基本配置</a><br/>
+<a href="http://www.javaeye.com/topic/234101">ActiveMQ5.0实战三:使用Spring发送,消费topic和queue消息</a><br/>
+<a href="http://sdh5724.javaeye.com/blog/318376">ActiveMQ测试报告</a>,这是一个很棒的报告<br/>
+<a href="http://www.javaeye.com/topic/397902">ActiveMQ 高级特性</a><br/>
+<a href="http://activemq.apache.org/articles.html">Articles on ActiveMQ, Messaging and JMS</a> 来自官网的文章集锦</p>
+
+<h4>客户端</h4>
+
+<p>关于客户端都可以在相应的官网上找到，这里要说的一个客户端是openamq-jms，简单来说，这是针对java JMS的客户端，
+可用于OpenAMQ和其他AMQP服务器。还有一个是StompConnect，当然这是走stomp协议的，特色就是把JMS弄成一个Stomp Broker，
+具体是怎样的，还没实践过。不过，要跨语言消息交互，更好的选择是使用已经提供的本地Stomp支持。另外，关于stomp的erlang客户端可以选择gigix推荐的stomperl</p>
+
+<h4>书籍</h4>
+
+<p>其实官方文档已经非常丰富，书籍的意义并没有那么大<del>~另一方面，关于ActiveMQ的书籍暂时还没有上市，只有本期书(activeMQ in action)，
+现在可以在网上找到这本书的手稿版</del>确实找不到的话，可以找我要，呵</p>
+
+<h4>activemq和rabbitmq</h4>
+
+<p>activemq和rabbitmq都是非常有名的开源消息队列。activemq是java写的，而rabbitmq是erlang写的。
+activemq支持的是stomp和openwire，xmpp等协议，而rabbitmq支持的是amqp(Advanced Message Queuing Protocol)。
+stomp是一个简单的容易实现的基于文本的协议，openwire是一种快速的二进制协议，activemq计划在amqp协议1.0版本完成的时候提供amqp协议的支持。
+通过这些协议，activemq可以支持多种客户端，如C, C++, C#, Ruby, Python, Perl, PHP等等。而amqp同时定义了消息中间件的语意层面和协议层面，
+并且是语言中立的，它可以让MQ成为一个可编程的消息中间件，可以想象这样的场景：
+你使用java写的消息通过Erlang编写的中间件来和一个C编写的遗留系统进行消息交互。所以amqp前途是光明的～～</p>
+
+<h4>2009-01-15附加</h4>
+
+<p>activemq的failover功能配置很简单~例如简单修改brokerURL为&#8221;failover:(tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0)&#8221;，正常情况是会出现下面的信息：</p>
+
+<div class="highlight"><pre><code class="properties"><span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:43,672 DEBUG [failover.FailoverTransport]-802 Waiting 5120 ms before attempting connection.</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,569 DEBUG [failover.FailoverTransport]-593 urlList connectionList:[tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0]</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,569 DEBUG [failover.FailoverTransport]-712 Attempting connect to: tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,570 DEBUG [failover.FailoverTransport]-753 Connect fail to: tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0, reason: java.net.ConnectException: Connection refused</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,570 DEBUG [ tcp.TcpTransport]-458 Stopping transport tcp://null:0</span>
+</code></pre></div>
+
+
+<h4>2009-01-16附加</h4>
+
+<p>结合spring和activemq的时候，发现启动挺慢的。因为老是会去网上寻找xsd文件，把xml里边的schemaLocation换成下面这个样子就可以了：
+http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd
+ActiveMQ的Virtual Destinations和Mirrored Queues非常有价值，5.3新增的Message Groups也是很有用的特性来的</p>
+
+<h2>规则引擎资料</h2>
+
+<p><a href="http://www.ibm.com/developerworks/cn/java/j-java-rules/">Java规则引擎与其API(JSR-94)</a> 介绍jsr94标准<br/>
+<a href="http://www.ibm.com/developerworks/cn/java/j-drools/">使用 Drools 规则引擎实现业务逻辑</a> 一个简单的例子<br/>
+<a href="http://javahy.javaeye.com/blog/384538">在你的企业级java应用中使用Drools</a> 提供web层和dao层的简单继承，不过rule用的xml格式～<br/>
+<a href="http://blog.csdn.net/nimeimei/archive/2005/12/23/560379.aspx">drools和spring的集成</a> 集成spring好像是必备功能似的<br/>
+<a href="http://www.javaeye.com/topic/25215">规则引擎实现探讨</a> 一个小讨论，还看到一段Erlang代码<br/>
+<a href="http://www.javaeye.com/topic/18198">应用规则引擎组织业务规则的注意要点</a> 里边提到一些建议和规范<br/>
+看惯中文的，感觉<a href="http://www.blogjava.net/guangnian0412/">这个blog</a>还行,但是内容是基于drools3的<br/>
+<a href="http://www.javaeye.com/topic/257039">一个小学题目的解: 采用规则引擎Drools实现</a> 一个喝汽水的智力题,一个比较不错的例子<br/>
+<a href="http://wiki.springside.org.cn/display/springside/JBossRules">springside里边用的jboss rules</a><br/>
+另外还有drools官方文档，关于最重要的rule language和example部分是在Drools Expert上</p>
+
+<h4>其他想法</h4>
+
+<p>我对规则引擎理解不深，从drools的例子可以看到一些AI,workflow,专家系统的影子，看似用途很广很强大，可是规则引擎不是这么个用法的把<br/>
+按照我的想法，规则引擎应该用在局部复杂的流程控制上(局部复杂的if else&#8230;),应该是基于业务走向的判断。<br/>
+如上面<a href="http://yimlin.javaeye.com/">yimlin</a>提到的，我觉得规则引擎是来简化工作的，所以要避免任何具有实际意义的业务操作，很容易让人混淆。<br/>
+怎么说这些规则也不大可能是客户来维护的了，因为可能涉及事实库的修改，dsl顶多也是对程序员友好的方式。<br/>
+<strong>哪些业务规则适合抽象出来由规则引擎处理，规则引擎和业务系统的交互方式是主要问题。</strong></p>
+
+<p>引入规则引擎真的会带来很多好处么？对很多系统来说，这种<a href="http://ivan.javaeye.com/blog/373237">java应用中嵌入groovy</a>的方案还算满经济的。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-02T00:00:00+08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/activemq/'>activemq</a>, <a class='category' href='/blog/categories/drools/'>drools</a>, <a class='category' href='/blog/categories/zi-liao/'>资料</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20121130_maven-quickstart.html" title="Previous Post: maven学习要点(旧)">&laquo; maven学习要点(旧)</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20121202_framework-improve-base-library.html" title="Next Post: 从某维护系统的架构改造谈起–公用代码库(旧)">从某维护系统的架构改造谈起–公用代码库(旧) &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20121202_avtivemq-and-rule-engine.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20121202_avtivemq-and-rule-engine.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

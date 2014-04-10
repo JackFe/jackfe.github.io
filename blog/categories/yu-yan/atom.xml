@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 语言 | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/yu-yan/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[improve bitter code: 多掌握一门语言]]></title>
+    <link href="http://mccxj.github.com/blog/20120804_improve-bitter-code-7.html"/>
+    <updated>2012-08-04T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/improve-bitter-code-7</id>
+    <content type="html"><![CDATA[<p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>语言是有区别的</h3>
+
+<p>语言是有'好坏'之分的，在不同的应用背景下，有些语言就是比其他一些语言更为合适！
+语言是有它的设计目的，有些是为了效率(c)，有些是为了快乐编程(ruby)，有些则是了并发做准备(erlang)。
+学习不同类型的语言也有助于锻炼编程思维，像c,java,ruby,javascript,erlang都教会了我许多东西。</p>
+
+<p>来到这边之后，主要工作语言是java，但并不是说其他语言没有了用武之地，我一直在寻找使用其他语言的机会。
+下面举些例子，来说明一下。由于我以前大量使用ruby语言，的确我也是特别喜欢。
+所以例子以ruby为主，但并不是说其他语言没法做到，或许有更好的做法也不一定。</p>
+
+<h5>临时生成xml文件</h5>
+
+<p>前几天维护那边需要我提供一个xml文件，它提供了一组txt数据:每半个小时的登陆及操作统计。
+我需要生成一个xml，我不熟悉excel操作(花了几分钟尝试了一下)，所以我选择使用脚本来生成。
+脚本只花了一分钟,比我预想得还要顺利。
+<div class="highlight"><pre><code class="ruby"><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;a.xml&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span>
+  <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;a.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">ff</span><span class="o">|&lt;</span><span class="sr">/p&gt;</span>
+
+<span class="sr">&lt;pre&gt;&lt;code&gt;ff.readlines.each_with_index do |l, i|</span>
+<span class="sr">  dl, cz = l.split(&#39; &#39;)</span>
+<span class="sr">  f &amp;lt;&amp;lt; &quot;&amp;lt;data&amp;gt;&amp;lt;seq&amp;gt;</span><span class="si">#{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="sr">&amp;lt;/se</span><span class="n">q</span><span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span><span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="n">czvalue</span><span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span><span class="c1">#{cz}&amp;lt;/czvalue&amp;gt;&amp;lt;dlvalue&amp;gt;#{dl}&amp;lt;/dlvalue&amp;gt;&amp;lt;/data&amp;gt;&quot;</span>
+<span class="k">end</span>
+<span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+对于这种一次性的文本处理，java真是太繁琐了，没有任何优势可言。</p>
+
+<h5>定位数据问题</h5>
+
+<p>曾经有次上版本之后发现一个菜单树不能使用。通过代码定位应该是菜单出现循环依赖了(菜单在表中是父子关系的)。
+同事也把生产的数据拿过来了。数据格式类似下面的，第一列是菜单id，第二列是父菜单id，还有其他的数据列。
+<div class="highlight"><pre><code class="java"><span class="n">ITEM1</span> <span class="n">ITEM2</span> <span class="n">OTHERS</span><span class="o">...</span>
+<span class="n">ITEM2</span> <span class="n">ITEM3</span> <span class="n">OTHERS</span><span class="o">...</span>
+<span class="n">ITEM4</span> <span class="n">ITEM2</span> <span class="n">OTHERS</span><span class="o">...</span>
+<span class="n">ITEM5</span> <span class="n">ITEM3</span> <span class="n">OTHERS</span><span class="o">...</span>
+</code></pre></div>
+问题已经变成：父子是否出现循环。当时我用了几分钟写了一段脚本来找到出现循环的菜单项，最后发现是其他项目组增加的菜单有问题。</p>
+
+<h5>传数据的偷懒方法</h5>
+
+<p>以前还是老邮箱的时候，由于网络隔离，需要把测试相关的东西通过邮箱发到测试环境去。
+我每次都是这么弄的：通过网页登录邮箱，新建邮件，把已经打包加密好的文件作为附件添加，保存为草稿，退出。
+次数多了，真的很无聊，有时候一天要弄好几次。</p>
+
+<p>我知道有种测试方式叫自动化测试，所以我用watir(一个用ruby写的自动化测试框架)模拟了整个过程。后来我把这个脚本调用集成到菜单右键上，
+只需要把需要上传的文件选中，再触发一个右键菜单。打包加密，上传文件就搞定了。那时候的感觉就是，世界清净了。</p>
+
+<h5>实现codediff应用</h5>
+
+<p>有些框架工具有非常高的生产效率，ruby on rails就是其中一个。在项目中进行codediff使用的工具，主要是通过这个框架开发的。
+说真的，这么一个东西，用java实现也不是什么难事。但对我来说，1k行的ruby代码量，sql一行也没有写，维护上要省心得多。</p>
+
+<p>只要能够对项目有意义，谁会关心我是用什么来实现的呢?</p>
+
+<h5>部署应用</h5>
+
+<p>这是个cmo比较熟悉的领域。大多数情况下，我们会选择bash等shell工具。
+不过我在开发codediff工具的时候，我想在本地直接就把应用部署到开发环境上去。</p>
+
+<p>windows的bat很烂，shell等有比较多限制，所以我又选择了脚本语言。
+使用perl,ruby等脚本来做管理脚本并不少见，我这里选择一个好几年前写的脚本作为例子：
+<div class="highlight"><pre><code class="ruby"><span class="n">cmd</span> <span class="o">=</span> <span class="no">Proc</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">shell</span><span class="o">|</span>
+  <span class="n">shell</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="s2">&quot;/opt/xxx&quot;</span><span class="p">)</span>
+  <span class="nb">print</span> <span class="s2">&quot;current directory:&quot;</span><span class="p">,</span><span class="n">shell</span><span class="o">.</span><span class="n">pwd</span><span class="o">.</span><span class="n">stdout</span>
+  <span class="nb">print</span> <span class="n">shell</span><span class="o">.</span><span class="n">sh</span><span class="p">(</span><span class="s2">&quot;/opt/getupdate.sh&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">stdout</span>
+  <span class="n">shell</span><span class="o">.</span><span class="n">exit</span>
+<span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+
+<span class="sr">&lt;p&gt;Net::SSH.start(&#39;192.168.1.32&#39;, :username =&gt; &#39;root&#39;, :password=&gt;&#39;psword&#39;) do |session|</span>
+<span class="sr">  shell = session.shell.sync</span>
+<span class="sr">  cmd.call(shell)</span>
+<span class="sr">end</span>
+</code></pre></div></p>
+
+<p>上面的例子比较简单，现实的例子是本地打包，通过ftp上传，解压发布，重启服务器，每个步骤都带交互功能。
+脚本语言和普通shell相比，具有完整语言和跨平台的优势，用来做系统管理是一个不错的选择。</p>
+
+<h3>多掌握一门语言</h3>
+
+<p>整篇内容没有涉及编程技巧上的东西，但这却是我最想表达的内容。
+在这里，我用Martin Fowler中国行的时候，<a href="http://www.ituring.com.cn/article/2083">图灵社区对他的采访内容</a>来结束，
+里边有关于学习编程语言建议的内容。</p>
+
+<p><strong><em>图灵社区：您曾经建议过程序员应该每年学习一门编程语言。</em></strong></p>
+
+<p><strong><em>M</em></strong>：这实际上是Pragmatic Programmers提出的建议，是他们出版的书中的一条建议，我本人很赞同。我认为应该有意地学习一些新的语言，特别是那些和你所熟知的语言的运作方式相差甚远的语言，所以不要在相似的语言上浪费时间。如果你是一位Java程序员，那么C#对于你来说就太过熟悉了，你需要学习一些很不同的语言，比如说Lisp，或者Clojure；如果你是一位Lisp程序员，你也不需要学Clojure，因为那就是另一种Lisp而已。总之你应该尝试一些很不同的语言。</p>
+
+<p>
+
+
+<h2>"improve bitter code"系列文章:</h2>
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</p>
+]]></content>
+  </entry>
+  
+</feed>

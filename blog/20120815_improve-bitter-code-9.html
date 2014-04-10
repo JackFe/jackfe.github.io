@@ -1,0 +1,402 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>improve bitter code: 没有行为的封装 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="关于编码规范，代码评审，改进质量方面的总结">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20120815_improve-bitter-code-9.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Improve Bitter Code: 没有行为的封装</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-08-15T00:00:00+08:00" pubdate data-updated="true">Aug 15<span>th</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>常见的对象</h3>
+
+<p>javabean这种java类是非常常见的，它有一些属性和相应的get/set方法。
+我们还会看到pojo,vo这些概念，还有我们使用的一种特殊对象cbo，在外观上都是这种形式。</p>
+
+<p>在项目的代码中，我们经常大量这种对象，它有私有变量，对每个私有变量都提供了get/set方法,除此之外，没有其他方法。
+这种情况下，通常只需写好变量，然后用工具生成相应的访问器方法。</p>
+
+<p>在最近修改一处代码的时候，就看到下面的逻辑，并且这段代码在多个文件出现过。</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">PrepaidInput</span> <span class="n">prepaid</span> <span class="o">=</span> <span class="o">...</span><span class="c1">// load from request</span>
+
+<span class="n">String</span> <span class="n">start</span> <span class="o">=</span> <span class="n">prepaid</span><span class="o">.</span><span class="na">getStartTime</span><span class="o">();</span>
+<span class="n">String</span> <span class="n">end</span> <span class="o">=</span> <span class="n">prepaid</span><span class="o">.</span><span class="na">getEndTime</span><span class="o">();</span>
+
+<span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">start</span><span class="o">)){</span>
+    <span class="n">String</span> <span class="n">newstart</span> <span class="o">=</span> <span class="n">start</span><span class="o">.</span><span class="na">replaceAll</span><span class="o">(</span><span class="s">&quot;-&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">);</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">newstart</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">&gt;</span> <span class="mi">8</span><span class="o">){</span>
+        <span class="n">newstart</span> <span class="o">=</span> <span class="n">newstart</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">9</span><span class="o">);</span>
+        <span class="n">prepaid</span><span class="o">.</span><span class="na">setStartTime</span><span class="o">(</span><span class="n">newstart</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1">// 继续处理结束时间end</span>
+</code></pre></div>
+
+
+<h3>封装还需要行为</h3>
+
+<p>上面的代码是很常见的处理方式，对象只是传值的作用。给变量封装到方法里边，提供了get/set方法。
+本质上来说，就像换了个马甲，和直接暴露数据差不多。类似的代码出现很多，先看下面简单点得例子：</p>
+
+<div class="highlight"><pre><code class="java"><span class="k">if</span><span class="o">(</span><span class="s">&quot;1&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">subs</span><span class="o">.</span><span class="na">getStatus</span><span class="o">())){</span>
+         <span class="c1">//TODO</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>没有行为，顶多算是基于对象的编程。
+从行为及职责考虑，这里暴露了状态值1，因为调用方必须理解这个值的作用。
+封装，除了封装数据，还得封装出行为的样子来。如：</p>
+
+<div class="highlight"><pre><code class="java"><span class="k">if</span><span class="o">(</span><span class="n">subs</span><span class="o">.</span><span class="na">isActive</span><span class="o">()){</span>
+         <span class="c1">//TODO</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>对于最前面的代码，修改方式有很多，有一种方式就是在set里边, 组装对象的时候调用set方法顺便把格式给处理了。<br/>
+没有规定说get.set都会对应一个私有变量，也没有规定get.set要成对出现，如果这是在内部使用的变量，为什么要暴露出来?<br/>
+同样除了get/set也没有规定不能提供其他的方法。</p>
+
+<div class="highlight"><pre><code class="java"><span class="kt">void</span> <span class="nf">setStartTime</span><span class="o">(</span><span class="n">String</span> <span class="n">startTime</span><span class="o">){</span>
+    <span class="n">String</span> <span class="n">newstart</span> <span class="o">=</span> <span class="n">startTime</span><span class="o">;</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">startTime</span><span class="o">)){</span>
+        <span class="n">String</span> <span class="n">newstart</span> <span class="o">=</span> <span class="n">startTime</span><span class="o">.</span><span class="na">replaceAll</span><span class="o">(</span><span class="s">&quot;-&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">);</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">newstart</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">&gt;</span> <span class="mi">8</span><span class="o">){</span>
+            <span class="n">newstart</span> <span class="o">=</span> <span class="n">newstart</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">8</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">startTime</span> <span class="o">=</span> <span class="n">newstart</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<h3>现实情况</h3>
+
+<p>可惜的是，系统中重要的数据载体是cbo，由工具生成的，类似于vo。所以cbo没什么像样的行为。 <br/>
+对于开发java web的同学，习惯cbo,mvc这样的流水线作业，使用面向对象编程，对封装行为并不习惯。<br/>
+引用郑大的话:我们需要更好的封装，通常的做法是封装出行为。行为从哪来，从实际需求来。<br/>
+所以，还是得在平时工作中有意识、有针对性的实践才行呀!</p>
+
+<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
+
+
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li>2012-08-15 improve bitter code: 没有行为的封装</li>
+  
+
+</ul>
+
+
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-08-15T00:00:00+08:00" pubdate data-updated="true">Aug 15<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/improve-bitter-code/'>improve bitter code</a>, <a class='category' href='/blog/categories/javabean/'>javabean</a>, <a class='category' href='/blog/categories/zhi-dui-xiang/'>值对象</a>, <a class='category' href='/blog/categories/ke-du-xing/'>可读性</a>, <a class='category' href='/blog/categories/feng-zhuang/'>封装</a>, <a class='category' href='/blog/categories/xing-wei/'>行为</a>, <a class='category' href='/blog/categories/zhi-liang-gai-jin/'>质量改进</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20120814_naming-style.html" title="Previous Post: 命名风格培训草稿">&laquo; 命名风格培训草稿</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20120815_thought-read-javascript-idea.html" title="Next Post: 书评-JavaScript语言精髓与编程实践">书评-JavaScript语言精髓与编程实践 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20120815_improve-bitter-code-9.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20120815_improve-bitter-code-9.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

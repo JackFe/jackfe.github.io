@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 回退 | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/hui-tui/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[生成svn补丁的回退补丁]]></title>
+    <link href="http://mccxj.github.com/blog/20120819_reverse-svn-diff-file.html"/>
+    <updated>2012-08-19T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/reverse-svn-diff-file</id>
+    <content type="html"><![CDATA[<h3>生成回退补丁的脚本</h3>
+
+<p><div class="highlight"><pre><code class="ruby"><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;C:/Users/peipei/Desktop/svn2.diff&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|&lt;</span><span class="sr">/p&gt;</span>
+
+<span class="sr">&lt;pre&gt;&lt;code&gt;open(&quot;C:/</span><span class="no">Users</span><span class="o">/</span><span class="n">peipei</span><span class="o">/</span><span class="no">Desktop</span><span class="o">/</span><span class="n">svn</span><span class="o">.</span><span class="n">diff</span><span class="s2">&quot;, &#39;r&#39;) do |ff|</span>
+<span class="s2">    ff.readlines.each do |line|</span>
+<span class="s2">        if line.start_with?(&quot;</span><span class="err">@@</span><span class="s2">&quot;)</span>
+<span class="s2">            line =~ /@@\ \-(.+)\ \+(.+)\ @@/</span>
+<span class="s2">            f &amp;lt;&amp;lt; &quot;</span><span class="err">@@</span><span class="p">\</span> <span class="p">\</span><span class="o">-</span><span class="c1">#{$2}\ \+#{$1}\ @@\n&quot;</span>
+        <span class="k">elsif</span> <span class="n">line</span><span class="o">.</span><span class="n">start_with?</span><span class="p">(</span><span class="s2">&quot;+ &quot;</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="s2">&quot;-</span><span class="si">#{</span><span class="n">line</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">elsif</span> <span class="n">line</span><span class="o">.</span><span class="n">start_with?</span><span class="p">(</span><span class="s2">&quot;- &quot;</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="s2">&quot;+</span><span class="si">#{</span><span class="n">line</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span>
+            <span class="n">f</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="n">line</span>
+        <span class="k">end</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+<span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="k">end</span>
+</code></pre></div></p>
+
+<h3>其他计划</h3>
+
+<ol>
+<li>在codediff工具中添加通过文件名查询功能(已经实现)</li>
+<li>通过codediff工具直接生成提交补丁和回退补丁(这个延后)</li>
+<li>能够支持补丁合并(这个不是那么好弄)</li>
+</ol>
+
+
+<h3>关于代码评审</h3>
+
+<p>已经有个简单的方案了，我决定在codediff应用上支持每周代码评审功能，这周上线试用一下。</p>
+]]></content>
+  </entry>
+  
+</feed>

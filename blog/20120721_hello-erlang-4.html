@@ -1,0 +1,474 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>hello erlang, part 4 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="erlang的学习笔记">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20120721_hello-erlang-4.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Hello Erlang, Part 4</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-21T00:00:00+08:00" pubdate data-updated="true">Jul 21<span>st</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h3>练习重点</h3>
+
+<p>列表解析和高阶函数是erlang的基本用法之一，熟练掌握还是很有必要的。
+作为一个阶段的学习总结，按照书上的一个练习题，尝试实现列表模块中的一些方法。</p>
+
+<h3>后续学习计划</h3>
+
+<p>再找时间总结一下位匹配用法，然后就开始客户端服务器编程模型，
+网络和分布式方面的内容。</p>
+
+<p>相关内容虽然都看过一下，但是没有敲过代码，感觉心里没底。还是那个硬道理：纸上得来终觉浅呀。</p>
+
+<h3>简单的测试用例</h3>
+
+<p>作为另外一个章节的内容，单元测试。我顺便实践一下erlang的单元测试框架eunit，
+里边使用了宏来作为assert语句(使用eclipse插件可以有很好的提示)，
+总的来说，xunit的基本风格都差不多，注意import eunit的包，方法名采用_test结束。
+执行的时候调用模块的test方法就可以了。我简单写了一些测试用例:</p>
+
+<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">myliststest</span><span class="p">).</span>
+<span class="p">-</span><span class="ni">include_lib</span><span class="p">(</span><span class="s">&quot;eunit/include/eunit.hrl&quot;</span><span class="p">).</span>
+<span class="p">-</span><span class="ni">import_all</span><span class="p">(</span><span class="n">mylists</span><span class="p">).</span>
+
+<span class="c">%% EUnit TestCase</span>
+
+<span class="c">%% all/2</span>
+<span class="nf">all_empty_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assert</span><span class="p">(</span><span class="nn">mylists</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">end</span><span class="p">,</span> <span class="p">[])).</span>
+<span class="nf">all_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertNot</span><span class="p">(</span><span class="nn">mylists</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">10</span><span class="p">])).</span>
+
+<span class="c">%% any/2</span>
+<span class="nf">any_empty_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertNot</span><span class="p">(</span><span class="nn">mylists</span><span class="p">:</span><span class="nf">any</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">end</span><span class="p">,</span> <span class="p">[])).</span>
+<span class="nf">any_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assert</span><span class="p">(</span><span class="nn">mylists</span><span class="p">:</span><span class="nf">any</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">10</span><span class="p">])).</span>
+
+<span class="c">%% append/1</span>
+<span class="nf">append_1_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">append</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]])).</span>
+
+<span class="c">%% append/2</span>
+<span class="nf">append_2_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">(</span><span class="s">&quot;abcdef&quot;</span><span class="p">,</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">append</span><span class="p">(</span><span class="s">&quot;abc&quot;</span><span class="p">,</span> <span class="s">&quot;def&quot;</span><span class="p">)).</span>
+
+<span class="c">%% delete/2</span>
+<span class="nf">delete_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">delete</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])).</span>
+
+<span class="c">%% dropwhile/2</span>
+<span class="nf">dropwhile_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">dropwhile</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])).</span>
+
+<span class="c">%% duplicate/2</span>
+<span class="nf">duplicate_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">duplicate</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">x</span><span class="p">)).</span>
+
+<span class="c">%% filter/2</span>
+<span class="nf">filter_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])).</span>
+
+<span class="c">%% reverse/1</span>
+<span class="nf">reverse_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">reverse</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])).</span>
+
+<span class="c">%% min/1</span>
+<span class="nf">min_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">min</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">])).</span>
+
+<span class="c">%% zip/2</span>
+<span class="nf">zip_2_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([{</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">},{</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">}],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">zip</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])).</span>
+
+<span class="c">%% zip/3</span>
+<span class="nf">zip_3_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([{</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">},{</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">7</span><span class="p">}],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">zip3</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">])).</span>
+
+<span class="c">%% zipwith/3</span>
+<span class="nf">zipwith_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">9</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">zipwith</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span> <span class="nv">Y</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">X</span><span class="o">+</span><span class="nv">Y</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">])).</span>
+
+<span class="c">%% zipwith/4</span>
+<span class="nf">zipwith3_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([[</span><span class="n">a</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="n">b</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="n">c</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="mi">3</span><span class="p">]],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">zipwith3</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span> <span class="nv">Y</span><span class="p">,</span> <span class="nv">Z</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">,</span><span class="nv">Z</span><span class="p">]</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">],</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])).</span>
+</code></pre></div>
+
+
+<h3>示例代码</h3>
+
+<p>根据上面的测试用例，我写了实现代码，如下所示。注意的时候，我偷懒使用了export_all,
+但是min/2好像默认有一个已经被引入了，所以需要去除这个模块。就export_all本身来说，
+也不是推荐方式，还是应该严格区分public api和local api。</p>
+
+<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">mylists</span><span class="p">).</span>
+<span class="p">-</span><span class="ni">compile</span><span class="p">(</span><span class="n">export_all</span><span class="p">).</span>
+<span class="p">-</span><span class="ni">compile</span><span class="p">({</span><span class="n">no_auto_import</span><span class="p">,[</span><span class="n">min</span><span class="o">/</span><span class="mi">2</span><span class="p">]}).</span>
+
+<span class="c">%% all/2</span>
+<span class="nf">all</span><span class="p">(_</span><span class="nv">P</span><span class="p">,</span> <span class="p">[])</span> <span class="o">-&gt;</span> 
+  <span class="n">true</span><span class="p">;</span>
+<span class="nf">all</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">])</span> <span class="o">-&gt;</span>
+  <span class="k">case</span> <span class="nv">P</span><span class="p">(</span><span class="nv">H</span><span class="p">)</span> <span class="k">of</span>
+    <span class="n">true</span> <span class="o">-&gt;</span> <span class="n">all</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">T</span><span class="p">);</span>
+    <span class="n">false</span> <span class="o">-&gt;</span> <span class="n">false</span>
+  <span class="k">end</span><span class="p">.</span>
+
+<span class="c">%% any/2</span>
+<span class="nf">any</span><span class="p">(_</span><span class="nv">P</span><span class="p">,</span> <span class="p">[])</span> <span class="o">-&gt;</span>
+  <span class="n">false</span><span class="p">;</span>
+<span class="nf">any</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">])</span> <span class="o">-&gt;</span>
+  <span class="k">case</span> <span class="nv">P</span><span class="p">(</span><span class="nv">H</span><span class="p">)</span> <span class="k">of</span>
+    <span class="n">true</span> <span class="o">-&gt;</span> <span class="n">true</span><span class="p">;</span>
+    <span class="n">false</span> <span class="o">-&gt;</span> <span class="n">any</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">T</span><span class="p">)</span>
+  <span class="k">end</span><span class="p">.</span>
+
+<span class="c">%% append/1</span>
+<span class="nf">append</span><span class="p">(</span><span class="nv">LL</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">[</span><span class="nv">X</span> <span class="p">||</span> <span class="nv">L</span> <span class="o">&lt;-</span> <span class="nv">LL</span><span class="p">,</span> <span class="nv">X</span> <span class="o">&lt;-</span> <span class="nv">L</span><span class="p">].</span>
+
+<span class="c">%% append/2</span>
+<span class="nf">append</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">LA</span> <span class="o">++</span> <span class="nv">LB</span><span class="p">.</span>
+
+<span class="c">%% delete/2</span>
+<span class="nf">delete</span><span class="p">(</span><span class="nv">E</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">[</span><span class="nv">X</span> <span class="p">||</span> <span class="nv">X</span> <span class="o">&lt;-</span> <span class="nv">L</span><span class="p">,</span> <span class="nv">E</span> <span class="o">/=</span> <span class="nv">X</span><span class="p">].</span>
+
+<span class="c">%% dropwhile/2</span>
+<span class="nf">dropwhile</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">[</span><span class="nv">X</span> <span class="p">||</span> <span class="nv">X</span> <span class="o">&lt;-</span> <span class="nv">L</span><span class="p">,</span> <span class="ow">not</span> <span class="nv">P</span><span class="p">(</span><span class="nv">X</span><span class="p">)].</span>
+
+<span class="c">%% duplicate/2</span>
+<span class="nf">duplicate</span><span class="p">(</span><span class="nv">N</span><span class="p">,</span> <span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="n">duplicate</span><span class="p">(</span><span class="nv">N</span><span class="p">,</span> <span class="nv">E</span><span class="p">,</span> <span class="p">[]).</span>
+<span class="nf">duplicate</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">_</span><span class="nv">E</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">L</span><span class="p">;</span>
+<span class="nf">duplicate</span><span class="p">(</span><span class="nv">N</span><span class="p">,</span> <span class="nv">E</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="k">when</span> <span class="nv">N</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">-&gt;</span>
+  <span class="n">duplicate</span><span class="p">(</span><span class="nv">N</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nv">E</span><span class="p">,</span> <span class="p">[</span><span class="nv">E</span><span class="p">|</span><span class="nv">L</span><span class="p">]).</span>
+
+<span class="c">%% filter/2</span>
+<span class="nf">filter</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">[</span><span class="nv">X</span> <span class="p">||</span> <span class="nv">X</span> <span class="o">&lt;-</span> <span class="nv">L</span><span class="p">,</span> <span class="nv">P</span><span class="p">(</span><span class="nv">X</span><span class="p">)].</span>
+
+<span class="c">%% reverse/1</span>
+<span class="nf">reverse</span><span class="p">(</span><span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="n">reverse</span><span class="p">(</span><span class="nv">L</span><span class="p">,</span> <span class="p">[]).</span>
+<span class="nf">reverse</span><span class="p">([],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">L</span><span class="p">;</span>
+<span class="nf">reverse</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="n">reverse</span><span class="p">(</span><span class="nv">T</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">L</span><span class="p">]).</span>
+
+<span class="c">%% min/1</span>
+<span class="nf">min</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">])</span> <span class="o">-&gt;</span>
+  <span class="n">min</span><span class="p">(</span><span class="nv">T</span><span class="p">,</span> <span class="nv">H</span><span class="p">).</span>
+<span class="nf">min</span><span class="p">([],</span> <span class="nv">M</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">M</span><span class="p">;</span>
+<span class="nf">min</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">],</span> <span class="nv">M</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="k">if</span>
+    <span class="nv">H</span> <span class="o">&lt;</span> <span class="nv">M</span> <span class="o">-&gt;</span> <span class="n">min</span><span class="p">(</span><span class="nv">T</span><span class="p">,</span> <span class="nv">H</span><span class="p">);</span>
+    <span class="n">true</span> <span class="o">-&gt;</span> <span class="n">min</span><span class="p">(</span><span class="nv">T</span><span class="p">,</span> <span class="nv">M</span><span class="p">)</span>
+  <span class="k">end</span><span class="p">.</span>
+
+<span class="c">%% zip/2</span>
+<span class="nf">zip</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="n">reverse</span><span class="p">(</span><span class="n">zip</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="p">[])).</span>
+<span class="nf">zip</span><span class="p">([],</span> <span class="p">_</span><span class="nv">LB</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">L</span><span class="p">;</span>
+<span class="nf">zip</span><span class="p">(_</span><span class="nv">LA</span><span class="p">,</span> <span class="p">[],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">L</span><span class="p">;</span>
+<span class="nf">zip</span><span class="p">([</span><span class="nv">HA</span><span class="p">|</span><span class="nv">TA</span><span class="p">],</span> <span class="p">[</span><span class="nv">HB</span><span class="p">|</span><span class="nv">TB</span><span class="p">],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="n">zip</span><span class="p">(</span><span class="nv">TA</span><span class="p">,</span> <span class="nv">TB</span><span class="p">,</span> <span class="p">[{</span><span class="nv">HA</span><span class="p">,</span><span class="nv">HB</span><span class="p">}|</span><span class="nv">L</span><span class="p">]).</span>
+
+<span class="c">%% zip/3</span>
+<span class="nf">zip3</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="nv">LC</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="n">reverse</span><span class="p">(</span><span class="n">zip3</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="nv">LC</span><span class="p">,</span> <span class="p">[])).</span>
+<span class="nf">zip3</span><span class="p">([],</span> <span class="p">_</span><span class="nv">LB</span><span class="p">,</span> <span class="p">_</span><span class="nv">LC</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">L</span><span class="p">;</span>
+<span class="nf">zip3</span><span class="p">(_</span><span class="nv">LA</span><span class="p">,</span> <span class="p">[],</span> <span class="p">_</span><span class="nv">LC</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">L</span><span class="p">;</span>
+<span class="nf">zip3</span><span class="p">(_</span><span class="nv">LA</span><span class="p">,</span> <span class="p">_</span><span class="nv">LB</span><span class="p">,</span> <span class="p">[],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">L</span><span class="p">;</span>
+<span class="nf">zip3</span><span class="p">([</span><span class="nv">HA</span><span class="p">|</span><span class="nv">TA</span><span class="p">],</span> <span class="p">[</span><span class="nv">HB</span><span class="p">|</span><span class="nv">TB</span><span class="p">],</span> <span class="p">[</span><span class="nv">HC</span><span class="p">|</span><span class="nv">TC</span><span class="p">],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="n">zip3</span><span class="p">(</span><span class="nv">TA</span><span class="p">,</span> <span class="nv">TB</span><span class="p">,</span> <span class="nv">TC</span><span class="p">,</span> <span class="p">[{</span><span class="nv">HA</span><span class="p">,</span><span class="nv">HB</span><span class="p">,</span><span class="nv">HC</span><span class="p">}|</span><span class="nv">L</span><span class="p">]).</span>
+
+<span class="c">%% zipwith/3</span>
+<span class="nf">zipwith</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">[</span><span class="nv">P</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">)</span> <span class="p">||</span> <span class="p">{</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">}</span> <span class="o">&lt;-</span> <span class="n">zip</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">)].</span>
+
+<span class="c">%% zipwith/4</span>
+<span class="nf">zipwith3</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="nv">LC</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">[</span><span class="nv">P</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">,</span><span class="nv">Z</span><span class="p">)</span> <span class="p">||</span> <span class="p">{</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">,</span><span class="nv">Z</span><span class="p">}</span> <span class="o">&lt;-</span> <span class="n">zip3</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="nv">LC</span><span class="p">)].</span>
+</code></pre></div>
+
+
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-21T00:00:00+08:00" pubdate data-updated="true">Jul 21<span>st</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/erlang/'>erlang</a>, <a class='category' href='/blog/categories/eunit/'>eunit</a>, <a class='category' href='/blog/categories/lie-biao/'>列表</a>, <a class='category' href='/blog/categories/ce-shi/'>测试</a>, <a class='category' href='/blog/categories/bi-ji/'>笔记</a>, <a class='category' href='/blog/categories/gao-jie/'>高阶</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20120718_hello-erlang-3.html" title="Previous Post: hello erlang, part 3">&laquo; hello erlang, part 3</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20120721_improve-bitter-code.html" title="Next Post: improve bitter code">improve bitter code &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20120721_hello-erlang-4.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20120721_hello-erlang-4.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

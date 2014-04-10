@@ -1,0 +1,421 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>maven学习要点(旧) - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="以前写的关于maven的内容">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20121130_maven-quickstart.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Maven学习要点(旧)</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-11-30T00:00:00+08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>我感觉maven这东西比ant容易上手(ant每个项目规则都不一样),看那个100页的迷你书+例子(推荐basecrm或spring3.0)基本就ok了~~
+哎，本来想写的很多，发现写出来的却很少。多多包涵!</p>
+
+<ul>
+<li>maven是一个项目管理工具，跟ant相比亮点在于它遵守了COC规则，只要遵守就好处多多</li>
+<li>maven可以分为三部分:maven本身(提供基本功能),仓库(提供jar),maven插件(提供更多的集成功能)</li>
+<li>maven的配置文件是settings.xml,maven项目的配置文件是pom.xml</li>
+<li>settings.xml主要是配置仓库镜像,本地仓库,网络访问设置等信息,常用配置:</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;localRepository&gt;</span>D:/repository<span class="nt">&lt;/localRepository&gt;</span> --本地仓库
+   <span class="nt">&lt;proxy&gt;</span>  --网络代理
+     <span class="nt">&lt;id&gt;</span>optional<span class="nt">&lt;/id&gt;</span>
+     <span class="nt">&lt;active&gt;</span>true<span class="nt">&lt;/active&gt;</span>
+     <span class="nt">&lt;protocol&gt;</span>http<span class="nt">&lt;/protocol&gt;</span>
+     <span class="nt">&lt;username&gt;</span>proxyuser<span class="nt">&lt;/username&gt;</span>
+     <span class="nt">&lt;password&gt;</span>proxypass<span class="nt">&lt;/password&gt;</span>
+     <span class="nt">&lt;host&gt;</span>proxy.host.net<span class="nt">&lt;/host&gt;</span>
+     <span class="nt">&lt;port&gt;</span>80<span class="nt">&lt;/port&gt;</span>
+     <span class="nt">&lt;nonProxyHosts&gt;</span>local.net|some.host.com<span class="nt">&lt;/nonProxyHosts&gt;</span>
+   <span class="nt">&lt;/proxy&gt;</span>
+  <span class="nt">&lt;mirror&gt;</span>  --仓库镜像
+    <span class="nt">&lt;id&gt;</span>nexus<span class="nt">&lt;/id&gt;</span>
+    <span class="nt">&lt;mirrorOf&gt;</span>*<span class="nt">&lt;/mirrorOf&gt;</span>
+    <span class="nt">&lt;name&gt;</span>Mirror for maven central.<span class="nt">&lt;/name&gt;</span>
+    <span class="nt">&lt;url&gt;</span>http://10.137.27.223:8080/nexus/content/groups/public<span class="nt">&lt;/url&gt;</span>
+  <span class="nt">&lt;/mirror&gt;</span>
+</code></pre></div>
+
+
+<ul>
+<li>pom.xml主要分为三部分:项目本身的信息,使用的插件,依赖的jar</li>
+<li>项目本身的信息,用于唯一标识(groupid-artifactId-version, 通常是这3部分)，例如</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;modelVersion&gt;</span>4.0.0<span class="nt">&lt;/modelVersion&gt;</span> --maven3.x都是使用4.0.0
+ <span class="nt">&lt;groupId&gt;</span>com.huawei.boss<span class="nt">&lt;/groupId&gt;</span>
+ <span class="nt">&lt;artifactId&gt;</span>boss-common<span class="nt">&lt;/artifactId&gt;</span>
+ <span class="nt">&lt;version&gt;</span>0.0.1-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
+ <span class="nt">&lt;packaging&gt;</span>jar<span class="nt">&lt;/packaging&gt;</span>
+</code></pre></div>
+
+
+<p>类似这个，默认就会被打包成boss-common-0.0.1-SNAPSHOT.jar。同样，项目的依赖库也是通过这种坐标在仓库中寻找的。</p>
+
+<ul>
+<li>artifactId通常推荐使用项目名当前缀,当项目是打包成war的时候,通常需要制定发布后的命名:</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;build&gt;</span>
+   <span class="nt">&lt;finalName&gt;</span>bossbase<span class="nt">&lt;/finalName&gt;</span>
+ <span class="nt">&lt;/build&gt;</span>
+</code></pre></div>
+
+
+<ul>
+<li>可以通过properties定义一些常量,并通过${spring.version}之类来引用</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;properties&gt;</span>
+       <span class="nt">&lt;project.build.sourceEncoding&gt;</span>UTF-8<span class="nt">&lt;/project.build.sourceEncoding&gt;</span>
+       <span class="nt">&lt;spring.version&gt;</span>2.5.6<span class="nt">&lt;/spring.version&gt;</span>
+ <span class="nt">&lt;/properties&gt;</span>
+</code></pre></div>
+
+
+<ul>
+<li>jar包依赖常用的有如下配置(仅举例说明):</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;dependencies&gt;</span>
+     <span class="nt">&lt;dependency&gt;</span>
+           <span class="nt">&lt;groupId&gt;</span>org.springframework<span class="nt">&lt;/groupId&gt;</span>
+               <span class="nt">&lt;artifactId&gt;</span>spring-core<span class="nt">&lt;/artifactId&gt;</span>
+             <span class="nt">&lt;version&gt;</span>${spring.version}<span class="nt">&lt;/version&gt;</span>  --常量引用,在引用同个项目多个模块的时候相当有效
+           <span class="nt">&lt;type&gt;</span>jar<span class="nt">&lt;/type&gt;</span>  --默认就是jar
+             <span class="nt">&lt;scope&gt;</span>compile<span class="nt">&lt;/scope&gt;</span>  --默认是compile,表示对编译,测试,运行都有效
+       <span class="nt">&lt;/dependency&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+          <span class="nt">&lt;groupId&gt;</span>geronimo-spec<span class="nt">&lt;/groupId&gt;</span>
+            <span class="nt">&lt;artifactId&gt;</span>geronimo-spec-jta<span class="nt">&lt;/artifactId&gt;</span> --这个是为了不依赖sun的专用东东
+           <span class="nt">&lt;version&gt;</span>1.0.1B-rc4<span class="nt">&lt;/version&gt;</span>
+                <span class="nt">&lt;type&gt;</span>pom<span class="nt">&lt;/type&gt;</span>
+          <span class="nt">&lt;scope&gt;</span>provided<span class="nt">&lt;/scope&gt;</span>  --在运行的时候不依赖，我们常见的时候j2ee规范之类的api,如servlet-api
+  <span class="nt">&lt;/dependency&gt;</span>
+       <span class="nt">&lt;dependency&gt;</span>
+             <span class="nt">&lt;groupId&gt;</span>junit<span class="nt">&lt;/groupId&gt;</span>
+               <span class="nt">&lt;artifactId&gt;</span>junit<span class="nt">&lt;/artifactId&gt;</span>
+           <span class="nt">&lt;version&gt;</span>4.8.2<span class="nt">&lt;/version&gt;</span>
+             <span class="nt">&lt;type&gt;</span>jar<span class="nt">&lt;/type&gt;</span>
+               <span class="nt">&lt;scope&gt;</span>test<span class="nt">&lt;/scope&gt;</span>  --只在测试的时候生效,另外还有个ruuntime的scope,用于运行时依赖(如jdbc驱动等)
+      <span class="nt">&lt;/dependency&gt;</span>
+   <span class="nt">&lt;dependency&gt;</span>
+     <span class="nt">&lt;groupId&gt;</span>org.hibernate<span class="nt">&lt;/groupId&gt;</span>
+     <span class="nt">&lt;artifactId&gt;</span>hibernate<span class="nt">&lt;/artifactId&gt;</span>
+     <span class="nt">&lt;version&gt;</span>3.2.5.ga<span class="nt">&lt;/version&gt;</span>
+     <span class="nt">&lt;exclusions&gt;</span>  --这里是排除依赖，因为jta官方版是在maven仓库中找不到的
+       <span class="nt">&lt;exclusion&gt;</span>
+         <span class="nt">&lt;groupId&gt;</span>javax.transaction<span class="nt">&lt;/groupId&gt;</span>
+         <span class="nt">&lt;artifactId&gt;</span>jta<span class="nt">&lt;/artifactId&gt;</span>
+       <span class="nt">&lt;/exclusion&gt;</span>
+     <span class="nt">&lt;/exclusions&gt;</span>
+   <span class="nt">&lt;/dependency&gt;</span>
+ <span class="nt">&lt;/dependencies&gt;</span>
+</code></pre></div>
+
+
+<ul>
+<li>当项目是分模块进行的时候,通常会考虑使用modules,如:</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml">   <span class="nt">&lt;modules&gt;</span>
+       <span class="nt">&lt;module&gt;</span>basecrm-parent<span class="nt">&lt;/module&gt;</span>
+       <span class="nt">&lt;module&gt;</span>common<span class="nt">&lt;/module&gt;</span>
+       <span class="nt">&lt;module&gt;</span>systemmgr<span class="nt">&lt;/module&gt;</span>
+       <span class="nt">&lt;module&gt;</span>prodmgr<span class="nt">&lt;/module&gt;</span>
+   <span class="nt">&lt;/modules&gt;</span>
+</code></pre></div>
+
+
+<p>这个时候至少会有两级pom.xml,这样像properties,dependency等都是可以继承的(可参考basecrm项目或者spring3.x)</p>
+
+<ul>
+<li><p>plugin资源非常多，简单举几个常用插件(配置请上网找)<br/>
+maven-compiler-plugin 主要是配置编译方面的选项(例如使用什么版本的jdk)<br/>
+maven-surefire-plugin 跟测试有关的,例如配置测试失败是否继续,是否跳过测试等<br/>
+build-helper-maven-plugin 用于配置项目的目录结构,例如配置多个源代码目录等<br/>
+maven-shade-plugin 我只知道可以用来给打包加点料~~<br/>
+tomcat-maven-plugin 顾名思义,用于集成tomcat<br/>
+maven-jetty-plugin 顾名思义,用于集成jetty</p></li>
+<li><p>others <br/>
+maven仓库代理推荐nexus(网内已经有个现成的:http://10.137.27.223:8080/nexus)<br/>
+eclipse中的maven插件推荐m2eclipse(update-site: http://m2eclipse.sonatype.org/sites/m2e)<br/>
+maven实战迷你书(http://www.infoq.com/cn/minibooks/maven-in-action)</p></li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-11-30T00:00:00+08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/maven/'>maven</a>, <a class='category' href='/blog/categories/shi-jian/'>实践</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20121130_jstl.html" title="Previous Post: jstl学习经验(旧)">&laquo; jstl学习经验(旧)</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20121202_avtivemq-and-rule-engine.html" title="Next Post: avtivemq和规则引擎资料(旧)">avtivemq和规则引擎资料(旧) &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20121130_maven-quickstart.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20121130_maven-quickstart.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

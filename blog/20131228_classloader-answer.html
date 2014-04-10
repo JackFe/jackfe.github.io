@@ -1,0 +1,341 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>考察对类加载的理解(答案篇) - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="独立进程篇 首先需要知道类加载器是怎么回事? 在Java里边，类加载器就是用来加载类的，然后才是执行代码。
+Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类加载器(app)。
+其中boot就是用来加载最开始的虚拟机和最基本的java类，ext是用来加载一些扩展类， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20131228_classloader-answer.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">考察对类加载的理解(答案篇)</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-12-28T00:00:00+08:00" pubdate data-updated="true">Dec 28<span>th</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h2>独立进程篇</h2>
+
+<p>首先需要知道类加载器是怎么回事? 在Java里边，类加载器就是用来加载类的，然后才是执行代码。<br/>
+Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类加载器(app)。<br/>
+其中boot就是用来加载最开始的虚拟机和最基本的java类，ext是用来加载一些扩展类，默认是在jre/lib/ext目录下的。<br/>
+最后一个才是你真正会用到的。cp参数就是用来指定应用类加载器找类的地方，java.ext.dirs就是用来指定
+扩展类加载器找类的地方。
+这三种类加载器是有层级关系的，类似于继承关系(父子关系)。</p>
+
+<p>另外一个需要知道的概念是，类加载器在找类的时候，默认是采用双亲委派机制的。<br/>
+例如应用类加载器加载类的时候，会先叫ext去加载，ext就会叫boot去加载，只有加载不到才尝试自己去加载。<br/>
+这种做法是有个重要的因素，就是为了安全性考虑。</p>
+
+<p>最后需要知道的是，TestServlet.class.getClassLoader()获取到的时候，加载TestServlet类所使用的实际的类加载器。</p>
+
+<p>回到上面的问题。</p>
+
+<p>第一个很简单，指定了应用类加载器加载的路径，所以main方法能找到，TestServlet也能找到，config.properties也能被应用类加载器找到。
+启动是正常的。</p>
+
+<p>第二个问题，TestServlet是被扩展类加载器加载的，所以通过它来找config.properties会找不到(在应用类加载器中才能被加载到)。</p>
+
+<p>第三个问题，调整目录后，这个时候扩展类加载器的加载路径上也有config.properties，所以启动也会正常。</p>
+
+<p>现在调整了代码，换成了Thread.currentThread().getContextClassLoader()的实现。<br/>
+这个是有一点不一样的，上下文类加载器默认就是应用类加载器(如果通过代码进行修改的话)。
+上下文类加载器还是一个很有用的技术，
+可以用在JDBC这种SPI(Service Provider Interface)接口与实现分离的技术上，有兴趣可以去找找资料。</p>
+
+<p>在这种情况下，后面的三个命令都是能够正常的，因为config.properties能够被正常识别的。</p>
+
+<p>再说一点，用eclipse可以运行的程序，用命令行不一定可以，这点必须要认准最后的启动参数，通过这个来确认。
+我们这边写独立进程的时候，贪方便喜欢用java.ext.dirs这个虚拟机参数，但这个有时候会有奇怪的问题。
+大家要注意区分这个参数和cp参数的区别，这样就分析有思路，找问题很happy。</p>
+
+<h2>Web应用服务器篇</h2>
+
+<p>像tomcat这种应用服务器，本身也是一个java程序，但它可以把我们放上去的各个web应用隔离开来。
+你没法调用其他web应用中的类，看上去好像是完全不相干的。这种技巧就充分利用了自定义类加载器的功能。
+像tomcat会对每个应用单独定义一个类加载器(继承应用类加载器)，并且修改双亲委派机制。
+而是采用先从应用中的lib目录、classes目录尝试加载，没找到才到上面去找。(像was这种就跟复杂了，加载顺序也是可选的)</p>
+
+<p>所以通常我们会有共享库的概念，在tomcat中对应的就是tomcat_home/lib这个目录(老版本的话还有更多目录可选)。
+把一些第三方库放到这里，可以减少加载类的数量，从而减少内存占用。</p>
+
+<p>这里要说明的是，类可以被不同的类加载器加载，虽然是在同一个jvm里边，但是是被当成不同的类(唯一标识是类加载器+类名)。</p>
+
+<p>现在回到问题。虽然一开始就有人告诉我们，servlet是属于单例运行的。但是在这里有点小变化。</p>
+
+<p>第一个问题，这个应该最常规的做法了，appa和appb是不相干的，所以访问appb，输出的是&#8221;1 1&#8221;，因为两个类是通过不同的类加载器加载的(就是说不一样的类)，肯定生成的servlet实例是不一样的。</p>
+
+<p>第二个问题，这种是共享库的做法，所以实际上他们使用的是同一个类，但是对于不同的app，用的是不同的servlet实例。
+所以会出现静态变量有影响，当实例变量是独立的。所以最后会输出&#8221;3 1&#8221;。所以有维护静态变量的话，使用共享库是有不一样的。</p>
+
+<p>第三个问题，这种其实在生产中也很常见，上新程序的时候就可能变成这样了。其实这个跟第一种情况是一样的。
+不过，在was上加载顺序是可选的，所以情况也可能变成第二种情况。</p>
+
+<h2>后话</h2>
+
+<p>这里讲解的只是皮毛，有兴趣的童鞋，可以google更多资料和书籍，加以研究。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-12-28T00:00:00+08:00" pubdate data-updated="true">Dec 28<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/classloader/'>classloader</a>, <a class='category' href='/blog/categories/java/'>java</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20131227_classloader-test.html" title="Previous Post: 考察对类加载的理解(问题篇)">&laquo; 考察对类加载的理解(问题篇)</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20140410_books-to-be-read.html" title="Next Post: 2014读书笔记">2014读书笔记 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20131228_classloader-answer.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20131228_classloader-answer.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

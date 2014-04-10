@@ -1,0 +1,337 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>WebSphere数据源中的连接被意外关闭案例 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="频繁创建连接的现象 前阵子维护反馈说，oracle数据库每秒创建连接数过高，而主要来源来自于WebSphere集群所在的主机。
+按理说，使用连接池的应用，连接是不会很频繁的。追溯一下所在主机的程序，发现可疑对象是一个使用jdbc轮子的应用。
+就是自己写了一套代码封装了jdbc操作， &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20130806_was-connection-close-fail.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">WebSphere数据源中的连接被意外关闭案例</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-06T00:00:00+08:00" pubdate data-updated="true">Aug 6<span>th</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h3>频繁创建连接的现象</h3>
+
+<p>前阵子维护反馈说，oracle数据库每秒创建连接数过高，而主要来源来自于WebSphere集群所在的主机。
+按理说，使用连接池的应用，连接是不会很频繁的。追溯一下所在主机的程序，发现可疑对象是一个使用jdbc轮子的应用。
+就是自己写了一套代码封装了jdbc操作，虽然连接是从数据源中获取的。</p>
+
+<p>但是，单纯看代码，的确没发现有什么问题，该关闭的地方也关闭，不存在泄露的情况。再说，这种现象也不是泄露的表现。
+另外，由于生产上的数据库连接串，开发人员是没有的，所以生成都是通过jndi的方式来处理的，不存在盗链的代码。</p>
+
+<p>不过，我们还是在日志里边发现一些问题。在SystemOut的日志里边，频繁出现类似下面的异常信息:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">[</span><span class="mi">12</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="mi">27</span> <span class="mi">9</span><span class="o">:</span><span class="mi">01</span><span class="o">:</span><span class="mi">29</span><span class="o">:</span><span class="mi">262</span> <span class="n">GMT</span><span class="o">+</span><span class="mi">08</span><span class="o">:</span><span class="mi">00</span><span class="o">]</span> <span class="mi">00000038</span> <span class="n">MCWrapper</span>     <span class="n">E</span>   <span class="nl">J2CA0081E:</span>
+</span><span class='line'><span class="err">尝试对资源</span> <span class="n">ecareDB</span> <span class="err">的</span> <span class="n">ManagedConnection</span> <span class="n">WSRdbManagedConnectionImpl</span><span class="err">@</span><span class="mi">23</span><span class="n">f823f8</span> <span class="err">执行方法</span> <span class="n">cleanup</span> <span class="err">时，</span>
+</span><span class='line'><span class="err">方法</span> <span class="n">cleanup</span> <span class="err">失败。捕获的异常：</span><span class="n">com</span><span class="o">.</span><span class="na">ibm</span><span class="o">.</span><span class="na">ws</span><span class="o">.</span><span class="na">exception</span><span class="o">.</span><span class="na">WsException</span><span class="o">:</span> <span class="nl">DSRA0080E:</span>
+</span><span class='line'><span class="n">An</span> <span class="n">exception</span> <span class="n">was</span> <span class="n">received</span> <span class="n">by</span> <span class="n">the</span> <span class="n">Data</span> <span class="n">Store</span> <span class="n">Adapter</span><span class="o">.</span> <span class="n">See</span> <span class="n">original</span> <span class="n">exception</span> <span class="nl">message:</span>
+</span><span class='line'> <span class="n">Cannot</span> <span class="n">call</span> <span class="err">&#39;</span><span class="n">cleanup</span><span class="err">&#39;</span> <span class="n">on</span> <span class="n">a</span> <span class="n">ManagedConnection</span> <span class="k">while</span> <span class="n">it</span> <span class="n">is</span> <span class="n">still</span> <span class="n">in</span> <span class="n">a</span> <span class="n">transaction</span><span class="o">..</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>异常的来源，居然是连接的close方法。</p>
+
+<h3>为什么close会失败</h3>
+
+<p>在WebSphere的资料上没有找到相关的描述，但是我在ibatis的文档上找到了相关的描述(ibatis developer guide的12-13页)：</p>
+
+<p>The <transactionManager> element also allows an optional attribute commitRequired that can be true or
+false.  Normally iBATIS will not commit transactions unless an insert, update, or delete operation has been
+performed.  This is true even if you explicitly call the commitTransaction() method.  This behavior
+creates problems in some cases.  If you want iBATIS to always commit transactions, even if no insert,
+update, or delete operation has been performed, then set the value of the commitRequired attribute to true.
+Examples of where this attribute is useful include:</p>
+
+<ol>
+<li><p>If you call a stored procedures that updates data as well as returning rows.  In that case you would
+call the procedure with the queryForList() operation – so iBATIS would not normally commit the
+transaction.  But then the updates would be rolled back.</p></li>
+<li><p>In a WebSphere environment when you are using connection pooling and you use the JNDI
+<dataSource> and the JDBC or JTA transaction manager.  WebSphere requires all transactions on
+pooled connections to be committed or the connection will not be returned to the pool.</p></li>
+</ol>
+
+
+<p>Note that the commitRequired attribute has no effect when using the EXTERNAL transaction manager.</p>
+
+<h3>结论及对策</h3>
+
+<p>从上面的描述上看到，WebSphere环境的连接是需要提交事务的，否则会被意外关闭。
+并且，如果选择ibatis的事务管理机制，就应该设置commitRequired属性，要么就应该使用spring的事务解决方案。</p>
+
+<p>我们尝试给查询语句增加commit操作，果然异常信息不再出现，并且数据库连接数也大幅度减少了。
+看来，在生产系统中还是应该优先考虑成熟的解决方案，不要随便造轮子。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-06T00:00:00+08:00" pubdate data-updated="true">Aug 6<span>th</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/websphere/'>WebSphere</a>, <a class='category' href='/blog/categories/close/'>close</a>, <a class='category' href='/blog/categories/connection/'>connection</a>, <a class='category' href='/blog/categories/datasource/'>datasource</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20130630_object-balance-pool.html" title="Previous Post: 带平衡的对象池设计">&laquo; 带平衡的对象池设计</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20130807_dom-operation-is-not-sync.html" title="Next Post: Dom操作和渲染并不是同步的">Dom操作和渲染并不是同步的 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20130806_was-connection-close-fail.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20130806_was-connection-close-fail.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

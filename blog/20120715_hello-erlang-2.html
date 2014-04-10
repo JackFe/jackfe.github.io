@@ -1,0 +1,415 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>hello erlang, part 2 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="erlang的学习笔记">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20120715_hello-erlang-2.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Hello Erlang, Part 2</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-15T00:00:00+08:00" pubdate data-updated="true">Jul 15<span>th</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h3>练习重点</h3>
+
+<ol>
+<li>依然是熟悉erlang匹配模式的编程方式，对于用习惯了判断，循环操作的人来说，这个变化很大</li>
+<li>熟悉erlang列表操作</li>
+<li>为后面学习高阶函数fun，还有更多高级数据类型打好基础</li>
+</ol>
+
+
+<h3>练习1:压缩有序列表</h3>
+
+<p>类似搜索里边的倒排索引，需要对词对应的文档列表进行存放。
+在这里，我们将一个有序列表转换成另外一种形式，如</p>
+
+<div class="highlight"><pre><code class="erlang"><span class="c">%% 原始形式</span>
+<span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">98</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">101</span><span class="p">,</span><span class="mi">102</span><span class="p">,</span><span class="mi">102</span><span class="p">].</span>
+<span class="c">%% 最终形式</span>
+<span class="p">[{</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">},{</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">},{</span><span class="mi">98</span><span class="p">,</span><span class="mi">98</span><span class="p">},{</span><span class="mi">100</span><span class="p">,</span><span class="mi">102</span><span class="p">}].</span>
+</code></pre></div>
+
+
+<h3>示例代码</h3>
+
+<div class="highlight"><pre><code class="erlang"><span class="nf">multi</span><span class="p">(</span><span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">reverse</span><span class="p">(</span><span class="n">multi_local</span><span class="p">(</span><span class="nv">L</span><span class="p">,</span> <span class="p">[])).</span>
+<span class="nf">multi_local</span><span class="p">([],</span> <span class="nv">R</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">R</span><span class="p">;</span>
+<span class="nf">multi_local</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">L</span><span class="p">],</span> <span class="nv">R</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="p">{</span><span class="nv">LL</span><span class="p">,</span> <span class="nv">E</span><span class="p">}</span> <span class="o">=</span> <span class="n">multi_r</span><span class="p">(</span><span class="nv">L</span><span class="p">,</span> <span class="nv">H</span><span class="p">),</span>
+    <span class="n">multi_local</span><span class="p">(</span><span class="nv">LL</span><span class="p">,</span> <span class="p">[{</span><span class="nv">H</span><span class="p">,</span> <span class="nv">E</span><span class="p">}|</span><span class="nv">R</span><span class="p">]).</span>
+
+<span class="c">%% 获取L里边里边和H同属一组的最后一个数,同时返回剩余的列表</span>
+<span class="c">%% 如果L以H开头，表示出现重复数</span>
+<span class="c">%% 如果L以H+1开头，表示出现序列数</span>
+<span class="nf">multi_r</span><span class="p">(</span><span class="nv">L</span><span class="p">,</span> <span class="nv">H</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="nv">N</span> <span class="o">=</span> <span class="nv">H</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="k">case</span> <span class="nv">L</span> <span class="k">of</span>
+        <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">LL</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">multi_r</span><span class="p">(</span><span class="nv">LL</span><span class="p">,</span> <span class="nv">H</span><span class="p">);</span>
+        <span class="p">[</span><span class="nv">N</span><span class="p">|</span><span class="nv">LL</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">multi_r</span><span class="p">(</span><span class="nv">LL</span><span class="p">,</span> <span class="nv">N</span><span class="p">);</span>
+        <span class="p">[]</span> <span class="o">-&gt;</span> <span class="p">{[],</span> <span class="nv">H</span><span class="p">};</span>
+        <span class="p">_</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="nv">L</span><span class="p">,</span> <span class="nv">H</span><span class="p">}</span>
+    <span class="k">end</span><span class="p">.</span>
+</code></pre></div>
+
+
+<h3>效率问题</h3>
+
+<p>这里和上次不一样的是，这里没有使用lists:append方法，而是在最后使用了reverse.</p>
+
+<div class="highlight"><pre><code class="erlang"><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">++</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">].</span>
+<span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]).</span>
+<span class="nn">lists</span><span class="p">:</span><span class="nf">reverse</span><span class="p">([</span><span class="mi">3</span><span class="p">|[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]).</span>
+</code></pre></div>
+
+
+<p>上面三种方式得到的结果是一样的。前面两种，每增加一个元素，都会遍历左边的列表，所以在递归里边处理的话，
+效率并不好。把元素添加到表头，在递归完成后进行反转，效果就会好些。</p>
+
+<h3>练习2:马踏棋盘</h3>
+
+<p>作为一个阶段的学习总结，对<a href="20120712_horse-riding-chessboard.html">马踏棋盘的算法思考</a>用erlang实现。</p>
+
+<p>代码比较悲剧，我选择了array，用了一些fun函数，从这么个例子就可以看出，自己还没掌握好erlang惯用法。
+感觉数据结构没有选好，并且用了命令语言的一些编程思路，有些东西或许可以用列表解析来弄，
+等再掌握多一些东西，再回头来体会一把!</p>
+
+<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">horse</span><span class="p">).</span>
+
+<span class="c">%% Exported Functions</span>
+<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">walkboard</span><span class="o">/</span><span class="mi">0</span><span class="p">]).</span>
+
+<span class="c">%% API Functions</span>
+<span class="nf">walkboard</span><span class="p">()</span> <span class="o">-&gt;</span> 
+  <span class="c">%% lists:foreach(fun(I) -&gt; lists:foreach(fun(J) -&gt; walkboard({I, J}) end, lists:seq(0,7)) end, lists:seq(0,7)).</span>
+  <span class="n">walkboard</span><span class="p">({</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">}).</span>
+
+<span class="nf">walkboard</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">})</span> <span class="o">-&gt;</span>
+  <span class="p">{</span><span class="nv">ARR</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">}</span> <span class="o">=</span> <span class="n">init</span><span class="p">(),</span>
+  <span class="k">catch</span> <span class="n">walk</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">setvalue</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span> <span class="nv">J</span><span class="p">},</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">),</span> <span class="nn">array</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">{</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">PATH</span><span class="p">),</span> <span class="nv">POSS</span><span class="p">).</span>
+
+<span class="nf">walk</span><span class="p">(</span><span class="mi">63</span><span class="p">,</span> <span class="p">_,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="p">_)</span> <span class="o">-&gt;</span> <span class="n">throw</span><span class="p">(</span><span class="nv">PATH</span><span class="p">);</span>
+<span class="nf">walk</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">{</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">JP</span><span class="p">}</span> <span class="o">=</span> <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">),</span>
+  <span class="nv">WC</span> <span class="o">=</span> <span class="k">fun</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">,_})</span> <span class="o">-&gt;</span> 
+         <span class="n">walk</span><span class="p">(</span><span class="nv">MARK</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">setvalue</span><span class="p">({</span><span class="nv">I</span><span class="o">+</span><span class="nv">IP</span><span class="p">,</span><span class="nv">J</span><span class="o">+</span><span class="nv">JP</span><span class="p">},</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">),</span> <span class="nn">array</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="nv">MARK</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="nv">I</span><span class="o">+</span><span class="nv">IP</span><span class="p">,</span><span class="nv">J</span><span class="o">+</span><span class="nv">JP</span><span class="p">},</span> <span class="nv">PATH</span><span class="p">),</span> <span class="nv">POSS</span><span class="p">)</span>
+       <span class="k">end</span><span class="p">,</span>
+  <span class="nn">lists</span><span class="p">:</span><span class="nf">foreach</span><span class="p">(</span><span class="nv">WC</span><span class="p">,</span> <span class="n">filter</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)).</span>
+
+<span class="c">%%</span>
+<span class="c">%% Local Functions</span>
+<span class="c">%%</span>
+<span class="nf">init</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="nv">ARR</span> <span class="o">=</span> <span class="nn">array</span><span class="p">:</span><span class="nf">new</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="p">{</span><span class="n">default</span><span class="p">,</span><span class="nn">array</span><span class="p">:</span><span class="nf">new</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="p">{</span><span class="n">default</span><span class="p">,</span><span class="mi">0</span><span class="p">})}),</span>
+  <span class="nv">PATH</span> <span class="o">=</span> <span class="nn">array</span><span class="p">:</span><span class="nf">new</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
+  <span class="nv">POSS</span> <span class="o">=</span> <span class="p">[{</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">}],</span>
+  <span class="p">{</span><span class="nv">ARR</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">}.</span>
+
+<span class="nf">filter</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">{</span><span class="nv">I</span><span class="p">,</span> <span class="nv">J</span><span class="p">}</span> <span class="o">=</span> <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">),</span>
+  <span class="nv">Fun1</span> <span class="o">=</span> <span class="k">fun</span><span class="p">({</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">JP</span><span class="p">})</span> <span class="o">-&gt;</span>
+           <span class="p">{</span><span class="nv">IXP</span><span class="p">,</span> <span class="nv">JXP</span><span class="p">}</span> <span class="o">=</span> <span class="p">{</span><span class="nv">I</span><span class="o">+</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">J</span><span class="o">+</span><span class="nv">JP</span><span class="p">},</span>
+           <span class="k">case</span> <span class="n">valid</span><span class="p">({</span><span class="nv">IXP</span><span class="p">,</span> <span class="nv">JXP</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="k">of</span>
+             <span class="n">false</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">JP</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">};</span>
+             <span class="n">true</span> <span class="o">-&gt;</span> 
+             <span class="c">%% 计算空点数</span>
+             <span class="nv">CAL</span> <span class="o">=</span> <span class="k">fun</span><span class="p">({</span><span class="nv">IP2</span><span class="p">,</span> <span class="nv">JP2</span><span class="p">},</span> <span class="nv">Sum</span><span class="p">)</span> <span class="o">-&gt;</span> 
+                     <span class="k">case</span> <span class="n">valid</span><span class="p">({</span><span class="nv">IXP</span><span class="o">+</span><span class="nv">IP2</span><span class="p">,</span> <span class="nv">JXP</span><span class="o">+</span><span class="nv">JP2</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="k">of</span>
+                       <span class="n">true</span> <span class="o">-&gt;</span> <span class="mi">1</span> <span class="o">+</span> <span class="nv">Sum</span><span class="p">;</span>
+                       <span class="n">false</span> <span class="o">-&gt;</span> <span class="nv">Sum</span>
+                     <span class="k">end</span>
+                   <span class="k">end</span><span class="p">,</span>
+                   <span class="p">{</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">JP</span><span class="p">,</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">foldl</span><span class="p">(</span><span class="nv">CAL</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">)}</span>
+           <span class="k">end</span>
+         <span class="k">end</span><span class="p">,</span>
+  <span class="c">%% 最后进行排序</span>
+  <span class="nv">T</span> <span class="o">=</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">map</span><span class="p">(</span><span class="nv">Fun1</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">),</span>
+  <span class="nv">S</span> <span class="o">=</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">({_,</span> <span class="p">_,</span> <span class="nv">Z</span><span class="p">})</span> <span class="o">-&gt;</span> <span class="nv">Z</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">end</span><span class="p">,</span> <span class="nv">T</span><span class="p">),</span>
+  <span class="nv">LEN</span> <span class="o">=</span> <span class="nb">length</span><span class="p">(</span><span class="nv">S</span><span class="p">),</span>
+  <span class="k">if</span>
+    <span class="nv">LEN</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">-&gt;</span> <span class="p">[];</span>
+    <span class="nv">LEN</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">-&gt;</span> <span class="nv">S</span><span class="p">;</span>
+    <span class="n">true</span> <span class="o">-&gt;</span> <span class="nv">SS</span> <span class="o">=</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">({_,</span> <span class="p">_,</span> <span class="nv">Z</span><span class="p">})</span> <span class="o">-&gt;</span> <span class="nv">Z</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">end</span><span class="p">,</span> <span class="nv">T</span><span class="p">),</span>
+        <span class="nn">lists</span><span class="p">:</span><span class="nf">sort</span><span class="p">(</span><span class="k">fun</span><span class="p">({_,</span> <span class="p">_,</span> <span class="nv">Z1</span><span class="p">},</span> <span class="p">{_,</span> <span class="p">_,</span> <span class="nv">Z2</span><span class="p">})</span> <span class="o">-&gt;</span> <span class="nv">Z1</span> <span class="o">&lt;</span> <span class="nv">Z2</span> <span class="k">end</span><span class="p">,</span> <span class="nv">SS</span><span class="p">)</span>
+  <span class="k">end</span><span class="p">.</span>
+  
+
+<span class="nf">valid</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">I</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">andalso</span> <span class="nv">I</span><span class="o">&lt;</span><span class="mi">8</span> <span class="ow">andalso</span> <span class="nv">J</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="ow">andalso</span> <span class="nv">J</span><span class="o">&lt;</span><span class="mi">8</span> <span class="ow">andalso</span> <span class="n">getvalue</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">.</span>
+
+<span class="nf">getvalue</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">J</span><span class="p">,</span> <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">I</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)).</span>
+
+<span class="nf">setvalue</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">VAL</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nn">array</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="nv">I</span><span class="p">,</span> <span class="nn">array</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="nv">J</span><span class="p">,</span> <span class="nv">VAL</span><span class="p">,</span> <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">I</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)),</span> <span class="nv">ARR</span><span class="p">).</span>
+</code></pre></div>
+
+
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-15T00:00:00+08:00" pubdate data-updated="true">Jul 15<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/erlang/'>erlang</a>, <a class='category' href='/blog/categories/han-shu-shi/'>函数式</a>, <a class='category' href='/blog/categories/wei-di-gui/'>尾递归</a>, <a class='category' href='/blog/categories/pai-xu/'>排序</a>, <a class='category' href='/blog/categories/bi-ji/'>笔记</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20120714_hello-erlang-1.html" title="Previous Post: hello erlang, part 1">&laquo; hello erlang, part 1</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20120718_hello-erlang-3.html" title="Next Post: hello erlang, part 3">hello erlang, part 3 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20120715_hello-erlang-2.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20120715_hello-erlang-2.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

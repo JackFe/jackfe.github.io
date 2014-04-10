@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: sftp | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/sftp/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[小心jsch的sftp连接泄露]]></title>
+    <link href="http://mccxj.github.com/blog/20131106_jsch-session-connect.html"/>
+    <updated>2013-11-06T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/jsch-session-connect</id>
+    <content type="html"><![CDATA[<p>今天早上和一个同事处理一个现网问题，从javacore里边可以看到大量的Connect Thread，如下所示：
+<code>java
+Connect thread 192.168.1.100 session" prio=6 tid=0x042d3400 nid=0x1458 runnable [0x04e4f000]
+</code></p>
+
+<p>堆栈信息如下:
+<code>java
+...
+com.jcraft.jsch.Session.run(Session.java:1193)
+java.lang.Thread.run(Thread.java:619)
+</code></p>
+
+<p>怀疑是资源泄露了，jsch是一个sftp的工具库。检查jsch的使用代码，可以看到代码是有进行关闭的，如下所示：
+```java</p>
+
+<pre><code>JSch jsch = new JSch();
+Session session = jsch.getSession("caixiaojian", "192.168.1.100", 22);
+session.setPassword("******");
+session.setConfig("StrictHostKeyChecking", "no");
+session.connect();
+Channel channel = session.openChannel("sftp");
+channel.connect();
+ChannelSftp c = (ChannelSftp) channel;
+
+channel.connect();
+//...
+channel.disconnect();
+</code></pre>
+
+<p>```</p>
+
+<p>不过从官方的<a href="http://www.jcraft.com/jsch/examples/Sftp.java.html">例子</a>上看到，最需要关闭的是session对象而不是channel对象。
+于是写了一个简单的测试Demo，把上面的代码跑5次，看看能不能重现:</p>
+
+<p>```bash</p>
+
+<h1>jstack -l 3621 | grep Connect</h1>
+
+<p>Connect thread 192.168.1.100 session" prio=6 tid=0x042d3400 nid=0x1458 runnable [0x04e4f000]
+Connect thread 192.168.1.100 session" prio=6 tid=0x042d0400 nid=0x16c8 runnable [0x04def000]
+Connect thread 192.168.1.100 session" prio=6 tid=0x041b4000 nid=0xd38 runnable [0x04d8f000]
+Connect thread 192.168.1.100 session" prio=6 tid=0x041b2000 nid=0x166c runnable [0x04bcf000]
+Connect thread 192.168.1.100 session" prio=6 tid=0x041b1000 nid=0x450 runnable [0x04b2f000]
+```</p>
+
+<p>果然出现了，试着在最后调用一下session.disconnect(),重试一下果然不存在了上述线程了。</p>
+]]></content>
+  </entry>
+  
+</feed>

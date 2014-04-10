@@ -1,0 +1,559 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="前阵子，其他项目组里边有个某项目频繁出现获取不到连接的问题，基本上每一天都出现一次。 打出来的javacore里面，有大量的线程等待获取连接。并且现场反映，从数据库那边监控到大量的空闲连接没有释放。 事实上，这个系统会用到两个数据源，其中有个是正常的。有意思的是，这几个月都没有新版本上载。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/page/2/index.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-26T00:00:00+08:00" pubdate data-updated="true">Nov 26<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20131126_connection-leak.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>前阵子，其他项目组里边有个某项目频繁出现获取不到连接的问题，基本上每一天都出现一次。</p>
+
+<p>打出来的javacore里面，有大量的线程等待获取连接。并且现场反映，从数据库那边监控到大量的空闲连接没有释放。</p>
+
+<p>事实上，这个系统会用到两个数据源，其中有个是正常的。有意思的是，这几个月都没有新版本上载。</p>
+
+<p>走读了java里边的连接获取释放逻辑，虽然获取和关闭的调用到处都是(没封装好)，但最后还是调用一些静态方法来完成的，并且都在finally块中进行了处理，感觉不会存在泄露的问题。</p>
+
+<p>尝试看看能不能重现，运气还不错，在开发环境模拟生产的业务场景(业务功能不多，但逻辑处理流程比较长)进行了压力测试，也的确出现了这种情况。</p>
+
+<p>既然能够重现问题，定位就方便许多了。我知道有Btrace这类神器可以帮助定位，但我没有使用过(下次再尝试一下)。我是通过修改代码来定位的，基本原理就是在获取连接时记录堆栈信息，在关闭时清除，这样出问题的时候就可以找到哪些地方有问题。其实用工具也是类似的做法。</p>
+
+<p>大体上是这样的:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">// 用来存储堆栈信息</span>
+</span><span class='line'><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">Connection</span><span class="o">,</span> <span class="n">Exception</span><span class="o">&gt;</span> <span class="n">conns</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ConcurrentHashMap</span><span class="o">&lt;</span><span class="n">Connection</span><span class="o">,</span> <span class="n">Exception</span><span class="o">&gt;();</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 当获取链接的时候</span>
+</span><span class='line'><span class="kd">public</span> <span class="n">Connection</span> <span class="nf">getConnection</span><span class="o">(){</span>
+</span><span class='line'>  <span class="n">Connection</span> <span class="n">conn</span> <span class="o">=</span> <span class="n">dataSource</span><span class="o">.</span><span class="na">getConnection</span><span class="o">();</span>
+</span><span class='line'>  <span class="n">conns</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">conn</span><span class="o">,</span> <span class="k">new</span> <span class="n">Exception</span><span class="o">());</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">conn</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 当释放链接的时候</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">releaseConnection</span><span class="o">(</span><span class="n">Connection</span> <span class="n">conn</span><span class="o">){</span>
+</span><span class='line'>  <span class="n">conns</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">conn</span><span class="o">);</span>
+</span><span class='line'>  <span class="n">dataSource</span><span class="o">.</span><span class="na">close</span><span class="o">(</span><span class="n">conn</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>修改后重新压力测试后，打开记录的堆栈一看，居然是在jsp里边获取的，真是顿时无语。</p>
+
+<p>后来，虽然听说这个问题是其他原因引起的，导致非正常情况下走到这段逻辑，但这个地雷还是以前埋进去的，也怨不了别人。</p>
+
+<p>其实，关于资源释放的逻辑封装，可以参考spring的jdbc封装(回调的方式)，又或许用ThreadLocal、拦截器等方式在整个应用上进行处理。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-20T00:00:00+08:00" pubdate data-updated="true">Nov 20<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20131120_notebook-system-install.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>上周在京东商城买了一个HP的笔记本，没有带系统，本来以为装个系统不麻烦，没想到整了一天才装好。</p>
+
+<p>事情是这样的，网上推荐使用USB安装，可是我手头上只有一个2G的USB，心想装个xp凑合使用着。我使用了老毛桃的装机工具，
+发现无论是使用ghost还是原版安装，都没法成功，重启之后到了xp启动界面就蓝屏了。</p>
+
+<p>尝试了好几次之后，并且测试chkdsk /f 后无效，我还是上网查找一下。<strong>错误码是0X0000007B</strong>，网上说这个是和硬盘有关,是设置问题或者病毒造成的硬盘引导分区错误。
+如果是在用原版系统盘安装系统的时候出这个问题，那说明机器配置还是比较新的，作为老的系统盘，不认这么新的硬盘接口，所以得进BIOS把硬盘模式改成IDE兼容模式。</p>
+
+<p>我这机器是新的，硬盘也重新格式化并分区了，应该不是什么病毒的问题。那应该是硬盘接口的问题，不过我发现BIOS里边没有硬盘的设置项目，上网搜索发现的确是没有这个设置的。</p>
+
+<p>看来xp是没希望了，只好换win7系统，win7的iso有2G多，只能分两次拷贝到笔记本硬盘上，再安装系统。果然，这次就很顺利了，整整折腾了一天。看来，装机也是技术活呀。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-08T00:00:00+08:00" pubdate data-updated="true">Nov 8<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20131108_mission-estimate.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>平时工作，做需求的时候，总有有时间限制，俗称工作量评估，通常用x天或者x个单位点数来表示。在现实中，评估都是很随意的，实际结果经常有很大出入。
+在这里不评论，这种做法有多科学。只是单个任务工作量越大，越需要细分，直到有足够的清晰度，这样才能评估得比较靠谱。这里我们用一个例子来解释一下。</p>
+
+<p>我最近想做一个andriod上的死活题app，至少第一期的目标是这样的。我们先来做一下分解，看看需要那些工具，需要做什么工作。</p>
+
+<p>总体来说，用android，优先考虑使用java开发。这需要java的编程经验和一些android的经验。我认为，这个不是难点，还是比较有信心的。</p>
+
+<p>既然是围棋的死活题，需要了解死活题的存储格式，这是一种基于文本的格式，用树型分支的形式。
+这个程序需要能够识别这种格式，这要求我们需要实现一个解释器，不过我考虑使用现成的词法分析器来实现，例如javacc，当然如果不懂这个，还得去学习一下。</p>
+
+<p>另外，这是一个围棋游戏，肯定需要实现游戏规则，最重要的就是落子，吃子的判断。这个是最重要的算法部分。</p>
+
+<p>还有就是，由于涉及棋盘显示，可能需要实现自定义控件或者绘图功能。如果不熟悉，也是要多花些时间的。</p>
+
+<p>还有一些不那么明显的细节部分，举例如下:</p>
+
+<p>死活题通常只用了棋盘的一小部分，手机屏幕又小，如何只是集中显示部分？<br/>
+另外，在显示所有死活题列表的时候，能不能显示预览图？</p>
+
+<p>举例子，是想说明，一些看似简单的任务，其实并没有那么简单。除了仔细分解任务，还有个常用的手法就是原型，把认为最难的部分先做一下，看看心里有没有底。</p>
+
+<p>当然，所有的任务都跟你的熟悉程度有关，经常做一件事情就是这样(日常的工作就是这样)。但这些工作经验，在切换到非舒适区的时候，并不能减少心里的担忧。对于做技术的人来说，需要做的事，往往是要敢于打破技术舒适区。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-06T00:00:00+08:00" pubdate data-updated="true">Nov 6<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20131106_jsch-session-connect.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>今天早上和一个同事处理一个现网问题，从javacore里边可以看到大量的Connect Thread，如下所示：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">Connect</span> <span class="n">thread</span> <span class="mf">192.168</span><span class="o">.</span><span class="mf">1.100</span> <span class="n">session</span><span class="err">&quot;</span> <span class="n">prio</span><span class="o">=</span><span class="mi">6</span> <span class="n">tid</span><span class="o">=</span><span class="mh">0x042d3400</span> <span class="n">nid</span><span class="o">=</span><span class="mh">0x1458</span> <span class="n">runnable</span> <span class="o">[</span><span class="mh">0x04e4f000</span><span class="o">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>堆栈信息如下:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">...</span>
+</span><span class='line'><span class="n">com</span><span class="o">.</span><span class="na">jcraft</span><span class="o">.</span><span class="na">jsch</span><span class="o">.</span><span class="na">Session</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">Session</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">1193</span><span class="o">)</span>
+</span><span class='line'><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Thread</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">Thread</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">619</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>怀疑是资源泄露了，jsch是一个sftp的工具库。检查jsch的使用代码，可以看到代码是有进行关闭的，如下所示：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">JSch</span> <span class="n">jsch</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JSch</span><span class="o">();</span>
+</span><span class='line'><span class="n">Session</span> <span class="n">session</span> <span class="o">=</span> <span class="n">jsch</span><span class="o">.</span><span class="na">getSession</span><span class="o">(</span><span class="s">&quot;caixiaojian&quot;</span><span class="o">,</span> <span class="s">&quot;192.168.1.100&quot;</span><span class="o">,</span> <span class="mi">22</span><span class="o">);</span>
+</span><span class='line'><span class="n">session</span><span class="o">.</span><span class="na">setPassword</span><span class="o">(</span><span class="s">&quot;******&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">session</span><span class="o">.</span><span class="na">setConfig</span><span class="o">(</span><span class="s">&quot;StrictHostKeyChecking&quot;</span><span class="o">,</span> <span class="s">&quot;no&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">session</span><span class="o">.</span><span class="na">connect</span><span class="o">();</span>
+</span><span class='line'><span class="n">Channel</span> <span class="n">channel</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">openChannel</span><span class="o">(</span><span class="s">&quot;sftp&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">channel</span><span class="o">.</span><span class="na">connect</span><span class="o">();</span>
+</span><span class='line'><span class="n">ChannelSftp</span> <span class="n">c</span> <span class="o">=</span> <span class="o">(</span><span class="n">ChannelSftp</span><span class="o">)</span> <span class="n">channel</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">channel</span><span class="o">.</span><span class="na">connect</span><span class="o">();</span>
+</span><span class='line'><span class="c1">//...</span>
+</span><span class='line'><span class="n">channel</span><span class="o">.</span><span class="na">disconnect</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>不过从官方的<a href="http://www.jcraft.com/jsch/examples/Sftp.java.html">例子</a>上看到，最需要关闭的是session对象而不是channel对象。
+于是写了一个简单的测试Demo，把上面的代码跑5次，看看能不能重现:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#jstack -l 3621 | grep Connect</span>
+</span><span class='line'>Connect thread 192.168.1.100 session<span class="s2">&quot; prio=6 tid=0x042d3400 nid=0x1458 runnable [0x04e4f000]</span>
+</span><span class='line'><span class="s2">Connect thread 192.168.1.100 session&quot;</span> <span class="nv">prio</span><span class="o">=</span>6 <span class="nv">tid</span><span class="o">=</span>0x042d0400 <span class="nv">nid</span><span class="o">=</span>0x16c8 runnable <span class="o">[</span>0x04def000<span class="o">]</span>
+</span><span class='line'>Connect thread 192.168.1.100 session<span class="s2">&quot; prio=6 tid=0x041b4000 nid=0xd38 runnable [0x04d8f000]</span>
+</span><span class='line'><span class="s2">Connect thread 192.168.1.100 session&quot;</span> <span class="nv">prio</span><span class="o">=</span>6 <span class="nv">tid</span><span class="o">=</span>0x041b2000 <span class="nv">nid</span><span class="o">=</span>0x166c runnable <span class="o">[</span>0x04bcf000<span class="o">]</span>
+</span><span class='line'>Connect thread 192.168.1.100 session<span class="err">&quot;</span> <span class="nv">prio</span><span class="o">=</span>6 <span class="nv">tid</span><span class="o">=</span>0x041b1000 <span class="nv">nid</span><span class="o">=</span>0x450 runnable <span class="o">[</span>0x04b2f000<span class="o">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>果然出现了，试着在最后调用一下session.disconnect(),重试一下果然不存在了上述线程了。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20131103_word-contact.html">单词接龙问题</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-03T00:00:00+08:00" pubdate data-updated="true">Nov 3<span>rd</span>, 2013</time>
+        
+         | <a href="/blog/20131103_word-contact.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>昨天看到其他部门的技能鉴定题目，相对我们部门偏应用的题目，他们的相对更加偏重算法。题目描述如下：</p>
+
+<p>有一种单词接龙的游戏，就是连续的两个单词，第一个单词的尾要和第二个单词的头是一样的。<br/>
+例如: cat tell log google就是一个单词接龙。</p>
+
+<p>定义最少单词接龙是单词个数最少的接龙，定义最短单词接龙是单词字母个数总和最少的接龙。
+假设所有单词都是由小写字母组成，现在给定一堆单词，给定龙头和龙尾，求出最少单词接龙和最短单词接龙。</p>
+
+<p>当时在招聘，一时也没反应过来。下午回来的时候，仔细一想，这不就是最短路径问题么?</p>
+
+<p>把26个小写字母看成是结点，那么每个单词就是从某个结点到另外一个结点的单向路径。<br/>
+上面的接龙如果在加上单词gc, cookie，就是下面的图表示:<br/>
+<img src="/assets/images/2013/dijkstra.png" alt="单词接龙" /></p>
+
+<p>最少单词接龙，就是每条路径的权值为1，求两个结点之间的最短路径。<br/>
+最短单词接龙，就是每条路径的权值为单词的长度，求两个结点之间的最短路径。</p>
+
+<p>另外，关于一些特殊情况和注意点:</p>
+
+<p>对于存在多个单词，他们的首尾字母相同的话，只记录长度最短的为路径的权值即可。</p>
+
+<p>结点的存储可以不用链接表，因为只有26个字母，用二维数组即可，实时增加单词也容易处理。</p>
+
+<p>求最短路径的算法，参考经典的Dijkstra最短路径算法，这里就不详述了。
+关于Dijkstra，可以参考<a href="http://baike.baidu.com/link?url=YCo_VIMdyckLPW9FuF6ZWnYwDangwdpze7JBVjoKc0AylbBp0Y3PILhRQ2p_QX6ssgCP0hFqMMdHhvUdQtd5Wa">百度百科中的条目</a></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/3/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

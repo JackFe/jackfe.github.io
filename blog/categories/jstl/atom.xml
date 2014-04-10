@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: jstl | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/jstl/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[jstl学习经验(旧)]]></title>
+    <link href="http://mccxj.github.com/blog/20121130_jstl.html"/>
+    <updated>2012-11-30T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/jstl</id>
+    <content type="html"><![CDATA[<p>为了在公司里边推广jstl，而总结的一些jstl使用技巧:</p>
+
+<h4>jstl可以很方便的处理NullPointException,访问越界等常见问题</h4>
+
+<p><div class="highlight"><pre><code class="jsp"><span class="ni">&amp;lt;</span>c:set var=”SPExtraInfoList” value=”${queryresult[3]}”/&gt;
+<span class="ni">&amp;lt;</span>c:out value=”${queryresult[3]}”/&gt;
+</code></pre></div>
+这2个表达式不会因为没有第四个元素而报错</p>
+
+<h4>这2个表达式一般情况下表现是一样的，只是用c:out可以带上default的参数来处理NullPointException</h4>
+
+<p><div class="highlight"><pre><code class="jsp"><span class="nt">&lt;td&gt;</span><span class="ni">&amp;lt;</span>c:out value=”${spservice.m_SpID}”/&gt;<span class="nt">&lt;/td&gt;</span>
+<span class="nt">&lt;td&gt;</span>${spservice.m_SpID}<span class="nt">&lt;/td&gt;</span>
+</code></pre></div></p>
+
+<h4>即使担心其他Exception,也可以通过c:catch来做防御</h4>
+
+<p><div class="highlight"><pre><code class="jsp"><span class="ni">&amp;lt;</span>c:catch&gt;<span class="ni">&amp;lt;</span>c:out value=”${values[9]/1000.00}”/&gt;<span class="ni">&amp;lt;</span>/c:catch&gt;
+</code></pre></div></p>
+
+<h4>fn:length的使用</h4>
+
+<p>用来判断集合类型或String的长度，不过只是用来判断obj是否为空的话，用le语言${empty obj}更方便(同样支持多种类型)</p>
+
+<h4>关于fn:split</h4>
+
+<p>用这个方法切割会丢失空字符串,原因是这个标签使用StringTokenizer来处理而不是split方法。
+<div class="highlight"><pre><code class="jsp"><span class="ni">&amp;lt;</span>% String[] values = ((CEntityString)pageContext.getAttribute(“service”)).EntityString.split(“,”);
+   pageContext.setAttribute(“values”, values);  %&gt;
+</code></pre></div>
+这是比较丑的例子，对格式依赖比较严重，所以最好就使用比较清晰的结构</p>
+
+<h4>关于if-else和三元表达式</h4>
+
+<p>jstl做判断分支是比较麻烦的，只提供了c:otherwise的方式，只好将就点先用着吧。如
+<div class="highlight"><pre><code class="jsp"><span class="ni">&amp;lt;</span>c:choose&gt;<span class="ni">&amp;lt;</span>c:when test=”${’1′ eq spextrainfo[0]}”&gt;是<span class="ni">&amp;lt;</span>/c:when&gt;<span class="ni">&amp;lt;</span>c:otherwise&gt;否<span class="ni">&amp;lt;</span> /c:otherwise&gt;<span class="ni">&amp;lt;</span>/c:choose&gt;
+</code></pre></div></p>
+
+<h4>jstl改变操作</h4>
+
+<p>jstl里边要做访问操作是比较方便的，不过涉及改变就挺麻烦的，如对某个字符串加个头，然后在Map里边检索，这样就不能在一个表达式里边写完，需要先c:set一下,如
+<div class="highlight"><pre><code class="jsp"><span class="ni">&amp;lt;</span>c:set var=”bzType” value=”BizType${spservice.m_SpBizType}”/&gt;
+<span class="ni">&amp;lt;</span>c:out value=”${BizTypeMap[bzType]}”/&gt;
+</code></pre></div></p>
+]]></content>
+  </entry>
+  
+</feed>

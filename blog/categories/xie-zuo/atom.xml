@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 写作 | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/xie-zuo/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[2014读书笔记]]></title>
+    <link href="http://mccxj.github.com/blog/20140410_books-to-be-read.html"/>
+    <updated>2014-04-10T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/books-to-be-read</id>
+    <content type="html"><![CDATA[<h3>Go语言编程</h3>
+
+<ul>
+<li>作者许式伟、吕桂华(七牛云存储团队)</li>
+<li>阅读于2014-04-09,大约3天</li>
+<li>适合对Go语言刚兴趣、想一窥究竟的童鞋,内容一般、比较浅显,不是很适应英文的童鞋可以优先考虑</li>
+</ul>
+
+
+<p>看这本书主要是冲着七牛云存储团队的名气去的，毕竟他们是国内第一个吃螃蟹的，据说90%以上的代码都是GO实现的。
+另外，我最近用Go在做点东西，看从中看到对Go实践方式的解读。阅读之后，感觉内容偏浅，不如看官方文档。
+不过里边有些例子还不错，适合有其他语言经验的童鞋阅读，可以通过对比其他语言的代码实现，加深印象。
+总结一下，这书适合快速浏览，剩下的还是老老实实编程吧。</p>
+
+<h3>代码的未来</h3>
+
+<ul>
+<li>作者松本行弘(Ruby之父)</li>
+<li>阅读于2014-04-06,大约3天</li>
+<li>适合轻松阅读、扩展知识面,不深入,可以读读</li>
+</ul>
+
+
+<p>这本书和作者另外一本书"松本行弘的程式世界"感觉有些类似，都是以发表在某专栏的文章集合为主。
+可能是由于篇幅问题，大多都是泛泛而谈，点到即止。阅读起来没有什么压力，如果有需要深入的话，就得自己去找资料了。
+总体来说，我对这类书还是挺感兴趣的，可以挑选一些自己感兴趣的话题进行阅读，有助于开阔视野。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[博客写作小结]]></title>
+    <link href="http://mccxj.github.com/blog/20130120_how-to-blog.html"/>
+    <updated>2013-01-20T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/how-to-blog</id>
+    <content type="html"><![CDATA[<p><img src="/assets/images/2013/howtoblog.jpg" alt="博客写作" />
+这是前两天在家里用手机敲的文字记录，小小的总结，希望对<strong>写作信心不足</strong>的童鞋有所帮助。</p>
+
+<p>写博客，<strong>不需要太在意写作技巧</strong>，文学性的问题，只需要<strong>把事情描述出来</strong>就可以了。
+假如有个场景是水龙头漏水，写下来的是什么偷税漏税，积少成多的东西，那是文学。不需要想得那么远，能赶紧把事情描述好，赶紧修理好就行了。
+单纯的记录，本身已经很难能可贵了，但很多时候我们连这个都做不到。</p>
+
+<p>我以前写过很多博文，里边有很多是<strong>流水账的记录方式</strong>，有个基本的格式:
+今天发生什么了，我觉得怎么样，假如这样的话会怎那样。基本是想到什么就敲什么，很简单吧。
+我觉得这个方法的好处是<strong>培养写作的信心</strong>，因为这样比较容易出内容嘛。坚持写，<strong>写得越久越容易有信心写下去</strong>。</p>
+
+<p>虽然读者对象很重要，但是一开始也没有多少读者，所以不需要太在意读者是谁，<strong>把自己当成唯一的读者</strong>就好了，
+对自己负责，不求内容精妙，但求格式工整，不是火星文。<strong>字数多少不在意</strong>，能写多少就写多少。</p>
+
+<p>一开始很难写出什么内容，只要坚持写就行了，慢慢就会写好了。
+经常回顾，<strong>多看看自己写的内容</strong>，<strong>对比别人写的内容</strong>，找到差距，有针对性的提高写作技巧，例如多模仿。</p>
+
+<p>如果有可能，<strong>为自己的博客做一下分享推广</strong>，让别人参与讨论，可以增强自己写作的信心，也可能得到很多的灵感，在以后写的更好。
+推广的方式可以考虑rss订阅，邮件分享，微博等。</p>
+
+<p><strong>博客系统尽量找简单点的</strong>，以前我使用blogspot就是因为界面比较简洁，还有像<a href="http://svbtle.com/">Svbtle</a>/<a href="http://natewienert.com/codename-obtvse">Obtvse</a>这样的<a href="http://www.36kr.com/p/93438.html">简约风格博客平台</a>
+像wordpress之类的系统，适合喜欢折腾的人:) 最近比较流行的是像<a href="http://pages.github.com">github page</a>和<a href="http://jekyllrb.com/">jekyll</a>这样的静态页面生成方式，还是比较适合it人的,
+我现在也是使用<a href="/blog/20120622_new-blog-in-github.html">这套系统</a>。</p>
+
+<p>最后，<strong>马上动手，enjoy it</strong>!</p>
+]]></content>
+  </entry>
+  
+</feed>

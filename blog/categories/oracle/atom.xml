@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: oracle | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/oracle/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[oracle执行计划思维导图]]></title>
+    <link href="http://mccxj.github.com/blog/20121120_oracle-explain-plan.html"/>
+    <updated>2012-11-20T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/oracle-explain-plan</id>
+    <content type="html"><![CDATA[<h2><strong>这是为了oracle培训而编制的思维导图</strong></h2>
+
+<h2>可以在Dropbox上下载到这个<a href="https://www.dropbox.com/s/8l53i0h3hphm5bz/%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92.xmind">xmind文件</a></h2>
+
+<p><img src="/assets/images/explain_plan.png" alt="oracle执行计划思维导图" /></p>
+]]></content>
+  </entry>
+  
+</feed>

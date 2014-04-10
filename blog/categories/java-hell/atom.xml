@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: java hell | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/java-hell/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[从流关闭说起]]></title>
+    <link href="http://mccxj.github.com/blog/20130821_java-hell-stream-close.html"/>
+    <updated>2013-08-21T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/java-hell-stream-close</id>
+    <content type="html"><![CDATA[<h3>基本原则: 谁生产谁销毁</h3>
+
+<p>这个是用来解决责任权的问题，例如你的方法接收一个InputStream作为参数，通常就不应该在方法内去关闭它，而由客户端代码去处理。如果要关闭，通常应该在方法签名上明确说明，具体样例参考commons-io的IOUtils类。</p>
+
+<p>还有另外一个例子，就是经常使用的Servlet的输入输出流，根据这个原则，也是不应该在代码中进行关闭的，这个工作是由Web容器负责的。</p>
+
+<h3>关闭的是什么?</h3>
+
+<p>java本身是带GC的，所以对象在消除引用之后，按正常是能够被回收的，那么为什么会有关闭操作?</p>
+
+<p>这是为了回收系统资源，主要是端口(网络IO),文件句柄(输入输出)等，通常涉及的场景也是操作文件，网络操作、数据库应用等。对于类unix系统，所有东西都是抽象成文件的，所以可以通过lsof来观察。</p>
+
+<p>为了更详细的说明这点，我们可以测试一下下面的代码:</p>
+
+<p>```java
+public class Hello {</p>
+
+<pre><code>public static void main(String[] args) throws Exception {
+    for (int i = 0; i &lt; 100; i++) {
+        FileInputStream is = new FileInputStream("/tmp/data/data"+i);
+        byte[] bs = new byte[512];
+        int len;
+        while ((len = is.read(bs)) != -1) ;
+        Thread.sleep(1000L);
+    }
+    Thread.sleep(10000L);
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>运行之后，通过losf或进程目录查看相关的文件句柄数量是不断增长的:</p>
+
+<p>```bash
+lsof -p 25945 |grep /tmp/data | wc -l
+88</p>
+
+<p>ls  /proc/25945/fd | wc -l
+93
+```</p>
+
+<p>如果有关闭操作的话，就会发现打开文件数一直都处于很低的位置。如果持续出现未关闭的情况，积累到一定程度就可能超过系统限制，出现too many open files的错误。</p>
+
+<h3>如何确保关闭</h3>
+
+<p>关闭通常是调用close()方法来实现的，并且需要在finally来进行处理。另外，我们经常会遇到多个资源的关闭情况，因为IO库是采用修饰器模式的，所以基本原则是先关闭外层对象，再关闭内层对象，每个close调用都需要处理异常情况，例如:</p>
+
+<p>```java
+InputStream is = null;
+OutputStream os = null;
+try{
+   // ...
+}
+finally{
+  if(is != null)</p>
+
+<pre><code> try{
+   is.close();
+ }
+ catch(IOException e){}
+</code></pre>
+
+<p>  if(os != null)</p>
+
+<pre><code> try{
+   os.close()
+ }
+ catch(IOException e){}
+</code></pre>
+
+<p>}
+```</p>
+
+<h3>实践</h3>
+
+<ul>
+<li>上面的关闭处理的确是比较繁琐的，可以考虑进行封装或者直接使用IOUtils.closeQuietly方法，节约不少代码行。</li>
+<li>自从JDK5之后，需要进行关闭处理的对象可以考虑实现java.io.Closeable接口。这个可以让资源关闭使用同一套代码。</li>
+</ul>
+
+
+<h3>JDK7改进及其他思路</h3>
+
+<p>在JDK7里，你只需要将资源定义在try()里，Java7就会在readLine抛异常时，自动关闭资源。
+但是资源类必须实现java.lang.AutoCloseable接口，同时支持管理多个资源,释放次序与声明次序相反。</p>
+
+<p>```java
+try (BufferedReader br = new BufferedReader(new FileReader(path)) {</p>
+
+<pre><code>return br.readLine();
+</code></pre>
+
+<p>}
+```</p>
+
+<p>虽然感觉总是很繁琐，语法糖味道重，但比以前倒是进步不少了。
+不过我们还是来看看Go中的做法，它提供了defer操作，用于在脱离方法作用域的时候自动调用，有点析构的味道。
+看下面的示例:</p>
+
+<p>```go
+func main() {</p>
+
+<pre><code>files, err := os.Open("testqq.txt")        
+if err != nil {
+    fmt.Printf("Error is:%s", "Game Over!")
+    return
+}
+defer files.Close()
+</code></pre>
+
+<p>}
+```</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[说说字符串拼接]]></title>
+    <link href="http://mccxj.github.com/blog/20130809_java-hell-string-append.html"/>
+    <updated>2013-08-09T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/java-hell-string-append</id>
+    <content type="html"><![CDATA[<h3>String对象是无状态的</h3>
+
+<p>String的内部属性在初始化的时候就固定好了，也没有提供方法进行修改(反射等极端方法除外)，并且类被定义成final，所以String对象都是是实实在在的无状态对象，是不可变的。</p>
+
+<p>在通常的字符串拼接中，如果采用+运算符的话，通常会产生一个字符串对象，并把两个字符串的内部字符数组拷贝过去。
+因此，在一个常见的频繁修改字符串的场景中，字符数组的拷贝开销是很大的，随之字符串的加长会越到后面越慢,例如下面的代码。</p>
+
+<p><code>java
+String sb = "";
+for(String str : strs){
+  sb += str;
+}
+return sb;
+</code></p>
+
+<h3>StringBuffer与StringBuilder</h3>
+
+<p>jdk早就考虑了这种场景，于是提供了StringBuffer，简单来说，就是一个可变的字符数组，开辟了一个字符数组缓冲区，增加(Append)时只是往缓冲区的空余地方写字符，当然也有可能缓冲区不够用，它的开销就集中在不够用的缓冲区扩展中(每次在现有基础上扩展一倍空间)。所以，最好能提前估计字符串的最终长度，减少扩展造成的消耗。不过，即便如此，通常也要把直接用String拼接的效率高许多，例如下面的代码。</p>
+
+<p><code>java
+StringBuffer sb = new StringBuffer();
+for(String str : strs){
+  sb.append(str);
+}
+return sb.toString();
+</code></p>
+
+<p>到了jdk5，增加了StringBuilder，相对于StringBuffer来说，虽然它不是线程安全的，但在绝大多数场景下都是适用的，并且理论效率更佳(从oracle jdk的实现看，两个类除了是否同步这点，实现是一致的)。因此，习惯使用StringBuffer的童鞋，应该多关注一下StringBuilder。</p>
+
+<h3>字符串拼接的编译优化</h3>
+
+<p>再回到+操作符，本身java是没有运算符重载的，+只会对基本数学运算有效，而字符串，这么写只是语法糖而已，会变成StringBuilder操作(jdk5之前是StringBuffer)。例如下面的代码:</p>
+
+<p><code>java
+public String test(String a){
+   return a + "b";
+}
+</code></p>
+
+<p>通过javap查看，可以看到是这样的(大意就是new一个StringBuilder对象然后用append进行连接);</p>
+
+<p><code>java
+public java.lang.String test(java.lang.String);
+  Code:
+   Stack=2, Locals=2, Args_size=2
+   0:   new     #2; //class java/lang/StringBuilder
+   3:   dup
+   4:   invokespecial   #3; //Method java/lang/StringBuilder."&lt;init&gt;":()V
+   7:   aload_1
+   8:   invokevirtual   #4; //Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+   11:  ldc     #5; //String b
+   13:  invokevirtual   #4; //Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+   16:  invokevirtual   #6; //Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+   19:  areturn
+  LineNumberTable:
+   line 3: 0
+</code></p>
+
+<p>因此，如果是像上面的情况，直接用+是合理的，对于其他情况，得考虑StringBuilder，同时要避免无意生成多余字符串的情况，例如append("s" + a)的写法，编译器是不会自动优化的，写代码的时候应该换成append("s").append(a)。</p>
+
+<p>更多关于字符串不变量的讨论，请见<a href="http://mccxj.github.io/blog/20130615_java-string-constant-pool.html">初探Java字符串</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[关于split的坑]]></title>
+    <link href="http://mccxj.github.com/blog/20130809_java-hell-split.html"/>
+    <updated>2013-08-09T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/java-hell-split</id>
+    <content type="html"><![CDATA[<p>经常在一些文本处理、字符串拆解的逻辑中，需要对字符串按照一定的分隔符进行拆解。这样的功能，大多数时候我们会求助于String的split方法。关于这个方法，有几个坑是需要注意的，而掉坑想象在代码中已经出现许多次，值得大家注意。</p>
+
+<h3>split的参数是正则表达式</h3>
+
+<p>一个很常见的问题，就是忘记了split的参数不是普通的字符串，而是正则表达式，例如下面这么下是达不到预期目的的:</p>
+
+<p><code>java
+"a.b.c".split(".");
+"a|b|c".split("|");
+</code></p>
+
+<p>因为.和|都是正则表达式里边的特殊字符，应该用转义字符先进行处理:</p>
+
+<p><code>java
+"a.b.c".split("\\.");
+"a|b|c".split("\\|");
+</code>
+类似的api在String类里边好几处出现了，例如replaceAll。</p>
+
+<p>还有没有其他办法处理这个问题呢，因为我不想手动转换或者分隔符本来就是动态的。
+这个的确没有直接的方法，但split的实现是调用Pattern的split方法，所以可以直接构造一个Pattern对象来调用，
+如下所示，其中LITERAL参数就是表示把字符串当成普通字符串，而不是当成正则表达式来构建。</p>
+
+<p><code>java
+Pattern pattern = Pattern.compile(".", Pattern.LITERAL);
+pattern.split("a.b.c");
+</code></p>
+
+<h3>split可能会忽略分隔后的空串</h3>
+
+<p>很多人只是用带一个参数的split方法，但是一个参数的split方法只会匹配到最后一个有值的地方，后面的会忽略，例如:</p>
+
+<p><code>java
+"a_b_c_d".split("_"); // ["a", "b", "c", "d"]
+"a_b__".split("_"); // ["a", "b"]
+"a__c_".split("_"); // ["a", "", "c"]
+</code></p>
+
+<p>这样其实是有点反常识的，因为像文件上传，有些字段可能是允许为空的，这样在程序处理上就会造成麻烦。</p>
+
+<p>其实，split是有带两个参数的重载方法的。第二个参数是整形，代表最多匹配上多少个，用0表示只匹配到最后一个有值的地方(就是上述split真正调用的参数)，要强制全部匹配，用个负数吧(我通常选择-1)。换成下面的写法，代码就更期望的结果是一样了。</p>
+
+<p><code>java
+"a_b__".split("_", -1); // ["a", "b", "", ""]
+"a__c_".split("_", -1); // ["a", "", "c", ""]
+</code></p>
+
+<h3>关于字符串切割的其他API</h3>
+
+<p>对于字符串切割，早在jdk1.0就存在一个叫StringTokenizer的类，大概的用法如下所示(同样有带分隔符的构造方法):</p>
+
+<p><code>java
+StringTokenizer st = new StringTokenizer("this is a test");
+while (st.hasMoreTokens()) {
+  System.out.println(st.nextToken());
+}
+</code></p>
+
+<p>不过，这个类是历史产物，属于遗留类来的，javadoc上已经说明了这一点，并且推荐使用String的split方法。</p>
+
+<p>另外，如果对字符拼接有兴趣，请移步<a href="/blog/20130809_java-hell-string-append.html">说说字符串拼接</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[怎么理解java参数传递只是传值方式]]></title>
+    <link href="http://mccxj.github.com/blog/20130809_java-hell-parameter.html"/>
+    <updated>2013-08-09T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/java-hell-parameter</id>
+    <content type="html"><![CDATA[<h3>Java参数传递只是传值</h3>
+
+<p>一开始学java，就有人告诉你，Java参数传递，只有传值，没有传引用。但是我在平时仍然发现，在面试时有不少人搞混，
+也见过有人写出问题代码，特别是许多习惯c++编程习惯的童鞋。为了让大家都能理解，我们还是再来复习一遍。</p>
+
+<h3>什么是传引用</h3>
+
+<p>首先我们来看看什么是传引用方式? 这个概念在C++里边很常用，例如下面的代码:</p>
+
+<p><code>c++
+void handle(const char* filename, int left, Callback&amp; cb);
+</code></p>
+
+<p>使用引用(第三个参数)，就相当于直接使用实参一样，可以直接改变对象的内容，甚至可以让它指向另外一个对象。
+相对于传值(第二个参数)来说，可以减少拷贝对象带来消耗，相对于传递指针方式(第一个参数)，无需担心空指针问题，还能够改变对象的引用。</p>
+
+<p>看上去，传递引用好像是集大成的功能，但实际使用上并不是每个参数都会这么搞。为什么? 因为它赋予子函数的权利太大，
+对参数的任何修改都会受影响，特别是改变引用这种极端操作。</p>
+
+<p>于是，Java大大减少了语法的灵活性，只保留了传值方式(因为没有指针，所以也没有所谓的指针传递)。</p>
+
+<h3>从内存布局看传值</h3>
+
+<p>因为没有指针，而且有基本类型和类类型的区别，所以有些童鞋对传值的理解有偏差。下面在从内存布局上看看。
+在Java中，new出来的对象都是在heap里边生成，但是本地变量是在方法栈里边的。考虑下面的代码:</p>
+
+<p>```java
+A a = new A();
+a = call(a);</p>
+
+<p>A call(A a){
+   a.setName("a");
+   a = new A();
+   a.setName("b");
+   return a;
+}
+```</p>
+
+<p>看图，从左到右，从上到下，其中左边的是本地变量列表，右边的是堆空间，每行一个小图，其他不解释。
+<img src="https://f.cloud.github.com/assets/98360/941947/5b2d54c2-0161-11e3-98f7-52a4ed50d824.png" alt="test" /></p>
+
+<h3>传的是什么值?</h3>
+
+<p>上面列举的情况是类类型的情况，实际上传值做的是本地变量的拷贝，而不是堆对象的拷贝。有些人会产生疑惑，
+主要是因为java在语法上隐藏了指针，其实，对于类类型的参数传递，和c++中传指针方式是一个道理的，只有基本类型才是实实在在的传值方式。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[java中的日期工具]]></title>
+    <link href="http://mccxj.github.com/blog/20130809_java-hell-date.html"/>
+    <updated>2013-08-09T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/java-hell-date</id>
+    <content type="html"><![CDATA[<h3>蹩脚的日期API</h3>
+
+<p>众所周知，jdk自带的日期API用起来非常蹩脚，属于JDK中设计较差的典型。</p>
+
+<p>首先我们来看看常见类的分工：</p>
+
+<ul>
+<li>Calendar实现的是日期和时间之间的转换,其他就没什么用了</li>
+<li>DateFormat用来格式化和解析日期字符串</li>
+<li>Date用来表示日期和时间信息</li>
+</ul>
+
+
+<p>下面我们再看看其中很混淆的一些设计:</p>
+
+<ul>
+<li>有两个Date类，分别是java.sql.Date和java.util.Date，前一个继承后一个，不要搞混了，通常我们是使用后一个。*</li>
+<li>java.sql是用于数据库类型的，这个Date是一个单纯的日期类型，意思是没有时间的概念，如果要时间，应该选择java.sql.Timestamp。这是个很悲催的设计，把原来的Date功能阉割了。</li>
+<li>注意Date的构造方法参数是很神奇的，年份是减去1900的数，月份是从0到11来表示的。</li>
+<li>Date的getTime返回的时间是相对于“1970-01-01 00:00:00”的毫秒数差值</li>
+<li>日期的调整、差距计算非常麻烦</li>
+<li>这些类都不是线程安全的，特别是格式化功能，经常有人掉坑，是重灾区来的</li>
+</ul>
+
+
+<h3>API的替代品</h3>
+
+<p>日期API实在是太烂了，幸好有其他开源选择，例如著名的Joda-Time，有兴趣的可以去试试。</p>
+
+<p>另外，还有最新的关于日期API的规范:JSR-310。官方的描述叫做“This JSR will provide a new and improved date and time API for Java.”，JSR-310将解决许多现有Java日期API的设计问题。比如Date和Calendar目前是可变对象，你可以随意改变对象的日期或者时间，而Joda就将DateTime对象设计成String对象一样地不可变，能够带来线程安全等等的好处，因此这一点也将被JSR-310采纳。</p>
+
+<h3>时间的度量</h3>
+
+<p>有两个特殊的API是和计时有关的，就是System.currentTimeMillis和System.nanoTime。两个的区别和用法如下:</p>
+
+<p>currentTimeMillis的值是相对于“1970-01-01 00:00:00”的毫秒数差值，跟new Date().getTime是一样的，因为new Date()就调用currentTimeMillis作为参数。大家应该对这个是比较熟悉的。</p>
+
+<p>nanaTime是jdk5才增加的API，能够提供更为精确的时间度量(纳秒呀，精度太高了，应该是系统时钟的近似值)。不过，它返回的是一个相对时间，而不像currentTimeMillis是一直增长的。所以要让时间有意义，必须用上时间差，就是用两个nanaTime来相减。</p>
+
+<p>简单来说，currentTimeMillis表示的是精确时间点的概念，nanaTime表示的是相对时间差的概念。用来表示一段时间差的话，nanoTime可以提供更好的精度。</p>
+
+<p>顺便提一下，JDK没有度量微妙的API，需要的话只能自己模拟了。</p>
+
+<h3>更多时间工具</h3>
+
+<p>如果是多线程编程的话，就不能不忽视java.util.concurrent工具包。它也提供了一些时间方面的工具，如TimeUnit类，简单来说，它是一个单位转换的辅助类，可以用更加直观的时间单位来操作。例如休眠3s,可以用下面的代码:</p>
+
+<p><code>java
+TimeUnit.SECONDS.sleep(3d);
+</code></p>
+
+<p>这个类也用于这个包里边许多带超时机制的API中，例如使用lock的API是这样使用的的:</p>
+
+<p>```java
+Lock lock = ...;
+if (lock.tryLock(50L, TimeUnit.MILLISECONDS)) {</p>
+
+<pre><code>try {
+    // manipulate protected state
+} finally {
+    lock.unlock();
+}
+</code></pre>
+
+<p>} else {</p>
+
+<pre><code>// perform alternative actions
+</code></pre>
+
+<p>}
+```</p>
+
+<p>关于这个并发工具包的内容，以后有机会再介绍。</p>
+]]></content>
+  </entry>
+  
+</feed>

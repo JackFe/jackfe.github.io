@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 读书笔记 | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/du-shu-bi-ji/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[那些年，我读过的技术书]]></title>
+    <link href="http://mccxj.github.com/blog/20130921_books.html"/>
+    <updated>2013-09-21T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/books</id>
+    <content type="html"><![CDATA[<p>这几天发烧很反复，反而有点时间用来整理一下思路。想了很多以前的事情，回忆的感觉是很复杂的。
+突然想写写接触的技术书，现在工作的时间占据了大多数，看书的时间并不多，
+但是每年看的书是有点越来越多的感觉，只是很少有特别深刻的，大概是因为平时的读书习惯就是不求甚解，又或者是这种方式很适合我。</p>
+
+<p>C程序设计，谭浩强的教材估计是人手一册了。这也是我第一次接触编程语言，虽然我还是没学懂怎么写代码。
+回头来看，这本书的确写得不怎样，比起那本c语言传世之作差太远了，里边错误也不少。</p>
+
+<p>数据结构（用面向对象方法与C++语言描述），黄色皮的这本，应该是第一版。
+说起这本书，我当年也是没学明白，主要是我太懒了，还有就是这语言真有点复杂。
+这门课程每一两周就有一个课程设计，要编程的那种。我基本都是抄袭的，有一次我下决心想自己解决，
+结果就是整了一通宵，双向链表编译都没通过。不过还好老师手下留情，最后还是62分勉强通过。
+这门课程是到了毕业以后花3个月自学的，算是自己迄今为止看得最认真的一本书了，简直可以用改变我的职业生涯来形容。</p>
+
+<p>计算机网络，第四版，这也是大学的教材，纯英文版本，这本书是认识网络的通用书籍，是本很好的书，
+不过，并不是我从上面学到多少，我也是毕业以后才回去读的。我对这本书很有印象，主要是因为有一次我在图书馆，
+看到我同学的书已经翻烂了，而我的书还是新的，要知道这是一本大几百页的英文书。顿时觉着这个世界很可怕，
+别说自己不努力，即使你再努力，总有比你聪明的人比你还努力。难怪人家成绩如此的好。</p>
+
+<p>Linux系统管理技术手册，这是我毕业以后买的一本大部头英文书。我对linux有个比较系统的认识也源于这本书。
+不知有没有人在装系统的时候不小心把win也删除了没有？我就试过，后来在一次面试中被人当笑话了。
+虽然工作的时候也有接触这linux，但那一年春节放假的时候，我觉得我应该认真学习一下，而且我们还是有十几天假期的。
+于是到书店把这本书扛回去了，硬是在春节的时候看完。当然，只是看书很多是没概念的，于是我把家里的系统格了换成linux，公司也装上双系统，强迫自己适应。我对以前的公司环境还是心存感激的，很free的感觉。</p>
+
+<p>设计模式，四人帮的大作，我买了有好几年了，一直来来去去的翻，始终没有通读，而我也读过不少模式方面的书，
+但这本书一直保留在我的在读列表中，总感觉没读懂。直到最近这两年，有些开窍了，有时虽然不能想到利用哪种模式，
+或者是哪种模式，但直觉告诉我，就应该这么写。我想，我逐渐从这些设计模式上找到设计原则的味道了。</p>
+
+<p>其他书籍？没有第一时间在我脑子里边出现，即使我认同是一本好书，但也就仅仅是一本好书罢了。
+相对来说，我很少看java的专题书，我跟偏爱通用类。而数据库，即使毕业后一两年，
+我都是对数据库技术有点不屑的感觉，所以学得很少，直到最近这两年我才接触得多一些。</p>
+
+<p>娱乐而已，勿当真。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[手绘的思维导图:程序员的思维修炼]]></title>
+    <link href="http://mccxj.github.com/blog/20130324_mind-map-with-hand.html"/>
+    <updated>2013-03-24T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/mind-map-with-hand</id>
+    <content type="html"><![CDATA[<h3>手绘的思维导图</h3>
+
+<p>先看看今天早上手绘的作品，没有工具绘制的工整，但感觉效果更棒!</p>
+
+<p><img src="/assets/images/2013/mind-map-with-hand.jpg" alt="程序员的思维修炼" /></p>
+
+<h3>再谈谈这本书</h3>
+
+<p>这本书感觉就是从小工到专家的续作，但不是只有程序员才能阅读并受益的书籍，推荐指数:5个星星。</p>
+
+<p>书的主题是围绕德雷福斯技能模型，区分L型和R型思维方式，<strong>讲述如何学习的技能</strong>。在实践方式上，我重点谈谈我印象比较深的几个方法。
+这些方法的操作性也比较强:</p>
+
+<ol>
+<li>晨写，早上第一件事，只写不审查</li>
+<li>自由写，就是写博客的习惯</li>
+<li>SMART任务</li>
+<li>SQ3R主动阅读</li>
+<li>手绘思维导图</li>
+<li>以教代学，说出来</li>
+<li>冥想，关注呼吸，类似自我催眠的技巧</li>
+<li>GTD，不要在头脑保存列表</li>
+</ol>
+
+
+<p><strong>1和2是记录和积累，3是目标管理，4和5,6是增强学习效果,7和8是注意力管理。</strong>
+现在来说，关于晨写和SMART，我没什么使用经验，正在学习。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Async Javascript读书笔记]]></title>
+    <link href="http://mccxj.github.com/blog/20130121_async-javascript.html"/>
+    <updated>2013-01-21T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/async-javascript</id>
+    <content type="html"><![CDATA[<p><img src="/assets/images/2013/async-javascript.jpg" alt="Async Javascript" /></p>
+
+<p>这篇读书笔记的主要内容是在家里用ipad上输入的，感觉输入还是比较吃力呀。</p>
+
+<p>本书的副标题是Build More Responsive Apps with Less Code，
+关键词是异步、响应式，主要是对如何书写异步js代码提供一些指导意见，描述js的异步特性，回调代码的书写，还介绍了PubSub、Promises等通用模式。
+最后介绍了worker多线程模型，js异步加载等内容。书的页数可谓少得可怜，内容还算比较实在，
+提供了大量的开源库实现供读者参考，对于框架选型的话倒是可以参考一下。</p>
+
+<h2>js事件</h2>
+
+<p>主要是了解事件背后的本质。提供了象setTimeout document.onready都是事件的典型案例。
+因为js基本都是单线程模型，所以事件的触发和代码的执行有时候并不一致，而是有些时间差。即使是setTimeout(fn,0)这样的代码。
+这样的逻辑也不是立即执行的。它的执行模型大概是这样的(在ipad上手绘的)。
+<img src="/assets/images/2013/runjs.jpg" alt="js执行模型" /></p>
+
+<p>任何回调方法的执行都是需要按队列顺序来执行。如果当前代码没有执行完,就不会执行其他回调方法。
+因此理解js的异步处理模型非常重要，<strong>代码应该尽快执行完毕，避免阻塞其他代码的执行</strong>。</p>
+
+<h2>哪些是异步逻辑</h2>
+
+<p>主要是一些io操作。例如</p>
+
+<ol>
+<li>ajax调用</li>
+<li>webkit里边的console.log</li>
+<li>dom操作，浏览器可能会延迟的效果出现</li>
+<li>Node服务端里边比比皆是</li>
+</ol>
+
+
+<p>当然还有些是时间片操作。例如</p>
+
+<ol>
+<li>setTimeout或setInterval</li>
+<li>node的<a href="http://nodejs.org/docs/latest/api/process.html">process.nextTick</a></li>
+<li>html5提供的requestAnimationFrame等特性</li>
+</ol>
+
+
+<h2>异步逻辑注意</h2>
+
+<p>如果使用回调方法进行异步处理，就不要在后面的代码中按同步的逻辑来考虑。<br/>
+异步回调方法中用到的对象也应该先定义，避免由于缓存等造成奇怪的问题。<br/>
+可以使用web worker api或异步调用来生成缓存数据。<br/>
+避免超过两层的回调方法。</p>
+
+<h2>处理错误</h2>
+
+<p>使用异步调用时，stack trace可能会不全<br/>
+使用异步调用时，try-catch可能会失效<br/>
+使用err来作为回调方法的参数，或者区分success和error的回调方法<br/>
+处理uncaught异常，可以使用:
+<div class="highlight"><pre><code class="javascript"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">h1</span><span class="o">&gt;</span><span class="nx">Broswer</span><span class="o">&lt;</span><span class="err">/h1&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nb">window</span><span class="p">.</span><span class="nx">onerror</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+<span class="p">}</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">h1</span><span class="o">&gt;</span><span class="nx">Node</span><span class="o">&lt;</span><span class="err">/h1&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;uncaughtException&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+<span class="p">})</span>
+</code></pre></div></p>
+
+<h2>流程控制</h2>
+
+<p>回调方法太多，流程控制变得异常困难，很容易造成错误，应该避免超过两层的回调方法。
+比较常用的办法有PubSub、Promises等解决方案/模式。</p>
+
+<h3>PubSub</h3>
+
+<p>就是publish/subscribe,发布订阅，常见的监听器模式。通常是把回调方法组织为带名字的事件，模拟事件触发。例如</p>
+
+<ol>
+<li>Node的<a href="http://nodejs.org/api/events.html">EventEmitter</a></li>
+<li>Backbone的<a href="http://backbonejs.org/#Events">Event</a>模型</li>
+<li>jQuery的<a href="http://api.jquery.com/on/">自定义事件</a></li>
+</ol>
+
+
+<p>需要注意的是，<strong>PubSub模式的逻辑不一定是异步的</strong>。
+如果trigger是同步逻辑，应该注意避免在回调方法中再次trigger某个事件而造成死循环，
+例如jQuery就可能出现这个问题，而像<a href="http://backbonejs.org/">backbone</a>在值没有变化时不再触发change事件，也提供了slient的选项。而<a href="http://emberjs.com/">Ember</a>之类是采用setTimeout的方式
+加入队列进行处理的方式，就是采用了异步的方式。</p>
+
+<h3>Promises</h3>
+
+<p>书中主要使用了jquery做例子，显示了<a href="http://api.jquery.com/jQuery.Deferred/">deferred</a>的用法，对callback的用法有个比较。
+熟悉jquery的童鞋通过Deferred的用法就有个大体的印象了。我个人的感觉就是，Promises模型是对PubSub常用功能的抽象，
+有点规范的意思，事实上也的确有commonjs的<a href="http://wiki.commonjs.org/wiki/Promises/A">Promises/A</a>规范。</p>
+
+<p>介绍了promises和deferred的区别，deferred是promises一个子集，它不能自己控制状态变更，需要有由其他事件出触发。
+对于node来说，现在是采用回调方法的方式，要采用deferred方式，主要做些改变。例如：
+<div class="highlight"><pre><code class="javascript"><span class="nx">deferredCallback</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">deferred</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">deferred</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+  <span class="nx">deferred</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
+<span class="p">};</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">};</span>
+<span class="p">}</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="kd">var</span> <span class="nx">fileReading</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">$</span><span class="p">.</span><span class="nx">Deferred</span><span class="p">();</span>
+<span class="nx">fs</span><span class="p">.</span><span class="nx">readFile</span><span class="p">(</span><span class="nx">filename</span><span class="p">,</span> <span class="s1">&#39;utf8&#39;</span><span class="p">,</span> <span class="nx">deferredCallback</span><span class="p">(</span><span class="nx">fileReading</span><span class="p">));</span>
+</code></pre></div></p>
+
+<h2>Async.js</h2>
+
+<p>介绍了async.js的用法，用来解决异步处理中的流程控制问题，例如iterator的问题。包括串行和并行的控制。
+这个库还提供了更加复杂的并发性控制。具体的用法还是看<a href="https://github.com/caolan/async">官方的介绍</a>吧。还提供了另外一个库<a href="https://github.com/creationix/step">step</a>的介绍</p>
+
+<h2>Worker</h2>
+
+<p>提供<a href="http://www.w3.org/TR/workers/">worker</a>的功能，在浏览器上worker还是有一些受限制的地方，例如不能涉及DOM。
+而在node上，可以用<a href="http://nodejs.org/api/cluster.html">cluster</a>来支持类似worker的功能。</p>
+
+<h2>异步加载js</h2>
+
+<p>主要探讨了几种方案，如在head加载，缺点是页面显示太慢。在body末尾加载，问题是还是要等js结束还能让事件生效，并且同样需要顺序加载。
+解决方案有<a href="http://www.w3schools.com/tags/att_script_defer.asp">defer</a>/<a href="http://www.w3schools.com/tags/att_script_async.asp">async</a>和ajax加载等方案。</p>
+
+<p>对于比较现代的浏览器，支持defer关键字用于异步js加载，还有async关键字，区别是后者不会顺序加载，先加载完先处理。
+async在有些插件化的js时async可能可以用到，其他就很难用到，因为很多js都是存在依赖的关系。</p>
+
+<p>当然，还有一些介绍了自定义的异步加载方案，如html5对象有onready事件,还有ajax加载方式。
+不过业界已经有些比较成熟的异步加载库了，如<a href="http://yepnopejs.com/">yepnope</a></p>
+
+<p>最后还介绍了一些异步加载的其他方案，例如增强的语法来支持异步逻辑。这种预编译的方式，我感觉不如在coffeescript上增加关键字的预处理方式，
+类似coffeescript的class关键字。另外还介绍<a href="https://developer.mozilla.org/en-US/docs/JavaScript/New_in_JavaScript/1.7?redirectlocale=en-US&amp;redirectslug=New_in_JavaScript_1.7">js1.7</a>关于异步逻辑的新特性:Generator。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[超级整理术简单笔记]]></title>
+    <link href="http://mccxj.github.com/blog/20121225_arrange.html"/>
+    <updated>2012-12-25T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/arrange</id>
+    <content type="html"><![CDATA[<p>今天去体育西那边，看到戴玉堆了一桌子的书，挖了本超级整理术的书，在坐地铁的时间看完了。
+内容非常浅显直白，原则就是让信息自动化，让工作规则化，让大脑有更多时间思考。</p>
+
+<p>下面简单记录了比较可行的操作。</p>
+
+<ol>
+<li><p>使用谷歌搜索来处理文件查找，桌面搜索的好处是可以直接查找内容，另外找文件名的话，
+everything也不错，我通常让它自动启动，另外用快捷方式操作程序的话，ctrl+r或launchy都是非常实用的工具。</p></li>
+<li><p>使用rss订阅，通常有邮箱订阅或者鲜果之类的客户端，google reader也有很多人推荐，
+不过鲜果没有展示博文列表的功能，很难看到哪些更新过。所以最好还是使用google reader，
+客户端的话，我发现FeedDemon非常不错，和reader配合天衣无缝。rss订阅有很多好处，主要是信息自动飞进来，
+通过阅读大量的信息，开阔视野，增强判断力，有助于在信息大爆炸时代辨别那少量的有用信息。
+有个遗憾就是，reader在公司用不了，只能在家里用。</p></li>
+<li><p>邮件只读一遍，尽快回复，对邮件分门别类。我通常是把没处理完的标红，然后消灭之。
+书中提到说，养成这个习惯，让别人对你有好的印象，有助于推动别人和协作。</p></li>
+<li><p>将大脑清空，把所有要做的事记录到TODO上，这个非常重要。
+我通常使用wunderlist来处理，无论工作事情还是生活事情，
+无论大事小事，急事闲事，都记录到上面去。即使这件事情很琐碎或者很紧急，记录上去也是好处多多的。
+wunderlist的功能非常简单，支持多客户端。友情提醒一下，工具这东西，不要挑复杂的。
+当然，有时候我还借助番茄钟来管理。</p></li>
+<li><p>利用TODO整理时间，使用节约的时间提升自己。做事的时候按照TODO的列表弄，就不至于手忙脚乱了。
+我通常是使用wunderlist的加星功能，只是关注加星的事项。
+因为TODO帮助我们把时间分配到合理的事情上去，防止时间碎片化，所以不至于瞎忙了。</p></li>
+<li><p>工作台和电脑桌面要整洁。作者提倡的是整一个整理日，定期清理。</p></li>
+<li><p>开会议题要具体，责任要落实，使用会议纪要并用TODO跟踪。
+作者还提到，开会要注意成本，所以开会前就要把讨论事宜详细列出，记录会议纪要并跟踪完成情况，我们公司的会就是效率不行呀。</p></li>
+</ol>
+
+]]></content>
+  </entry>
+  
+</feed>

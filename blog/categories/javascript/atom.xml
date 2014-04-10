@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: javascript | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/javascript/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Dom操作和渲染并不是同步的]]></title>
+    <link href="http://mccxj.github.com/blog/20130807_dom-operation-is-not-sync.html"/>
+    <updated>2013-08-07T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/dom-operation-is-not-sync</id>
+    <content type="html"><![CDATA[<h3>一个在ie6不兼容的线上问题</h3>
+
+<p>昨天，有同事找我看一个线上问题，说一个在ie8测试通过的功能，在ie6上不能正常使用。
+一开始，他用alert定位到是哪部分代码出问题，并认为后面有部分代码没有执行。奇怪的是，在这中间加上alert语句的话，
+在ie6上也是能够正常运行的。</p>
+
+<p>这部分代码简化后大概是这样的:</p>
+
+<p><code>html
+&lt;select onclick="javascript:selectbank(this);"&gt;
+&lt;option value=""&gt;--all--&lt;/option&gt;
+&lt;/select&gt;
+</code></p>
+
+<p><code>javascript
+function(obj){
+  // get val and desc from a pop up page
+  var opt = "&lt;option value='" + val + "'&gt;" + desc + "&lt;/option&gt;";
+  $(obj).append(opt);
+  $(obj).val(val);
+  // alert("test");
+  // ...
+}
+</code></p>
+
+<p>我发现没有加alert的时候，页面会报js错误。并且，这种情况在ie8不会出现。</p>
+
+<h3>Dom操作和渲染并不是同步的</h3>
+
+<p>为什么会出现这种情况，这主要因为Dom操作比普通js操作的消耗大很多，因为它需要改变页面元素，
+导致页面出现重新渲染的情况，这取决于浏览器的实现。像ie8等比较高级的浏览器，渲染、js速度都要快许多，
+所以不会出现这种情况。而ie6太慢了，很可能还没反应过来。</p>
+
+<p>类似的情况是，在一个js调用过程中(某次事件)，如果你频繁修改dom，浏览器很可能不会逐个生效，
+而是几个操作一起生效，跟期望的有点不一样。在一些低端浏览器，可以做的优化是，让调用过程尽量快，
+减少Dom操作，或者中间使用setTimeout休息一下。</p>
+
+<p>而像上面的问题，修改成下面的代码就可以了:</p>
+
+<p><code>javascript
+function(obj){
+  // get val and desc from a pop up page
+  var opt = "&lt;option selected value='" + val + "'&gt;" + desc + "&lt;/option&gt;";
+  $(obj).append(opt);
+  // alert("test");
+  // ...
+}
+</code></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Async Javascript读书笔记]]></title>
+    <link href="http://mccxj.github.com/blog/20130121_async-javascript.html"/>
+    <updated>2013-01-21T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/async-javascript</id>
+    <content type="html"><![CDATA[<p><img src="/assets/images/2013/async-javascript.jpg" alt="Async Javascript" /></p>
+
+<p>这篇读书笔记的主要内容是在家里用ipad上输入的，感觉输入还是比较吃力呀。</p>
+
+<p>本书的副标题是Build More Responsive Apps with Less Code，
+关键词是异步、响应式，主要是对如何书写异步js代码提供一些指导意见，描述js的异步特性，回调代码的书写，还介绍了PubSub、Promises等通用模式。
+最后介绍了worker多线程模型，js异步加载等内容。书的页数可谓少得可怜，内容还算比较实在，
+提供了大量的开源库实现供读者参考，对于框架选型的话倒是可以参考一下。</p>
+
+<h2>js事件</h2>
+
+<p>主要是了解事件背后的本质。提供了象setTimeout document.onready都是事件的典型案例。
+因为js基本都是单线程模型，所以事件的触发和代码的执行有时候并不一致，而是有些时间差。即使是setTimeout(fn,0)这样的代码。
+这样的逻辑也不是立即执行的。它的执行模型大概是这样的(在ipad上手绘的)。
+<img src="/assets/images/2013/runjs.jpg" alt="js执行模型" /></p>
+
+<p>任何回调方法的执行都是需要按队列顺序来执行。如果当前代码没有执行完,就不会执行其他回调方法。
+因此理解js的异步处理模型非常重要，<strong>代码应该尽快执行完毕，避免阻塞其他代码的执行</strong>。</p>
+
+<h2>哪些是异步逻辑</h2>
+
+<p>主要是一些io操作。例如</p>
+
+<ol>
+<li>ajax调用</li>
+<li>webkit里边的console.log</li>
+<li>dom操作，浏览器可能会延迟的效果出现</li>
+<li>Node服务端里边比比皆是</li>
+</ol>
+
+
+<p>当然还有些是时间片操作。例如</p>
+
+<ol>
+<li>setTimeout或setInterval</li>
+<li>node的<a href="http://nodejs.org/docs/latest/api/process.html">process.nextTick</a></li>
+<li>html5提供的requestAnimationFrame等特性</li>
+</ol>
+
+
+<h2>异步逻辑注意</h2>
+
+<p>如果使用回调方法进行异步处理，就不要在后面的代码中按同步的逻辑来考虑。<br/>
+异步回调方法中用到的对象也应该先定义，避免由于缓存等造成奇怪的问题。<br/>
+可以使用web worker api或异步调用来生成缓存数据。<br/>
+避免超过两层的回调方法。</p>
+
+<h2>处理错误</h2>
+
+<p>使用异步调用时，stack trace可能会不全<br/>
+使用异步调用时，try-catch可能会失效<br/>
+使用err来作为回调方法的参数，或者区分success和error的回调方法<br/>
+处理uncaught异常，可以使用:
+<div class="highlight"><pre><code class="javascript"><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">h1</span><span class="o">&gt;</span><span class="nx">Broswer</span><span class="o">&lt;</span><span class="err">/h1&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nb">window</span><span class="p">.</span><span class="nx">onerror</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+<span class="p">}</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">h1</span><span class="o">&gt;</span><span class="nx">Node</span><span class="o">&lt;</span><span class="err">/h1&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;uncaughtException&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+<span class="p">})</span>
+</code></pre></div></p>
+
+<h2>流程控制</h2>
+
+<p>回调方法太多，流程控制变得异常困难，很容易造成错误，应该避免超过两层的回调方法。
+比较常用的办法有PubSub、Promises等解决方案/模式。</p>
+
+<h3>PubSub</h3>
+
+<p>就是publish/subscribe,发布订阅，常见的监听器模式。通常是把回调方法组织为带名字的事件，模拟事件触发。例如</p>
+
+<ol>
+<li>Node的<a href="http://nodejs.org/api/events.html">EventEmitter</a></li>
+<li>Backbone的<a href="http://backbonejs.org/#Events">Event</a>模型</li>
+<li>jQuery的<a href="http://api.jquery.com/on/">自定义事件</a></li>
+</ol>
+
+
+<p>需要注意的是，<strong>PubSub模式的逻辑不一定是异步的</strong>。
+如果trigger是同步逻辑，应该注意避免在回调方法中再次trigger某个事件而造成死循环，
+例如jQuery就可能出现这个问题，而像<a href="http://backbonejs.org/">backbone</a>在值没有变化时不再触发change事件，也提供了slient的选项。而<a href="http://emberjs.com/">Ember</a>之类是采用setTimeout的方式
+加入队列进行处理的方式，就是采用了异步的方式。</p>
+
+<h3>Promises</h3>
+
+<p>书中主要使用了jquery做例子，显示了<a href="http://api.jquery.com/jQuery.Deferred/">deferred</a>的用法，对callback的用法有个比较。
+熟悉jquery的童鞋通过Deferred的用法就有个大体的印象了。我个人的感觉就是，Promises模型是对PubSub常用功能的抽象，
+有点规范的意思，事实上也的确有commonjs的<a href="http://wiki.commonjs.org/wiki/Promises/A">Promises/A</a>规范。</p>
+
+<p>介绍了promises和deferred的区别，deferred是promises一个子集，它不能自己控制状态变更，需要有由其他事件出触发。
+对于node来说，现在是采用回调方法的方式，要采用deferred方式，主要做些改变。例如：
+<div class="highlight"><pre><code class="javascript"><span class="nx">deferredCallback</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">deferred</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">deferred</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+  <span class="nx">deferred</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
+<span class="p">};</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">};</span>
+<span class="p">}</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="kd">var</span> <span class="nx">fileReading</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">$</span><span class="p">.</span><span class="nx">Deferred</span><span class="p">();</span>
+<span class="nx">fs</span><span class="p">.</span><span class="nx">readFile</span><span class="p">(</span><span class="nx">filename</span><span class="p">,</span> <span class="s1">&#39;utf8&#39;</span><span class="p">,</span> <span class="nx">deferredCallback</span><span class="p">(</span><span class="nx">fileReading</span><span class="p">));</span>
+</code></pre></div></p>
+
+<h2>Async.js</h2>
+
+<p>介绍了async.js的用法，用来解决异步处理中的流程控制问题，例如iterator的问题。包括串行和并行的控制。
+这个库还提供了更加复杂的并发性控制。具体的用法还是看<a href="https://github.com/caolan/async">官方的介绍</a>吧。还提供了另外一个库<a href="https://github.com/creationix/step">step</a>的介绍</p>
+
+<h2>Worker</h2>
+
+<p>提供<a href="http://www.w3.org/TR/workers/">worker</a>的功能，在浏览器上worker还是有一些受限制的地方，例如不能涉及DOM。
+而在node上，可以用<a href="http://nodejs.org/api/cluster.html">cluster</a>来支持类似worker的功能。</p>
+
+<h2>异步加载js</h2>
+
+<p>主要探讨了几种方案，如在head加载，缺点是页面显示太慢。在body末尾加载，问题是还是要等js结束还能让事件生效，并且同样需要顺序加载。
+解决方案有<a href="http://www.w3schools.com/tags/att_script_defer.asp">defer</a>/<a href="http://www.w3schools.com/tags/att_script_async.asp">async</a>和ajax加载等方案。</p>
+
+<p>对于比较现代的浏览器，支持defer关键字用于异步js加载，还有async关键字，区别是后者不会顺序加载，先加载完先处理。
+async在有些插件化的js时async可能可以用到，其他就很难用到，因为很多js都是存在依赖的关系。</p>
+
+<p>当然，还有一些介绍了自定义的异步加载方案，如html5对象有onready事件,还有ajax加载方式。
+不过业界已经有些比较成熟的异步加载库了，如<a href="http://yepnopejs.com/">yepnope</a></p>
+
+<p>最后还介绍了一些异步加载的其他方案，例如增强的语法来支持异步逻辑。这种预编译的方式，我感觉不如在coffeescript上增加关键字的预处理方式，
+类似coffeescript的class关键字。另外还介绍<a href="https://developer.mozilla.org/en-US/docs/JavaScript/New_in_JavaScript/1.7?redirectlocale=en-US&amp;redirectslug=New_in_JavaScript_1.7">js1.7</a>关于异步逻辑的新特性:Generator。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[hello,coffeescript]]></title>
+    <link href="http://mccxj.github.com/blog/20121215_hello-coffeescript.html"/>
+    <updated>2012-12-15T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/hello-coffeescript</id>
+    <content type="html"><![CDATA[<p>周五下午的时候，花了大半个小时在团队里边介绍了CoffeeScript，使用的是<a href="http://sstephenson.s3.amazonaws.com/presentations/fowa-2011-coffeescript.pdf">Sam Stephenson的ppt</a>。
+这里再把相关的内容总结一下。</p>
+
+<h2>Why CoffeeScript</h2>
+
+<p><a href="http://coffeescript.org/">CoffeeScript</a>关注的是Good Part Of Javascript,可以和javascript无缝结合。
+CoffeeScript借鉴了ruby的语法，参考python的缩进规范，让代码更为简洁，规范性更强，适合以javascript为主的应用,如Node应用。
+<em>以我的经历(弄个html5 canvas+node的应用)，语法入门很简单(如果熟悉ruby，简直就似曾相识)，代码量可以少30%~50%，但对像Extjs这样的巨无霸UI代码，由于嵌套太深，不是很合适。</em></p>
+
+<h2>JavaScript’s Good Parts</h2>
+
+<p><strong>It’s private by default. </strong><br/>
+所有编译后的代码都会在一个自执行的闭包中，所以不会渗漏出全局变量。还记得在js文件中定义的变量在外边还能访问到吧? 在coffeescript中，全局变量必须要显示指出。</p>
+
+<p><strong>No more “var” keyword.</strong><br/>
+在js中变量只有在全局或函数内有效，没有局部变量这种，而且没有声明var的话，就会变成全局的。在coffeescript中遵循了这套规则，给所有变量加上var，并在全局开头或方法开始全部声明。
+这样可以减少一些粗心导致的bug。</p>
+
+<p><strong>Strict comparisons.</strong><br/>
+严格相等有了专门的语法is。对于javascript来说，相等这东西让不少初学者踩地雷，特别是对false这东西的理解。</p>
+
+<h2>有趣的语法</h2>
+
+<p>对着ppt或者coffeescript的官方指南看看就行了。我挑一些自己特别喜欢的：</p>
+
+<ul>
+<li>Significant white space 空白是有意义的，纠结于编码格式规范真是扯淡的事，这下好了不用争了</li>
+<li>Comprehensions 这是非常有用的语法糖</li>
+<li>Classes and Inheritance 内置的类和继承，不用纠结与用什么方式实现类比较好</li>
+<li>Bound functions 解决this应用的内置方案</li>
+<li>Conditionals 写过ruby的童鞋就知道了，后置的if和unless语句爽呆了，对可能为undefined和null的对象调用方法也优雅许多了</li>
+<li>String Syntax 多行字符串，可内嵌参数的字符串，拼接字符串的时代过去了</li>
+</ul>
+
+
+<h2>How to Use</h2>
+
+<ul>
+<li>CoffeeScript.org有一个<a href="http://coffeescript.org/#try:1">实时编译成js的工具</a>(页面)</li>
+<li>Rails3.1已经支持CoffeeScript</li>
+<li>使用<a href="http://coffeescript.org/extras/coffee-script.js">js版的编译器</a>,并使用type为text/coffeescript的script标签，嵌入CoffeeScript代码或文件</li>
+<li>使用Node.js,可以用npm install -g coffee-script,然后使用coffee命令编译成js文件</li>
+<li>可以使用监控工具来实时编译js文件，例如使用watchr</li>
+</ul>
+
+
+<p><div class="highlight"><pre><code class="bash">gem install watchr
+watchr project.watchr&lt;/p&gt;
+
+&lt;h1&gt;project.watchr&lt;/h1&gt;
+
+&lt;p&gt;watch<span class="o">(</span><span class="s1">&#39;src\/.*.coffee&#39;</span><span class="o">)</span> <span class="o">{</span>|match| system <span class="s2">&quot;coffee --compile --output js/ src/&quot;</span><span class="o">}</span>
+</code></pre></div></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[书评-JavaScript语言精髓与编程实践]]></title>
+    <link href="http://mccxj.github.com/blog/20120815_thought-read-javascript-idea.html"/>
+    <updated>2012-08-15T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/thought-read-javascript-idea</id>
+    <content type="html"><![CDATA[<p><img src="/assets/images/javascript_idea.jpg" alt="JavaScript语言精髓与编程实践" /></p>
+
+<p><strong>2012-06-03@oschina.net</strong>
+<a href="http://www.oschina.net/question/262659_55044?sort=default&amp;p=3#answers">书评链接</a></p>
+
+<p>周老师这本书的第一版我是看过的，虽然我已经是有好些年工作经验的人，
+在js方面也下过功夫。但读到这本书的时候，还是有豁然开朗的感觉，
+是国内少有的非常有深度的书，内容涉及的知识面非常广，足见周老师功力深厚。</p>
+
+<p>首先，我必须得强调一下，这本书不是入门级的，即使你使用过js有些年头了，还是会有所收获的。
+另外，有本书名类似的叫"javascript语言精髓"的书，同样也是非常棒的书，相对来说，
+两本书虽然都是说javascript，但周老师的书涉及的面更广，更偏重实践设计思想。
+放出来的几个章节，是靠前的章节,主要是javascript的基础方面的内容。
+但是和以往很多书不一样的是，它采用了不同的描述方式，读起来没有死气沉沉的感觉，
+同时也不失重点，倍感亲切。</p>
+
+<p>现在主要都是使用浏览器端js，关注的也主要是效果的实现，
+所以很多初学者以为BOM就是javascript(我们公司很多新人就经常有误解)，这真是误入歧途呀。
+这本书的内容并没有着重涉及BOM方面的具体操作，更多的时候把javascript的精华部分呈现出来，
+这的确是有很多好处的，知道原理是非常重要的。</p>
+
+<p>其实，更精彩的时候后面的章节(关于企业级,框架设计方面的内容)，
+不知道第二版和第一版在这些内容上有什么变化。如果想要使用javascript做大规模应用，做框架，
+或者理解现在流行的框架，这部分的内容肯定是非常有启发的，里边有很多思路，
+注意的要点，周老师都有自己的见解，值得期待。
+另外，我还非常关注ECMAScript新版本的内容，还有html5，服务端js相关的内容，
+不知第二版有没有涉及这方面的内容,非常期待作者在这方面的的独到见解。</p>
+
+<p>最后，我有点小建议，新书书评的时候，能不能把书的目录贴出来一下:)</p>
+
+<p>
+
+
+<h2>"书评"系列文章:</h2>
+<ul>
+ 
+  
+  <li><a href="/blog/20120815_thought-read-javascript-idea.html">2012-08-15 书评-JavaScript语言精髓与编程实践</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_thought-read-node-web-development.html">2012-08-15 书评-Node Web开发</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120818_thought-read-jolt-book.html">2012-08-18 书评-Jolt大奖精选丛书</a></li>
+  
+
+</ul>
+
+
+
+</p>
+]]></content>
+  </entry>
+  
+</feed>

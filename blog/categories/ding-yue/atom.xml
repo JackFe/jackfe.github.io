@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 订阅 | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/ding-yue/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Goodbye,Google Reader]]></title>
+    <link href="http://mccxj.github.com/blog/20130519_rss-reading.html"/>
+    <updated>2013-05-19T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/rss-reading</id>
+    <content type="html"><![CDATA[<p>今天早上,把Google Reader的订阅迁移到鲜果,顺便整理了Reader里边的RSS订阅,略为增长了一点,到153个，主要增加了许多国内著名互联网公司的团队博客。
+鲜果是把订阅和RSS订阅分开的，对于我来说，这显得很不习惯。对于鲜果来说，想打造社交阅读平台，又不得不保留RSS订阅这种传统模式，也是挺无奈的。</p>
+
+<p>另外，看过Feng写的<a href="http://dbanotes.net/mylife/the_bloggers.html">那些写过博客的人们</a>,我也发现了有不少人的博客很久之前就停止更新了。
+博客这东西，在微博，微信等新媒体的冲击下，更显得步伐缓慢，似乎不适应新时代的要求。但只有这些写下的文字，才显得有点沉淀，
+也只有部分通过写博客获得了某些真实东西的人才坚持下来。</p>
+
+<p>分享一下我的<a href="https://www.dropbox.com/s/ypo8lnsjogbtklm/export-2013-05-19.opml?v=0rc-">RSS订阅</a>.</p>
+
+<p>Google Reader即将关闭，阅读还将继续~</p>
+]]></content>
+  </entry>
+  
+</feed>

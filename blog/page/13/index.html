@@ -1,0 +1,747 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="我感觉maven这东西比ant容易上手(ant每个项目规则都不一样),看那个100页的迷你书+例子(推荐basecrm或spring3.0)基本就ok了~~
+哎，本来想写的很多，发现写出来的却很少。多多包涵! maven是一个项目管理工具，跟ant相比亮点在于它遵守了COC规则，只要遵守就好处多多 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/page/13/index.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121130_maven-quickstart.html">Maven学习要点(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-11-30T00:00:00+08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20121130_maven-quickstart.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>我感觉maven这东西比ant容易上手(ant每个项目规则都不一样),看那个100页的迷你书+例子(推荐basecrm或spring3.0)基本就ok了~~
+哎，本来想写的很多，发现写出来的却很少。多多包涵!</p>
+
+<ul>
+<li>maven是一个项目管理工具，跟ant相比亮点在于它遵守了COC规则，只要遵守就好处多多</li>
+<li>maven可以分为三部分:maven本身(提供基本功能),仓库(提供jar),maven插件(提供更多的集成功能)</li>
+<li>maven的配置文件是settings.xml,maven项目的配置文件是pom.xml</li>
+<li>settings.xml主要是配置仓库镜像,本地仓库,网络访问设置等信息,常用配置:</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;localRepository&gt;</span>D:/repository<span class="nt">&lt;/localRepository&gt;</span> --本地仓库
+   <span class="nt">&lt;proxy&gt;</span>  --网络代理
+     <span class="nt">&lt;id&gt;</span>optional<span class="nt">&lt;/id&gt;</span>
+     <span class="nt">&lt;active&gt;</span>true<span class="nt">&lt;/active&gt;</span>
+     <span class="nt">&lt;protocol&gt;</span>http<span class="nt">&lt;/protocol&gt;</span>
+     <span class="nt">&lt;username&gt;</span>proxyuser<span class="nt">&lt;/username&gt;</span>
+     <span class="nt">&lt;password&gt;</span>proxypass<span class="nt">&lt;/password&gt;</span>
+     <span class="nt">&lt;host&gt;</span>proxy.host.net<span class="nt">&lt;/host&gt;</span>
+     <span class="nt">&lt;port&gt;</span>80<span class="nt">&lt;/port&gt;</span>
+     <span class="nt">&lt;nonProxyHosts&gt;</span>local.net|some.host.com<span class="nt">&lt;/nonProxyHosts&gt;</span>
+   <span class="nt">&lt;/proxy&gt;</span>
+  <span class="nt">&lt;mirror&gt;</span>  --仓库镜像
+    <span class="nt">&lt;id&gt;</span>nexus<span class="nt">&lt;/id&gt;</span>
+    <span class="nt">&lt;mirrorOf&gt;</span>*<span class="nt">&lt;/mirrorOf&gt;</span>
+    <span class="nt">&lt;name&gt;</span>Mirror for maven central.<span class="nt">&lt;/name&gt;</span>
+    <span class="nt">&lt;url&gt;</span>http://10.137.27.223:8080/nexus/content/groups/public<span class="nt">&lt;/url&gt;</span>
+  <span class="nt">&lt;/mirror&gt;</span>
+</code></pre></div>
+
+
+<ul>
+<li>pom.xml主要分为三部分:项目本身的信息,使用的插件,依赖的jar</li>
+<li>项目本身的信息,用于唯一标识(groupid-artifactId-version, 通常是这3部分)，例如</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;modelVersion&gt;</span>4.0.0<span class="nt">&lt;/modelVersion&gt;</span> --maven3.x都是使用4.0.0
+ <span class="nt">&lt;groupId&gt;</span>com.huawei.boss<span class="nt">&lt;/groupId&gt;</span>
+ <span class="nt">&lt;artifactId&gt;</span>boss-common<span class="nt">&lt;/artifactId&gt;</span>
+ <span class="nt">&lt;version&gt;</span>0.0.1-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
+ <span class="nt">&lt;packaging&gt;</span>jar<span class="nt">&lt;/packaging&gt;</span>
+</code></pre></div>
+
+
+<p>类似这个，默认就会被打包成boss-common-0.0.1-SNAPSHOT.jar。同样，项目的依赖库也是通过这种坐标在仓库中寻找的。</p>
+
+<ul>
+<li>artifactId通常推荐使用项目名当前缀,当项目是打包成war的时候,通常需要制定发布后的命名:</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;build&gt;</span>
+   <span class="nt">&lt;finalName&gt;</span>bossbase<span class="nt">&lt;/finalName&gt;</span>
+ <span class="nt">&lt;/build&gt;</span>
+</code></pre></div>
+
+
+<ul>
+<li>可以通过properties定义一些常量,并通过${spring.version}之类来引用</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;properties&gt;</span>
+       <span class="nt">&lt;project.build.sourceEncoding&gt;</span>UTF-8<span class="nt">&lt;/project.build.sourceEncoding&gt;</span>
+       <span class="nt">&lt;spring.version&gt;</span>2.5.6<span class="nt">&lt;/spring.version&gt;</span>
+ <span class="nt">&lt;/properties&gt;</span>
+</code></pre></div>
+
+
+<ul>
+<li>jar包依赖常用的有如下配置(仅举例说明):</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;dependencies&gt;</span>
+     <span class="nt">&lt;dependency&gt;</span>
+           <span class="nt">&lt;groupId&gt;</span>org.springframework<span class="nt">&lt;/groupId&gt;</span>
+               <span class="nt">&lt;artifactId&gt;</span>spring-core<span class="nt">&lt;/artifactId&gt;</span>
+             <span class="nt">&lt;version&gt;</span>${spring.version}<span class="nt">&lt;/version&gt;</span>  --常量引用,在引用同个项目多个模块的时候相当有效
+           <span class="nt">&lt;type&gt;</span>jar<span class="nt">&lt;/type&gt;</span>  --默认就是jar
+             <span class="nt">&lt;scope&gt;</span>compile<span class="nt">&lt;/scope&gt;</span>  --默认是compile,表示对编译,测试,运行都有效
+       <span class="nt">&lt;/dependency&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+          <span class="nt">&lt;groupId&gt;</span>geronimo-spec<span class="nt">&lt;/groupId&gt;</span>
+            <span class="nt">&lt;artifactId&gt;</span>geronimo-spec-jta<span class="nt">&lt;/artifactId&gt;</span> --这个是为了不依赖sun的专用东东
+           <span class="nt">&lt;version&gt;</span>1.0.1B-rc4<span class="nt">&lt;/version&gt;</span>
+                <span class="nt">&lt;type&gt;</span>pom<span class="nt">&lt;/type&gt;</span>
+          <span class="nt">&lt;scope&gt;</span>provided<span class="nt">&lt;/scope&gt;</span>  --在运行的时候不依赖，我们常见的时候j2ee规范之类的api,如servlet-api
+  <span class="nt">&lt;/dependency&gt;</span>
+       <span class="nt">&lt;dependency&gt;</span>
+             <span class="nt">&lt;groupId&gt;</span>junit<span class="nt">&lt;/groupId&gt;</span>
+               <span class="nt">&lt;artifactId&gt;</span>junit<span class="nt">&lt;/artifactId&gt;</span>
+           <span class="nt">&lt;version&gt;</span>4.8.2<span class="nt">&lt;/version&gt;</span>
+             <span class="nt">&lt;type&gt;</span>jar<span class="nt">&lt;/type&gt;</span>
+               <span class="nt">&lt;scope&gt;</span>test<span class="nt">&lt;/scope&gt;</span>  --只在测试的时候生效,另外还有个ruuntime的scope,用于运行时依赖(如jdbc驱动等)
+      <span class="nt">&lt;/dependency&gt;</span>
+   <span class="nt">&lt;dependency&gt;</span>
+     <span class="nt">&lt;groupId&gt;</span>org.hibernate<span class="nt">&lt;/groupId&gt;</span>
+     <span class="nt">&lt;artifactId&gt;</span>hibernate<span class="nt">&lt;/artifactId&gt;</span>
+     <span class="nt">&lt;version&gt;</span>3.2.5.ga<span class="nt">&lt;/version&gt;</span>
+     <span class="nt">&lt;exclusions&gt;</span>  --这里是排除依赖，因为jta官方版是在maven仓库中找不到的
+       <span class="nt">&lt;exclusion&gt;</span>
+         <span class="nt">&lt;groupId&gt;</span>javax.transaction<span class="nt">&lt;/groupId&gt;</span>
+         <span class="nt">&lt;artifactId&gt;</span>jta<span class="nt">&lt;/artifactId&gt;</span>
+       <span class="nt">&lt;/exclusion&gt;</span>
+     <span class="nt">&lt;/exclusions&gt;</span>
+   <span class="nt">&lt;/dependency&gt;</span>
+ <span class="nt">&lt;/dependencies&gt;</span>
+</code></pre></div>
+
+
+<ul>
+<li>当项目是分模块进行的时候,通常会考虑使用modules,如:</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml">   <span class="nt">&lt;modules&gt;</span>
+       <span class="nt">&lt;module&gt;</span>basecrm-parent<span class="nt">&lt;/module&gt;</span>
+       <span class="nt">&lt;module&gt;</span>common<span class="nt">&lt;/module&gt;</span>
+       <span class="nt">&lt;module&gt;</span>systemmgr<span class="nt">&lt;/module&gt;</span>
+       <span class="nt">&lt;module&gt;</span>prodmgr<span class="nt">&lt;/module&gt;</span>
+   <span class="nt">&lt;/modules&gt;</span>
+</code></pre></div>
+
+
+<p>这个时候至少会有两级pom.xml,这样像properties,dependency等都是可以继承的(可参考basecrm项目或者spring3.x)</p>
+
+<ul>
+<li><p>plugin资源非常多，简单举几个常用插件(配置请上网找)<br/>
+maven-compiler-plugin 主要是配置编译方面的选项(例如使用什么版本的jdk)<br/>
+maven-surefire-plugin 跟测试有关的,例如配置测试失败是否继续,是否跳过测试等<br/>
+build-helper-maven-plugin 用于配置项目的目录结构,例如配置多个源代码目录等<br/>
+maven-shade-plugin 我只知道可以用来给打包加点料~~<br/>
+tomcat-maven-plugin 顾名思义,用于集成tomcat<br/>
+maven-jetty-plugin 顾名思义,用于集成jetty</p></li>
+<li><p>others <br/>
+maven仓库代理推荐nexus(网内已经有个现成的:http://10.137.27.223:8080/nexus)<br/>
+eclipse中的maven插件推荐m2eclipse(update-site: http://m2eclipse.sonatype.org/sites/m2e)<br/>
+maven实战迷你书(http://www.infoq.com/cn/minibooks/maven-in-action)</p></li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121130_jstl.html">Jstl学习经验(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-11-30T00:00:00+08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20121130_jstl.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>为了在公司里边推广jstl，而总结的一些jstl使用技巧:</p>
+
+<h4>jstl可以很方便的处理NullPointException,访问越界等常见问题</h4>
+
+<div class="highlight"><pre><code class="jsp"><span class="nt">&lt;c:set</span> <span class="na">var=</span><span class="s">”SPExtraInfoList”</span> <span class="na">value=</span><span class="s">”${queryresult[3]}”/</span><span class="nt">&gt;</span>
+<span class="nt">&lt;c:out</span> <span class="na">value=</span><span class="s">”${queryresult[3]}”/</span><span class="nt">&gt;</span>
+</code></pre></div>
+
+
+<p>这2个表达式不会因为没有第四个元素而报错</p>
+
+<h4>这2个表达式一般情况下表现是一样的，只是用c:out可以带上default的参数来处理NullPointException</h4>
+
+<div class="highlight"><pre><code class="jsp"><span class="nt">&lt;td&gt;&lt;c:out</span> <span class="na">value=</span><span class="s">”${spservice.m_SpID}”/</span><span class="nt">&gt;&lt;/td&gt;</span>
+<span class="nt">&lt;td&gt;</span>${spservice.m_SpID}<span class="nt">&lt;/td&gt;</span>
+</code></pre></div>
+
+
+<h4>即使担心其他Exception,也可以通过c:catch来做防御</h4>
+
+<div class="highlight"><pre><code class="jsp"><span class="nt">&lt;c:catch&gt;&lt;c:out</span> <span class="na">value=</span><span class="s">”${values[9]/1000.00}”/</span><span class="nt">&gt;&lt;/c:catch&gt;</span>
+</code></pre></div>
+
+
+<h4>fn:length的使用</h4>
+
+<p>用来判断集合类型或String的长度，不过只是用来判断obj是否为空的话，用le语言${empty obj}更方便(同样支持多种类型)</p>
+
+<h4>关于fn:split</h4>
+
+<p>用这个方法切割会丢失空字符串,原因是这个标签使用StringTokenizer来处理而不是split方法。</p>
+
+<div class="highlight"><pre><code class="jsp"><span class="k">&lt;%</span> <span class="n">String</span><span class="o">[]</span> <span class="n">values</span> <span class="o">=</span> <span class="o">((</span><span class="n">CEntityString</span><span class="o">)</span><span class="n">pageContext</span><span class="o">.</span><span class="na">getAttribute</span><span class="o">(</span><span class="err">“</span><span class="n">service</span><span class="err">”</span><span class="o">)).</span><span class="na">EntityString</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="err">“</span><span class="o">,</span><span class="err">”</span><span class="o">);</span>
+   <span class="n">pageContext</span><span class="o">.</span><span class="na">setAttribute</span><span class="o">(</span><span class="err">“</span><span class="n">values</span><span class="err">”</span><span class="o">,</span> <span class="n">values</span><span class="o">);</span>  <span class="k">%&gt;</span>
+</code></pre></div>
+
+
+<p>这是比较丑的例子，对格式依赖比较严重，所以最好就使用比较清晰的结构</p>
+
+<h4>关于if-else和三元表达式</h4>
+
+<p>jstl做判断分支是比较麻烦的，只提供了c:otherwise的方式，只好将就点先用着吧。如</p>
+
+<div class="highlight"><pre><code class="jsp"><span class="nt">&lt;c:choose&gt;&lt;c:when</span> <span class="na">test=</span><span class="s">”${’1′</span> <span class="err">eq</span> <span class="err">spextrainfo[0]}”</span><span class="nt">&gt;</span>是<span class="nt">&lt;/c:when&gt;&lt;c:otherwise&gt;</span>否<span class="nt">&lt; /c:otherwise&gt;&lt;/c:choose&gt;</span>
+</code></pre></div>
+
+
+<h4>jstl改变操作</h4>
+
+<p>jstl里边要做访问操作是比较方便的，不过涉及改变就挺麻烦的，如对某个字符串加个头，然后在Map里边检索，这样就不能在一个表达式里边写完，需要先c:set一下,如</p>
+
+<div class="highlight"><pre><code class="jsp"><span class="nt">&lt;c:set</span> <span class="na">var=</span><span class="s">”bzType”</span> <span class="na">value=</span><span class="s">”BizType${spservice.m_SpBizType}”/</span><span class="nt">&gt;</span>
+<span class="nt">&lt;c:out</span> <span class="na">value=</span><span class="s">”${BizTypeMap[bzType]}”/</span><span class="nt">&gt;</span>
+</code></pre></div>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121130_ibatis-more-config.html">Ibatis进阶(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-11-30T00:00:00+08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20121130_ibatis-more-config.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>Ibatis比较少人使用的配置语法</h2>
+
+<p>简单来说，ibatis3虽然没有ognl,不过也支持基本的表达式（看起来有点像el表达式的样子) 上次有个问题，说到两个表单数据(两个javabean)，入同一个表，传参就应该不成问题了</p>
+
+<h4>java代码1:</h4>
+
+<div class="highlight"><pre><code class="java">   <span class="n">Map</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">();</span>
+   <span class="n">ComplexBean</span> <span class="n">bean</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ComplexBean</span><span class="o">();</span>
+   <span class="n">bean</span><span class="o">.</span><span class="na">setMap</span><span class="o">(</span><span class="k">new</span> <span class="n">HashMap</span><span class="o">());</span>
+   <span class="n">bean</span><span class="o">.</span><span class="na">getMap</span><span class="o">().</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;id&quot;</span><span class="o">,</span> <span class="k">new</span> <span class="n">Integer</span><span class="o">(</span><span class="mi">1</span><span class="o">));</span>
+   <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;bean&quot;</span><span class="o">,</span> <span class="n">bean</span><span class="o">);</span>
+   <span class="n">Account</span> <span class="n">account</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Account</span><span class="o">();</span>
+   <span class="n">account</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
+   <span class="n">Account</span> <span class="n">anotherAccount</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Account</span><span class="o">();</span>
+   <span class="n">anotherAccount</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">3</span><span class="o">);</span>
+   <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;accounts&quot;</span><span class="o">,</span> <span class="k">new</span> <span class="n">Account</span><span class="o">[]</span> <span class="o">{</span><span class="n">account</span><span class="o">,</span> <span class="n">anotherAccount</span><span class="o">});</span>
+   <span class="n">Integer</span> <span class="n">id</span> <span class="o">=</span> <span class="o">(</span><span class="n">Integer</span><span class="o">)</span> <span class="n">sqlMap</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="s">&quot;mapBeanMap&quot;</span><span class="o">,</span> <span class="n">map</span><span class="o">);</span>
+</code></pre></div>
+
+
+<h4>ibatis配置1:</h4>
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;select</span> <span class="na">id=</span><span class="s">&quot;mapBeanMap&quot;</span>
+   <span class="na">parameterClass=</span><span class="s">&quot;map&quot;</span>
+   <span class="na">resultClass=</span><span class="s">&quot;int&quot;</span> <span class="nt">&gt;</span>
+   select count(ACC_ID) from Account where ACC_ID in (#bean.map.id#,#accounts[0].id#,#accounts[1].id#)
+ <span class="nt">&lt;/select&gt;</span>
+</code></pre></div>
+
+
+<h4>java代码2:</h4>
+
+<div class="highlight"><pre><code class="java">   <span class="n">Map</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">();</span>
+   <span class="n">ComplexBean</span> <span class="n">bean</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ComplexBean</span><span class="o">();</span>
+   <span class="n">bean</span><span class="o">.</span><span class="na">setMap</span><span class="o">(</span><span class="k">new</span> <span class="n">HashMap</span><span class="o">());</span>
+   <span class="n">Account</span> <span class="n">account</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Account</span><span class="o">();</span>
+   <span class="n">account</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
+   <span class="n">Account</span> <span class="n">anotherAccount</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Account</span><span class="o">();</span>
+   <span class="n">anotherAccount</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">3</span><span class="o">);</span>
+   <span class="n">bean</span><span class="o">.</span><span class="na">getMap</span><span class="o">().</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;accounts&quot;</span><span class="o">,</span> <span class="k">new</span> <span class="n">Account</span><span class="o">[]</span> <span class="o">{</span><span class="n">account</span><span class="o">,</span> <span class="n">anotherAccount</span><span class="o">});</span>
+   <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;bean&quot;</span><span class="o">,</span> <span class="n">bean</span><span class="o">);</span>
+</code></pre></div>
+
+
+<h4>ibatis配置2:</h4>
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;select</span> <span class="na">id=</span><span class="s">&quot;mapBeanMap2&quot;</span>
+   <span class="na">parameterClass=</span><span class="s">&quot;map&quot;</span>
+   <span class="na">resultClass=</span><span class="s">&quot;int&quot;</span> <span class="nt">&gt;</span>
+   select count(ACC_ID) from Account where ACC_ID in
+   <span class="nt">&lt;iterate</span> <span class="na">close=</span><span class="s">&quot;)&quot;</span> <span class="na">open=</span><span class="s">&quot;(&quot;</span> <span class="na">conjunction=</span><span class="s">&quot;,&quot;</span> <span class="na">property=</span><span class="s">&quot;bean.map.accounts&quot;</span><span class="nt">&gt;</span>
+     #bean.map.accounts[].id#
+   <span class="nt">&lt;/iterate&gt;</span>
+ <span class="nt">&lt;/select&gt;</span>
+</code></pre></div>
+
+
+<h2>ibatis与泛型</h2>
+
+<p>当使用复杂配置并且参数带有泛型的时候，使用比较标签有可能导致如下错误:There is no READABLE property named ‘XXX’ in class ‘java.lang.Object’.这是因为进行比较的时候，ibatis是通过反射获取类型而不是先计算值的,这样泛型的时候会获取到Object类而不能得到真实的类型,自己简单打个补丁先:</p>
+
+<div class="highlight"><pre><code class="diff"><span class="gh">Index: src/com/ibatis/sqlmap/engine/mapping/sql/dynamic/elements/ConditionalTagHandler.java</span>
+<span class="gh">===================================================================</span>
+<span class="gd">--- src/com/ibatis/sqlmap/engine/mapping/sql/dynamic/elements/ConditionalTagHandler.java (revision 1079874)</span>
+<span class="gi">+++ src/com/ibatis/sqlmap/engine/mapping/sql/dynamic/elements/ConditionalTagHandler.java (working copy)</span>
+<span class="gu">@@ -72,14 +72,13 @@</span>
+
+     if (prop != null) {
+       value1 = PROBE.getObject(parameterObject, prop);
+<span class="gd">-      type = PROBE.getPropertyTypeForGetter(parameterObject, prop);</span>
+     } else {
+       value1 = parameterObject;
+<span class="gd">-      if (value1 != null) {</span>
+<span class="gd">-        type = parameterObject.getClass();</span>
+<span class="gd">-      } else {</span>
+<span class="gd">-        type = Object.class;</span>
+<span class="gd">-      }</span>
+<span class="gi">+    }</span>
+<span class="gi">+    if (value1 != null) {</span>
+<span class="gi">+     type = value1.getClass();</span>
+<span class="gi">+    } else {</span>
+<span class="gi">+     type = Object.class;</span>
+     }
+     if (comparePropertyName != null) {
+       Object value2 = PROBE.getObject(parameterObject, comparePropertyName);
+</code></pre></div>
+
+
+<h2>关于inlineParameterMap</h2>
+
+<p>例如#name#(标准配置),#name:NUMBER#(以:分割),#myVar:javaType=int#都是有效的
+其中以:分割的有两种方式，#name:jdbcTypeName#,#name:jdbcTypeName:nullvalue#(如果后面还有则会被加到nullvalue上去) 这是老配置方法，个人不推荐使用。
+最后一种是新的配置方式,可以带上javaType,jdbcType,mode,nullValue,numericScale,handler等参数(这个文档有详细描述)</p>
+
+<h2>jdbcType,javaType和TypeHandler</h2>
+
+<p>首先要说明一点的是,配置里边的jdbcType和javaType两个配置参数是为了生成TypeHandler(如果没有指定的话);
+查找typeHandler的内部结构是Map&lt;javaType, Map&lt;jdbcType, typeHandler&gt;&gt;,其中javaType是一个类,jdbcType是一个字符串;
+所以jdbcType其实和数据库的字段类型没什么关系,只要能找到相应的TypeHandler即可(当然通常都会对应上);
+typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择setString/setInt还是getString/getObject之类</p>
+
+<h2>只指定resultClass，没有resultMap</h2>
+
+<p>如果没有指定resultMap，ibatis会根据parameterClass生成一个AutoResultMap对象;
+对于AutoResultMap,里边的每个属性的映射对应的typeHandler是什么?</p>
+
+<table markdown="1" class="table">
+  <tr><td>resultClass</td><td>TypeHandler</td></tr>
+  <tr><td>Map</td><td>ObjectTypeHandler</td></tr>
+  <tr><td>原型类型</td><td>相应类对应的typeHandler(javaType=?,jdbcType=null)</td></tr>
+  <tr><td>Bean</td><td>会对实例变量名称进行大写并和ResultSetMetaData信息进行对比,最后生成typeHandler(javaType=?,jdbcType=null)</td></tr>
+</table>
+
+
+<p>所以使用parameterClass是map的时候，某些字段的处理可能会有点问题,例如oracle的NUMBER类型会被转成BigDecimal类;</p>
+
+<h2>只指定parameterClass，没有parameterMap</h2>
+
+<p>如果没有指定parameterMap，就会根据配置的sql解析inlineParameterMap;
+其中每个参数的TypeHandler如果没有指定，会根据参数的类型来寻找，例如#name,jdbcType=NUMBER# 会根据name计算后的类型来制定javaType
+这个typeHandler的好处可以对jdbc api友好，例如对于int默认会采用IntegerTypeHandler，这样会调用PreparedStatement#setInt, 而不是统统setString或者setObject。
+通常参数类型和jdbc类型不对应的时候，需要考虑设置typeHandler或者使用更强类型的Bean而不是统统使用map;</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121130_findbugs.html">Findbugs使用有感(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-11-30T00:00:00+08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20121130_findbugs.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>最近抽出点时间来处理项目上庞大的findbugs问题,处理过程中总结了下面几类参见的毛病：</p>
+
+<h3>关于IO流</h3>
+
+<p>见过的有写response的outputStream,文件下载,数据导出。这些场景涉及流读取、写入和最后的关闭，是findbugs检查的重灾区.
+解决办法是使用common-io库,常用的方法有IOUtils#copy,IOUtils#write,IOUtils#closeQuietly。</p>
+
+<h3>关于无效变量操作</h3>
+
+<p>包括变量使用后置null,没有被使用的变量，虽然这种findbugs问题很低级,不过在系统中仍然存在很多。
+处理办法是
+1. 变量使用后置null是没什么用的,JVM的GC比想象中智能多了；
+2. 假如变量在稍后的处理过程一定会被赋值,则init是没有意义的。<br/>
+遵循的原则是相关的变量和操作集中在一起，缩短变量的作用域(同时，这样也对JVM比较友好)</p>
+
+<h3>关于对象的延时加载</h3>
+
+<p>系统中有些类实现了延时加载的singleton模式，还有的Action类中的实例变量使用了延时加载的方式。
+很不幸的是，singleton的延时加载实现几乎都是错的, Action类的实例变量延时加载也没什么意义。
+要实现singleton，最简单的方式是预加载方式,如果想做延时加载,可以使用内部静态类的实现方式。</p>
+
+<h3>关于执行效率</h3>
+
+<p>包括string的修改操作,map的遍历操作。如果有string的大量修改操作，应该使用StringBuffer或者StringBuilder
+(在jdk5以上，StringBuilder适用于大多数场合)。而对于map的遍历,应该使用entrySet而不是keySet,这些注意一下就ok了。
+另外系统有很多DateFormater的东西，用了很多静态变量来提高效率，可惜jdk的日期库是非常烂的,DateFormater也不是线程安全的东西，应该避免使用静态变量。</p>
+
+<h3>关于异常处理</h3>
+
+<p>Exception is caught when Exception is not thrown 这个findbugs问题在系统出现非常多，也是最难处理的问题。从这个点
+就可以看出系统实现非常混乱，本来属于不同抽象层次的代码都堆在一起了，没有层次之分。这个问题一般是需要修改到那段逻辑的时候才会去
+解决，通过抽取方法/类的方式，把异常进行抽象化，最后借助框架层次上的异常统一处理逻辑就通常可以把Action上面的所有的try-catch干掉。</p>
+
+<h3>关于注释</h3>
+
+<p>这其实不是findbugs问题。可以发现java代码里边很多注释是没什么用的，包括一些显而易见的注释,方法注释(通常只有方法描述是有点意义，其他都是抄模板的)
+注释写不好，还不如不写，正确的做法是尽量写出自文档化的代码。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121120_oracle-explain-plan.html">Oracle执行计划思维导图</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-11-20T00:00:00+08:00" pubdate data-updated="true">Nov 20<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20121120_oracle-explain-plan.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2><strong>这是为了oracle培训而编制的思维导图</strong></h2>
+
+<h2>可以在Dropbox上下载到这个<a href="https://www.dropbox.com/s/8l53i0h3hphm5bz/%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92.xmind">xmind文件</a></h2>
+
+<p><img src="/assets/images/explain_plan.png" alt="oracle执行计划思维导图" /></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/14/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/12/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

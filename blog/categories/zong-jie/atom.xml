@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 总结 | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/zong-jie/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[手绘的思维导图:程序员的思维修炼]]></title>
+    <link href="http://mccxj.github.com/blog/20130324_mind-map-with-hand.html"/>
+    <updated>2013-03-24T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/mind-map-with-hand</id>
+    <content type="html"><![CDATA[<h3>手绘的思维导图</h3>
+
+<p>先看看今天早上手绘的作品，没有工具绘制的工整，但感觉效果更棒!</p>
+
+<p><img src="/assets/images/2013/mind-map-with-hand.jpg" alt="程序员的思维修炼" /></p>
+
+<h3>再谈谈这本书</h3>
+
+<p>这本书感觉就是从小工到专家的续作，但不是只有程序员才能阅读并受益的书籍，推荐指数:5个星星。</p>
+
+<p>书的主题是围绕德雷福斯技能模型，区分L型和R型思维方式，<strong>讲述如何学习的技能</strong>。在实践方式上，我重点谈谈我印象比较深的几个方法。
+这些方法的操作性也比较强:</p>
+
+<ol>
+<li>晨写，早上第一件事，只写不审查</li>
+<li>自由写，就是写博客的习惯</li>
+<li>SMART任务</li>
+<li>SQ3R主动阅读</li>
+<li>手绘思维导图</li>
+<li>以教代学，说出来</li>
+<li>冥想，关注呼吸，类似自我催眠的技巧</li>
+<li>GTD，不要在头脑保存列表</li>
+</ol>
+
+
+<p><strong>1和2是记录和积累，3是目标管理，4和5,6是增强学习效果,7和8是注意力管理。</strong>
+现在来说，关于晨写和SMART，我没什么使用经验，正在学习。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[重复代码处理模式]]></title>
+    <link href="http://mccxj.github.com/blog/20130306_duplicate-code.html"/>
+    <updated>2013-03-06T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/duplicate-code</id>
+    <content type="html"><![CDATA[<p>最近在整改某项目几十个模块(子项目)的重复代码，整理的一些思路。
+其实方法在重构一书早就说过了，我个人认为要多思考方法。类的职责，
+用对象间进行协助的思路，来解决重复代码的问题。
+对于快速找到某段重复代码的处理模式，这就是关键的地方。</p>
+
+<h3>模块之间的重复代码</h3>
+
+<ul>
+<li>文件重复，但模块间通用，可推到基础模块，风险小，常见于基础工具类</li>
+<li>文件重复，但与具体模块相关，说明依赖其他模块，不适合直接推到基础模块，调整较大，建议延后处理</li>
+</ul>
+
+
+<h3>模块内文件间的重复代码</h3>
+
+<h4>强相关</h4>
+
+<ul>
+<li>直接删除一个，推上上层包结构，作为公共代码</li>
+<li>差异为通用扩展时, 合并成一个</li>
+<li>差异为特殊扩展时，采用继承方式，虽然不够彻底，但风险小</li>
+</ul>
+
+
+<h4>普通关联</h4>
+
+<ul>
+<li>以业务为准，公用包结构</li>
+<li>重复部分推到父类，由两边继承</li>
+<li>采用协助类，常见于较大粒度的对象协助</li>
+</ul>
+
+
+<h4>弱相关</h4>
+
+<ul>
+<li>重复代码进入工具类，适用于通用的场景</li>
+<li>采用协助类，参与于较小粒度的对象协助</li>
+</ul>
+
+
+<h3>文件内方法间的重复代码</h3>
+
+<ul>
+<li>抽取私有方法作为优先考虑的方法，风险小，可操作性强，需要注意方法命名</li>
+<li>抽取协作类，常见于私有方法过多、局部关联性强、复杂度过高等情况</li>
+<li>由已经存在的类实现，常见于职责过大的情况</li>
+<li>如果适用于通用逻辑，可以推到父类或工具类</li>
+</ul>
+
+
+<h3>小技巧</h3>
+
+<ul>
+<li>先抽取小方法，看清结构</li>
+<li>有时候用循环代替排山倒海式代码</li>
+<li>先简化再深化，分步骤处理</li>
+<li>识别真正不一样的地方</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[对RESTFul多了点理解]]></title>
+    <link href="http://mccxj.github.com/blog/20130304_restful.html"/>
+    <updated>2013-03-04T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/restful</id>
+    <content type="html"><![CDATA[<h3>简报与REST</h3>
+
+<p>上个月春节刚刚回来，就要交技术简报文章了。实在有点不知道写什么好，还好春节回去有准备些东西，不然就要悲剧了。
+这次的主题选择的是REST。REST在国内外倒是很火热的主题了，不过在咱们公司里边很多人还是没接触过，完全没概念。
+我觉得，这也的确是个不错的主题。</p>
+
+<h3>主要内容</h3>
+
+<p><img src="/assets/images/2013/restful.png" alt="RESTFul vs CURD" /></p>
+
+<p>文章本身没什么特别，主要围绕资源来展开的，主要是给大家对REST,RESTFul等有点概念。
+主要有这些部分:</p>
+
+<ol>
+<li>资源的名称与URI的关系，资源的概念很重要</li>
+<li>获取资源的方式，主要是HTTP标准方法</li>
+<li>资源的表述，如何表达资源的外在形式</li>
+<li>资源的连通性，超媒体的概念一旦忽略就几乎等同于CRUD了</li>
+<li>状态转移，区分应用状态和资源状态</li>
+</ol>
+
+
+<p>总体来看，在写这个文章的时候，对RESTFul多了点理解，主要是以前一些忽略的地方得到了加强。
+整篇文章大概花了10页，主要以github API和ruby on rails作为例子。
+<strong>个人认为，<a href="http://developer.github.com/">Github API</a>设计得是相当有参考意义的。</strong>值得参与RESTFul API设计的同行参考。</p>
+
+<h3>推荐的书籍材料</h3>
+
+<p>除了Github API,下面的一些材料也是我很喜欢的。特别是RESTful Web Services这本书，
+里边的理论比较具有可操作性，并提出了面向资源的架构(ROA)，作为REST的实践方式，不妨学习一下。</p>
+
+<ul>
+<li><a href="http://www.redsaga.com/opendoc/REST_cn.pdf">架构风格与基于网络的软件架构设计</a></li>
+<li><a href="http://book.douban.com/subject/3094230/">RESTful Web Services</a></li>
+<li><a href="http://book.douban.com/subject/6837645/">RESTful Web Services Cookbook</a></li>
+<li><a href="http://book.douban.com/subject/6937982/">REST API Design Rulebook</a></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[博客写作小结]]></title>
+    <link href="http://mccxj.github.com/blog/20130120_how-to-blog.html"/>
+    <updated>2013-01-20T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/how-to-blog</id>
+    <content type="html"><![CDATA[<p><img src="/assets/images/2013/howtoblog.jpg" alt="博客写作" />
+这是前两天在家里用手机敲的文字记录，小小的总结，希望对<strong>写作信心不足</strong>的童鞋有所帮助。</p>
+
+<p>写博客，<strong>不需要太在意写作技巧</strong>，文学性的问题，只需要<strong>把事情描述出来</strong>就可以了。
+假如有个场景是水龙头漏水，写下来的是什么偷税漏税，积少成多的东西，那是文学。不需要想得那么远，能赶紧把事情描述好，赶紧修理好就行了。
+单纯的记录，本身已经很难能可贵了，但很多时候我们连这个都做不到。</p>
+
+<p>我以前写过很多博文，里边有很多是<strong>流水账的记录方式</strong>，有个基本的格式:
+今天发生什么了，我觉得怎么样，假如这样的话会怎那样。基本是想到什么就敲什么，很简单吧。
+我觉得这个方法的好处是<strong>培养写作的信心</strong>，因为这样比较容易出内容嘛。坚持写，<strong>写得越久越容易有信心写下去</strong>。</p>
+
+<p>虽然读者对象很重要，但是一开始也没有多少读者，所以不需要太在意读者是谁，<strong>把自己当成唯一的读者</strong>就好了，
+对自己负责，不求内容精妙，但求格式工整，不是火星文。<strong>字数多少不在意</strong>，能写多少就写多少。</p>
+
+<p>一开始很难写出什么内容，只要坚持写就行了，慢慢就会写好了。
+经常回顾，<strong>多看看自己写的内容</strong>，<strong>对比别人写的内容</strong>，找到差距，有针对性的提高写作技巧，例如多模仿。</p>
+
+<p>如果有可能，<strong>为自己的博客做一下分享推广</strong>，让别人参与讨论，可以增强自己写作的信心，也可能得到很多的灵感，在以后写的更好。
+推广的方式可以考虑rss订阅，邮件分享，微博等。</p>
+
+<p><strong>博客系统尽量找简单点的</strong>，以前我使用blogspot就是因为界面比较简洁，还有像<a href="http://svbtle.com/">Svbtle</a>/<a href="http://natewienert.com/codename-obtvse">Obtvse</a>这样的<a href="http://www.36kr.com/p/93438.html">简约风格博客平台</a>
+像wordpress之类的系统，适合喜欢折腾的人:) 最近比较流行的是像<a href="http://pages.github.com">github page</a>和<a href="http://jekyllrb.com/">jekyll</a>这样的静态页面生成方式，还是比较适合it人的,
+我现在也是使用<a href="/blog/20120622_new-blog-in-github.html">这套系统</a>。</p>
+
+<p>最后，<strong>马上动手，enjoy it</strong>!</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[把时间当作朋友读书笔记]]></title>
+    <link href="http://mccxj.github.com/blog/20130113_to-be-times-friend.html"/>
+    <updated>2013-01-13T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/to-be-times-friend</id>
+    <content type="html"><![CDATA[<p><img src="/assets/images/2013/tobe-times-friend.gif" alt="把时间当作朋友" /></p>
+
+<p>刚读到这本书的时候，有种相见恨晚的感觉。不同于一般的时间管理类书籍，无病呻吟式的洗脑不见了，例子也少了强加因果关系的痕迹，有些观点印象比较深，值得一读。下面是一些比较有感觉的部分，和大家分享一下。</p>
+
+<h3>欲望</h3>
+
+<p>人希望欲望尽快得到满足。这是人性，所以衍生了速成，不劳而获，学习浮于表面这些浮躁的社会现象。在这之前，我真的没有意识到这是人性本质的的一种表现，对于有些新同事急于求成的想法，甚至是自己，也经常有难以理解的感觉。没能理解到这点，就很难说感同身受了。</p>
+
+<h3>成功学</h3>
+
+<p>虽然我也读过一些成功人士的经验之谈，我向来对成功学理论不大感冒，因为多读几本就会发现，他们经常夸大某一方面对结果的影响，很多例子也很牵强，再加上环境的不同，这些经历基本是不可复制的。李老师在书中也反复强调，要警惕成功学，要有自己的独立思考。独立思考，成熟心智，管理自我，才是书中强调的思想。</p>
+
+<h3>时间管理</h3>
+
+<p>读书，除了希望能找到不同的观点，还希望能有些支持这些观点的可操作性方案。其实关于时间管理方面的著作，我也知道一些，例如使用TODO，GTD等工具，番茄工作法。 李老师也有类似的一些做法，例如代办列表，下一阶段代办列表，每日事项回顾。关于每天晚上回顾做了那些事，这个在其他书上没有特别指出，不过李老师提到的回顾发现没什么可以写的尴尬，我也经常遇到。让我产生这些做法不可靠的感觉，后来才发现，这个和代办事项的优先级与难度有关。自己经常会倾向于先完成熟悉的，简单的，感兴趣的，而不是重要的，困难的。这样即使看上去完成很多东西，回顾的时候发现没什么可以值得一提的事情。</p>
+
+<h3>计划</h3>
+
+<p>计划不如变化快，但我们还是需要计划的。关于计划，我发现自己经常高估自己的能力，这个需要多考虑意外，给自己心理估计时间多加一段时间，并且把计划细分，对于不熟悉不感兴趣的事情，更应该如此，把时间分为多个时间片，不断接近目标。书中关于这部分的内容和番茄工作法的理论有交叉，个人感觉番茄工作的理论更详细和有针对性些吧！</p>
+
+<h3>有趣言语</h3>
+
+<p>李老师常说的一句话是，相信我，你并不孤单。并引用了正态分布的理论，使得这句话特别的深刻。整本书妙语连珠，读起来比较轻松。</p>
+]]></content>
+  </entry>
+  
+</feed>

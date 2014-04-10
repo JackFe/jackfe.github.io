@@ -1,0 +1,334 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>量杯倒水游戏 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="一个经典的量杯倒水问题">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20120706_the-cup-game.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">量杯倒水游戏</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-06T00:00:00+08:00" pubdate data-updated="true">Jul 6<span>th</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p><img src="/assets/images/the_cup_game.jpg" alt="量杯倒水" /></p>
+
+<h2>量杯倒水</h2>
+
+<p>这个问题常见于趣味题和面试题，题意大概是这样的:有两个只有最大刻度的量杯(如10毫升，3毫升)，
+并且有无限量的水。求怎么倒出x毫升的水?</p>
+
+<h2>思路与猜想</h2>
+
+<p>首先我们来操作一下，例如倒出4毫升的水,同时把大小量杯表示为a,b</p>
+
+<ol>
+<li>b装满，倒入a(a有3ml,b有0ml)</li>
+<li>b再装满，倒入a(a有6ml,b有0ml)</li>
+<li>b再装满，倒入a(a有9ml,b有0ml)</li>
+<li>b再装满，倒入a(a有10ml,b有2ml)</li>
+<li>a倒掉，b倒入a(a有2ml,b有0ml)</li>
+<li>重复2-4的动作(此时a有10ml,b有1ml)</li>
+<li>a倒掉，b倒入a(a有1ml,b有0ml)</li>
+<li>b装满，倒入a(a有4ml,b有0ml)</li>
+</ol>
+
+
+<p>假如我们再继续操作的话，还可以找到7ml,这样0ml~10ml的体积都是可以测量出来的。这是不是一般规律?</p>
+
+<p>虽然我们进行了许多次操作，但操作是有规律的:b总是往a倒水直到a装满，这时b会剩余一点。
+这样才能得到不同于a,b的体积。我们重复这个操作的过程，不考虑a装满的情况，
+在a中出现的水t可以用t=mb-na来表示(a>t>=0,m>=0,n>=0)。其中m可以表示为往a倒水的次数，
+n表示a装满的次数。</p>
+
+<p>首先考虑一下a,b不是互质的情况，假设他们的最大公约数为u,那么狠显然没法倒出t小于u的体积。
+这种情况可以归结为两边除去u的情况。</p>
+
+<p>现在再来考虑a,b互质的情况，我们需要考虑的是，对于t，是否都存在m,n使t=mb-na成立？</p>
+
+<h2>贝祖定理</h2>
+
+<p>我们从数学归纳法出发，很明显t=0的情况是满足要求的，假设t=1的要求也能够满足，
+那么有t=mb-na成立就可以推导出t+1=m1<em>b-n1</em>a+m2<em>b-n2</em>a也是符合mb-na的。</p>
+
+<p>如何证明存在m,n使得mb-na=1?这个倒不用自己动手，有个叫<a href="http://zh.wikipedia.org/wiki/%E8%B4%9D%E7%A5%96%E7%AD%89%E5%BC%8F">贝祖定理</a>的数学定理，可以很容易推导出这个结论。</p>
+
+<p>从wiki上看到的资料，贝祖定理可以证明a,b互质，存在xa+yb=1，其中x,y为整数
+不过好像跟我们的要求有点出入。不过没关系，很显然x,y如果没有不等于0的话，必须有个是负数，</p>
+
+<p>如果x是负数，显然符合要求，如果y是负数，那么总存在一个数k(k>0)使得y+ka>0,那么
+1=xa+yb=xa+yb-kab+kab=(x-ka)a+(y+ka)b,这样也是可以符合要求的。</p>
+
+<p>所以，按照我们的操作方式，假设a,b的最大公约数为u,就可以找到0ml,uml,2uml&#8230;aml的体积。</p>
+
+<h2>再思考</h2>
+
+<p>如果有多个量杯，情况会是怎样?</p>
+
+<p>要倒出一定量的水，上述操作是否是最快的?</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-06T00:00:00+08:00" pubdate data-updated="true">Jul 6<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/you-xi/'>游戏</a>, <a class='category' href='/blog/categories/suan-fa/'>算法</a>, <a class='category' href='/blog/categories/bei-zu-ding-li/'>贝祖定理</a>, <a class='category' href='/blog/categories/zhi-shu/'>质数</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20120629_problem-about-jekyll-and-markdown.html" title="Previous Post: 使用jekyll和markdown遇到的问题">&laquo; 使用jekyll和markdown遇到的问题</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20120707_everyday-codediff-tool-with-svn-cmd.html" title="Next Post: 使用svn命令进行每日codediff">使用svn命令进行每日codediff &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20120706_the-cup-game.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20120706_the-cup-game.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

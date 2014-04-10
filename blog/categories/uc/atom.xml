@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: uc | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/uc/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[对UC文章《实时监控Android设备网络包》的补充]]></title>
+    <link href="http://mccxj.github.com/blog/20131227_android-tcpdump-netcat-addon.html"/>
+    <updated>2013-12-27T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/android-tcpdump-netcat-addon</id>
+    <content type="html"><![CDATA[<p>补充的内容，主要是一些细节的问题，备忘.</p>
+
+<h2>编译netcat</h2>
+
+<p>android上自己好像带了一个，不过也可以自己编译一个。 我这里使用cygwin来编译的，首先去下载源码。</p>
+
+<p>```bash</p>
+
+<h1>cygwin</h1>
+
+<p>cd /cygdrive/d/
+mkdir -p netcat/toolchain</p>
+
+<p>export NDK=/cygdrive/d/android-ndk-r8e
+/cygdrive/d/android-ndk-r8e/build/tools/make-standalone-toolchain.sh --platform=android-8 --install-dir=netcat/toolchain
+export PATH='pwd'/netcat/toolchain/bin:$PATH
+export CC=arm-linux-androideabi-gcc
+export RANLIB=arm-linux-androideabi-ranlib
+export AR=arm-linux-and roideabi-ar
+export LD=arm-linux-androideabi-ld</p>
+
+<h1>开始编译源码</h1>
+
+<p>cd netcat-0.7.1/
+./configure —host=arm-linux
+make</p>
+
+<h1>用file进行检测一下</h1>
+
+<p>file src/netcat
+src/netcat: ELF 32-bit LSB executable, ARM, version1 (SYSV), ...</p>
+
+<h1>发到android上去</h1>
+
+<p>adb push src/netcat /data/local/netcat
+adb shell chmod 777 /data/local/netcat
+```</p>
+
+<h2>tcpdump的使用</h2>
+
+<p>如果只是监听所有的包，可以用下面的：
+<code>bash
+adb shell "tcpdump -n -s 0 -w - | nc -I -p 11233"
+</code></p>
+
+<p>如果先监听端口的话，又想转发的话，写法有点特别。
+<code>bash
+adb shell "tcpdump -X -n -s 0 -w - port 5000 | nc -l -p 11233"
+</code></p>
+
+<p>另外，如果像我这样，有cygwin的话，就已经有nc命令了，可以像下面一样进行转发。
+<code>bash
+adb forward tcp:11333 tcp:11233 &amp;&amp; nc -v 127.0.0.1 | /cygdriver/d/Wireshark/Wireshark.exe -k -S -i -
+</code></p>
+]]></content>
+  </entry>
+  
+</feed>

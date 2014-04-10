@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: gist_tag.rb | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/gist-tag-dot-rb/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[jekyll插件:嵌入github gist]]></title>
+    <link href="http://mccxj.github.com/blog/20130127_gist-tag-blog.html"/>
+    <updated>2013-01-27T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/gist-tag-blog</id>
+    <content type="html"><![CDATA[<p><img src="/assets/images/2013/gist-tag-blog.png" alt="jekyll插件:嵌入github gist" /></p>
+
+<p>gist是gtihub的一个代码块功能，用来粘贴一些比较长的代码还是挺有用的。
+github page可以直接嵌入gist，并且能显示高亮。
+不过我不想太依赖gist，所以<strong>修改成使用pygments高亮的方式</strong>。
+看看下面gist_tag.rb这个插件的效果:</p>
+
+<p><div><script src='https://gist.github.com/4648237.js?file=gist_tag.rb'></script>
+<noscript><pre><code>require 'cgi'
+require 'digest/md5'
+require 'net/https'
+require 'uri'
+
+module Jekyll
+  class GistTag &lt; Liquid::Tag
+    include Liquid::StandardFilters
+    def initialize(tag_name, text, token)
+      super
+      @text           = text
+      @options        = {:encoding =&gt; &quot;utf-8&quot;}
+      @cache_disabled = false
+      @cache_folder   = File.expand_path &quot;../_gist_cache&quot;, File.dirname(__FILE__)
+      FileUtils.mkdir_p @cache_folder
+    end
+
+    def render(context)
+      if parts = @text.match(/([\d]*) lang=(.+) (.*)/)
+        gist, @lang, file = parts[1].strip, parts[2].strip, parts[3].strip
+        script_url = script_url_for gist, file
+        code       = get_cached_gist(gist, file) || get_gist_from_web(gist, file)
+
+        context.registers[:site].pygments
+        html_output_for context, script_url, code
+      else
+        &quot;&quot;
+      end
+    end
+
+    def html_output_for(context, script_url, code)
+      if context.registers[:site].pygments
+        output = add_code_tags(Pygments.highlight(code, :lexer =&gt; @lang, :options =&gt; @options))
+      else
+        render_codehighlighter(code)
+      end
+    end
+
+    def add_code_tags(code)
+      # Add nested &lt;code&gt; tags to code blocks
+      code = code.sub(/&lt;pre&gt;/,'&lt;pre&gt;&lt;code class=&quot;#{@lang}&quot;&gt;')
+      code = code.sub(/&lt;\/pre&gt;/,&quot;&lt;/code&gt;&lt;/pre&gt;&quot;)
+    end
+
+    def render_codehighlighter(code)
+      #The div is required because RDiscount blows ass
+      &lt;&lt;-HTML
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class='#{@lang}'&gt;#{h(code).strip}&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+      HTML
+    end
+
+    def script_url_for(gist_id, filename)
+      &quot;https://gist.github.com/#{gist_id}.js?file=#{filename}&quot;
+    end
+
+    def get_gist_url_for(gist, file)
+      &quot;https://raw.github.com/gist/#{gist}/#{file}&quot;
+    end
+
+    def cache(gist, file, data)
+      cache_file = get_cache_file_for gist, file
+      File.open(cache_file, &quot;w&quot;) do |io|
+        io.write data
+      end
+    end
+
+    def get_cached_gist(gist, file)
+      return nil if @cache_disabled
+      cache_file = get_cache_file_for gist, file
+      File.read cache_file if File.exist? cache_file
+    end
+
+    def get_cache_file_for(gist, file)
+      bad_chars = /[^a-zA-Z0-9\-_.]/
+      gist      = gist.gsub bad_chars, ''
+      file      = file.gsub bad_chars, ''
+      md5       = Digest::MD5.hexdigest &quot;#{gist}-#{file}&quot;
+      File.join @cache_folder, &quot;#{gist}-#{file}-#{md5}.cache&quot;
+    end
+
+    def get_gist_from_web(gist, file)
+      gist_url          = get_gist_url_for gist, file
+      raw_uri           = URI.parse gist_url
+      https             = Net::HTTP.new raw_uri.host, raw_uri.port
+      https.use_ssl     = true
+      https.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      request           = Net::HTTP::Get.new raw_uri.request_uri
+      data              = https.request request
+      data              = data.body
+      cache gist, file, data unless @cache_disabled
+      data
+    end
+  end
+
+  class GistTagNoCache &lt; GistTag
+    def initialize(tag_name, text, token)
+      super
+      @cache_disabled = true
+    end
+  end
+end
+
+Liquid::Template.register_tag('gist', Jekyll::GistTag)
+Liquid::Template.register_tag('gistnocache', Jekyll::GistTagNoCache)</code></pre></noscript></div>
+</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: svn | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/svn/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[生成svn补丁的回退补丁]]></title>
+    <link href="http://mccxj.github.com/blog/20120819_reverse-svn-diff-file.html"/>
+    <updated>2012-08-19T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/reverse-svn-diff-file</id>
+    <content type="html"><![CDATA[<h3>生成回退补丁的脚本</h3>
+
+<p><div class="highlight"><pre><code class="ruby"><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;C:/Users/peipei/Desktop/svn2.diff&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|&lt;</span><span class="sr">/p&gt;</span>
+
+<span class="sr">&lt;pre&gt;&lt;code&gt;open(&quot;C:/</span><span class="no">Users</span><span class="o">/</span><span class="n">peipei</span><span class="o">/</span><span class="no">Desktop</span><span class="o">/</span><span class="n">svn</span><span class="o">.</span><span class="n">diff</span><span class="s2">&quot;, &#39;r&#39;) do |ff|</span>
+<span class="s2">    ff.readlines.each do |line|</span>
+<span class="s2">        if line.start_with?(&quot;</span><span class="err">@@</span><span class="s2">&quot;)</span>
+<span class="s2">            line =~ /@@\ \-(.+)\ \+(.+)\ @@/</span>
+<span class="s2">            f &amp;lt;&amp;lt; &quot;</span><span class="err">@@</span><span class="p">\</span> <span class="p">\</span><span class="o">-</span><span class="c1">#{$2}\ \+#{$1}\ @@\n&quot;</span>
+        <span class="k">elsif</span> <span class="n">line</span><span class="o">.</span><span class="n">start_with?</span><span class="p">(</span><span class="s2">&quot;+ &quot;</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="s2">&quot;-</span><span class="si">#{</span><span class="n">line</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">elsif</span> <span class="n">line</span><span class="o">.</span><span class="n">start_with?</span><span class="p">(</span><span class="s2">&quot;- &quot;</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="s2">&quot;+</span><span class="si">#{</span><span class="n">line</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span>
+            <span class="n">f</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="n">line</span>
+        <span class="k">end</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+<span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="k">end</span>
+</code></pre></div></p>
+
+<h3>其他计划</h3>
+
+<ol>
+<li>在codediff工具中添加通过文件名查询功能(已经实现)</li>
+<li>通过codediff工具直接生成提交补丁和回退补丁(这个延后)</li>
+<li>能够支持补丁合并(这个不是那么好弄)</li>
+</ol>
+
+
+<h3>关于代码评审</h3>
+
+<p>已经有个简单的方案了，我决定在codediff应用上支持每周代码评审功能，这周上线试用一下。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[使用svn命令进行每日codediff]]></title>
+    <link href="http://mccxj.github.com/blog/20120707_everyday-codediff-tool-with-svn-cmd.html"/>
+    <updated>2012-07-07T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/everyday-codediff-tool-with-svn-cmd</id>
+    <content type="html"><![CDATA[<h2>什么是codediff?</h2>
+
+<p>每日codediff是一项简单易用，行之有效的敏捷实践，可以保证项目进展，让项目中的新人得到学习的机会，让代码规范得到更有效贯彻。
+具体做法是，每天早上站立晨会之后，几个人围在一起，使用版本控制工具的diff功能，
+逐行浏览前一天提交的代码，提交者对修改的代码进行介绍，讲讲代码是什么功能，为什么要做这样的修改。
+当然其他人可以提出异议，并且通常会记录评审意见，以便后续跟踪。</p>
+
+<p>和每周的代码评审相比，每日codediff虽然局限于每个代码片段，但时效性更强，两者互补不足，都是保证代码质量的有效手段。</p>
+
+<h2>better svn, better codediff</h2>
+
+<p>在我们的项目团队里边，一直也是使用这种方式进行处理。
+公司使用的是svn，不过由于环境的限制，svn性能并不是特别理想。
+经常把大量时间用在svn log,diff的等待过程中，整个codediff也因此需要比较多时间，有时需要1个多小时。
+长此以往，很多人对每日codediff不重视，参与度不高，对于我来说，评审问题也很不好跟踪。</p>
+
+<p>后来我想找一专门为codediff服务的工具，考察了一些开源项目，但总觉得不是特别合适我们团队的需求。
+我的要求也很简单，为svn服务，操作简单，便于跟踪，而不需要正规的评审流程。后来，我决定自己开发一个。</p>
+
+<p>我的做法也很简单: 定时从svn上取出最新提交记录，并把相关文件记录到数据库中去。
+再弄个网页展示出来，codediff和评审通过网页来进行，</p>
+
+<p>原型一出来，就在团队中试用了一段时间，效果挺好的，通常只需要10来分钟就可以了，大大提高了效率。
+现在几个同事还把这东西推广到其他项目中去，反应都还不错，让我着实感到非常有面子:)。</p>
+
+<h2>更多细节</h2>
+
+<p>后来，有些同事比较感兴趣提交记录是怎么弄出来的。
+因为很多人平时只是使用海龟来操作，命令行基本没使用过，所以不清楚也不奇怪。所以解释一下是怎么做的，也是我写这篇博客的重要原因。</p>
+
+<p>整个工程主要使用<a href="http://rubyonrails.org/">ruby on rails</a>和<a href="http://twitter.github.com/bootstrap/">twitter bootstrap</a>做页面.
+通过<a href="http://jruby.org/">jruby</a>来跑，定时任务使用<a href="https://github.com/mccxj/quartz-jruby">quartz-jruby</a>来做，提交记录通过svn命令来获取，我这里主要说说svn命令。</p>
+
+<p>当然首先需要安装svn命令行客户端，然后通过<a href="http://docs.oracle.com/javase/6/docs/api/java/lang/Runtime.html#exec(java.lang.String)">Runtime.exec()</a>来获取输出信息，解析这些信息入库即可。</p>
+
+<p><div class="highlight"><pre><code class="bash">&lt;/p&gt;
+
+&lt;h1&gt;获取最新版本号,使用正则/Last Changed Rev: <span class="o">(</span><span class="se">\d</span>+<span class="o">)</span>/得到最新版本&lt;/h1&gt;
+
+&lt;p&gt;svn info http://hustoj.googlecode.com/svn/trunk&lt;/p&gt;
+
+&lt;h1&gt;获取svn log，这个解析比较麻烦，需要用正则分组&lt;/h1&gt;
+
+&lt;p&gt;svn log -l 1 -v http://hustoj.googlecode.com/svn/trunk&lt;/p&gt;
+
+&lt;h1&gt;获取diff文件，对于更新<span class="o">(</span>M<span class="o">)</span>的文件&lt;/h1&gt;
+
+&lt;p&gt;svn diff -c 1659 http://hustoj.googlecode.com/svn/trunk/web/admin/contest_list.php&lt;/p&gt;
+
+&lt;h1&gt;获取完整文件，对于增加<span class="o">(</span>A<span class="o">)</span>删除<span class="o">(</span>D<span class="o">)</span>的文件，需要直接取版本&lt;/h1&gt;
+
+&lt;p&gt;svn cat http://hustoj.googlecode.com/svn/trunk/web/admin/contest_list.php@1655
+</code></pre></div></p>
+
+<p>不过在实际处理的时候，默认的diff取出来的上下文太少，所以我使用了外部diff工具:
+<div class="highlight"><pre><code class="bash">svn diff -c 1659 --diff-cmd /usr/bin/diff -x <span class="s2">&quot;-U20&quot;</span> http://hustoj.googlecode.com/svn/trunk/web/admin/contest_list.php                  &lt;br/&gt;
+</code></pre></div></p>
+
+<p>不过通过程序执行命令获取数据时还存在一点问题:获取不到diff数据。
+为了解决这个问题，我再封装了一个shell文件来调用。
+<div class="highlight"><pre><code class="bash">&lt;/p&gt;
+
+&lt;h1&gt;!/bin/bash&lt;/h1&gt;
+
+&lt;p&gt;svn diff -c <span class="nv">$1</span> --diff-cmd /usr/bin/diff -x <span class="s2">&quot;-U$2&quot;</span> <span class="nv">$3</span>
+</code></pre></div></p>
+
+<p>总的来说，实现的难度并不大，只是遇到了一些小问题，能够把一个想法化成现实，并且确实提高了效率，还是挺满意的。</p>
+]]></content>
+  </entry>
+  
+</feed>

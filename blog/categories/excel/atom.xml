@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: excel | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/excel/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[excel读书心得]]></title>
+    <link href="http://mccxj.github.com/blog/20131025_how-to-excel.html"/>
+    <updated>2013-10-25T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/how-to-excel</id>
+    <content type="html"><![CDATA[<p>上周因为要处理一些数据的统计分析，没有自己写脚本分析，而是采用了excel进行处理。
+不过，我以前没用过excel的统计分析功能，于是找了本书来学习一下，现学现用。这本书的书名叫&lt;&lt;你早该这么学excel>>。</p>
+
+<p>我想很多人学excel，都感觉需要好多技巧，外边大多数的书籍也是教技巧的。可惜这本书没介绍什么技巧，只是介绍了处理数据的一些原则。
+反正，我感觉效果挺好的，根据这本书学习了一下，也能完成我想做的事情，并且显得有模有样，这就行了。</p>
+
+<p>书里边介绍了作者伍昊的三大表理论。其中天下第一表，就是原始数据表，首要就是表格规范，数据格式化，无统计信息，表格列要齐全。
+所有的统计都是根据原始数据表，并通过透视表来做的。当然，对于稳定的数据，他使用参数表的概念，采用自动生成方式。</p>
+
+<p>这套原则很简单，并且有效。推荐大家看看，特别是经常接触excel的童鞋。</p>
+]]></content>
+  </entry>
+  
+</feed>

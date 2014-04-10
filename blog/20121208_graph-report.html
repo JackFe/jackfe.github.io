@@ -1,0 +1,314 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>话说图形报表(旧) - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="09年写的关于图形报表的东西">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20121208_graph-report.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">话说图形报表(旧)</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-08T00:00:00+08:00" pubdate data-updated="true">Dec 8<span>th</span>, 2012</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p class="lead">
+这个是09年底写的。这几年更多看到关于html5、css3、javascript的图形展现显示，效果更好，功能也很强大，
+随着html5、css3的普及，以后会有更多的应用出现。例如淘宝团队可视化JavaScript库[Datav.js][2]，在数据分析展示方面效果就很不错。
+</p>
+
+
+<p>在javaeye上看到有个新闻<a href="http://www.javaeye.com/news/12109-highcharts-charting-api">Highcharts:非常漂亮的图表API</a>，自己也做过图形报表相关的工作，就此对图形报表发表一点自己的想法：</p>
+
+<h2>图形报表非常醒目</h2>
+
+<p>图形报表是一种富格式，粗粒度的报表表现方式。表格样式的报表容纳的信息比较细，没法像图形那样直观。
+在一些不需要非常详细统计的情况下，图形报表的优势是非常明显的。在业务系统中融合图形报表，几乎就变成了一个必备需求。
+一个普遍的可以想象的场景是，能够简单明了的展现统计信息趋势等，又能在必要的时候得到详细的统计数据，这就使得系统拥有混合多种报表表现形式的能力。</p>
+
+<h2>服务端与客户端的图形报表</h2>
+
+<p>我认为图形报表可以分成两部分，数据和渲染引擎。渲染引擎就主要是提供接口接受数据并把数据显示出来，或许还提供了一些接口让用户参与交互。
+现在这个引擎的实现方式可谓多种多样，有些是语言相关的，例如birt，jreport等，他们大体上是通过数据源定制描述文件(例如通用的xml格式)，然后自己解析并展现。
+这种方式的通用性不是很强，因为他比较依赖于服务端环境，就是说你必须要在添加一套组件，多跑一套应用才能使用。
+另外还有一些是基于客户端技术的，例如flash，css/js等，对于服务端来说只要提供数据就可以了，非常方便。因为这个原因，我更加推荐使用客户端技术。</p>
+
+<h2>flash图形报表的可用性</h2>
+
+<p>看了一些基于客户端的实现方式，个人是比较赞赏flash实现方式的。我是看重flash表现力非常强大，组件化，不懂flash也可以轻松弄出非常漂亮的报表。
+如果要推荐一个的话，我觉得基于flash技术的FusionChart可以满足绝大多数的需求。像什么直线图，曲线图、区域图、区域曲线图、柱状图、饼图都可以轻松实现。
+如果使用收费版本的话还有更加强大的功能(当然你也可以选择在网上找破解版)，这类工具还可以轻松打印，提供多种格式转换，还可以动态改变报表。
+这样你就发挥你的创造力了，例如配合ajax来展示个股分时图等等。</p>
+
+<h2>集成不是个问题</h2>
+
+<p>接上面的flash报表的话题。如果我们选择flash报表的话，我们可以预见的是，它本身就提供了一套适用性非常强的接口。
+再加上这本来就是服务端语言无关的实现方式，从我的工作经验上看，单单这点不会是什么难题的。我觉得flash报表能解决90%的问题，
+但是如何补充flash报表在功能上的缺陷?这才是我们要考虑的问题吧。我的想法是，一套flash报表不行，我用多一套其他的总可以了吧？
+现在服务端主要的功能是提供数据，而客户端做的是接受数据并展示。如果使用多套客户端技术的话，那么服务端的数据再经过一套适配器转换即可。
+管你使用的是flash，还是css/js，你只要定义数据适配器即可。虽然现在这些只是一些想法，而FusionChart也的确是满足了我所有的需求，但是我还是觉得这是完全可行的。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-08T00:00:00+08:00" pubdate data-updated="true">Dec 8<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/flash/'>flash</a>, <a class='category' href='/blog/categories/html5/'>html5</a>, <a class='category' href='/blog/categories/zong-jie/'>总结</a>, <a class='category' href='/blog/categories/bao-biao/'>报表</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20121202_sinatra.html" title="Previous Post: sinatra分析(旧)">&laquo; sinatra分析(旧)</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20121208_gst-upgrade.html" title="Next Post: 小议研究生系统升迁(旧)">小议研究生系统升迁(旧) &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20121208_graph-report.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20121208_graph-report.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

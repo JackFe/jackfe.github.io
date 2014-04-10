@@ -1,0 +1,461 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 接口 | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/jie-kou/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[improve bitter code: 判空的处理]]></title>
+    <link href="http://mccxj.github.com/blog/20120807_improve-bitter-code-8.html"/>
+    <updated>2012-08-07T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/improve-bitter-code-8</id>
+    <content type="html"><![CDATA[<p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>预料之外</h3>
+
+<p>预料之外的情况，防御性编程经常会让整洁划一的代码变得混乱。
+我们经常会担心各种各样的空值，例如null不行，换成空字符串，集合为空或取不到值，怎么办？
+字符串都是空格，要不要trim一下？
+往一个很深的属性中取值，判空的逻辑太多了？
+<div class="highlight"><pre><code class="java"><span class="k">if</span><span class="o">(</span><span class="n">Objects</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">subs</span><span class="o">)){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">List</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">Attr</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">subsAttrs</span> <span class="o">=</span> <span class="n">subs</span><span class="o">.</span><span class="na">getAttrs</span><span class="o">();</span>
+<span class="k">if</span><span class="o">(</span><span class="n">Objects</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">subsAttrs</span><span class="o">)){</span>
+    <span class="k">for</span><span class="o">(</span><span class="n">Attr</span> <span class="n">attr</span> <span class="o">:</span> <span class="n">subsAttrs</span><span class="o">){</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">attr</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">){</span>
+            <span class="c1">//do something with attr</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div>
+诸如此类的情况每天都会出现，的确是很麻烦的。
+更多材料可以查看一下<a href="http://code.google.com/p/guava-libraries/wiki/UsingAndAvoidingNullExplained">Google Guava关于避免null的描述</a></p>
+
+<h3>用assert减少麻烦</h3>
+
+<p>有一种叫assert的技巧，用来保证参数必须满足一定的先决条件，不满足则无法继续。
+这作为和客户端代码之间的协议，即使有异常情况，也应该在客户端先处理好。
+当然，assert通常用来防御不正常的调用。以spring这种ioc框架为例，通过get,set无法保证某些必填的值都设对了，
+所以在调用业务接口的时候再assert一把。看下面的代码。</p>
+
+<h5>方式1</h5>
+
+<p><div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Map</span> <span class="nf">queryWokrfResult</span><span class="o">(</span><span class="n">String</span> <span class="n">recnum</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">Assert</span><span class="o">.</span><span class="na">isNotNull</span><span class="o">(</span><span class="n">recnum</span><span class="o">,</span>  <span class="s">&quot;业务流水号不能为空!&quot;</span><span class="o">);</span>
+<span class="c1">// query with recnum</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
+
+<h5>方式2</h5>
+
+<p><div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Map</span> <span class="nf">queryWokrfResult</span><span class="o">(</span><span class="n">String</span> <span class="n">recnum</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(</span><span class="n">recnum</span><span class="o">)){</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nf">ReceptionException</span><span class="o">(</span><span class="s">&quot;业务流水号不能为空!&quot;</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="c1">// query with recnum</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
+
+<p>我是这么看待的，方式1表示你可以传空，但我会做检测，不会让你得逞。相当于防御性编程。
+方式2，你就不应该传空，你的参数不符合接口规范。
+虽然assert的实现或许就是判断的简单封装，但这里这么不能简单理解。
+<strong>assert与其说是编程技巧，不如说是编程模式。</strong></p>
+
+<p>对于java来说，本身是支持assert的，但这个特性一般没人使用。大多数人选择用异常来封装，例如<a href="http://static.springsource.org/spring/docs/1.2.x/api/org/springframework/util/Assert.html">spring assert</a>,<a href="http://commons.apache.org/lang/api/org/apache/commons/lang3/Validate.html">commons-lang validate</a>等都提供了自己的一套assert api。需要注意的时候，assert里边的条件应该都是非常快的，不要把业务逻辑混淆进去。</p>
+
+<h3>封装,封装,由底层处理</h3>
+
+<p>实际上，提供一些工具类(如常用的判空操作和带默认值操作)可以减轻痛苦，
+还可以根据具体应用在底层框架上处理，在提高容错性的同时，让代码更优雅。</p>
+
+<p>在项目的老代码中，我们会看到这样的判空处理。
+<div class="highlight"><pre><code class="java"><span class="c1">// example 1</span>
+<span class="n">MapVo</span> <span class="n">vo</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MapVo</span><span class="o">();</span>
+<span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">name</span><span class="o">)){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">vo</span><span class="o">.</span><span class="na">setAttribute</span><span class="o">(</span><span class="s">&quot;name&quot;</span><span class="o">,</span> <span class="n">name</span><span class="o">);</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+<span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">subsid</span><span class="o">)){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">vo</span><span class="o">.</span><span class="na">setAttribute</span><span class="o">(</span><span class="s">&quot;subsid&quot;</span><span class="o">,</span> <span class="n">subsid</span><span class="o">);</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+<span class="c1">// ... other conditions&lt;/p&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">DBUtils</span><span class="o">.</span><span class="na">queryByVo</span><span class="o">(</span><span class="s">&quot;queryXXX&quot;</span><span class="o">,</span> <span class="n">vo</span><span class="o">);</span>
+</code></pre></div></p>
+
+<p>为什么这么写，是因为框架的sql生成配置只提供了null的配置方式，而不支持常见的空字符串，无内容的字符串等常见模式。
+为此，通过增加特性，像ibatis那样支持isEmpty模式的配置，就可以省略大量显式判断。
+修改后的代码如下：
+<div class="highlight"><pre><code class="java"><span class="c1">// example 2</span>
+<span class="n">MapVo</span> <span class="n">vo</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MapVo</span><span class="o">();</span>
+<span class="n">vo</span><span class="o">.</span><span class="na">setAttribute</span><span class="o">(</span><span class="s">&quot;name&quot;</span><span class="o">,</span> <span class="n">name</span><span class="o">);</span>
+<span class="n">vo</span><span class="o">.</span><span class="na">setAttribute</span><span class="o">(</span><span class="s">&quot;subsid&quot;</span><span class="o">,</span> <span class="n">subsid</span><span class="o">);</span>
+<span class="c1">// ... other conditions&lt;/p&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">DBUtils</span><span class="o">.</span><span class="na">queryByVo</span><span class="o">(</span><span class="s">&quot;queryXXX&quot;</span><span class="o">,</span> <span class="n">vo</span><span class="o">);</span>
+</code></pre></div></p>
+
+<p>再看，例如老页面jsp里边这样的逻辑也很多(嵌入java代码)
+<div class="highlight"><pre><code class="java"><span class="o">&amp;</span><span class="n">lt</span><span class="o">;%</span> <span class="n">Subscriber</span> <span class="n">subs</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="na">getAttribute</span><span class="o">(</span><span class="s">&quot;subscriber&quot;</span><span class="o">);</span> <span class="o">%&gt;</span>
+<span class="o">&amp;</span><span class="n">lt</span><span class="o">;%</span> <span class="k">if</span><span class="o">(</span><span class="n">subs</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span> <span class="n">out</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="s">&quot;&amp;lt;span&amp;gt;&quot;</span> <span class="o">+</span> <span class="n">subs</span><span class="o">.</span><span class="na">getServnumber</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot;&amp;lt;/span&amp;gt;&quot;</span><span class="o">);</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;&amp;</span><span class="n">lt</span><span class="o">;%</span> <span class="o">}</span> <span class="o">%&gt;</span>
+</code></pre></div>
+对于这种代码有很好的方式，如el表达式，又或者velocity等模板解决方案，都具有很好的容错性。</p>
+
+<p>再来看看其他语言框架的解决模式，如javascript框架jquery，对错误保护就很好，对不存在的东西，提供了默认行为: 视而不见。
+通过基础框架提供的保障，避免一些琐碎的工作，代码可以更关注于逻辑处理。</p>
+
+<h3>空对象模式</h3>
+
+<p><a href="http://www.cs.oberlin.edu/~jwalker/nullObjPattern/">空对象模式</a>就是用一个特殊的对象代替空对象，这个对象和正常对象有着同样的接口，但调用的时候会表现出异常处理逻辑。<a href="http://en.wikipedia.org/wiki/Null_Object_pattern">wiki上有关于这个模式的各种编程语言的描述</a>。
+通过这种模式，把异常处理逻辑封装起来，对于客户端代码来说，调用方式和正常情况是一样的。</p>
+
+<p>例如，对于数据查询接口返回空的列表而不是null，使用一些空集合对象。
+<div class="highlight"><pre><code class="java"><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">emptyList</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">emptyMap</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">emptySet</span><span class="o">()</span>
+</code></pre></div>
+对于返回列表的接口，使用空列表对象，很多判空的逻辑就没有必要存在了。
+又例如，返回不可修改或线程安全的特殊列表，也可以看成是这种模式的变化
+<div class="highlight"><pre><code class="java"><span class="n">Arrays</span><span class="err">#</span><span class="n">asList</span><span class="o">()&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">unmodifiableList</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">unmodifiableMap</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">unmodifiableSet</span><span class="o">()&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">synchronizedList</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">synchronizedMap</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">synchronizedSet</span><span class="o">()</span>
+</code></pre></div></p>
+
+<h3>总结</h3>
+
+<p><strong>对接口进行约定，约束参数和返回值，可以简化判空的处理。</strong></p>
+
+<p><strong>在框架层面进行统一封装，可以专注于业务逻辑。</strong></p>
+
+<p>
+
+
+<h2>"improve bitter code"系列文章:</h2>
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[improve bitter code: 更友好的链式写法]]></title>
+    <link href="http://mccxj.github.com/blog/20120724_improve-bitter-code-2.html"/>
+    <updated>2012-07-24T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/improve-bitter-code-2</id>
+    <content type="html"><![CDATA[<p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>无意出现的链式代码</h3>
+
+<p>还是前几天的事情，群里边有同事提到一个账单相关的需求，其中涉及到组装打印用数据。
+有个新同事在Service里边写了一段这样的代码：
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">XXService</span> <span class="nf">fillItem</span><span class="o">(</span><span class="n">String</span> <span class="n">content</span><span class="o">,</span> <span class="n">String</span> <span class="n">tag</span><span class="o">)</span> <span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">// some codes</span>
+<span class="k">this</span><span class="o">.</span><span class="na">printitems</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">Item</span><span class="o">(</span><span class="n">tag</span><span class="o">,</span> <span class="n">content</span><span class="o">));</span>
+<span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
+
+<p>有同学不是特别理解为什么要这么写，甚至发出return this是什么对象的疑问。</p>
+
+<p>这段代码原来是这么写的:
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kt">void</span> <span class="nf">fillItem</span><span class="o">(</span><span class="n">String</span> <span class="n">content</span><span class="o">,</span> <span class="n">String</span> <span class="n">tag</span><span class="o">,</span> <span class="n">List</span> <span class="n">printitems</span><span class="o">)</span> <span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">// some codes</span>
+<span class="n">printitems</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">Item</span><span class="o">(</span><span class="n">tag</span><span class="o">,</span> <span class="n">content</span><span class="o">));</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
+
+<p>有同学奇怪，为什么再提交一次printitems就会重新加一遍，认为第一段代码的问题出现在return this上面。
+这样要说明一下，我们使用的是struts1，所以如果Service实例作为action的实例变量，那也是只有一个对象来的。
+所以每次刷新一次重复加一遍就没什么奇怪的了。</p>
+
+<p>回头来看那段新写的代码，出发点是好的。毕竟采用这种方式可以使用链式写法（如下所示），代码有时候会变得很sexy。
+<div class="highlight"><pre><code class="java"><span class="n">XXService</span><span class="o">.</span><span class="na">fillItem</span><span class="o">(</span><span class="s">&quot;a&quot;</span><span class="o">,</span> <span class="s">&quot;A&quot;</span><span class="o">).</span><span class="na">fillItem</span><span class="o">(</span><span class="s">&quot;b&quot;</span><span class="o">,</span> <span class="s">&quot;B&quot;</span><span class="o">);</span>
+</code></pre></div>
+这段代码的问题不在于是否采用链式写法，而是对这种单例，变量生命周期了解不足造成的。
+链式写法在代码中很少会使用到，但在设计api，也是可以考虑的。设计的好，可以有效提高代码的编写效率和api的友好型。
+例如，我就对java collection api里边的add方法深恶痛绝,就是不能连续add，要add多少个就要写多少行，还真的挺烦的。</p>
+
+<h3>采用链式写法的代码</h3>
+
+<p>在很多有名的开源框架中，链式写法也不是很少见，下面举几个例子:</p>
+
+<p>很常见的有jquery
+<div class="highlight"><pre><code class="javascript"><span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#name&quot;</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;readonly&quot;</span><span class="p">,</span> <span class="kc">true</span><span class="p">).</span><span class="nx">val</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">);</span>
+</code></pre></div></p>
+
+<p>还有mock框架mockito
+<div class="highlight"><pre><code class="java"><span class="n">when</span><span class="o">(</span><span class="n">mockedList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">)).</span><span class="na">thenReturn</span><span class="o">(</span><span class="s">&quot;first&quot;</span><span class="o">);</span>
+<span class="n">when</span><span class="o">(</span><span class="n">mockedList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">1</span><span class="o">)).</span><span class="na">thenThrow</span><span class="o">(</span><span class="k">new</span> <span class="n">RuntimeException</span><span class="o">());</span>
+</code></pre></div></p>
+
+<p>再看看rails的写法
+<div class="highlight"><pre><code class="ruby"><span class="no">Post</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s1">&#39;id &gt; 10&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">order</span><span class="p">(</span><span class="s1">&#39;id desc&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">only</span><span class="p">(</span><span class="ss">:order</span><span class="p">,</span> <span class="ss">:where</span><span class="p">)</span>
+<span class="no">Client</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">offset</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+</code></pre></div></p>
+
+<h3>我的看法</h3>
+
+<p>那么，如果你想采用链式写法，有什么地方需要注意呢?
+1. 先写一下客户端代码，看调用方式合理么，符合sexy api么?
+2. 采用链式操作的interface相关性比较强，经常一起出现。
+3. 参数parameter一般较少，因为参数多了，代码很容易变得模糊不清。
+4. 链式操作要么容错强(像jquery)，要么就得直接抛出异常，对返回值不关心。</p>
+
+<p>
+
+
+<h2>"improve bitter code"系列文章:</h2>
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[improve bitter code: 迷惑的boolean参数]]></title>
+    <link href="http://mccxj.github.com/blog/20120724_improve-bitter-code-1.html"/>
+    <updated>2012-07-24T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/improve-bitter-code-1</id>
+    <content type="html"><![CDATA[<p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>群里的讨论</h3>
+
+<p>前两天在开发群里边，有同事讨论一个api: 增加一个取特定序列值的方法。并给出了以下的原型代码：
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Object</span> <span class="nf">getSeqValue</span><span class="o">(</span><span class="n">String</span> <span class="n">seqname</span><span class="o">,</span> <span class="n">String</span> <span class="n">maindb</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">if</span><span class="o">(</span><span class="s">&quot;1&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">maindb</span><span class="o">)){</span>
+    <span class="n">DbRunContext</span><span class="o">.</span><span class="na">setRegion</span><span class="o">(</span><span class="n">DbRunContext</span><span class="o">.</span><span class="na">MAINDB</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="c1">// more codes</span>
+<span class="k">return</span> <span class="n">XXDao</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
+
+<p>其中maindb是因为项目支持多数据库的缘故，传入参数maindb来判断是否走主库还是地市库。
+我不知道这个"1"是怎么来的，我随口冒出一句：能不能不传递maindb,谁知道要传递什么呢?</p>
+
+<p>于是很快冒出"改进"方案，换成一个布尔值，代码变成这样:
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Object</span> <span class="nf">getSeqValue</span><span class="o">(</span><span class="n">String</span> <span class="n">seqname</span><span class="o">,</span> <span class="kt">boolean</span> <span class="n">isMaindb</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">if</span><span class="o">(</span><span class="n">isMaindb</span><span class="o">){</span>
+    <span class="n">DbRunContext</span><span class="o">.</span><span class="na">setRegion</span><span class="o">(</span><span class="n">DbRunContext</span><span class="o">.</span><span class="na">MAINDB</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="c1">// more codes</span>
+<span class="k">return</span> <span class="n">XXDao</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
+
+<p>很显然这不是一个好的解决办法，我从使用者的角度来说，举了下面的例子:
+<div class="highlight"><pre><code class="java"><span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+<span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+</code></pre></div>
+单单看上面的调用方式，谁能很清楚的说明分别是什么意思?</p>
+
+<p>很明显，这相当的困难。所以我建议对方法进行重命名，例如
+<div class="highlight"><pre><code class="java"><span class="n">getSeqValueFromMaindb</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
+<span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
+</code></pre></div>
+当然，可以考虑把原来的方法换成私有的，这样避免代码重复而不会对调用者造成困惑。</p>
+
+<h3>迷惑人的参数随处可见</h3>
+
+<p>在我们的代码里边，类似这样的参数困惑随处可见，除了这种布尔值，还有"1"和"0"
+这种魔法数字，字符串，因为调用太频繁了，很多人不愿意给他取个好听的名字。</p>
+
+<p>例如区分调用后台逻辑是否起事务，用得太多了，加上老代码就这么用，所以很多同事
+没有意识加个IS_TRANSACTION这类的静态变量。看，代码就变成下面的样子：
+<div class="highlight"><pre><code class="java"><span class="n">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">cmd</span><span class="o">,</span> <span class="n">subcmd</span><span class="o">,</span> <span class="s">&quot;1&quot;</span><span class="o">);</span>
+<span class="n">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">cmd</span><span class="o">,</span> <span class="n">subcmd</span><span class="o">,</span> <span class="s">&quot;0&quot;</span><span class="o">);</span>
+</code></pre></div></p>
+
+<p>参数这东西，对看代码的人来说没什么特别的帮助，参数越多越迷惑。
+当两个方法调用就差一个布尔值不一样的时候，那是相当痛苦的。
+所以最好还是从方法名上进行区分，保持代码的可读性。对于接口方法，公用方法，更是应该如此。</p>
+
+<p>
+
+
+<h2>"improve bitter code"系列文章:</h2>
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</p>
+]]></content>
+  </entry>
+  
+</feed>

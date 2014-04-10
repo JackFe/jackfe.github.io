@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 重构 | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/zhong-gou/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[improve bitter code]]></title>
+    <link href="http://mccxj.github.com/blog/20120721_improve-bitter-code.html"/>
+    <updated>2012-07-21T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/improve-bitter-code</id>
+    <content type="html"><![CDATA[<h3>想法</h3>
+
+<p>周五的时候去了趟图书馆，回来的时候已经2点了，又是组织参加每周的代码评审了。
+这项活动已经参加了很多次了，但还是经常会遇到相同的问题，即使每天codediff，
+也很难避免问题一次次的重复出现。代码基还是不可避免的膨胀，需求变化还是那么的频繁，
+人员流动还是那么快，新人还是有那么多不成熟的编码风格。</p>
+
+<p>在这个开发团队里边，也没少唠叨编码规范，codediff也是经常再做，代码评审还是有弄，
+但最终的效果，体现在代码上，还远远没有那么乐观。我认为这有好些原因：一方面是历史原因，
+代码基庞大，复杂，每天对着这些代码，连好代码是怎样的都没有见过，还能真的无师自通?
+另外一方面是各种质量改进活动参与度都不是很高，毕竟目标是完成需求，时间久了热情一点点磨灭，
+对这个就更不重视了。</p>
+
+<p>相信很多人看过郑大的代码之丑，里边很多素材就出自我所在的项目组，所以这种代码我也看见不少了，
+正因为如此，我觉得我也能写一些相关的内容。在下班坐地铁回来的时候，
+我列了一些相关主题，更确信了还是有很多内容可以做文章的。大多数题材来自
+项目的代码，自己的想法思路则是来源于平时的实践，工作经历，还有开源代码和各种相关的书籍。</p>
+
+<h3>计划</h3>
+
+<p>整个系列围绕bitter code来说，毕竟维护现有代码是非常重要的工作。这么个系列名称灵感来源于
+代码之丑系列和一本叫bitter java的书籍。虽然我觉得代码之丑的名称不是很好，但内容形式会和
+这个系列类似，只是会多加一些上下文和背景。文章内容仍然以代码为主线，写出我对代码的改进意见，
+至于发布周期，大约是一个星期争取不少于两篇!!</p>
+
+<p>期待吧!!!</p>
+
+<p>
+
+
+<h2>"improve bitter code"系列文章:</h2>
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</p>
+]]></content>
+  </entry>
+  
+</feed>

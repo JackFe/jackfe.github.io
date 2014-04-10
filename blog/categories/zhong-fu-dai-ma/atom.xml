@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 重复代码 | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/zhong-fu-dai-ma/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[重复代码处理模式]]></title>
+    <link href="http://mccxj.github.com/blog/20130306_duplicate-code.html"/>
+    <updated>2013-03-06T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/duplicate-code</id>
+    <content type="html"><![CDATA[<p>最近在整改某项目几十个模块(子项目)的重复代码，整理的一些思路。
+其实方法在重构一书早就说过了，我个人认为要多思考方法。类的职责，
+用对象间进行协助的思路，来解决重复代码的问题。
+对于快速找到某段重复代码的处理模式，这就是关键的地方。</p>
+
+<h3>模块之间的重复代码</h3>
+
+<ul>
+<li>文件重复，但模块间通用，可推到基础模块，风险小，常见于基础工具类</li>
+<li>文件重复，但与具体模块相关，说明依赖其他模块，不适合直接推到基础模块，调整较大，建议延后处理</li>
+</ul>
+
+
+<h3>模块内文件间的重复代码</h3>
+
+<h4>强相关</h4>
+
+<ul>
+<li>直接删除一个，推上上层包结构，作为公共代码</li>
+<li>差异为通用扩展时, 合并成一个</li>
+<li>差异为特殊扩展时，采用继承方式，虽然不够彻底，但风险小</li>
+</ul>
+
+
+<h4>普通关联</h4>
+
+<ul>
+<li>以业务为准，公用包结构</li>
+<li>重复部分推到父类，由两边继承</li>
+<li>采用协助类，常见于较大粒度的对象协助</li>
+</ul>
+
+
+<h4>弱相关</h4>
+
+<ul>
+<li>重复代码进入工具类，适用于通用的场景</li>
+<li>采用协助类，参与于较小粒度的对象协助</li>
+</ul>
+
+
+<h3>文件内方法间的重复代码</h3>
+
+<ul>
+<li>抽取私有方法作为优先考虑的方法，风险小，可操作性强，需要注意方法命名</li>
+<li>抽取协作类，常见于私有方法过多、局部关联性强、复杂度过高等情况</li>
+<li>由已经存在的类实现，常见于职责过大的情况</li>
+<li>如果适用于通用逻辑，可以推到父类或工具类</li>
+</ul>
+
+
+<h3>小技巧</h3>
+
+<ul>
+<li>先抽取小方法，看清结构</li>
+<li>有时候用循环代替排山倒海式代码</li>
+<li>先简化再深化，分步骤处理</li>
+<li>识别真正不一样的地方</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+</feed>

@@ -1,0 +1,432 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Web开发利器-Fiddler简介 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="1 什么是Fiddler? Fiddler是一个http调试代理，以代理服务器的方式，监听系统的Http网络数据流动，
+Fiddler可以也可以让你检查所有的http通讯，设置断点，以及Fiddle所有的“进出”的数据。 Fiddler还包含一个简单却功能强大的基于JScript .NET &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20130531_introduce-to-fiddler.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Web开发利器-Fiddler简介</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-05-31T00:00:00+08:00" pubdate data-updated="true">May 31<span>st</span>, 2013</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h2>1 什么是Fiddler?</h2>
+
+<p><img src="/assets/images/2013/fiddler/image1.png" alt="什么是Fiddler" /></p>
+
+<p>Fiddler是一个http调试代理，以代理服务器的方式，监听系统的Http网络数据流动，
+Fiddler可以也可以让你检查所有的http通讯，设置断点，以及Fiddle所有的“进出”的数据。</p>
+
+<p>Fiddler还包含一个简单却功能强大的基于JScript .NET 事件脚本子系统，它可以支持众多的http调试任务。
+你是不是曾经疑惑过你的web程序和IE是如何交互的？你是不是遇到过一些奇怪的而你又无法解决的性能瓶颈？
+你是不是对那些发送给服务器端的cookie和那些你下载下来的被标记为可缓存的内容感到好奇？
+无论你是从事什么开发，哪种语言，只要你想更深入的了解HTTP，这个工具就值得你去了解，它对前端开发工作是很有价值的。</p>
+
+<p>Fiddler官方网站及下载可以在[http://www.fiddler2.com/fiddler2/]找到，安装过程很简单，这里就不介绍了。
+同样，Fiddler支持插件扩展，常见插件可以在[http://fiddler2.com/add-on]找到。下面，简单介绍Fiddler的功能和常见应用场景。</p>
+
+<h2>2 Fiddler界面及功能介绍</h2>
+
+<p><img src="/assets/images/2013/fiddler/image2.png" alt="Fiddler界面及功能介绍" /></p>
+
+<p>Fiddler整个界面布局如上所示，下面再简单介绍一些特殊的概念：</p>
+
+<p>代理模式，支持缓存模式和流模式:</p>
+
+<ul>
+<li>缓冲模式(Buffering Mode Fiddler直到HTTP响应完成时才将数据返回给应用程序。
+可以控制响应，修改响应数据。但是时序图有时候会出现异常。</li>
+<li>流模式(Streaming Mode): Fiddler 会即时将HTTP响应的数据返回给应用程序。
+更接近真实浏览器的性能。时序图更准确。但是不能控制响应。</li>
+</ul>
+
+
+<p>断点类型，支持请求断点和响应断点:</p>
+
+<ul>
+<li>请求断点: 在向目标服务器发送请求前截获。</li>
+<li>响应断点: 在将结果返回到应用程序前截获。此时如果使用的是流模式，则此断点类型将失效。</li>
+</ul>
+
+
+<h2>3 常见案例介绍</h2>
+
+<h3>快速定位问题页面</h3>
+
+<p>有些复杂页面，具有多层嵌套页面或者大量Ajax交互，甚至于模态窗口等，都可能让你无法定位请求路径、问题所在页面等。
+借助于Fiddler的请求会话查询功能，可以让你一揽全局，无需逐个页面进行查找。</p>
+
+<p>第一步:使用Ctrl+X清空会话列表，再刷新页面</p>
+
+<p><img src="/assets/images/2013/fiddler/image3.png" alt="清空会话列表" /></p>
+
+<p>第二步:使用Ctrl+F弹出搜索框,输入关键字进行查询</p>
+
+<p><img src="/assets/images/2013/fiddler/image4.png" alt="弹出搜索框" /></p>
+
+<p>第三步:参看具体会话缩小定位范围</p>
+
+<p><img src="/assets/images/2013/fiddler/image5.png" alt="缩小定位范围" /></p>
+
+<p>第四步: 定位到具体请求，进行下一步处理</p>
+
+<p>接下来可以考虑使用AutoResponse进行快速修复验证，或者根据请求路径反查后台逻辑。</p>
+
+<h3>使用AutoResponse快速修复验证</h3>
+
+<p>在日常开发工作中，有时侯会发现测试环境中某个html/css/javascript文件有问题。
+我们利用Fiddler可以修改HTTP数据的特性，非常方便的定位问题并进行验证。</p>
+
+<p>第一步:使用Fiddler查看页面的数据流列表，找到js文件保存到本地</p>
+
+<p><img src="/assets/images/2013/fiddler/image6.png" alt="保存到本地" /></p>
+
+<p>第二步:创建重定向规则,使用本地文件</p>
+
+<p><img src="/assets/images/2013/fiddler/image7.png" alt="使用本地文件" /></p>
+
+<p>第三步:刷新页面,如果看到灰色背景的请求会话，就表示生效了</p>
+
+<p><img src="/assets/images/2013/fiddler/image8.png" alt="刷新页面" /></p>
+
+<p>第四步:修改本地文件，进行测试</p>
+
+<p>修改本地文件之后，重新刷新页面,就可以看到修改后的效果了。
+这种调试方式不需要发布到线上再验证，避免了修改不成功、对用户造成影响的风险，
+而且不需要搭建复杂的开发服务器等开发环境，非常适合快速web调试。</p>
+
+<h3>使用Composer模拟报文发送</h3>
+
+<p>有时候在做一些长流程页面、Web服务接口调试时，为了避免修改后重新发起调用的时间过长，可以通过Composer构造请求报文进行快速测试。
+等接口调通之后再进行集成测试，可以有效的提高开发和测试的效率。</p>
+
+<p>第一步:拖拽相应的请求会话到Composer页面，会自动生成请求报文</p>
+
+<p><img src="/assets/images/2013/fiddler/image9.png" alt="自动生成请求报文" /></p>
+
+<p>第二步:修改请求报文，然后按Execute进行发送</p>
+
+<p>例如，我去掉Cookie中的JESSIONID，重新发送可以看到多了两次请求会话信息。</p>
+
+<p><img src="/assets/images/2013/fiddler/image10.png" alt="修改请求报文" /></p>
+
+<p>第三步:检查响应报文，验证结果</p>
+
+<p>例如: 我去掉Cookie中的JESSIONID，应该会被跳转到登录页面</p>
+
+<p><img src="/assets/images/2013/fiddler/image11.png" alt="验证结果" /></p>
+
+<p>除了用来做功能快速调试之外，还可以用来做一些安全方面的测试工作，
+例如构造一些xss注入、SQL注入报文，看看应用能否妥善处理。</p>
+
+<h3>观察页面性能</h3>
+
+<p>大多数情况下，一个页面会有好几个请求，除了html页面，还有js/css/图片等。
+但是IE等浏览器不能很方便的观察到页面加载的情况，例如每个请求消耗的时间等。
+如果使用Fiddler的话，可以使用Statistic视图和Timeline视图，观察页面加载情况，便于定位页面性能瓶颈。</p>
+
+<p>第一步:选择一个或多个请求，根据Statistic视图查看统计时间</p>
+
+<p><img src="/assets/images/2013/fiddler/image12.png" alt="查看统计时间" /></p>
+
+<p>第二步: 选择一个或多个请求，根据Timeline视图查看加载流程</p>
+
+<p><img src="/assets/images/2013/fiddler/image13.png" alt="查看加载流程" /></p>
+
+<h3>模拟特殊场景</h3>
+
+<p>例如在广东XX项目中，各地市使用的域名是不一样的，有些逻辑根据域名来进行特殊处理。为了模拟这种场景，可以考虑修改本地hosts文件。
+不过修改hosts需要重启浏览器，比较麻烦。使用Fiddler的hosts设置功能，就能很方便的模拟。</p>
+
+<p>第一步:选择Tools->HOSTS功能,设置相应的域名映射</p>
+
+<p><img src="/assets/images/2013/fiddler/image14.png" alt="设置相应的域名映射" /></p>
+
+<p>第二步:直接使用域名访问,验证功能</p>
+
+<p><img src="/assets/images/2013/fiddler/image15.png" alt="验证功能" /></p>
+
+<p>Fiddler提供大量的规则允许你模拟各类场景，你甚至可以自定义规则，值得大家深入探讨，多实践多思考。例如:</p>
+
+<ul>
+<li>通过GZIP压缩，测试性能</li>
+<li>模拟Agent测试，查看服务端是否对不同客户端定制响应</li>
+<li>模拟慢速网络，测试页面的容错性</li>
+<li>禁用缓存，方便调试一些静态文件或测试服务端响应情况</li>
+<li>根据一些场景自定义规则</li>
+</ul>
+
+
+<p><img src="/assets/images/2013/fiddler/image16.png" alt="模拟各类场景" /></p>
+
+<h2>4 总结</h2>
+
+<p>本文简单介绍了Fiddler的常见应用场景。目前，Fiddler在我们项目的团队中广泛使用。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-05-31T00:00:00+08:00" pubdate data-updated="true">May 31<span>st</span>, 2013</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/fiddler/'>fiddler</a>, <a class='category' href='/blog/categories/http/'>http</a>, <a class='category' href='/blog/categories/dai-li/'>代理</a>, <a class='category' href='/blog/categories/gong-ju/'>工具</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20130530_introduce-to-rest.html" title="Previous Post: 理解RESTFul架构">&laquo; 理解RESTFul架构</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20130602_introduce-to-trove.html" title="Next Post: 性能优化:Trove集合库">性能优化:Trove集合库 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20130531_introduce-to-fiddler.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20130531_introduce-to-fiddler.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

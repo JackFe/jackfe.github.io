@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: unzip | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/unzip/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[unzip引起disk full问题(旧)]]></title>
+    <link href="http://mccxj.github.com/blog/20121208_unzip-big-file.html"/>
+    <updated>2012-12-08T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/unzip-big-file</id>
+    <content type="html"><![CDATA[<p>很早的记录了，以前瞎整过很多东西，还好很多资料有整理，所以看上去还有点小用的就迁移过来吧。:)</p>
+
+<p>因为184解压一个oracle dmp文件的时候出错，导致数据无法同步。今天尝试解决这个问题，在日志中看到是解压的时候，
+出现write error (disk full?).continue?(y/m/<sup>C)"。发现db.dmp原大小是2.05g，压缩后400m，但是使用unzip解压到2g的时候，就出现上述错误。</sup>
+但是通过df也没有看到磁盘空间不足。这就有几样可能，有可能是系统限制了或者解压工具限制了。使用ulimit发现文件大小是没有做特别限制的。
+搜索一番,有可能是出现unzip的对大文件解压的限制，参考http://osde.info/HowToUnzipLargeFiles，对unzip进行重新编译，结果就可以了。
+后来使用which的时候，发现oracle的bin自带了一个unzip，而这个版本也是不支持大文件解压的，但是有人却把这个路径放到path上去了。
+最后嘛，我担心改动path路径对oracle造成影响，就修改了恢复脚本的unzip路径。结果总算搞定了。</p>
+
+<p>简略翻译修改版:
+<div class="highlight"><pre><code class="bash">&lt;/p&gt;
+
+&lt;h1&gt;从http://www.info-zip.org/下载源代码&lt;/h1&gt;
+
+&lt;p&gt;cd unzip-5.52
+vi unix/Makefile&lt;/p&gt;
+
+&lt;h1&gt;使用:/Linux on查找到下面这段描述&lt;/h1&gt;
+
+&lt;h1&gt;Linux on 386 platform, using the assembler replacement <span class="k">for </span>crc32.c. <span class="o">(</span>-O4 and&lt;/h1&gt;
+
+&lt;h1&gt;-fno-strength-reduce have virtually no effect beyond -O3. Add <span class="s2">&quot;-m486&lt;/h1&gt;</span>
+
+<span class="s2">&lt;h1&gt;-malign-functions=2 -malign-jumps=2 -malign-loops=2&quot;</span> <span class="k">for </span>Pentium <span class="o">[</span>Pro<span class="o">]</span>&lt;/h1&gt;
+
+&lt;h1&gt;systems.<span class="o">)</span>&lt;/h1&gt;
+
+&lt;p&gt;linux: unix_make&lt;/p&gt;
+
+&lt;h1&gt;在这段的下面可以找到并进行替换&lt;/h1&gt;
+
+&lt;p&gt;CF<span class="o">=</span><span class="s2">&quot;-O3 -Wall -I. -DASM_CRC $(LOC)&quot;</span><span class="se">\</span>
+<span class="nv">CF</span><span class="o">=</span><span class="s2">&quot;-O3 -Wall -I. -DASM_CRC -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 $(LOC)&quot;</span><span class="se">\&lt;</span>/p&gt;
+
+&lt;h1&gt;保存后下面就是一些编译替换的后续工作了&lt;/h1&gt;
+
+&lt;p&gt;make -f unix/Makefile linux
+which unzip
+cp unzip /usr/bin/unzip
+</code></pre></div></p>
+
+<h3>关于gcc -D_FILE_OFFSET_BITS=64的描述(找不到原始出处了)</h3>
+
+<p>In a nutshell for using LFS you can choose either of the following: Compile your programs with
+"gcc -D_FILE_OFFSET_BITS=64". This forces all file access calls to use the 64 bit variants.
+Several types change also, e.g. off_t becomes off64_t. It's therefore important to always
+use the correct types and to not use e.g. int instead of off_t. For portability with other
+platforms you should use getconf LFS_CFLAGS which will return -D_FILE_OFFSET_BITS=64 on Linux
+platforms but might return something else on e.g. Solaris. For linking, you should use the link
+flags that are reported via getconf LFS_LDFLAGS. On Linux systems, you do not need special link flags.
+Define <em>LARGEFILE_SOURCE and </em>LARGEFILE64_SOURCE. With these defines you can use the LFS functions like open64 directly.
+Use the O_LARGEFILE flag with open to operate on large files. A complete documentation of the feature test macros like <em>FILE_OFFSET_BITS
+and </em>LARGEFILE_SOURCE is in the glibc manual (run e.g. "info libc 'Feature Test Macros'").</p>
+]]></content>
+  </entry>
+  
+</feed>

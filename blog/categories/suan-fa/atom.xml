@@ -1,0 +1,688 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 算法 | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/suan-fa/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[单词接龙问题]]></title>
+    <link href="http://mccxj.github.com/blog/20131103_word-contact.html"/>
+    <updated>2013-11-03T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/word-contact</id>
+    <content type="html"><![CDATA[<p>昨天看到其他部门的技能鉴定题目，相对我们部门偏应用的题目，他们的相对更加偏重算法。题目描述如下：</p>
+
+<p>有一种单词接龙的游戏，就是连续的两个单词，第一个单词的尾要和第二个单词的头是一样的。<br/>
+例如: cat tell log google就是一个单词接龙。</p>
+
+<p>定义最少单词接龙是单词个数最少的接龙，定义最短单词接龙是单词字母个数总和最少的接龙。
+假设所有单词都是由小写字母组成，现在给定一堆单词，给定龙头和龙尾，求出最少单词接龙和最短单词接龙。</p>
+
+<p>当时在招聘，一时也没反应过来。下午回来的时候，仔细一想，这不就是最短路径问题么?</p>
+
+<p>把26个小写字母看成是结点，那么每个单词就是从某个结点到另外一个结点的单向路径。<br/>
+上面的接龙如果在加上单词gc, cookie，就是下面的图表示:<br/>
+<img src="/assets/images/2013/dijkstra.png" alt="单词接龙" /></p>
+
+<p>最少单词接龙，就是每条路径的权值为1，求两个结点之间的最短路径。<br/>
+最短单词接龙，就是每条路径的权值为单词的长度，求两个结点之间的最短路径。</p>
+
+<p>另外，关于一些特殊情况和注意点:</p>
+
+<p>对于存在多个单词，他们的首尾字母相同的话，只记录长度最短的为路径的权值即可。</p>
+
+<p>结点的存储可以不用链接表，因为只有26个字母，用二维数组即可，实时增加单词也容易处理。</p>
+
+<p>求最短路径的算法，参考经典的Dijkstra最短路径算法，这里就不详述了。
+关于Dijkstra，可以参考<a href="http://baike.baidu.com/link?url=YCo_VIMdyckLPW9FuF6ZWnYwDangwdpze7JBVjoKc0AylbBp0Y3PILhRQ2p_QX6ssgCP0hFqMMdHhvUdQtd5Wa">百度百科中的条目</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[判断循环菜单的思考]]></title>
+    <link href="http://mccxj.github.com/blog/20130328_cycle-menu.html"/>
+    <updated>2013-03-28T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/cycle-menu</id>
+    <content type="html"><![CDATA[<p>今天下午的时候，在执行gem clean命令看到包依赖的时候，突然想起关于循环菜单的老问题。</p>
+
+<h3>无限级菜单的问题</h3>
+
+<p>很多系统的菜单都要求是无限级的，也就是可以很多层的父子菜单关系。
+在进行数据存储的设计的时候，以数据库为例，通常都会给菜单表增加一个父菜单的字段，用来标识从属于哪个菜单。</p>
+
+<p>这里就要求菜单的配置不能出现循环，例如某个菜单的父父菜单是它的子菜单，这是不允许的。
+但有时候难免出现一些错误，特别不是通过可视化界面增加菜单的时候。我们的系统也曾经出现过，例如见<a href="/blog/20120804_improve-bitter-code-7.html">定位数据问题</a>。</p>
+
+<h3>如何判断循环</h3>
+
+<p>就拿<a href="/blog/20120804_improve-bitter-code-7.html">定位数据问题</a>来说，当时时间比较急就没多想，直接参考了项目中已有的逻辑。</p>
+
+<p>考虑整个菜单结构是一棵树的话，它的判断逻辑的思路是，第一次把根结点去掉(最顶层的菜单)，
+第二次把剩余的树的根结点去掉，以此类推，直到最后没有结点(没有循环)，或没有结点可以删除(出现循环)。
+写成伪代码的话，大约是这样的:</p>
+
+<p>``` java
+hasDel = true</p>
+
+<p>do
+  hasDel = false
+  for 结点 in 树</p>
+
+<pre><code>if 结点 has not 父节点
+  删除结点 and hasDel = true
+end
+</code></pre>
+
+<p>  end
+while hasDel</p>
+
+<p>if 还剩下结点
+  出现循环
+else
+  没有循环
+end
+```
+因为每次操作都要循环剩下的整个树，循环的次数很关键，如果树有3层，扫描3次即可，如果层次很深，扫描的次数就比较可观了。</p>
+
+<h3>另一个思路</h3>
+
+<p>以其中某个结点为例，它有父节点..一直到根节点，或者出现循环。
+如果不是循环，则整结点都可以去掉。这样的话，只需要遍历整棵树，对未处理的结点，进行循环判断即可，而处理过的(去掉的)可以忽略。</p>
+
+<p>伪代码如下:
+``` java
+for 结点 in 树
+  if 结点已经被标识为已处理</p>
+
+<pre><code>continue
+</code></pre>
+
+<p>  else</p>
+
+<pre><code>判断结点到根结点是否存在循环(如在路径上遇到已处理的直接返回false)
+if 存在循环
+   出现循环
+else
+   标记结点到根结点为已处理
+end
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p><strong>问题现在就回到如何判断循环链表</strong>，这其实是个经典的面试笔试题了，我在网上挑了其中一个解答:<a href="http://blog.csdn.net/splendour/article/details/7701449">判断循环链表</a>
+对于我们的情况，在遇到已处理结点的时候，直接就可以说明没有循环了，这里可以小优化一下。</p>
+
+<h3>效率分析</h3>
+
+<p>我们粗略的分析一下，外层循环的数量级是整个树的结点数，判断循环的逻辑是和结点的深度有关系的，
+以极端的情况为例，只有1层的话，很明显，相当于扫描一次结点。如果是个非常深的结点(都是单子结点)，就最后一个的结点的话，循环判断的次数也是和结点数成线性的。</p>
+
+<p><strong>结点越深，循环判断的次数就越多，跟结点到根节点的长度成正比，但一次排除的结点也越多。总体还是跟总的结点数成线性正比的。</strong>
+相对于原来的处理方式，平均效率就是它的最好效率。</p>
+
+<h3>小结</h3>
+
+<p>判断链表是否存在循环这种面试题，还是有点实际用处的，以前真的没特别留意。
+算法这东西，真的是无处不在的呀。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[这些天,我们用到的算法]]></title>
+    <link href="http://mccxj.github.com/blog/20130327_these-days-algorithms.html"/>
+    <updated>2013-03-27T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/these-days-algorithms</id>
+    <content type="html"><![CDATA[<p>平时做的应用，的确很少涉及非常具体的局部算法。不过最近一段时间还是遇到了一些，稍微整理一下，留个纪念。</p>
+
+<h3>产品的组合生成</h3>
+
+<p>举个例子，手机的颜色有黑白的，内存有16G,32G的，那么就有黑色16G,黑色32G，白色16G，黑色32G等组合项，
+当然属性可能不止两项，想列出所有的组合项。</p>
+
+<p>如果只有两种属性，很简单
+``` java
+for(属性 in 属性1)</p>
+
+<pre><code>for(属性 in 属性2)
+   // TODO 得到组合项
+</code></pre>
+
+<p>```</p>
+
+<p>但是，如果有不定项的话，就不能这么写了。</p>
+
+<p><strong>这需要知道点回溯法的技巧，我是用了非递归的方式编写的</strong>:</p>
+
+<p>``` java</p>
+
+<pre><code>public static List&lt;List&lt;String&gt;&gt; merge(List&lt;String&gt;... ls) {
+    int len = ls.length;
+    int[] pos = new int[len];//对i而言，表示第i种属性当前选择是哪个值
+    Arrays.fill(pos, 0);
+    String[] r = new String[len];//存放待生成的组合项
+
+    List&lt;List&lt;String&gt;&gt; res = new ArrayList&lt;List&lt;String&gt;&gt;();
+    int k = 0;//当前正在遍历第几种属性
+    while (k &gt;= 0) {
+        while (pos[k] &lt; ls[k].size()) {
+            r[k] = ls[k].get(pos[k]);
+            if (k == len - 1) {//是否已经是最后一个属性
+                // 找到一个组合项，复制到res里边去
+                pos[k] = pos[k] + 1;
+            } else {
+                k++;//当前位置的属性已经选择，处理下一种属性
+            }
+        }
+        pos[k] = 0;
+        k--;//当前位置的属性已经遍历完，需要回溯到上一种属性去
+        if (k &gt; 0) {
+            pos[k] = pos[k] + 1;
+        }
+    }
+    return res;
+}
+</code></pre>
+
+<p>```</p>
+
+<p>说真的，即使加了注释，没有相关的算法基础，也是不容易看清楚的，所以有同事看到这个写法，在大呼救命。</p>
+
+<h3>请求URL参数匹配</h3>
+
+<p>最近有需求，要对请求里边的参数做匹配，规则是这样的：</p>
+
+<p>例如有下面三条规则(其中问号表示变量，参数的顺序没关系):
+* User=?&amp;Password=BB&amp;CurrentTab=LOG&amp;CurrentTab2=LOG
+* User=?&amp;Password=?&amp;CurrentTab=LOG1
+* User=?&amp;Password=?&amp;CurrentTab=LOG</p>
+
+<p>如果请求参数是XX=222&amp;User=Q&amp;Password=BB&amp;CurrentTab=LOG，则只能匹配第三条，因为第一条多一个参数，第二条的值是LOG1，对应不上。<br/>
+如果请求参数是User=QQ&amp;CurrentTab=LOG1&amp;Password=AA,同样只能匹配到第三条。</p>
+
+<p>有个非常简单的思路，就是把参数拆开，然后一个个匹配。但是由于业务的请求数非常大，担心对系统是否有影响。</p>
+
+<p>于是，弄了个测试原型，开50个线程的线程池，跑500个任务，每个任务跑1w次，匹配3个配置项。整个框架代码是这样的:
+``` java</p>
+
+<pre><code>public void work() throws Exception {
+
+    final String match1 = "User=?&amp;Password=BB&amp;CurrentTab=LOG&amp;CurrentTab2=LOG";
+    final String match2 = "User=?&amp;Password=?&amp;CurrentTab=LOG1";
+    final String match3 = "User=?&amp;Password=?&amp;CurrentTab=LOG";
+
+    ExecutorService pool = Executors.newFixedThreadPool(50);
+    int tasksize = 500;
+    final CountDownLatch latch = new CountDownLatch(tasksize);
+
+    long s = System.nanoTime();
+    for (int k = 0; k &lt; tasksize; k++) {
+        pool.submit(new Runnable() {
+            @Override
+            public void run() {
+                Random r = new Random(100000000);
+                for (int i = 0; i &lt; 10000; i++) {
+                    String toMatch = "XX="
+                                     + r.nextInt()
+                                     + "&amp;User=AA&amp;Password=BB&amp;CurrentTab=LOG";
+                    // TODO 测试toMatch
+                }
+                latch.countDown();
+            }
+        });
+    }
+
+    latch.await();
+    System.out.println(System.nanoTime() - s);
+}
+</code></pre>
+
+<p>```</p>
+
+<p>先用最简单的方法来做基准测试，有时候最简单的方法就可以满足要求了，粗略的代码如下:</p>
+
+<p>``` java</p>
+
+<pre><code>                    Map&lt;String, String&gt; matchs = new HashMap&lt;String, String&gt;();
+                    String[] split = toMatch.split("&amp;");
+                    for (String mss : split) {
+                        String[] split2 = mss.split("=");
+                        matchs.put(split2[0], split2[1]);
+                    }
+                    similar(match1, matchs);
+                    similar(match2, matchs);
+                    similar(match3, matchs);
+
+                    ....
+
+private boolean similar(String match, Map&lt;String, String&gt; matchs) {
+
+    String[] ms = match.split("&amp;");
+    for (String m : ms) {
+        String[] split2 = m.split("=");
+        if (!matchs.containsKey(split2[0]))
+            return false;
+
+        if (!"?".equals(split2[1])) {
+            if (!split2[1].equals(matchs.get(split2[0])))
+                return false;
+        }
+    }
+    return true;
+}                        
+</code></pre>
+
+<p>```</p>
+
+<p>在我的机器上简单跑一下，大约要28s。这个算法非常暴力，用split和map结构搞定了。
+如果用StringTokenizer的话，还能快些，我试了一下，把第一步split换了的话，大约需要25s.
+<strong>我觉得这个效果也还是可以接受的。</strong></p>
+
+<p>下面再用纯手工操作字符串的方式，代码如下:
+``` java</p>
+
+<pre><code>                    UrlMatcher matcher = new UrlMatcher(toMatch);
+                    matcher.match(match1);
+                    matcher.match(match2);
+                    matcher.match(match3);
+
+class UrlMatcher {
+    private String toMatch;
+    int[] pos = new int[20];
+    int ps;
+
+    public UrlMatcher(String toMatch) {
+        int ss = 0;
+        this.toMatch = toMatch;
+        int len = toMatch.length();
+        int st = 0;
+        int ed = 0;
+        for (int i = 0; i &lt; len; i++) {
+            char c = toMatch.charAt(i);
+            if (c == '=') {
+                ed = i - 1;
+                pos[ss++] = st;
+                pos[ss++] = ed;
+                st = i + 1;
+                pos[ss++] = st;
+            } else if (c == '&amp;') {
+                pos[ss++] = i - 1;
+                st = i + 1;
+            }
+        }
+        pos[ss] = len - 1;
+        ps = (ss + 1);
+    }
+
+    public boolean match(String m) {
+        int len = m.length();
+        int st = 0;
+        int ed = 0;
+        int vs = 0;
+        int ve = 0;
+
+        for (int i = 0; i &lt; len; i++) {
+            char c = m.charAt(i);
+            if (c == '=') {
+                ed = i - 1;
+                vs = i + 1;
+            } else if (c == '&amp;') {
+                ve = i - 1;
+
+                if (!match2(m, st, ed, vs, ve)) {
+                    return false;
+                }
+
+                st = i + 1;
+            }
+        }
+        return match2(m, st, ed, vs, len - 1);
+    }
+
+    boolean match2(String m, int st, int ed, int vs, int ve) {
+        boolean ma = true;
+        for (int i = 0; i &lt; ps; i = i + 4) {
+            if (pos[i + 1] - pos[i] == ed - st) {
+                int sst = st - pos[i];
+                for (int j = pos[i]; j &lt;= pos[i + 1]; j++) {
+                    if (toMatch.charAt(j) != m.charAt(sst + j)) {
+                        ma = false;
+                    }
+                }
+
+                if (ma) {
+                    if (ve == vs &amp;&amp; '?' == m.charAt(vs)) {
+                        return true;
+                    } else {
+                        if (pos[i + 3] - pos[i + 2] == ve - vs) {
+                            int vst = vs - pos[i + 2];
+                            for (int j = pos[i + 2]; j &lt;= pos[i + 3]; j++) {
+                                if (toMatch.charAt(j) != m.charAt(vst + j)) {
+                                    return false;
+                                }
+                            }
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                }
+
+            }
+        }
+        return false;
+    }
+}                       
+</code></pre>
+
+<p>```</p>
+
+<p>代码比较粗糙，对某些情况不是很严格，但不影响总体的性能评测，<strong>这个逻辑不到2s，要快15倍以上</strong>。
+这个写法的特点是:<strong>使用数组而不是Map，使用标记位置而不是截取字符串，一次扫描。</strong></p>
+
+<p><strong>不过，这个代码很粗糙，不要太当真。</strong></p>
+
+<p>看看我机器上显示的虚拟机负载情况。</p>
+
+<p>图1:最简单的做法
+<img src="/assets/images/2013/match1.jpg" alt="简单方法+多线程" /></p>
+
+<p>图2:手工打造，相对的内存消耗小些
+<img src="/assets/images/2013/match2.jpg" alt="手工打造+多线程" /></p>
+
+<p>图3:还是手工打造，不过单线程，相对来说CPU使用率就小很多了
+<img src="/assets/images/2013/match3.jpg" alt="手工打造+单线程" /></p>
+
+<h3>小结</h3>
+
+<p>经常听到算法没什么用，算法没地方使用的论调，我也都一笑置之。
+不过，<strong>我也承认，在现在的工作中，的确很少会直接面对非常具体的局部算法</strong>。
+但我还是不能赞同上面的观点，<strong>毕竟有些场景还是不得不考虑的</strong>:</p>
+
+<ol>
+<li>做不到，没有算法的支持，根本不知怎么写好</li>
+<li>做不好，简单的实现没法满足，需要高效的算法</li>
+</ol>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[improve bitter code: '不可避免'的重复]]></title>
+    <link href="http://mccxj.github.com/blog/20120729_improve-bitter-code-4.html"/>
+    <updated>2012-07-29T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/improve-bitter-code-4</id>
+    <content type="html"><![CDATA[<p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>一段分批处理的逻辑</h3>
+
+<p>周六做code diff的时候发现B项目一段颇长的处理逻辑(40行左右)。处理流程是这样的，
+从页面上取到一批数据之后，用这批数据封装参数进行后台调用(远程调用)。为了避免数据调用超时，
+对这批数据进行分批多次调用。代码如下所示(现实的代码比这个要复杂些，并且没有使用subList方法)：
+<div class="highlight"><pre><code class="java"><span class="n">List</span> <span class="n">batchdatas</span> <span class="o">=</span> <span class="o">...;</span>
+<span class="kt">int</span> <span class="n">batchsize</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span> <span class="c1">// load from parameter&lt;/p&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="kt">int</span> <span class="n">datasize</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+<span class="k">if</span><span class="o">(</span><span class="n">datasize</span> <span class="o">&gt;</span> <span class="n">batchsize</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kt">int</span> <span class="n">batch</span> <span class="o">=</span> <span class="n">datasize</span> <span class="o">/</span> <span class="n">batchsize</span><span class="o">;</span>
+<span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">i</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">batch</span><span class="o">;</span><span class="n">i</span><span class="o">++){</span>
+    <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+    <span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">batchsize</span><span class="o">*</span><span class="n">i</span><span class="o">,</span> <span class="n">batchsize</span><span class="o">*(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">));</span>
+    <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
+    <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="kt">int</span> <span class="n">left</span> <span class="o">=</span> <span class="n">datasize</span> <span class="o">%</span> <span class="n">batchsize</span><span class="o">;</span>
+<span class="k">if</span><span class="o">(</span><span class="n">left</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">){</span>
+    <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+    <span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">batchsize</span><span class="o">*</span><span class="n">batch</span><span class="o">,</span> <span class="n">datasize</span><span class="o">);</span>
+    <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
+    <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+<span class="k">else</span> <span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+<span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdatas</span><span class="o">));</span>
+<span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
+
+<p>从代码的实现看，思路还是比较清晰的。如果不足一次，就一次提交。否则计算出一共要分多少次，
+然后逐次处理提交，最后还要判断是否还有剩余的，如果有就再处理一次。</p>
+
+<p>代码显现出来的问题也比较明显，就是远程调用的逻辑出现了重复。</p>
+
+<h3>算法小调整，避免重复</h3>
+
+<p>有没什么办法可以避免重复? 或许有些童鞋第一反应是给这几句代码抽取成小方法。
+不过这里有更好的办法，首先细想一下就会发现不足一次的判断(datasize > batchsize)不是必要的，
+如果计算批次而是计算每次的起始点和结束点，上面两个分支也可以合并一下。调整后代码如下：
+<div class="highlight"><pre><code class="java"><span class="n">List</span> <span class="n">batchdatas</span> <span class="o">=</span> <span class="o">...;</span>
+<span class="kt">int</span> <span class="n">batchsize</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span> <span class="c1">// load from parameter&lt;/p&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="kt">int</span> <span class="n">datasize</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+<span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">startidx</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">startidx</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">datasize</span><span class="o">;</span><span class="n">startidx</span><span class="o">+=</span><span class="n">batchsize</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kt">int</span> <span class="n">endidx</span> <span class="o">=</span> <span class="o">(</span><span class="n">startidx</span><span class="o">+</span><span class="n">batchsize</span><span class="o">)</span> <span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">datasize</span> <span class="o">?</span> <span class="n">datasize</span> <span class="o">:</span> <span class="o">(</span><span class="n">startidx</span><span class="o">+</span><span class="n">batchsize</span><span class="o">);</span>
+
+<span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+<span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">startidx</span><span class="o">,</span> <span class="n">endidx</span><span class="o">);</span>
+<span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
+<span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
+
+<p>其中计算endidx使用了一个三元表达式，使用三元表达式用来替代一些简单的if-else语句是个实用的小技巧。
+代码量缩小为原来的三分之一，代码少了，维护量也轻松了。</p>
+
+<p>类似这样的代码也并不少见，例如计算总页数的分页逻辑有下面的写法
+<div class="highlight"><pre><code class="java"><span class="c1">// 常用做法</span>
+<span class="kt">int</span> <span class="n">totalpage</span> <span class="o">=</span> <span class="n">totalsize</span> <span class="o">/</span> <span class="n">pagesize</span><span class="o">;</span>
+<span class="k">if</span><span class="o">(</span><span class="n">totalsize</span> <span class="o">%</span> <span class="n">pagesize</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">totalpage</span><span class="o">++;</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">// 另外一种写法</span>
+<span class="kt">int</span> <span class="n">totalpage</span> <span class="o">=</span> <span class="o">(</span><span class="n">totalsize</span> <span class="o">+</span> <span class="n">pagesize</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">/</span> <span class="n">pagesize</span><span class="o">;</span>
+</code></pre></div></p>
+
+<h3>基本功很重要</h3>
+
+<p>java是一门比较古板的语言，大多数情况下，写出来的代码也是大同小异的。
+同时，java相关框架又特别的多，很容易拣了芝麻丢了西瓜。
+以来面试的童鞋为例，连基本算法的时间复杂度都没弄清楚的人不在少数，所以
+在项目代码中，经常看到化简为繁的代码，现在也很习惯了。</p>
+
+<p>
+
+
+<h2>"improve bitter code"系列文章:</h2>
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[马踏棋盘的算法思考]]></title>
+    <link href="http://mccxj.github.com/blog/20120712_horse-riding-chessboard.html"/>
+    <updated>2012-07-12T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/horse-riding-chessboard</id>
+    <content type="html"><![CDATA[<h3>马踏棋盘</h3>
+
+<p>将马随机放在国际象棋的8×8棋盘的某个方格中，马按走棋规则进行移动。
+要求每个方格只进入一次，走遍棋盘上全部64个方格。</p>
+
+<h3>又是回溯?</h3>
+
+<p>这个做法和前面几个问题是差不多的(<a href="20120710_sudoku.html">数独(sudoku)游戏</a>)，所以这里就不做太多解释了。
+总体来说，就是可选的解空间是8个方向。回溯的代码就不多提了，需要说的是，这里简单的回溯
+效率不好，需要跑很久才出结果。我们有什么方式可以优化一下!</p>
+
+<h3>贪心是否有效?</h3>
+
+<p>首先，我们可以对可供选择的方向进行过滤，对于它相连的8个方向所在的点，
+在当前的局面下，假如存在两个点只有一条路可以到达，那么可以直接回溯，
+因为无论走哪个方向都不能走完整个棋盘。假如存在一个点，它只有一条路可以到达，
+那么下一步必须走这个方向。</p>
+
+<p>但是，即使我们过滤了一些路径，效率还是没有非常大的提升。我们需要考虑一种贪心的思路：
+在可选的方向中，优先选择出口最少的目标点。因为优先选择出口少的点,
+就可以让出口少的点尽量少，使得最后剩下的点有比较多的入口，这样最终达到目的的概率就会大些。</p>
+
+<p>虽然这个思路，我觉得不好直接证明，不过我修改了一些代码实现，的确效率得到非常大的提升。
+就我那个机器，ruby代码，不到1s，64个点的情况就全部处理完了。</p>
+
+<h3>代码示例</h3>
+
+<p><div class="highlight"><pre><code class="ruby"><span class="k">def</span> <span class="nf">init</span>
+  <span class="vi">@arr</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">7</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">end</span>
+  <span class="vi">@path</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>
+  <span class="vi">@ok</span> <span class="o">=</span> <span class="kp">false</span>
+  <span class="vi">@poss</span> <span class="o">=</span> <span class="o">[[-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">]]</span>
+<span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+
+<span class="sr">&lt;h1&gt;判断[x,y]是否在棋盘内并未走过&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">valid?</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+  <span class="n">x</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span> <span class="n">x</span><span class="o">&lt;</span><span class="mi">8</span> <span class="o">&amp;&amp;</span> <span class="n">y</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span> <span class="n">y</span><span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="mi">8</span> <span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">x</span><span class="o">][</span><span class="n">y</span><span class="o">]==</span><span class="mi">0</span>
+<span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+
+<span class="sr">&lt;h1&gt;判断当前点有哪些方向可以走&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span>
+  <span class="n">posz</span><span class="p">,</span> <span class="n">mustpos</span> <span class="o">=</span> <span class="p">{},</span> <span class="kp">nil</span>
+  <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="vi">@path</span><span class="o">[</span><span class="n">mark</span><span class="o">]</span>
+  <span class="vi">@poss</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">pos</span><span class="o">|&lt;</span><span class="sr">/p&gt;</span>
+
+<span class="sr">&lt;pre&gt;&lt;code&gt;axp, bxp = a+pos[0], b+pos[1]</span>
+<span class="sr">if valid?(axp, bxp)</span>
+<span class="sr">  sz = 0</span>
+<span class="sr">  @poss.each do |ps|</span>
+<span class="sr">    ap, bp = axp+ps[0], bxp+ps[1]</span>
+<span class="sr">    sz+=1 if valid?(ap, bp) # 存在空点</span>
+<span class="sr">  end</span>
+<span class="sr">  if sz&amp;gt;0</span>
+<span class="sr">    posz[pos] = sz</span>
+<span class="sr">  else</span>
+<span class="sr">    mustpos.nil? ? (mustpos = pos) : (return [])</span>
+<span class="sr">  end</span>
+<span class="sr">end</span>
+<span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+
+<span class="sr">&lt;p&gt;  end</span>
+<span class="sr">  # 对目标点的方向多寡进行排序</span>
+<span class="sr">  mustpos.nil? ? posz.keys.sort {|a,b| posz[a]&amp;lt;=&gt;posz[b]} : [mustpos]</span>
+<span class="sr">end&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">mark</span><span class="o">==</span><span class="mi">63</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+
+<span class="sr">&lt;pre&gt;&lt;code&gt;@ok = true</span>
+<span class="sr">return</span>
+<span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+
+<span class="sr">&lt;p&gt;  end</span>
+<span class="sr">  a, b = @path[mark]</span>
+<span class="sr">  filter(mark).each do |pos|&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">rp</span> <span class="o">=</span> <span class="o">[</span><span class="n">a</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span>
+<span class="vi">@path</span><span class="o">[</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="o">]</span> <span class="o">=</span> <span class="n">rp</span>
+<span class="vi">@arr</span><span class="o">[</span><span class="n">rp</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">rp</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">walk</span><span class="p">(</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="vi">@ok</span> <span class="p">?</span> <span class="k">return</span> <span class="p">:</span> <span class="p">(</span><span class="vi">@arr</span><span class="o">[</span><span class="n">rp</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">rp</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">end</span>
+<span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+
+<span class="sr">&lt;p&gt;(0..7).each do |i|</span>
+<span class="sr">  (0..7).each do |j|&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">init</span>
+<span class="vi">@path</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span> <span class="o">=</span> <span class="o">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">]</span>
+<span class="vi">@arr</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">walk</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="k">if</span> <span class="vi">@ok</span>
+  <span class="vi">@path</span><span class="o">.</span><span class="n">each_with_index</span> <span class="k">do</span> <span class="o">|</span><span class="n">ps</span><span class="p">,</span> <span class="n">idx</span><span class="o">|</span>
+    <span class="vi">@arr</span><span class="o">[</span><span class="n">ps</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">ps</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="n">idx</span>
+  <span class="k">end</span>
+  <span class="vi">@arr</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">ar</span><span class="o">|</span> <span class="nb">p</span> <span class="n">ar</span> <span class="k">end</span>
+  <span class="nb">puts</span>
+<span class="k">else</span>
+  <span class="s2">&quot;no solution&quot;</span>
+<span class="k">end</span>
+<span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></p>
+]]></content>
+  </entry>
+  
+</feed>

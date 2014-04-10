@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Dijkstra | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/dijkstra/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[单词接龙问题]]></title>
+    <link href="http://mccxj.github.com/blog/20131103_word-contact.html"/>
+    <updated>2013-11-03T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/word-contact</id>
+    <content type="html"><![CDATA[<p>昨天看到其他部门的技能鉴定题目，相对我们部门偏应用的题目，他们的相对更加偏重算法。题目描述如下：</p>
+
+<p>有一种单词接龙的游戏，就是连续的两个单词，第一个单词的尾要和第二个单词的头是一样的。<br/>
+例如: cat tell log google就是一个单词接龙。</p>
+
+<p>定义最少单词接龙是单词个数最少的接龙，定义最短单词接龙是单词字母个数总和最少的接龙。
+假设所有单词都是由小写字母组成，现在给定一堆单词，给定龙头和龙尾，求出最少单词接龙和最短单词接龙。</p>
+
+<p>当时在招聘，一时也没反应过来。下午回来的时候，仔细一想，这不就是最短路径问题么?</p>
+
+<p>把26个小写字母看成是结点，那么每个单词就是从某个结点到另外一个结点的单向路径。<br/>
+上面的接龙如果在加上单词gc, cookie，就是下面的图表示:<br/>
+<img src="/assets/images/2013/dijkstra.png" alt="单词接龙" /></p>
+
+<p>最少单词接龙，就是每条路径的权值为1，求两个结点之间的最短路径。<br/>
+最短单词接龙，就是每条路径的权值为单词的长度，求两个结点之间的最短路径。</p>
+
+<p>另外，关于一些特殊情况和注意点:</p>
+
+<p>对于存在多个单词，他们的首尾字母相同的话，只记录长度最短的为路径的权值即可。</p>
+
+<p>结点的存储可以不用链接表，因为只有26个字母，用二维数组即可，实时增加单词也容易处理。</p>
+
+<p>求最短路径的算法，参考经典的Dijkstra最短路径算法，这里就不详述了。
+关于Dijkstra，可以参考<a href="http://baike.baidu.com/link?url=YCo_VIMdyckLPW9FuF6ZWnYwDangwdpze7JBVjoKc0AylbBp0Y3PILhRQ2p_QX6ssgCP0hFqMMdHhvUdQtd5Wa">百度百科中的条目</a></p>
+]]></content>
+  </entry>
+  
+</feed>

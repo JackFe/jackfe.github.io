@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 命名 | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/ming-ming/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[命名风格培训草稿]]></title>
+    <link href="http://mccxj.github.com/blog/20120814_naming-style.html"/>
+    <updated>2012-08-14T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/naming-style</id>
+    <content type="html"><![CDATA[<p>我记得郑大有次开课的时候，提到命名这个话题。说有次他跟一个前辈说：命名真的太难了。
+前辈说：你终于开窍了。哪天咋们心里也有这个意识，也算是开窍了。(昨晚忘记说这个事了，补充)</p>
+
+<h3>编码风格与编码规范</h3>
+
+<p>风格是带主观色彩的，有个人爱好的区别。<br/>
+规范是双刃剑，限制个人风格的随意发挥，让整体有个统一的风格。<br/>
+规范是一些风格的最佳实践的集合，但仍然是不断进步的。</p>
+
+<p>学习规范，应该从产生背景出发，理解规范背后希望解决的问题，才能更好理解规范，<strong>减少抵制情绪</strong>，或许还能改进规范。</p>
+
+<h3>破窗效应与童子军军规</h3>
+
+<p><strong>破窗效应</strong>: 一个房子如果窗户破了，没有人去修补，隔不久，其它的窗户也会莫名其妙地被人打破；
+一面墙，如果出现一些涂鸦没有被清洗掉，很快的，墙上就布满了乱七八糟、不堪入目的东西；
+一个很干净的地方，人们不好意思丢垃圾，但是一旦地上有垃圾出现之后，人就会毫不犹疑地抛，丝毫不觉羞愧。
+(选择汽车为例子也可以)<br/>
+<strong>童子军军规</strong>: 当你离开一个地方的时候，要让它比你来的时候更整洁干净。</p>
+
+<p>遵守童子军军规，警惕破窗效应。<strong>避免对代码大范围进行修改</strong><br/>
+对于老代码，总会出现<strong>新老风格冲突</strong>的情况，优化代码应该控制修改的范围和脚步，采用结对或评审的方式规避风险。<br/>
+<strong>加强代码评审</strong>, 一个人出错的几率是5%,两个人在同个地方犯错的几率才0.25%。</p>
+
+<h3>文件名规则</h3>
+
+<p>遵循<strong>约定大于配置</strong>原则，像java文件名本身是和类名有关系的，对于页面文件和配置文件，同样在命名上要存在相关性。思考下面的问题:<br/>
+<strong>如果你知道其中一个文件，如何找到相关的文件</strong></p>
+
+<h3>包名规则</h3>
+
+<p>包名规则本身就是有一套指导方针的：<br/>
+以公司网址进行打头，如com.gmcc<br/>
+通常会附带项目名,如com.gmcc.boss<br/>
+项目大的话，还会继续模块化,如com.gmcc.boss.product<br/>
+模块下面在继续分功能,从分层的角度，可以有com.gmcc.boss.product.action、service、dao、bean之类的包</p>
+
+<p>对于通常的web应用，<strong>模块化划分也可以从菜单入手进行分解</strong>，至少可以作为参考。模块如果很大，可以再<strong>拆分子模块</strong>。</p>
+
+<h3>常用命名法</h3>
+
+<p>Camel命名 -- java标准命名法<br/>
+匈牙利命名 -- MFC那套，变量名都带类型，如今有IDE智能提示，显得过时了。而且有货不对板的风险。<br/>
+pascal命名 -- 和Camel就第一个单词首字母的区别<br/>
+下划线命名 -- 在c代码、javascript、ruby等脚本中比较常见</p>
+
+<h3>类名的选择</h3>
+
+<p>主要从业务逻辑，框架要求，模式设计方面考虑:<br/>
+业务逻辑中按分层命名规范即可 -- Action Controller Service Call Dao Business Bean等都是常用的后缀<br/>
+框架基础类，参考接口命名 -- Filter Servlet Comparable <em>Utils </em>s<br/>
+使用设计模式时参考常见命名 -- Adapter Chain Visitor Factory Builder</p>
+
+<p>虽然整个代码结构使用分层方式，但还是有地方可以考虑设计模式的，切勿错失良机。<br/>
+设计模式方面的内容参考<a href="http://book.douban.com/subject/1052241/">四人帮的书籍</a>,关于jdk的设计模式参考<a href="http://coolshell.cn/articles/3320.html">酷壳的文章</a></p>
+
+<p><strong>对于业务系统，最好准备一份业务术语词典，用来指导相关业务功能的命名</strong></p>
+
+<h3>方法命名</h3>
+
+<p>评价标准：<strong>一句话功能描述</strong>。<br/>
+通常选择动词加名词的组合，常用的动词并不多。
+命名方式可能有所不同，取决于代码的关注点。(默念，参考评价标准)如:<br/>
+getSubsByCertId -- 通过证件号获取用户信息,有强调证件号的意思<br/>
+getSubs -- 获取用户信息，关注结果，可能支持多种方式</p>
+
+<h3>变量命名</h3>
+
+<p>对于临时变量，通常使用i,j,k,c,b等就可以了。不应该作为其他作用存在。<br/>
+对于标记标识，选择done,found,success,ok,fail等，<strong>切勿使用flag</strong>, 评价标准(填空后读起来很顺畅):假如(找到了)...<br/>
+对于状态，整理一些常用的常量以备使用，如:READY,SUCCESS,FAILED<br/>
+对于常量，望文生义+注释(注释在这里显得很有必要)，修改checkstyle的魔鬼数字时，是<strong>学习命名的好机会</strong>。<br/>
+对于普通变量，我们常常会带上类型如subsattrList,我觉得subsattrs这种单复数形式会更好。不过这是个习惯问题，不是什么大问题。
+变量命名经验要多学习优秀开源代码，会有很多好处。有些变量名是由IDE通过方法名自动生成的，方法名恰当的时候，生成的变量名也是不错的。(总结)</p>
+
+<p>命名技巧都差不多，我经常采用办法：<strong>在心里默念需要的功能，转换成方法名/变量名。反复默念几遍命名，看看是否能够像句子一样读出来。</strong></p>
+
+<h3>注释</h3>
+
+<p><strong>代码不能代替注释，但优先考虑代码的可读性</strong>，例如使用方法抽取等手段。<br/>
+可读性的标准是<strong>代码可以像文章一样读出来</strong>,保证方法名和注释相符合，忌讳牛头不对马嘴。
+坚持这种态度的话，代码质量一定会有所提高。</p>
+
+<p>注释关注类注释和方法注释,方法内注释用于代码难以表达的地方(如某种特殊情况)。<br/>
+对于外围接口(包括前后台调用),在方法注释中进行详细说明。</p>
+
+<p>需求单号应该适当添加到代码中，我觉得类注释可能是比较合适的地方。<br/>
+修改bug的代码通常比较烂(现网的是这样)，可以标注一下BUG单号等信息。<br/>
+提交到版本库的日志要清晰，重点关注什么原因修改，修改哪些功能点等，<strong>争取让每次提交都有据可依(每次日志都是不一样的)</strong>。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[improve bitter code: 对付魔鬼数字]]></title>
+    <link href="http://mccxj.github.com/blog/20120731_improve-bitter-code-6.html"/>
+    <updated>2012-07-31T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/improve-bitter-code-6</id>
+    <content type="html"><![CDATA[<p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>道高一尺，魔高一丈</h3>
+
+<p>魔鬼数字在项目中大量出现，是代码可读性维护性变差的重要推手。
+为了控制事态恶化，项目中加入findbugs，checkstyle等静态检查工具，试图让人自觉修复魔鬼数字这类头疼的问题。</p>
+
+<p>最近在review N项目的代码时，发现有新童鞋对修复checkstyle的问题热情高涨，有些修改的确是有益的，
+但是对魔鬼数字的修改就显得不是正路了。大家先看看：
+<div class="highlight"><pre><code class="java"><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_2</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
+<span class="kd">private</span> <span class="n">Static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_80</span> <span class="o">=</span> <span class="mi">80</span><span class="o">;</span>
+<span class="kd">private</span> <span class="n">Static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_1000</span> <span class="o">=</span> <span class="mi">1000</span><span class="o">;</span>
+<span class="kd">private</span> <span class="n">Static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_60000</span> <span class="o">=</span> <span class="mi">60000</span><span class="o">;</span>
+</code></pre></div></p>
+
+<p>这种情况以前也出现过，那个时候刚推广checkstyle，结果有人定义了NumberUtil类，里边就有ONE, TWO...等变量，
+一直延伸到好几十。这让我非常纠结，劝说了很多次，结果这个类最终还是扎下根来了。我对此深恶痛绝。</p>
+
+<p>今天再次看到这种方式，真是道高一尺魔高一丈呀。我又要发牢骚了。</p>
+
+<h3>认清工具的本质</h3>
+
+<p>这种做法完全就是为了对付checkstyle，而不是对付那对问题代码。工具本来是想提醒程序员，避免写出难以维护的代码。
+结果我们更聪明，把代码藏起来，眼不见为净。这样其实是把数字和变量名直接关联起来了，
+你能想象一个叫INT_2的变量值确是1么? 如果在不同含义的逻辑里边使用这样一个魔鬼变量，
+一旦值发生变化，就会顺带把不应该修改的地方也改动了。</p>
+
+<p>如果我们真的是为了提高自己的编码水平，提高项目的代码质量，就应该认真的对待这些魔鬼数字。
+对于魔鬼数字，应该有一个良好的命名，对于经常出现的，还应该找个合适的地方加以管理。接下来以上面的例子继续分析。</p>
+
+<h3>解决魔鬼数字</h3>
+
+<p>要解决魔鬼数字，首先是认清魔鬼数字代表的意义，给它起一个合适的名字。</p>
+
+<p>查看源代码，可以发现，做了下面的代码调整：</p>
+
+<ol>
+<li>2是某个值在列表中的位置索引，换成XXX_IDX</li>
+<li>80是http的默认端口，换成DEFAULT_HTTP_PROT</li>
+<li>1000是用来把秒换成毫秒的，可以用MILLISECONDS_PER_SECOND</li>
+<li>60000是默认超时时间来的，换成DEFAULT_TIMEOUT</li>
+</ol>
+
+
+<p>同样，经常会看到魔鬼字符串，"0","1"这样的值出现代码里边，也应该
+把给他们起一个好的名字，例如作为执行结果，有SUCCESS、FAILED等。</p>
+
+<h3>更进一步</h3>
+
+<p>需要考虑的还有常量定义的地方，另外考虑使用方法封装来处理魔鬼数字的逻辑。
+这样可以隐藏一些细节，把作用域限制在很小的地方。
+例如下面经常出现的魔鬼字符串，就可以考虑把整个判断逻辑封装到user类里边去，
+而不只是简单的定义出ACTIVE这样一个常量。
+<div class="highlight"><pre><code class="java"><span class="c1">// 原有的代码</span>
+<span class="k">if</span><span class="o">(</span><span class="s">&quot;1&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">user</span><span class="o">.</span><span class="na">getStatus</span><span class="o">())){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">// ...</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">// 改造后,&quot;1&quot;作为user的常量使用于isActive方法</span>
+<span class="k">if</span><span class="o">(</span><span class="n">user</span><span class="o">.</span><span class="na">isActive</span><span class="o">()){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">// ...</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
+
+<p>不过话说回来，解决魔鬼数字、字符串之类等'小枝小节'，花费的精力不小。
+但不要忽视这些细节，这样可以让自己不断提高对代码的认识，也便于其他人维护你的代码。</p>
+
+<p>对付魔鬼数字，还是不要走捷径的好！</p>
+
+<p>
+
+
+<h2>"improve bitter code"系列文章:</h2>
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: classloader | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/classloader/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[考察对类加载的理解(答案篇)]]></title>
+    <link href="http://mccxj.github.com/blog/20131228_classloader-answer.html"/>
+    <updated>2013-12-28T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/classloader-answer</id>
+    <content type="html"><![CDATA[<h2>独立进程篇</h2>
+
+<p>首先需要知道类加载器是怎么回事? 在Java里边，类加载器就是用来加载类的，然后才是执行代码。<br/>
+Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类加载器(app)。<br/>
+其中boot就是用来加载最开始的虚拟机和最基本的java类，ext是用来加载一些扩展类，默认是在jre/lib/ext目录下的。<br/>
+最后一个才是你真正会用到的。cp参数就是用来指定应用类加载器找类的地方，java.ext.dirs就是用来指定
+扩展类加载器找类的地方。
+这三种类加载器是有层级关系的，类似于继承关系(父子关系)。</p>
+
+<p>另外一个需要知道的概念是，类加载器在找类的时候，默认是采用双亲委派机制的。<br/>
+例如应用类加载器加载类的时候，会先叫ext去加载，ext就会叫boot去加载，只有加载不到才尝试自己去加载。<br/>
+这种做法是有个重要的因素，就是为了安全性考虑。</p>
+
+<p>最后需要知道的是，TestServlet.class.getClassLoader()获取到的时候，加载TestServlet类所使用的实际的类加载器。</p>
+
+<p>回到上面的问题。</p>
+
+<p>第一个很简单，指定了应用类加载器加载的路径，所以main方法能找到，TestServlet也能找到，config.properties也能被应用类加载器找到。
+启动是正常的。</p>
+
+<p>第二个问题，TestServlet是被扩展类加载器加载的，所以通过它来找config.properties会找不到(在应用类加载器中才能被加载到)。</p>
+
+<p>第三个问题，调整目录后，这个时候扩展类加载器的加载路径上也有config.properties，所以启动也会正常。</p>
+
+<p>现在调整了代码，换成了Thread.currentThread().getContextClassLoader()的实现。<br/>
+这个是有一点不一样的，上下文类加载器默认就是应用类加载器(如果通过代码进行修改的话)。
+上下文类加载器还是一个很有用的技术，
+可以用在JDBC这种SPI(Service Provider Interface)接口与实现分离的技术上，有兴趣可以去找找资料。</p>
+
+<p>在这种情况下，后面的三个命令都是能够正常的，因为config.properties能够被正常识别的。</p>
+
+<p>再说一点，用eclipse可以运行的程序，用命令行不一定可以，这点必须要认准最后的启动参数，通过这个来确认。
+我们这边写独立进程的时候，贪方便喜欢用java.ext.dirs这个虚拟机参数，但这个有时候会有奇怪的问题。
+大家要注意区分这个参数和cp参数的区别，这样就分析有思路，找问题很happy。</p>
+
+<h2>Web应用服务器篇</h2>
+
+<p>像tomcat这种应用服务器，本身也是一个java程序，但它可以把我们放上去的各个web应用隔离开来。
+你没法调用其他web应用中的类，看上去好像是完全不相干的。这种技巧就充分利用了自定义类加载器的功能。
+像tomcat会对每个应用单独定义一个类加载器(继承应用类加载器)，并且修改双亲委派机制。
+而是采用先从应用中的lib目录、classes目录尝试加载，没找到才到上面去找。(像was这种就跟复杂了，加载顺序也是可选的)</p>
+
+<p>所以通常我们会有共享库的概念，在tomcat中对应的就是tomcat_home/lib这个目录(老版本的话还有更多目录可选)。
+把一些第三方库放到这里，可以减少加载类的数量，从而减少内存占用。</p>
+
+<p>这里要说明的是，类可以被不同的类加载器加载，虽然是在同一个jvm里边，但是是被当成不同的类(唯一标识是类加载器+类名)。</p>
+
+<p>现在回到问题。虽然一开始就有人告诉我们，servlet是属于单例运行的。但是在这里有点小变化。</p>
+
+<p>第一个问题，这个应该最常规的做法了，appa和appb是不相干的，所以访问appb，输出的是"1 1"，因为两个类是通过不同的类加载器加载的(就是说不一样的类)，肯定生成的servlet实例是不一样的。</p>
+
+<p>第二个问题，这种是共享库的做法，所以实际上他们使用的是同一个类，但是对于不同的app，用的是不同的servlet实例。
+所以会出现静态变量有影响，当实例变量是独立的。所以最后会输出"3 1"。所以有维护静态变量的话，使用共享库是有不一样的。</p>
+
+<p>第三个问题，这种其实在生产中也很常见，上新程序的时候就可能变成这样了。其实这个跟第一种情况是一样的。
+不过，在was上加载顺序是可选的，所以情况也可能变成第二种情况。</p>
+
+<h2>后话</h2>
+
+<p>这里讲解的只是皮毛，有兴趣的童鞋，可以google更多资料和书籍，加以研究。</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[考察对类加载的理解(问题篇)]]></title>
+    <link href="http://mccxj.github.com/blog/20131227_classloader-test.html"/>
+    <updated>2013-12-27T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/classloader-test</id>
+    <content type="html"><![CDATA[<p>类加载和程序运行是有些关系的，不妨来测试一下。<br/>
+难度:中级</p>
+
+<h2>独立进程篇</h2>
+
+<p>假设有下面的类文件：</p>
+
+<p>```java
+// Main.java
+package com.github.mccxj.test;</p>
+
+<p>public class Main {
+  public static void main(String[] args){</p>
+
+<pre><code>new TestServlet().test();
+</code></pre>
+
+<p>  }
+}</p>
+
+<p>// TestServlet.Java
+package com.github.mccxj.test;</p>
+
+<p>public class TestServlet {
+  public void test() {</p>
+
+<pre><code>InputStream is = TestServlet.class.getClassLoader().getResourceAsStream("config.properties");
+if(is == null){
+  throw new RuntimeException("couId not found config.properties");
+}
+</code></pre>
+
+<p>  }
+}
+```
+假设目录结构是这样的，其中jar下面的表示是在jar包里边的内容:</p>
+
+<p>``` bash
+test</p>
+
+<pre><code>-lib
+    -test.jar
+      -com/github/mccxj/test/Main.class
+-main.jar
+    -com/github/mccxj/test/TestServlet.class
+    -config.properties
+</code></pre>
+
+<p>```</p>
+
+<p>请问：</p>
+
+<ol>
+<li>执行java -cp main.jar;lib/test.jar com.github.mccxj.test.Main会出错么？</li>
+<li>执行java -cp main.jar -Djava.ext.dirs=./lib com.github.mccxj.test.Main结果是怎样？</li>
+</ol>
+
+
+<p>继续调整目录结果如下：</p>
+
+<p>``` bash
+test</p>
+
+<pre><code>-lib
+    -test.jar
+        -com/github/mccxj/test/Main.class
+    -main.jar
+        -com/github/mccxj/test/TestServlet.class
+        -config.properties
+</code></pre>
+
+<p>```</p>
+
+<p>再请问</p>
+
+<ol>
+<li>执行java -Djava.ext.dirs=./lib com.github.mccxj.test.Main结果是怎样？</li>
+</ol>
+
+
+<p>继续调整一下TestServlet的代码：</p>
+
+<p>```diff
+// TestServlet.Java
+package com.github.mccxj.test;</p>
+
+<p>public class TestServlet {
+  public void test() {
+-    InputStream is = TestServlet.class.getClassLoader().getResourceAsStream("config.properties");
++    InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("config.properties");</p>
+
+<pre><code>if(is == null){
+  throw new RuntimeException("couId not found config.properties");
+}
+</code></pre>
+
+<p>  }
+}
+```</p>
+
+<p>把目录结构恢复成：</p>
+
+<p>``` bash
+test</p>
+
+<pre><code>-lib
+    -test.jar
+      -com/github/mccxj/test/Main.class
+-main.jar
+    -com/github/mccxj/test/TestServlet.class
+    -config.properties
+</code></pre>
+
+<p>```</p>
+
+<p>请问:</p>
+
+<ol>
+<li>执行java -cp   main.jar;lib/test.jar com.github.mccxj.test.Main会出错么？</li>
+<li>执行java   -cp main.jar -Djava.ext.dirs=./lib com.github.mccxj.test.Main结果又是怎样？</li>
+</ol>
+
+
+<p>最后调整目录结果如下：</p>
+
+<p>``` bash
+test</p>
+
+<pre><code>-lib
+    -test.jar
+        -com/github/mccxj/test/Main.class
+    -main.jar
+        -com/github/mccxj/test/TestServlet.class
+        -config.properties
+</code></pre>
+
+<p>```</p>
+
+<ol>
+<li>执行java -Djava.ext.dirs=./lib com.github.mccxj.test.Main结果是怎样？</li>
+</ol>
+
+
+<h2>Web应用服务器篇</h2>
+
+<p>下面的例子，以tomcat为例。
+假设有下面的Servlet文件，并打包成test.jar:</p>
+
+<p>```java
+// TestServlet.java
+package com.github.mccxj.test;</p>
+
+<p>public class TestServlet extends HttpServlet {</p>
+
+<pre><code>private static Atomiclnteger al = new AtomicInteger();
+private Atomiclnteger a2 = new AtomicInteger();
+
+@Override
+public void service(ServletRequest arg0, ServletResponse arg1) throws Servlet Exception, IOException {
+    System.out.printIn(String.valueOf(al.incrementAndGet()));
+    System.out.printIn(String.valueOf(a2.incrementAndGet()));
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>并部署两个应用程序appa、appb,在他们的WEB_INF/web.xml添加了下面的内容</p>
+
+<p><code>xml
+&lt;servlet&gt;
+  &lt;servlet-name&gt;test&lt;/servlet-name&gt;
+  &lt;display-name&gt;test servlet&lt;/display-name&gt;
+  &lt;servlet-class&gt;com.huawei.test.TestServlet&lt;/servlet-class&gt;
+&lt;/servlet&gt;
+&lt;servlet-mapping&gt;
+  &lt;servlet-name&gt;test&lt;/servlet-name&gt;
+  &lt;url-pattern&gt;/test&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+</code></p>
+
+<p>大家应该听说过Servlet是单例的概念，也可能听过Web应用服务器有共享类的机制。那么，请问：</p>
+
+<ol>
+<li>现在把test.jar扔到appa和appb的WEB_INF/lib目录中，启动tomcat，先访问/appa/test两次，再访问/appb/test, 此时会输出什么？</li>
+<li>继续把test.jar都移除掉，只添加到TOMCAT_HOME/lib目录中，启动tomcat，先访问/appa/test两次，再访问/appb/test, 此时会输出什么？</li>
+<li>最后把test.jar拷贝一份到appa的WEB_INF/lib目录中，启动tomcat，先访问/appa/test两次，再访问/appb/test, 此时会输出什么？</li>
+</ol>
+
+]]></content>
+  </entry>
+  
+</feed>

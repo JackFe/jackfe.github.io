@@ -1,0 +1,562 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="量杯倒水 这个问题常见于趣味题和面试题，题意大概是这样的:有两个只有最大刻度的量杯(如10毫升，3毫升)，
+并且有无限量的水。求怎么倒出x毫升的水? 思路与猜想 首先我们来操作一下，例如倒出4毫升的水,同时把大小量杯表示为a,b b装满，倒入a(a有3ml,b有0ml)
+b再装满，倒入a( &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/page/20/index.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120706_the-cup-game.html">量杯倒水游戏</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-06T00:00:00+08:00" pubdate data-updated="true">Jul 6<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120706_the-cup-game.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/assets/images/the_cup_game.jpg" alt="量杯倒水" /></p>
+
+<h2>量杯倒水</h2>
+
+<p>这个问题常见于趣味题和面试题，题意大概是这样的:有两个只有最大刻度的量杯(如10毫升，3毫升)，
+并且有无限量的水。求怎么倒出x毫升的水?</p>
+
+<h2>思路与猜想</h2>
+
+<p>首先我们来操作一下，例如倒出4毫升的水,同时把大小量杯表示为a,b</p>
+
+<ol>
+<li>b装满，倒入a(a有3ml,b有0ml)</li>
+<li>b再装满，倒入a(a有6ml,b有0ml)</li>
+<li>b再装满，倒入a(a有9ml,b有0ml)</li>
+<li>b再装满，倒入a(a有10ml,b有2ml)</li>
+<li>a倒掉，b倒入a(a有2ml,b有0ml)</li>
+<li>重复2-4的动作(此时a有10ml,b有1ml)</li>
+<li>a倒掉，b倒入a(a有1ml,b有0ml)</li>
+<li>b装满，倒入a(a有4ml,b有0ml)</li>
+</ol>
+
+
+<p>假如我们再继续操作的话，还可以找到7ml,这样0ml~10ml的体积都是可以测量出来的。这是不是一般规律?</p>
+
+<p>虽然我们进行了许多次操作，但操作是有规律的:b总是往a倒水直到a装满，这时b会剩余一点。
+这样才能得到不同于a,b的体积。我们重复这个操作的过程，不考虑a装满的情况，
+在a中出现的水t可以用t=mb-na来表示(a>t>=0,m>=0,n>=0)。其中m可以表示为往a倒水的次数，
+n表示a装满的次数。</p>
+
+<p>首先考虑一下a,b不是互质的情况，假设他们的最大公约数为u,那么狠显然没法倒出t小于u的体积。
+这种情况可以归结为两边除去u的情况。</p>
+
+<p>现在再来考虑a,b互质的情况，我们需要考虑的是，对于t，是否都存在m,n使t=mb-na成立？</p>
+
+<h2>贝祖定理</h2>
+
+<p>我们从数学归纳法出发，很明显t=0的情况是满足要求的，假设t=1的要求也能够满足，
+那么有t=mb-na成立就可以推导出t+1=m1<em>b-n1</em>a+m2<em>b-n2</em>a也是符合mb-na的。</p>
+
+<p>如何证明存在m,n使得mb-na=1?这个倒不用自己动手，有个叫<a href="http://zh.wikipedia.org/wiki/%E8%B4%9D%E7%A5%96%E7%AD%89%E5%BC%8F">贝祖定理</a>的数学定理，可以很容易推导出这个结论。</p>
+
+<p>从wiki上看到的资料，贝祖定理可以证明a,b互质，存在xa+yb=1，其中x,y为整数
+不过好像跟我们的要求有点出入。不过没关系，很显然x,y如果没有不等于0的话，必须有个是负数，</p>
+
+<p>如果x是负数，显然符合要求，如果y是负数，那么总存在一个数k(k>0)使得y+ka>0,那么
+1=xa+yb=xa+yb-kab+kab=(x-ka)a+(y+ka)b,这样也是可以符合要求的。</p>
+
+<p>所以，按照我们的操作方式，假设a,b的最大公约数为u,就可以找到0ml,uml,2uml&#8230;aml的体积。</p>
+
+<h2>再思考</h2>
+
+<p>如果有多个量杯，情况会是怎样?</p>
+
+<p>要倒出一定量的水，上述操作是否是最快的?</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120629_problem-about-jekyll-and-markdown.html">使用jekyll和markdown遇到的问题</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-29T00:00:00+08:00" pubdate data-updated="true">Jun 29<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120629_problem-about-jekyll-and-markdown.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>不能正常生成页面</h3>
+
+<p>我是使用windows来弄的，在git shell里边操作。发现有时候页面根本不生成，
+即使我把_site下面的文件全部生成，还是没动静。后来发现，需要设置一下环境的字符编码，例如export LC_ALL=zh_CN.UTF-8
+可以在启动脚本里边修改,例如修改RUBY_HOME/bin/jekyll.bat，增加</p>
+
+<blockquote><p>SET LANG=zh_CN.UTF-8<br/>
+SET LC_ALL=zh_CN.UTF-8</p></blockquote>
+
+<h3>tags不能正常发布</h3>
+
+<p>tags如果列举多个的话，除了用逗号分割之外，必须在逗号之后加上空格，否则不能在github上正常发布。
+但奇怪的是，在本地却是没有问题的。</p>
+
+<h3><s>列表不能正常显示</s></h3>
+
+<p><s>这个也比较奇怪，无论是有序列表还是无序列表，只能有部分能正常显示。
+我试了很久，发现如果列表项里边没有数字或英文字符就不能显示。</s>
+<strong>这个问题已经解决了，原来在每个列表前面需要空行</strong></p>
+
+<h3>高亮代码有问题</h3>
+
+<p>高亮代码不容易呀，需要python支持，还有安装easy_install Pygments。
+但对于某些python版本来说，这样还不行，出现Liquid error: Bad file descriptor。
+需要修改<a href="https://gist.github.com/1185645">gems\albino-1.3.3\lib\albino.rb</a></p>
+
+<p>另外，有时候高亮不是很合适，可以选择引用，只要每行前面至少加4个空格或1个tab就可以了。我习惯在每个引用块前后加一个空行。</p>
+
+<h3>在段落中硬换行</h3>
+
+<p>我原来以为不能硬换行，原来markdown也支持，只需要在需要换行的地方后面加至少两个空格就可以了。</p>
+
+<h3>页面生成太慢</h3>
+
+<p>当你的文章越来越多的时候，页面生成的时间会变得非常夸张，jekyll没有提供参数来控制。
+为了解决这个问题，有个办法就是过滤某些没有变化的文件，因为大多数情况下，我们只是对特定的文件进行修改而已。
+摸索了很久，最后我直接拿jekyll源码开刀，见<a href="https://github.com/mccxj/jekyll/commit/44822a252e2ce1142e3293f91285e0ced3ba2fe1"><s>让include和exclude支持正则</s></a>和<a href="https://github.com/mojombo/jekyll/pull/743">add glob support to include,exclude option</a>。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120628_how-to-play-go.html">围棋中气的判断</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-28T00:00:00+08:00" pubdate data-updated="true">Jun 28<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120628_how-to-play-go.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>围棋玩法</h2>
+
+<p>围棋本身的规则是非常简单的。判断一个子能不能落在某个点是最基本的问题。<br/>
+如果不能吃掉对方但这个子周围还有气(空点)的话，是可以落子的。<br/>
+如果能吃掉对方但不是打劫这种特殊情况的话，也是可以落子的。<br/>
+我们先不考虑打劫这种情况，问题就归结为如何判断某个子是否有气，而杀子就是判断四周的子是否有气。</p>
+
+<h2>用递归来判断</h2>
+
+<p>假设有个方法try2kill(r,c)，它可以用来判断r行c列的子是否有气，如果没气返回true，否则返回false。</p>
+
+<p>递归过程如下：</p>
+
+<ol>
+<li>判断四周是否存在一个气，就是有个空格(0)，如果有返回false。</li>
+<li>否则，给当前点记录为预杀状态(x)(表示自己周围没有明显的气)</li>
+<li>再依次判断四周的点，对每个点例如左边(left)：</li>
+<li>如果左边未出边界且和当前点是同一颜色(但并非预杀状态)，则调用try2kill进行判断</li>
+<li>如果其中一个点有气(try2kill返回false)，则直接返回false</li>
+<li>如果四周都判断完，没有发现明显的气，则返回true(这样所有预杀状态的都是没气的，都会被杀掉)</li>
+</ol>
+
+
+<h2>打劫处理</h2>
+
+<p>打劫有个特殊的地方就是不能立即回提，本质上是不能在对弈过程中出现同形。<br/>
+一个比较简单有效的办法就是，记录落子次序和每次的吃子数(通过上面的判断逻辑)。
+这两个记录都是很容易记录的。判断是否打劫违规就是当前手和上一手的吃子数是否都为1。
+且当前落子点对应上手的死子点，当前死子点对应上手的落子点。<br/>
+这些条件符合的话，这就是一次违规。</p>
+
+<h2>后续</h2>
+
+<p>有了这些判断逻辑，要实现整个走法已经不是问题了，有兴趣的可以试试。<br/>
+当然，围棋最复杂的地方还是人工智能领域，现阶段的电脑围棋还是比较弱的。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120628_how-to-lianliankan.html">连连看中如何判断连通</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-28T00:00:00+08:00" pubdate data-updated="true">Jun 28<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120628_how-to-lianliankan.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>连连看基本玩法</h2>
+
+<p>连连看的玩法非常简单，判断两个块是否可以消除的规则是：必须是同一类型的块，可以通过至多
+三条直线相连，并且直线没有被其他的块所阻拦。</p>
+
+<h2>数据结构表示</h2>
+
+<p>可以用一个二维数组来表示整个界面，不同类型的点用不同的值k来表示，那么一个点可以用k和(x, y)来表示。
+空白处的值设置为0。另外为了方便处理只在边边上可以连通的情况，可以加上边界（二维数组加上两行两列，并设置为0）。
+判断点a和b是否可以连通，如果是不同类型的点很好判断，判断a.k==b.k即可。
+那么，问题就变成判断两个点a(a.x, a.y)和b(b.x, b.y)是否可连通。</p>
+
+<h2>简单的算法</h2>
+
+<p>我用的是一种比较直观的算法，当然还有其他很多算法(在网上资料搜一下就有很多了)。</p>
+
+<p>首先为了方便理解，先不考虑两个点在同一线上的情况。那么两个点能够连上的情况只有就是横竖横或竖横竖两个情况
+先考虑两个点是否可以横竖横连接的情况，参考下面的算法步骤:</p>
+
+<ol>
+<li>给整个边界加上一圈空点(0)（方便后面计算）。</li>
+<li>计算x轴上a，b两点左右两边的空点，这样可以算出两者公共的空点(x坐标相同)，只有通过这些空点才可能联通达到横竖横的情况。</li>
+<li>对每个公共的点，假设x坐标为c,那么就是点(c,a.y)和(c,b.y)，再判断这两个点能否联通。</li>
+<li>假设a.y小于b.y，那么就是看从(c,a.y+1)到(c,b.y-1)这些点是否都为空。</li>
+<li>如果是空(0)的，表示最初的两个点是可以联通的。</li>
+</ol>
+
+
+<p>到这里，一切已经ok了。另外一种情况跟这个是一样的，
+而在一条直线上的情况只是这种判断的特殊情况而已。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120625_ant-on-wood-stick.html">蚂蚁走木棍</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-25T00:00:00+08:00" pubdate data-updated="true">Jun 25<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120625_ant-on-wood-stick.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/assets/images/ant_on_wood_stick.gif" alt="蚂蚁走木棍" /></p>
+
+<h2>百度面试题</h2>
+
+<p>有一根27厘米的细木杆，在第3厘米、7厘米、11厘米、17厘米、23厘米这五个位置上各有一只蚂蚁。
+木杆很细，不能同时通过一只蚂蚁。开始时，蚂蚁的头朝左还是朝右是任意的，它们只会朝前走或调头，但不会后退。
+当任意两只蚂蚁碰头时，两只蚂蚁会同时调头朝反方向走。假设蚂蚁们每秒钟可以走一厘米的距离。
+编写程序，求所有蚂蚁都离开木杆的最小时间和最大时间。</p>
+
+<h2>简化问题</h2>
+
+<p>看上去很复杂，但可以这样看问题：假设可以过两只蚂蚁，那么蚂蚁相撞两蚂蚁调头相当于不调头继续前进。
+这样问题就可以迎刃而解了。最大的时间就是每只蚂蚁往远端前进(算出来是离一端最远的那只)，最小的时间就是每只蚂蚁往近端前进(算出来是最后爬出来的那只)。
+这样，最大时间就是3厘米的那只，耗时24秒。最小时间是11厘米那只，它最快要11秒才能出来。</p>
+
+<h2>小学竞赛题</h2>
+
+<p>这个题目让我想起一个竞赛题，大概是说，有两个人相距x米迎面走来(速度已知)，其中有只狗在他们之间来回跑(狗的速度较快)，
+求两人相逢的时候，狗跑了多长距离。如果着眼点在狗每次跑动的距离，那一样非常复杂。如果着眼于时间，
+则问题也就迎刃而解了。话说回来，类似的这些题目，更像是智力题而非编程题。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+      <a class="prev" href="/blog/page/21/">&larr; Older</a>
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/19/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

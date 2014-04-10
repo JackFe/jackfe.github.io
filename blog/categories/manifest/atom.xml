@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: MANIFEST | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/manifest/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2014-04-10T22:46:22+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[由于MANIFEST.MF不规范导致程序无法启动的问题]]></title>
+    <link href="http://mccxj.github.com/blog/20131226_manifest.html"/>
+    <updated>2013-12-26T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/manifest</id>
+    <content type="html"><![CDATA[<p>昨晚发现某个jar程序启动不了，包类没找到。
+这个是由于我增加了一个新的jar包，并且依赖于xwork.jar。
+所以在build.xml里边增加这个jar包。</p>
+
+<p>```xml</p>
+
+<pre><code>    &lt;fatjar.build output="ibossproc.jar"&gt;
+  ...
+    &lt;fatjar.jarsource file="${buildlib}/jsse.jar" relpath=""/&gt;
+    &lt;fatjar.jarsource file="${buildlib}/cipher14.jar" relpath=""/&gt;
+    &lt;fatjar.jarsource file="${buildlib}/xwork-2.0.4.jar" relpath=""/&gt;
+&lt;/fatjar.build&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>不过还是出错，出错信息挺诡异的(用星号对某些信息进行屏蔽)：</p>
+
+<p>```java
+mccxj@XXX:/work/procs/log> cat *
+线程 "main" 中发生异常java.lang.NoClassDefFoundError: com.<em>.</em>.<em>.</em>Entry
+Caused by: java.lang.ClassNotFoundException: com.<em>.</em>.<em>.</em>Entry</p>
+
+<pre><code>    at java.net.URLClassLoader.findClass(URLClassLoader.java:421)
+    at java.lang.ClassLoader.loadClass(ClassLoader.java:652)
+    at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:346)
+    at java.lang.ClassLoader.loadClass(ClassLoader.java:618)
+</code></pre>
+
+<p>Could not find the main class: com.<em>.</em>.<em>.</em>Entry.  Program will exit.
+```</p>
+
+<p>这个类是程序里边的代码，应该是存在的。把jar解压了，也的确看到jar包里边有这个类。</p>
+
+<p>于是把以前能跑的jar拿来进行对比，发现META-INF/MANIFEST.MF稍稍有点不同，新的在最后多了2个空行。
+简单调整了一下打包脚本（用的一个fatjar.jar的工具）,最后两行进行调整顺序，发现就可以了。</p>
+
+<p>```xml</p>
+
+<pre><code>    &lt;fatjar.build output="xx.jar"&gt;
+  ...
+    &lt;fatjar.jarsource file="${buildlib}/jsse.jar" relpath=""/&gt;
+    &lt;fatjar.jarsource file="${buildlib}/xwork-2.0.4.jar" relpath=""/&gt;
+    &lt;fatjar.jarsource file="${buildlib}/cipher14.jar" relpath=""/&gt;
+&lt;/fatjar.build&gt;
+</code></pre>
+
+<p>```</p>
+
+<p>一开始感觉是fatjar.jar的bug，不过回过头来看，其实是cipher14.jar这个包的问题。<br/>
+因为这个包的META-INF/MANIFEST.MF的最后一样是个问号，根据<a href="http://docs.oracle.com/javase/7/docs/technotes/guides/jar/jar.html#JAR%20Manifest">规范文档</a>,
+这个是不规范的。如：</p>
+
+<p>```java
+Manifest-Version: 1.0</p>
+
+<p>?
+```</p>
+
+<p>而fatjar会把所有的MANIFEST.MF进行合并，但是奇怪的地方就在这里了。如果问号是在最后一样，能够正常启动。 <br/>
+如果问号后面还有内容，就启动不了。所以调整顺序之后，能够正常启动。<br/>
+后来，我把cipher14.jar的MANIFEST.MF中的问号去掉，不需要调整顺序也是可以正常的。</p>
+
+<p>这个包应该是第三方厂商提供的，又踩地雷了。</p>
+]]></content>
+  </entry>
+  
+</feed>
