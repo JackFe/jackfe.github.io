@@ -9,10 +9,7 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="gist是gtihub的一个代码块功能，用来粘贴一些比较长的代码还是挺有用的。
-github page可以直接嵌入gist，并且能显示高亮。
-不过我不想太依赖gist，所以修改成使用pygments高亮的方式。
-看看下面gist_tag.rb这个插件的效果: require 'cgi' &hellip;">
+  <meta name="description" content="根据Maven权威指南编制的思维导图 可以在Dropbox上下载到这个xmind文件 ">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -67,6 +64,324 @@ github page可以直接嵌入gist，并且能显示高亮。
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130206_mini-maven.html">迷你Maven</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-02-06T00:00:00+08:00" pubdate data-updated="true">Feb 6<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130206_mini-maven.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2><strong>根据<a href="http://www.juvenxu.com/mvn-def-guide/">Maven权威指南</a>编制的思维导图</strong></h2>
+
+<h2>可以在Dropbox上下载到这个<a href="https://www.dropbox.com/s/mjn0efcr9n6ly97/%E8%BF%B7%E4%BD%A0Maven.xmind">xmind文件</a></h2>
+
+<p><img src="/assets/images/2013/maven.png" alt="迷你Maven" /></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130127_jekyll-plugin-with-git-branch.html">Git分支让github Page用上jekyll插件</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-27T00:00:00+08:00" pubdate data-updated="true">Jan 27<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130127_jekyll-plugin-with-git-branch.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/assets/images/2013/jekyll-plugin-with-git-branch.png" alt="git分支让github page用上jekyll插件" /></p>
+
+<p><strong>本博客已经在2013-3-9转换成octopress了,比这种手动方式要方便很多。</strong></p>
+
+<p>github page是个不错的应用，可惜对jekyll有比较多的限制，特别是插件方面。
+为了解决这个问题，我选择了分支来处理这个，大约就是source分支保存未编译的内容，
+master分支保留生成的网站。下面是大概的操作过程，针对已有博客的迁移。</p>
+
+<h3>迁移过程</h3>
+
+<p>首先，到github上手动打一个分支出来，叫source分支。</p>
+
+<p>接着，处理master分支，清除所有内容。注意git pull的功能是让本地可以识别到远程分支。
+<strong>.nojekyll文件</strong>是让github page不启用jekyll生成网站，而是直接使用目录下的内容。
+并把所有带下划线的目录都过滤掉。</p>
+
+<div class="highlight"><pre><code class="bash"><span class="nb">cd </span>mccxj.github.com
+git rm -fr *
+
+touch .nojekyll
+git add .nojekyll
+
+<span class="c"># add _*/* to .gitignore</span>
+vi .gitignore
+
+git commit -a -m <span class="s2">&quot;remote all pages&quot;</span>
+</code></pre></div>
+
+
+<p>下面，继续处理source分支，其实基本保持不变就可以了，主要是生成网站内容。
+<strong>带t的参数是让source跟踪远程source分支</strong>。我的jekyll是采用最新源码装的，命令参数有些变化，
+请参考jekyll帮助，</p>
+
+<div class="highlight"><pre><code class="bash">git checkout -t origin/source
+
+<span class="nv">$ </span>git branch -a
+  master
+* <span class="nb">source</span>
+<span class="nb">  </span>remotes/origin/HEAD -&gt; origin/master
+  remotes/origin/master
+  remotes/origin/source
+
+<span class="c"># generate page to _site</span>
+jekyll build
+</code></pre></div>
+
+
+<p>最后，切回master分支，并<strong>拷贝网站内容</strong>到根目录，然后把内容提交并push到远程即可。</p>
+
+<div class="highlight"><pre><code class="bash">git checkout master
+
+cp -r _site/* .
+
+<span class="c"># add then commit</span>
+git add / git commit
+
+<span class="c"># push to remote branch</span>
+git push origin master
+</code></pre></div>
+
+
+<h3>新写作流程</h3>
+
+<p>现在已经迁移完成了，下面介绍一些新写作流程。</p>
+
+<p>首先，<strong>注意要在source分支上工作</strong>，在提交到远程之前都是一样。</p>
+
+<div class="highlight"><pre><code class="bash">git checkout <span class="nb">source</span>
+
+<span class="c"># rake post title=&quot;xxxx&quot;</span>
+<span class="c"># write something</span>
+git add xxxx.md
+git commit -m <span class="s2">&quot;add new post&quot;</span>
+
+<span class="c"># jekyll build</span>
+jekyll serve
+</code></pre></div>
+
+
+<p>当你确认完成，并生成网站内容后，切换到master分支处理。
+<strong>注意需要提交两个分支</strong>，例如使用git push可以同时提交两个分支。</p>
+
+<div class="highlight"><pre><code class="bash">git checkout master
+
+cp -r _site/* .
+
+<span class="c"># add then commit</span>
+git add / git commit
+
+<span class="c"># push to remote branch</span>
+git push
+</code></pre></div>
+
+
+<p>还不算麻烦吧，其实我是尝试切换到<a href="http://octopress.org/">octopress</a>，发现有不少地方出现问题，才采用这种方式的。Enjoy It!</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130127_jekyll-alias-generator.html">jekyll插件:支持URL跳转</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-27T00:00:00+08:00" pubdate data-updated="true">Jan 27<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130127_jekyll-alias-generator.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/assets/images/2013/jekyll-alias-generator.png" alt="jekyll插件:支持URL跳转" /></p>
+
+<p>github page不支持.htaccess功能(参考<a href="http://rawsyntax.com/blog/blogging-on-jekyll-url-redirects/">Blogging on Jekyll: URL Redirects</a>)，
+所以发生URL调整的时候，无法让原有路径自动跳转到新路径。
+<a href="http://github.com/tsmango/jekyll_alias_generator">Alias generator</a>这个插件提供了一个解决方案，就是生成多一个页面，采用auto refresh的方式跳转到新路径。</p>
+
+<p>这次我也调整了一些博客的路径，我也采用了这个方式。不过我只对当前已有的页面生成一次，以后的就不用这个插件了。
+另外，我不想去修改每个页面的alias标签，所以我调整了代码，只对我的url规则进行处理。下面是我使用的版本。</p>
+
+<div><script src='https://gist.github.com/4645990.js?file=alias_generator.rb'></script>
+<noscript><pre><code># Alias Generator for Posts.
+#
+# Example:
+#   alias /20121010_hello.html to /blog/20121010_hello.html
+#   alias /hello.html to /pages/20121010_hello.html
+#
+# Place the full path of the alias (place to redirect from) inside the
+# destination post's YAML Front Matter. One or more aliases may be given.
+#
+# Forked from Thomas Mango 's jekyll_alias_generator
+# At http://github.com/tsmango/jekyll_alias_generator
+# PLugin License: MIT
+
+module Jekyll
+
+  class AliasGenerator &lt; Generator
+
+    def generate(site)
+      @site = site
+
+      process_posts
+      process_pages
+    end
+
+    def process_posts
+      # alias /20121010_hello.html to /blog/20121010_hello.html
+      @site.posts.each do |post|
+        generate_aliases(post.url, &quot;\/#{$1}&quot;) if /^\/blog\/(.+)$/ =~ post.url
+      end
+    end
+
+    def process_pages
+      # alias /hello.html to /pages/20121010_hello.html
+      @site.pages.each do |page|
+        dest = page.destination('')
+        generate_aliases(dest, &quot;\/#{$1}&quot;)  if /^\/pages\/(.+)$/ =~ dest
+      end
+    end
+
+    def generate_aliases(destination_path, aliases)
+      alias_paths ||= Array.new
+      alias_paths &lt;&lt; aliases
+      alias_paths.compact!
+
+      alias_paths.flatten.each do |alias_path|
+        alias_path = alias_path.to_s
+
+        alias_dir  = File.extname(alias_path).empty? ? alias_path : File.dirname(alias_path)
+        alias_file = File.extname(alias_path).empty? ? &quot;index.html&quot; : File.basename(alias_path)
+        fs_path_to_dir   = File.join(@site.dest, alias_dir)
+        alias_index_path = File.join(alias_dir, alias_file)
+
+        FileUtils.mkdir_p(fs_path_to_dir)
+
+        File.open(File.join(fs_path_to_dir, alias_file), 'w') do |file|
+          file.write(alias_template(destination_path))
+        end
+
+        (alias_index_path.split('/').size + 1).times do |sections|
+          @site.static_files &lt;&lt; Jekyll::AliasFile.new(@site, @site.dest, alias_index_path.split('/')[0, sections].join('/'), nil)
+        end
+      end
+    end
+
+    def alias_template(destination_path)
+      &lt;&lt;-EOF
+      &lt;!DOCTYPE html&gt;
+      &lt;html&gt;
+      &lt;head&gt;
+      &lt;link rel=&quot;canonical&quot; href=&quot;#{destination_path}&quot;/&gt;
+      &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;
+      &lt;meta http-equiv=&quot;refresh&quot; content=&quot;0;url=#{destination_path}&quot; /&gt;
+      &lt;/head&gt;
+      &lt;/html&gt;
+      EOF
+    end
+  end
+
+  class AliasFile &lt; StaticFile
+    require 'set'
+
+    def destination(dest)
+      File.join(dest, @dir)
+    end
+
+    def modified?
+      return false
+    end
+
+    def write(dest)
+      return true
+    end
+  end
+end</code></pre></noscript></div>
+
+
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -391,183 +706,6 @@ async在有些插件化的js时async可能可以用到，其他就很难用到�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130120_how-to-blog.html">博客写作小结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-01-20T00:00:00+08:00" pubdate data-updated="true">Jan 20<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130120_how-to-blog.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/assets/images/2013/howtoblog.jpg" alt="博客写作" />
-这是前两天在家里用手机敲的文字记录，小小的总结，希望对<strong>写作信心不足</strong>的童鞋有所帮助。</p>
-
-<p>写博客，<strong>不需要太在意写作技巧</strong>，文学性的问题，只需要<strong>把事情描述出来</strong>就可以了。
-假如有个场景是水龙头漏水，写下来的是什么偷税漏税，积少成多的东西，那是文学。不需要想得那么远，能赶紧把事情描述好，赶紧修理好就行了。
-单纯的记录，本身已经很难能可贵了，但很多时候我们连这个都做不到。</p>
-
-<p>我以前写过很多博文，里边有很多是<strong>流水账的记录方式</strong>，有个基本的格式:
-今天发生什么了，我觉得怎么样，假如这样的话会怎那样。基本是想到什么就敲什么，很简单吧。
-我觉得这个方法的好处是<strong>培养写作的信心</strong>，因为这样比较容易出内容嘛。坚持写，<strong>写得越久越容易有信心写下去</strong>。</p>
-
-<p>虽然读者对象很重要，但是一开始也没有多少读者，所以不需要太在意读者是谁，<strong>把自己当成唯一的读者</strong>就好了，
-对自己负责，不求内容精妙，但求格式工整，不是火星文。<strong>字数多少不在意</strong>，能写多少就写多少。</p>
-
-<p>一开始很难写出什么内容，只要坚持写就行了，慢慢就会写好了。
-经常回顾，<strong>多看看自己写的内容</strong>，<strong>对比别人写的内容</strong>，找到差距，有针对性的提高写作技巧，例如多模仿。</p>
-
-<p>如果有可能，<strong>为自己的博客做一下分享推广</strong>，让别人参与讨论，可以增强自己写作的信心，也可能得到很多的灵感，在以后写的更好。
-推广的方式可以考虑rss订阅，邮件分享，微博等。</p>
-
-<p><strong>博客系统尽量找简单点的</strong>，以前我使用blogspot就是因为界面比较简洁，还有像<a href="http://svbtle.com/">Svbtle</a>/<a href="http://natewienert.com/codename-obtvse">Obtvse</a>这样的<a href="http://www.36kr.com/p/93438.html">简约风格博客平台</a>
-像wordpress之类的系统，适合喜欢折腾的人:) 最近比较流行的是像<a href="http://pages.github.com">github page</a>和<a href="http://jekyllrb.com/">jekyll</a>这样的静态页面生成方式，还是比较适合it人的,
-我现在也是使用<a href="/blog/20120622_new-blog-in-github.html">这套系统</a>。</p>
-
-<p>最后，<strong>马上动手，enjoy it</strong>!</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130120_github-across-gfw.html">抢票插件搞得上github Page都要轻功</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-01-20T00:00:00+08:00" pubdate data-updated="true">Jan 20<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130120_github-across-gfw.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/assets/images/2013/acrossgfw.jpg" alt="抢票插件搞得上github page都要轻功" /></p>
-
-<p>春运临近，浏览器抢票软件也变得流行，没回来那几天就看到新闻说:<a href="http://www.oschina.net/news/36770/12306_ticket_helper">12306 抢票版插件拖垮 Github 服务器</a>
-，没想到回来之后就发现github page不能用了，正确的说应该是github的子域名都不能用了，看来是贴倒部和宫刑部的新春贺礼来的。</p>
-
-<h2>抢票插件和github什么关系</h2>
-
-<p>抢票插件引用了github上的一个js文件，但github有个安全检测，当访问比较频繁的时候就会直接返回403 forbidden。
-然后作者没多想就在插件里加了个重试机制。如果返回的是403就每5秒重试一次，并且是永久重试，结果github认为你访问的更频繁了于是一直返回403。
-可想而知这就成了死循环，使用插件的用户一多，对github而言就产生DDOS了。
-换句话说，这是github的一种安全机制而已，抢票插件和github基本没什么关系，有关部门的做法更是弱智得不行呀。:)</p>
-
-<h2>轻功之ssh</h2>
-
-<p>以前用过free gate这种东西，不过不大稳定，而且感觉风险比较高。呵呵，你懂的。<br/>
-<a href="http://www.ssh110.com/help.html">ssh使用帮助</a>,跟人感觉用ssh命令行配合chrome插件是最方便的。<br/>
-<a href="http://blog.onlybird.com/%E5%85%8D%E8%B4%B9ssh%E4%BB%A3%E7%90%86">免费ssh代理</a>,速度还不错，不过不是特别稳定。<br/>
-<a href="http://wendal.net/2013/0108.html">Nutz福利之轻功</a>,应该不错,不过我还没用上。</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130113_to-be-times-friend.html">把时间当作朋友读书笔记</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-01-13T00:00:00+08:00" pubdate data-updated="true">Jan 13<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130113_to-be-times-friend.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/assets/images/2013/tobe-times-friend.gif" alt="把时间当作朋友" /></p>
-
-<p>刚读到这本书的时候，有种相见恨晚的感觉。不同于一般的时间管理类书籍，无病呻吟式的洗脑不见了，例子也少了强加因果关系的痕迹，有些观点印象比较深，值得一读。下面是一些比较有感觉的部分，和大家分享一下。</p>
-
-<h3>欲望</h3>
-
-<p>人希望欲望尽快得到满足。这是人性，所以衍生了速成，不劳而获，学习浮于表面这些浮躁的社会现象。在这之前，我真的没有意识到这是人性本质的的一种表现，对于有些新同事急于求成的想法，甚至是自己，也经常有难以理解的感觉。没能理解到这点，就很难说感同身受了。</p>
-
-<h3>成功学</h3>
-
-<p>虽然我也读过一些成功人士的经验之谈，我向来对成功学理论不大感冒，因为多读几本就会发现，他们经常夸大某一方面对结果的影响，很多例子也很牵强，再加上环境的不同，这些经历基本是不可复制的。李老师在书中也反复强调，要警惕成功学，要有自己的独立思考。独立思考，成熟心智，管理自我，才是书中强调的思想。</p>
-
-<h3>时间管理</h3>
-
-<p>读书，除了希望能找到不同的观点，还希望能有些支持这些观点的可操作性方案。其实关于时间管理方面的著作，我也知道一些，例如使用TODO，GTD等工具，番茄工作法。 李老师也有类似的一些做法，例如代办列表，下一阶段代办列表，每日事项回顾。关于每天晚上回顾做了那些事，这个在其他书上没有特别指出，不过李老师提到的回顾发现没什么可以写的尴尬，我也经常遇到。让我产生这些做法不可靠的感觉，后来才发现，这个和代办事项的优先级与难度有关。自己经常会倾向于先完成熟悉的，简单的，感兴趣的，而不是重要的，困难的。这样即使看上去完成很多东西，回顾的时候发现没什么可以值得一提的事情。</p>
-
-<h3>计划</h3>
-
-<p>计划不如变化快，但我们还是需要计划的。关于计划，我发现自己经常高估自己的能力，这个需要多考虑意外，给自己心理估计时间多加一段时间，并且把计划细分，对于不熟悉不感兴趣的事情，更应该如此，把时间分为多个时间片，不断接近目标。书中关于这部分的内容和番茄工作法的理论有交叉，个人感觉番茄工作的理论更详细和有针对性些吧！</p>
-
-<h3>有趣言语</h3>
-
-<p>李老师常说的一句话是，相信我，你并不孤单。并引用了正态分布的理论，使得这句话特别的深刻。整本书妙语连珠，读起来比较轻松。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/10/">&larr; Older</a>
@@ -586,6 +724,18 @@ async在有些插件化的js时async可能可以用到，其他就很难用到�
     
       <li class="post">
         <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140329_was-datasource.html">websphere+spring+jndi数据源配置</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140225_android-jdk7-bug.html">jdk7编译的bug记录</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140219_android-maven-problems.html">android+maven问题记录</a>
       </li>
     
       <li class="post">
@@ -610,18 +760,6 @@ async在有些插件化的js时async可能可以用到，其他就很难用到�
     
       <li class="post">
         <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
       </li>
     
   </ul>

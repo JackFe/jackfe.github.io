@@ -9,9 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="在笔记这个领域，网易的有道笔记的确是做得不错的。跟everynote相比，也不落下风，
-相对来说，我使用有道笔记的频率要高许多，下面就简单说说我的使用体验。 pc版，ipad和Android版，我都有使用。在pc上我更倾向于网页收藏，但这个网页插件好像只有ie版，不是特别方便。
-当然， &hellip;">
+  <meta name="description" content="平时工作，做需求的时候，总有有时间限制，俗称工作量评估，通常用x天或者x个单位点数来表示。在现实中，评估都是很随意的，实际结果经常有很大出入。
+在这里不评论，这种做法有多科学。只是单个任务工作量越大，越需要细分，直到有足够的清晰度，这样才能评估得比较靠谱。这里我们用一个例子来解释一下。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +65,230 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-08T00:00:00+08:00" pubdate data-updated="true">Nov 8<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20131108_mission-estimate.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>平时工作，做需求的时候，总有有时间限制，俗称工作量评估，通常用x天或者x个单位点数来表示。在现实中，评估都是很随意的，实际结果经常有很大出入。
+在这里不评论，这种做法有多科学。只是单个任务工作量越大，越需要细分，直到有足够的清晰度，这样才能评估得比较靠谱。这里我们用一个例子来解释一下。</p>
+
+<p>我最近想做一个andriod上的死活题app，至少第一期的目标是这样的。我们先来做一下分解，看看需要那些工具，需要做什么工作。</p>
+
+<p>总体来说，用android，优先考虑使用java开发。这需要java的编程经验和一些android的经验。我认为，这个不是难点，还是比较有信心的。</p>
+
+<p>既然是围棋的死活题，需要了解死活题的存储格式，这是一种基于文本的格式，用树型分支的形式。
+这个程序需要能够识别这种格式，这要求我们需要实现一个解释器，不过我考虑使用现成的词法分析器来实现，例如javacc，当然如果不懂这个，还得去学习一下。</p>
+
+<p>另外，这是一个围棋游戏，肯定需要实现游戏规则，最重要的就是落子，吃子的判断。这个是最重要的算法部分。</p>
+
+<p>还有就是，由于涉及棋盘显示，可能需要实现自定义控件或者绘图功能。如果不熟悉，也是要多花些时间的。</p>
+
+<p>还有一些不那么明显的细节部分，举例如下:</p>
+
+<p>死活题通常只用了棋盘的一小部分，手机屏幕又小，如何只是集中显示部分？<br/>
+另外，在显示所有死活题列表的时候，能不能显示预览图？</p>
+
+<p>举例子，是想说明，一些看似简单的任务，其实并没有那么简单。除了仔细分解任务，还有个常用的手法就是原型，把认为最难的部分先做一下，看看心里有没有底。</p>
+
+<p>当然，所有的任务都跟你的熟悉程度有关，经常做一件事情就是这样(日常的工作就是这样)。但这些工作经验，在切换到非舒适区的时候，并不能减少心里的担忧。对于做技术的人来说，需要做的事，往往是要敢于打破技术舒适区。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-06T00:00:00+08:00" pubdate data-updated="true">Nov 6<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20131106_jsch-session-connect.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>今天早上和一个同事处理一个现网问题，从javacore里边可以看到大量的Connect Thread，如下所示：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">Connect</span> <span class="n">thread</span> <span class="mf">192.168</span><span class="o">.</span><span class="mf">1.100</span> <span class="n">session</span><span class="err">&quot;</span> <span class="n">prio</span><span class="o">=</span><span class="mi">6</span> <span class="n">tid</span><span class="o">=</span><span class="mh">0x042d3400</span> <span class="n">nid</span><span class="o">=</span><span class="mh">0x1458</span> <span class="n">runnable</span> <span class="o">[</span><span class="mh">0x04e4f000</span><span class="o">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>堆栈信息如下:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">...</span>
+</span><span class='line'><span class="n">com</span><span class="o">.</span><span class="na">jcraft</span><span class="o">.</span><span class="na">jsch</span><span class="o">.</span><span class="na">Session</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">Session</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">1193</span><span class="o">)</span>
+</span><span class='line'><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Thread</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">Thread</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">619</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>怀疑是资源泄露了，jsch是一个sftp的工具库。检查jsch的使用代码，可以看到代码是有进行关闭的，如下所示：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">JSch</span> <span class="n">jsch</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JSch</span><span class="o">();</span>
+</span><span class='line'><span class="n">Session</span> <span class="n">session</span> <span class="o">=</span> <span class="n">jsch</span><span class="o">.</span><span class="na">getSession</span><span class="o">(</span><span class="s">&quot;caixiaojian&quot;</span><span class="o">,</span> <span class="s">&quot;192.168.1.100&quot;</span><span class="o">,</span> <span class="mi">22</span><span class="o">);</span>
+</span><span class='line'><span class="n">session</span><span class="o">.</span><span class="na">setPassword</span><span class="o">(</span><span class="s">&quot;******&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">session</span><span class="o">.</span><span class="na">setConfig</span><span class="o">(</span><span class="s">&quot;StrictHostKeyChecking&quot;</span><span class="o">,</span> <span class="s">&quot;no&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">session</span><span class="o">.</span><span class="na">connect</span><span class="o">();</span>
+</span><span class='line'><span class="n">Channel</span> <span class="n">channel</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">openChannel</span><span class="o">(</span><span class="s">&quot;sftp&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">channel</span><span class="o">.</span><span class="na">connect</span><span class="o">();</span>
+</span><span class='line'><span class="n">ChannelSftp</span> <span class="n">c</span> <span class="o">=</span> <span class="o">(</span><span class="n">ChannelSftp</span><span class="o">)</span> <span class="n">channel</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">channel</span><span class="o">.</span><span class="na">connect</span><span class="o">();</span>
+</span><span class='line'><span class="c1">//...</span>
+</span><span class='line'><span class="n">channel</span><span class="o">.</span><span class="na">disconnect</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>不过从官方的<a href="http://www.jcraft.com/jsch/examples/Sftp.java.html">例子</a>上看到，最需要关闭的是session对象而不是channel对象。
+于是写了一个简单的测试Demo，把上面的代码跑5次，看看能不能重现:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#jstack -l 3621 | grep Connect</span>
+</span><span class='line'>Connect thread 192.168.1.100 session<span class="s2">&quot; prio=6 tid=0x042d3400 nid=0x1458 runnable [0x04e4f000]</span>
+</span><span class='line'><span class="s2">Connect thread 192.168.1.100 session&quot;</span> <span class="nv">prio</span><span class="o">=</span>6 <span class="nv">tid</span><span class="o">=</span>0x042d0400 <span class="nv">nid</span><span class="o">=</span>0x16c8 runnable <span class="o">[</span>0x04def000<span class="o">]</span>
+</span><span class='line'>Connect thread 192.168.1.100 session<span class="s2">&quot; prio=6 tid=0x041b4000 nid=0xd38 runnable [0x04d8f000]</span>
+</span><span class='line'><span class="s2">Connect thread 192.168.1.100 session&quot;</span> <span class="nv">prio</span><span class="o">=</span>6 <span class="nv">tid</span><span class="o">=</span>0x041b2000 <span class="nv">nid</span><span class="o">=</span>0x166c runnable <span class="o">[</span>0x04bcf000<span class="o">]</span>
+</span><span class='line'>Connect thread 192.168.1.100 session<span class="err">&quot;</span> <span class="nv">prio</span><span class="o">=</span>6 <span class="nv">tid</span><span class="o">=</span>0x041b1000 <span class="nv">nid</span><span class="o">=</span>0x450 runnable <span class="o">[</span>0x04b2f000<span class="o">]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>果然出现了，试着在最后调用一下session.disconnect(),重试一下果然不存在了上述线程了。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20131103_word-contact.html">单词接龙问题</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-03T00:00:00+08:00" pubdate data-updated="true">Nov 3<span>rd</span>, 2013</time>
+        
+         | <a href="/blog/20131103_word-contact.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>昨天看到其他部门的技能鉴定题目，相对我们部门偏应用的题目，他们的相对更加偏重算法。题目描述如下：</p>
+
+<p>有一种单词接龙的游戏，就是连续的两个单词，第一个单词的尾要和第二个单词的头是一样的。<br/>
+例如: cat tell log google就是一个单词接龙。</p>
+
+<p>定义最少单词接龙是单词个数最少的接龙，定义最短单词接龙是单词字母个数总和最少的接龙。
+假设所有单词都是由小写字母组成，现在给定一堆单词，给定龙头和龙尾，求出最少单词接龙和最短单词接龙。</p>
+
+<p>当时在招聘，一时也没反应过来。下午回来的时候，仔细一想，这不就是最短路径问题么?</p>
+
+<p>把26个小写字母看成是结点，那么每个单词就是从某个结点到另外一个结点的单向路径。<br/>
+上面的接龙如果在加上单词gc, cookie，就是下面的图表示:<br/>
+<img src="/assets/images/2013/dijkstra.png" alt="单词接龙" /></p>
+
+<p>最少单词接龙，就是每条路径的权值为1，求两个结点之间的最短路径。<br/>
+最短单词接龙，就是每条路径的权值为单词的长度，求两个结点之间的最短路径。</p>
+
+<p>另外，关于一些特殊情况和注意点:</p>
+
+<p>对于存在多个单词，他们的首尾字母相同的话，只记录长度最短的为路径的权值即可。</p>
+
+<p>结点的存储可以不用链接表，因为只有26个字母，用二维数组即可，实时增加单词也容易处理。</p>
+
+<p>求最短路径的算法，参考经典的Dijkstra最短路径算法，这里就不详述了。
+关于Dijkstra，可以参考<a href="http://baike.baidu.com/link?url=YCo_VIMdyckLPW9FuF6ZWnYwDangwdpze7JBVjoKc0AylbBp0Y3PILhRQ2p_QX6ssgCP0hFqMMdHhvUdQtd5Wa">百度百科中的条目</a></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -170,798 +393,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130930_des.html">DES加解密总结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-09-30T00:00:00+08:00" pubdate data-updated="true">Sep 30<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130930_des.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>DES是广泛使用的分组对称加密算法，它要求待加密数据要8位对齐，所以在数据不足8位时候会出现padding的情况，
-所以有可能因为padding不同，而出现加解密结果不一样，这种情况在异构系统间的数据通信特别容易出现，例如java和cpp系统之间的通信。
-如果在开发过程中，遇到不同语言加解密结果不一样的情况，应该关注一下补齐方式。
-关于补齐方式，请参考http://en.wikipedia.org/wiki/Padding_%28cryptography%29</p>
-
-<p>先说说java这里，java api已经集成了DES加解密算法，如果不指定补齐方式的话，默认的补齐方式是使用PKCS5Padding，
-这种情况下，长度不足8字节的部分，填充“0x01”—“0x08”，如不
-足1字节，则填充1个“0x01”，如不足2字节，则填充2个“0x02”，以此类推。更具
-体的描述，参考<a href="http://www.herongyang.com/Cryptography/DES-JDK-What-Is-PKCS5Padding.html">What Is PKCS5Padding?</a>
-如果我们指定补齐方式，如使用DES/ECB/NoPadding的话(其中ECB是加密的模式，也是默认的加密方式)，就需要自己手动补齐，例如补空格字符。
-现在的代码为了和后台的加解密结果一致，采用的是手动补齐的方式，即NoPadding方式。</p>
-
-<p>如果cpp实现的padding方式和java的不一致，就可能导致加解密失败。在我们的系统里边，cpp实现的padding是补\0的。
-这个字符在显示的时候就直接被当成结束符了，无需特殊处理。所以，如果使用java加密，cpp解密的话，
-java这边也要使用补\0的做法，如果使用java解密的话，就只能使用trim进行处理了。</p>
-
-<p>以我们这边使用的两个DES相关的接口为例，用户鉴权接口在配置里边有使用trim进行处理，而wlan密码认证接口没有使用trim处理。
-因此按现在使用补空格的方法，在用户鉴权接口是能成功的，但在wlan密码认证接口里边是会导致认证失败的。</p>
-
-<p>如果需要更多关于加密补齐的资料，可以参考<a href="http://www.di-mgt.com.au/cryptopad.html">Using Padding in Encryption</a></p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130921_books.html">那些年，我读过的技术书</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-09-21T00:00:00+08:00" pubdate data-updated="true">Sep 21<span>st</span>, 2013</time>
-        
-         | <a href="/blog/20130921_books.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>这几天发烧很反复，反而有点时间用来整理一下思路。想了很多以前的事情，回忆的感觉是很复杂的。
-突然想写写接触的技术书，现在工作的时间占据了大多数，看书的时间并不多，
-但是每年看的书是有点越来越多的感觉，只是很少有特别深刻的，大概是因为平时的读书习惯就是不求甚解，又或者是这种方式很适合我。</p>
-
-<p>C程序设计，谭浩强的教材估计是人手一册了。这也是我第一次接触编程语言，虽然我还是没学懂怎么写代码。
-回头来看，这本书的确写得不怎样，比起那本c语言传世之作差太远了，里边错误也不少。</p>
-
-<p>数据结构（用面向对象方法与C++语言描述），黄色皮的这本，应该是第一版。
-说起这本书，我当年也是没学明白，主要是我太懒了，还有就是这语言真有点复杂。
-这门课程每一两周就有一个课程设计，要编程的那种。我基本都是抄袭的，有一次我下决心想自己解决，
-结果就是整了一通宵，双向链表编译都没通过。不过还好老师手下留情，最后还是62分勉强通过。
-这门课程是到了毕业以后花3个月自学的，算是自己迄今为止看得最认真的一本书了，简直可以用改变我的职业生涯来形容。</p>
-
-<p>计算机网络，第四版，这也是大学的教材，纯英文版本，这本书是认识网络的通用书籍，是本很好的书，
-不过，并不是我从上面学到多少，我也是毕业以后才回去读的。我对这本书很有印象，主要是因为有一次我在图书馆，
-看到我同学的书已经翻烂了，而我的书还是新的，要知道这是一本大几百页的英文书。顿时觉着这个世界很可怕，
-别说自己不努力，即使你再努力，总有比你聪明的人比你还努力。难怪人家成绩如此的好。</p>
-
-<p>Linux系统管理技术手册，这是我毕业以后买的一本大部头英文书。我对linux有个比较系统的认识也源于这本书。
-不知有没有人在装系统的时候不小心把win也删除了没有？我就试过，后来在一次面试中被人当笑话了。
-虽然工作的时候也有接触这linux，但那一年春节放假的时候，我觉得我应该认真学习一下，而且我们还是有十几天假期的。
-于是到书店把这本书扛回去了，硬是在春节的时候看完。当然，只是看书很多是没概念的，于是我把家里的系统格了换成linux，公司也装上双系统，强迫自己适应。我对以前的公司环境还是心存感激的，很free的感觉。</p>
-
-<p>设计模式，四人帮的大作，我买了有好几年了，一直来来去去的翻，始终没有通读，而我也读过不少模式方面的书，
-但这本书一直保留在我的在读列表中，总感觉没读懂。直到最近这两年，有些开窍了，有时虽然不能想到利用哪种模式，
-或者是哪种模式，但直觉告诉我，就应该这么写。我想，我逐渐从这些设计模式上找到设计原则的味道了。</p>
-
-<p>其他书籍？没有第一时间在我脑子里边出现，即使我认同是一本好书，但也就仅仅是一本好书罢了。
-相对来说，我很少看java的专题书，我跟偏爱通用类。而数据库，即使毕业后一两年，
-我都是对数据库技术有点不屑的感觉，所以学得很少，直到最近这两年我才接触得多一些。</p>
-
-<p>娱乐而已，勿当真。</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130908_redis-introduction.html">Redis简报</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-09-08T00:00:00+08:00" pubdate data-updated="true">Sep 8<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130908_redis-introduction.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><strong>RE</strong>mote <strong>DI</strong>ctionary <strong>S</strong>erver(Redis) 是一个由Salvatore Sanfilippo写的key-value存储系统，
-与memcached相比，redis支持更丰富的数据结构，特点是高性能、持久存储，适应高并发的应用场景。它起步较晚，发展迅速，
-目前已被许多大型机构采用，比如Twitter、Github、新浪微博等。</p>
-
-<h2>Redis安装</h2>
-
-<p>redis的安装没有其他依赖，非常简单。操作如下：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>wget http://download.redis.io/releases/redis-2.6.16.tar.gz
-</span><span class='line'>tar zxvf redis-2.6.16.tar.gz
-</span><span class='line'><span class="nb">cd </span>redis-2.6.16/
-</span><span class='line'>make
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>这样就会在src目录下生成以下几个可执行文件：redis-benchmark、redis-check-aof、redis-check-dump、redis-cli、redis-server。
-这几个文件加上redis.conf就是redis的最终可用包了。可以考虑把这几个文件拷贝到你希望的地方。例如:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>mkdir -p /usr/local/redis/bin
-</span><span class='line'>mkdir -p /usr/local/redis/etc
-</span><span class='line'>cp redis.conf /usr/local/redis/etc
-</span><span class='line'><span class="nb">cd </span>src
-</span><span class='line'>cp redis-benchmark redis-check-aof redis-check-dump redis-cli redis-server /usr/local/redis/bin
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>现在就可以启动redis了。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> /usr/local/redis
-</span><span class='line'>bin/redis-server etc/redis.conf
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>注意，默认复制过去的redis.conf文件的daemonize参数为no，所以redis不会在后台运行，可以修改为yes则为后台运行redis。
-另外配置文件中规定了pid文件，log文件和数据文件的地址，如果有需要先修改，默认log信息定向到stdout.
-这时候就可以打开终端进行测试了，默认的监听端口是6379，所以用telnet进行连接如下：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># telnet localhost 6379</span>
-</span><span class='line'>Trying 127.0.0.1...
-</span><span class='line'>Connected to localhost.
-</span><span class='line'>Escape character is <span class="s1">&#39;^]&#39;</span>.
-</span><span class='line'>SET hello world
-</span><span class='line'>+OK
-</span><span class='line'>GET hello
-</span><span class='line'><span class="nv">$5</span>
-</span><span class='line'>world
-</span><span class='line'>quit
-</span><span class='line'>+OK
-</span><span class='line'>Connection closed by foreign host.
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>或者使用redis-cli客户端:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># redis-cli</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; SET hello world
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; GET hello
-</span><span class='line'><span class="s2">&quot;world&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>redis数据结构</h2>
-
-<p>redis相对memcached来说，支持更加丰富的数据结构，正如作者所说的，redis是一个数据结构服务器（data structures server），
-redis的所有功能就是将数据以其固有的几种结构保存，并提供给用户操作这几种结构的接口。redis目前支持以下几种数据类型：</p>
-
-<ul>
-<li>String类型</li>
-</ul>
-
-
-<p>字符串是最简单的类型，和memcached支持的类型是一样的，但是在功能上更加丰富。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; SET name <span class="s2">&quot;Redis 2.6.16&quot;</span>
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; GET name
-</span><span class='line'><span class="s2">&quot;Redis 2.6.16&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>另外，它还支持批量读写:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; MSET age 30 sex Male
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; MGET age sex
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;30&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Male&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>还可以当成数字来使用，并支持对数字的加减操作:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; INCR age
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 31
-</span><span class='line'>redis 127.0.0.1:6379&gt; INCRBY age 2
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 33
-</span><span class='line'>redis 127.0.0.1:6379&gt; GET age
-</span><span class='line'><span class="s2">&quot;33&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; DECR age
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 32
-</span><span class='line'>redis 127.0.0.1:6379&gt; DECRBY age 2
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 30
-</span><span class='line'>redis 127.0.0.1:6379&gt; GET age
-</span><span class='line'><span class="s2">&quot;30&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>还支持对字符串进行部分修改或获取操作</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; STRLEN name
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 12
-</span><span class='line'>redis 127.0.0.1:6379&gt; GETRANGE name 0 4
-</span><span class='line'><span class="s2">&quot;Redis&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; APPEND name <span class="s2">&quot;, NoSQL&quot;</span>
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 19
-</span><span class='line'>redis 127.0.0.1:6379&gt; GET name
-</span><span class='line'><span class="s2">&quot;Redis 2.6.16, NoSQL&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>List类型</li>
-</ul>
-
-
-<p>Redis能够把数据存储成一个链表，并能对这个链表进行操作:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; LPUSH language Java
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; LPUSH language C++
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 2
-</span><span class='line'>redis 127.0.0.1:6379&gt; RPUSH language C
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 3
-</span><span class='line'>redis 127.0.0.1:6379&gt; LLEN language
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 3
-</span><span class='line'>redis 127.0.0.1:6379&gt; LRANGE language 0 2
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;C++&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Java&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;C&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; LPOP language
-</span><span class='line'><span class="s2">&quot;C++&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; LLEN language
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 2
-</span><span class='line'>redis 127.0.0.1:6379&gt; LREM language 1 Java
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; LLEN language
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Redis也支持很多修改操作</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; LRANGE language 0 2
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;C&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; LINSERT language BEFORE C C++
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 2
-</span><span class='line'>redis 127.0.0.1:6379&gt; LINSERT language BEFORE C Java
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 3
-</span><span class='line'>redis 127.0.0.1:6379&gt; LLEN language
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 3
-</span><span class='line'>redis 127.0.0.1:6379&gt; LRANGE language 0 2
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;C++&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Java&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;C&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; LTRIM language 2 -1
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; LLEN language
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; LRANGE language 0 2
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;C&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>Sets类型</li>
-</ul>
-
-
-<p>Redis能够将一系列不重复的值存储成一个集合，并支持修改和集合关系操作。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; SADD system Win
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; SADD system Linux
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; SADD system Mac
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; SADD system Linux
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 0
-</span><span class='line'>redis 127.0.0.1:6379&gt; SMEMBERS system
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Win&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Mac&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;Linux&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Sets结构也支持相应的修改操作</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; SREM system Win
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; SMEMBERS system
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Mac&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Linux&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; SADD system Win
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; SMEMBERS system
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Mac&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Win&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;Linux&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Redis还支持对集合的子交并补等操作</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; SADD phone Android
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; SADD phone Iphone
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; SADD phone Win
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; SMEMBERS phone
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Win&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Iphone&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;Android&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; SINTER system phone
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Win&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; SUNION system phone
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Win&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Iphone&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;Mac&quot;</span>
-</span><span class='line'>4<span class="o">)</span> <span class="s2">&quot;Linux&quot;</span>
-</span><span class='line'>5<span class="o">)</span> <span class="s2">&quot;Android&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; SDIFF system phone
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Mac&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Linux&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>Sorted Sets类型</li>
-</ul>
-
-
-<p>Sorted Sets和Sets结构非常相似，不同的是Sorted Sets中的数据会有一个score属性，并会在写入时就按这个score排好序。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; ZADD days 0 mon
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZADD days 1 tue
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZADD days 2 wed
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZADD days 3 thu
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZADD days 4 fri
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZADD days 5 sat
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZADD days 6 sun
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZCARD days
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 7
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZRANGE days 0 6
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;mon&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;tue&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;wed&quot;</span>
-</span><span class='line'>4<span class="o">)</span> <span class="s2">&quot;thu&quot;</span>
-</span><span class='line'>5<span class="o">)</span> <span class="s2">&quot;fri&quot;</span>
-</span><span class='line'>6<span class="o">)</span> <span class="s2">&quot;sat&quot;</span>
-</span><span class='line'>7<span class="o">)</span> <span class="s2">&quot;sun&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZSCORE days sat
-</span><span class='line'><span class="s2">&quot;5&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZCOUNT days 3 6
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 4
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZRANGEBYSCORE days 3 6
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;thu&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;fri&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;sat&quot;</span>
-</span><span class='line'>4<span class="o">)</span> <span class="s2">&quot;sun&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>Hash类型</li>
-</ul>
-
-
-<p>Redis能够存储多个键值对的数据</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; HMSET student name Tom age 12 sex Male
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; HKEYS student
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;name&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;age&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;sex&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; HVALS student
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Tom&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;12&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;Male&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; HGETALL student
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;name&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Tom&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;age&quot;</span>
-</span><span class='line'>4<span class="o">)</span> <span class="s2">&quot;12&quot;</span>
-</span><span class='line'>5<span class="o">)</span> <span class="s2">&quot;sex&quot;</span>
-</span><span class='line'>6<span class="o">)</span> <span class="s2">&quot;Male&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; HDEL student sex
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; HGETALL student
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;name&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Tom&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;age&quot;</span>
-</span><span class='line'>4<span class="o">)</span> <span class="s2">&quot;12&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Redis能够支持Hash的批量修改和获取</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; HMSET kid name Akshi age 2 sex Female
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; HMGET kid name age sex
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Akshi&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;2&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;Female&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>在这些数据结构的基础上，跟memcached一样，Redis也支持设置数据过期时间，并支持一些简单的组合型的命令。</p>
-
-<p>设置数据过期时间</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; SET name <span class="s2">&quot;John Doe&quot;</span>
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; EXISTS name
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; EXPIRE name 5
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>5秒后再查看</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; EXISTS name
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 0
-</span><span class='line'>redis 127.0.0.1:6379&gt; GET name
-</span><span class='line'><span class="o">(</span>nil<span class="o">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>简单的组合型的命令。通过MULTI和EXEC，将几个命令组合起来执行</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; SET counter 0
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; MULTI
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; INCR counter
-</span><span class='line'>QUEUED
-</span><span class='line'>redis 127.0.0.1:6379&gt; INCR counter
-</span><span class='line'>QUEUED
-</span><span class='line'>redis 127.0.0.1:6379&gt; INCR counter
-</span><span class='line'>QUEUED
-</span><span class='line'>redis 127.0.0.1:6379&gt; EXEC
-</span><span class='line'>1<span class="o">)</span> <span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>2<span class="o">)</span> <span class="o">(</span>integer<span class="o">)</span> 2
-</span><span class='line'>3<span class="o">)</span> <span class="o">(</span>integer<span class="o">)</span> 3
-</span><span class='line'>redis 127.0.0.1:6379&gt; GET counter
-</span><span class='line'><span class="s2">&quot;3&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>你还可以用DICARD命令来中断执行中的命令序列</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; SET newcounter 0
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; MULTI
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; INCR newcounter
-</span><span class='line'>QUEUED
-</span><span class='line'>redis 127.0.0.1:6379&gt; INCR newcounter
-</span><span class='line'>QUEUED
-</span><span class='line'>redis 127.0.0.1:6379&gt; INCR newcounter
-</span><span class='line'>QUEUED
-</span><span class='line'>redis 127.0.0.1:6379&gt; DISCARD
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; GET newcounter
-</span><span class='line'><span class="s2">&quot;0&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/4/">&larr; Older</a>
@@ -980,6 +411,18 @@ redis的所有功能就是将数据以其固有的几种结构保存，并提供
     
       <li class="post">
         <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140329_was-datasource.html">websphere+spring+jndi数据源配置</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140225_android-jdk7-bug.html">jdk7编译的bug记录</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140219_android-maven-problems.html">android+maven问题记录</a>
       </li>
     
       <li class="post">
@@ -1004,18 +447,6 @@ redis的所有功能就是将数据以其固有的几种结构保存，并提供
     
       <li class="post">
         <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
       </li>
     
   </ul>

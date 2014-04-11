@@ -9,8 +9,9 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="我感觉maven这东西比ant容易上手(ant每个项目规则都不一样),看那个100页的迷你书+例子(推荐basecrm或spring3.0)基本就ok了~~
-哎，本来想写的很多，发现写出来的却很少。多多包涵! maven是一个项目管理工具，跟ant相比亮点在于它遵守了COC规则，只要遵守就好处多多 &hellip;">
+  <meta name="description" content="这是刚到公司时写的~ Java 提供了两类主要的异常：runtime exception和checked exception。
+所有的checked exception是从java.lang.Exception类衍生出来的，
+而runtime exception则是从java.lang. &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +66,249 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121202_framework-improve-exception-handle.html">从某维护系统的架构改造谈起–异常处理(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-02T00:00:00+08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2012</time>
+        
+         | <a href="/blog/20121202_framework-improve-exception-handle.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这是刚到公司时写的~</p>
+
+<p>Java 提供了两类主要的异常：runtime exception和checked exception。
+所有的checked exception是从java.lang.Exception类衍生出来的，
+而runtime exception则是从java.lang.RuntimeException或java.lang.Error类衍生出来的。</p>
+
+<p>如果你希望强制你的类调用者来处理异常，那么就用Checked Exception;
+如果你不希望强制你的类调用者来处理异常，就用UnChecked。
+那么究竟强制还是不强制，权衡的依据在于从业务系统的逻辑规则来考虑，
+如果业务规则定义了调用者应该处理，那么就必须Checked，如果业务规则没有定义，就应该用UnChecked。</p>
+
+<p>至于类调用者catch到NoSuchUserException和PasswordNotMatchException怎么处理，也要根据他自己具体的业务逻辑了。
+或者他有能力也应该处理，就自己处理掉了；或者他不关心这个异常，也不希望上面的类调用者关心，就转化为RuntimeException；
+或者他希望上面的类调用者处理，而不是自己处理，就转化为本层的异常继续往上抛出来。
+根据上面的一些观点在现有的系统上建立基于三层架构的异常处理模型，主要有以下做法：</p>
+
+<ul>
+<li>Dao层次关注底层异常，当很多SQLException无法恢复，转换成统一的RuntimeException交给Service处理</li>
+<li>Service层关心某些有业务含义的业务处理，并转化成相应的业务异常(同样也是RuntimeException)交给Action处理</li>
+<li>Action层可能对某些特定的业务异常感兴趣，感兴趣就处理(或许尝试修复)，不感兴趣就交给统一业务异常处理器处理</li>
+<li>统一业务异常处理器会记录exception log，并负责相应的错误展现页面</li>
+</ul>
+
+
+<p>实现思路(待续)：
+* exception util:提供一些异常处理的工具,例如转换异常
+* exception wrapper:作为统一的异常类，可以用来保存原始的exception信息
+* exception collector:可以保存多个exception信息的异常类，用于某些特殊场合
+* exception handler:用于处理exception的统一处理，主要是日志与错误页面</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121202_framework-improve-base-library.html">从某维护系统的架构改造谈起–公用代码库(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-02T00:00:00+08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2012</time>
+        
+         | <a href="/blog/20121202_framework-improve-base-library.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这是刚到公司时写的~</p>
+
+<p>有时候真是不看不知道，这样一个每月数亿业务量，数十亿营收的大型系统，原来也就是这样的质量。
+我们可以想象这种系统一开始都是美好的，只是渐渐的变味了。就拿我们这边java的来说，原来也应该是有公用代码库的，只是那么久每人去维护，项目赶工，
+自立山寨的情况多了，这些东西的反向价值就越来越明显了。典型的表现有：
+* 自立门户的现象很突出，经常可以找到n个方法是做同样事情的；
+* 神级的类很多，例如某个类可以提供字符串，时间，web，业务相关的操作；
+* 公用类代码质量良莠不齐，有很多明显写得不好的地方(曾经有个数千行的类就给我砍倒1/3代码)；
+* 缺乏公用库的document和quickstart</p>
+
+<p>这样造成浪费，花了很多冤枉时间去实现已有功能，缺乏统一规划。大家都有体会，维护一个杂乱无章的系统是多么的困难，
+在这种系统想写出漂亮的代码是很考水平的。现在代码库又特别庞大，怪不得很多同事慢慢地就给系统同化了，
+缺乏持续改进的动力。在上次retro会议的时候，针对缺乏统一的公用代码库的问题，针对质量和维护的问题，我提了一些做法：</p>
+
+<p><img src="/assets/images/common_lib.jpg" alt="公共代码库迁移" /></p>
+
+<ol>
+<li>方向是在保留现有逻辑的基础上，针对新添加的功能和修改的功能，逐渐迁移到新的公用库。</li>
+<li>至于公用库的选材，主要是从各大现有公用库进行提炼，对神级类进行拆分，并结合开发人员提需求的做法，形成我们的公用库。</li>
+<li>为了避免山寨的出现，培训和文档是必须有的。</li>
+<li>针对如何让程序员接受并找到新公用库的问题，建立新的source目录，并在文档上通过目录－包结构－类的层次做好文档(javadoc)。</li>
+<li>除了必要的培训之外，主要的审查方式还是通过每天的code diff和定期的code review来做到大家对公用库的认同和理解。</li>
+<li>维护是要靠大家去推动的，就像上面说的，由程序员反馈需求或提供补丁的方式，保证公用库的持续改进。</li>
+</ol>
+
+
+<p>现在工作进展还算顺利，过段时间再看看效果怎样，或许咨询一下顾问看看有没有改进的地方。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121202_avtivemq-and-rule-engine.html">Avtivemq和规则引擎资料(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-02T00:00:00+08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2012</time>
+        
+         | <a href="/blog/20121202_avtivemq-and-rule-engine.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>10年时接触activemq和drools时收集的一些资料</p>
+
+<h2>activeMQ资料</h2>
+
+<p><a href="http://activemq.apache.org/">activeMQ官方网站</a><br/>
+<a href="http://andyao.javaeye.com/blog/153173">JMS消息类型模型</a><br/>
+<a href="http://www.javaeye.com/topic/275045">实战activeMQ</a><br/>
+<a href="http://wiki.springside.org.cn/display/springside/ActiveMQ">ActiveMQ4.1 +Spring2.0的POJO JMS方案(上)整理版</a><br/>
+<a href="http://wiki.springside.org.cn/display/springside/ActiveMQ-part2">ActiveMQ4.1 +Spring2.0的POJO JMS方案(下)整理版</a><br/>
+<a href="http://www.javaeye.com/topic/153171">ActiveMQ5.0实战一: 安装配置ActiveMQ5.0</a><br/>
+<a href="http://www.javaeye.com/topic/154092">ActiveMQ5.0实战二: 基本配置</a><br/>
+<a href="http://www.javaeye.com/topic/234101">ActiveMQ5.0实战三:使用Spring发送,消费topic和queue消息</a><br/>
+<a href="http://sdh5724.javaeye.com/blog/318376">ActiveMQ测试报告</a>,这是一个很棒的报告<br/>
+<a href="http://www.javaeye.com/topic/397902">ActiveMQ 高级特性</a><br/>
+<a href="http://activemq.apache.org/articles.html">Articles on ActiveMQ, Messaging and JMS</a> 来自官网的文章集锦</p>
+
+<h4>客户端</h4>
+
+<p>关于客户端都可以在相应的官网上找到，这里要说的一个客户端是openamq-jms，简单来说，这是针对java JMS的客户端，
+可用于OpenAMQ和其他AMQP服务器。还有一个是StompConnect，当然这是走stomp协议的，特色就是把JMS弄成一个Stomp Broker，
+具体是怎样的，还没实践过。不过，要跨语言消息交互，更好的选择是使用已经提供的本地Stomp支持。另外，关于stomp的erlang客户端可以选择gigix推荐的stomperl</p>
+
+<h4>书籍</h4>
+
+<p>其实官方文档已经非常丰富，书籍的意义并没有那么大<del>~另一方面，关于ActiveMQ的书籍暂时还没有上市，只有本期书(activeMQ in action)，
+现在可以在网上找到这本书的手稿版</del>确实找不到的话，可以找我要，呵</p>
+
+<h4>activemq和rabbitmq</h4>
+
+<p>activemq和rabbitmq都是非常有名的开源消息队列。activemq是java写的，而rabbitmq是erlang写的。
+activemq支持的是stomp和openwire，xmpp等协议，而rabbitmq支持的是amqp(Advanced Message Queuing Protocol)。
+stomp是一个简单的容易实现的基于文本的协议，openwire是一种快速的二进制协议，activemq计划在amqp协议1.0版本完成的时候提供amqp协议的支持。
+通过这些协议，activemq可以支持多种客户端，如C, C++, C#, Ruby, Python, Perl, PHP等等。而amqp同时定义了消息中间件的语意层面和协议层面，
+并且是语言中立的，它可以让MQ成为一个可编程的消息中间件，可以想象这样的场景：
+你使用java写的消息通过Erlang编写的中间件来和一个C编写的遗留系统进行消息交互。所以amqp前途是光明的～～</p>
+
+<h4>2009-01-15附加</h4>
+
+<p>activemq的failover功能配置很简单~例如简单修改brokerURL为&#8221;failover:(tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0)&#8221;，正常情况是会出现下面的信息：</p>
+
+<div class="highlight"><pre><code class="properties"><span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:43,672 DEBUG [failover.FailoverTransport]-802 Waiting 5120 ms before attempting connection.</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,569 DEBUG [failover.FailoverTransport]-593 urlList connectionList:[tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0]</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,569 DEBUG [failover.FailoverTransport]-712 Attempting connect to: tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,570 DEBUG [failover.FailoverTransport]-753 Connect fail to: tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0, reason: java.net.ConnectException: Connection refused</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,570 DEBUG [ tcp.TcpTransport]-458 Stopping transport tcp://null:0</span>
+</code></pre></div>
+
+
+<h4>2009-01-16附加</h4>
+
+<p>结合spring和activemq的时候，发现启动挺慢的。因为老是会去网上寻找xsd文件，把xml里边的schemaLocation换成下面这个样子就可以了：
+http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd
+ActiveMQ的Virtual Destinations和Mirrored Queues非常有价值，5.3新增的Message Groups也是很有用的特性来的</p>
+
+<h2>规则引擎资料</h2>
+
+<p><a href="http://www.ibm.com/developerworks/cn/java/j-java-rules/">Java规则引擎与其API(JSR-94)</a> 介绍jsr94标准<br/>
+<a href="http://www.ibm.com/developerworks/cn/java/j-drools/">使用 Drools 规则引擎实现业务逻辑</a> 一个简单的例子<br/>
+<a href="http://javahy.javaeye.com/blog/384538">在你的企业级java应用中使用Drools</a> 提供web层和dao层的简单继承，不过rule用的xml格式～<br/>
+<a href="http://blog.csdn.net/nimeimei/archive/2005/12/23/560379.aspx">drools和spring的集成</a> 集成spring好像是必备功能似的<br/>
+<a href="http://www.javaeye.com/topic/25215">规则引擎实现探讨</a> 一个小讨论，还看到一段Erlang代码<br/>
+<a href="http://www.javaeye.com/topic/18198">应用规则引擎组织业务规则的注意要点</a> 里边提到一些建议和规范<br/>
+看惯中文的，感觉<a href="http://www.blogjava.net/guangnian0412/">这个blog</a>还行,但是内容是基于drools3的<br/>
+<a href="http://www.javaeye.com/topic/257039">一个小学题目的解: 采用规则引擎Drools实现</a> 一个喝汽水的智力题,一个比较不错的例子<br/>
+<a href="http://wiki.springside.org.cn/display/springside/JBossRules">springside里边用的jboss rules</a><br/>
+另外还有drools官方文档，关于最重要的rule language和example部分是在Drools Expert上</p>
+
+<h4>其他想法</h4>
+
+<p>我对规则引擎理解不深，从drools的例子可以看到一些AI,workflow,专家系统的影子，看似用途很广很强大，可是规则引擎不是这么个用法的把<br/>
+按照我的想法，规则引擎应该用在局部复杂的流程控制上(局部复杂的if else&#8230;),应该是基于业务走向的判断。<br/>
+如上面<a href="http://yimlin.javaeye.com/">yimlin</a>提到的，我觉得规则引擎是来简化工作的，所以要避免任何具有实际意义的业务操作，很容易让人混淆。<br/>
+怎么说这些规则也不大可能是客户来维护的了，因为可能涉及事实库的修改，dsl顶多也是对程序员友好的方式。<br/>
+<strong>哪些业务规则适合抽象出来由规则引擎处理，规则引擎和业务系统的交互方式是主要问题。</strong></p>
+
+<p>引入规则引擎真的会带来很多好处么？对很多系统来说，这种<a href="http://ivan.javaeye.com/blog/373237">java应用中嵌入groovy</a>的方案还算满经济的。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -339,281 +583,6 @@ maven实战迷你书(http://www.infoq.com/cn/minibooks/maven-in-action)</p></li>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20121130_ibatis-more-config.html">Ibatis进阶(旧)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-11-30T00:00:00+08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20121130_ibatis-more-config.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>Ibatis比较少人使用的配置语法</h2>
-
-<p>简单来说，ibatis3虽然没有ognl,不过也支持基本的表达式（看起来有点像el表达式的样子) 上次有个问题，说到两个表单数据(两个javabean)，入同一个表，传参就应该不成问题了</p>
-
-<h4>java代码1:</h4>
-
-<div class="highlight"><pre><code class="java">   <span class="n">Map</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">();</span>
-   <span class="n">ComplexBean</span> <span class="n">bean</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ComplexBean</span><span class="o">();</span>
-   <span class="n">bean</span><span class="o">.</span><span class="na">setMap</span><span class="o">(</span><span class="k">new</span> <span class="n">HashMap</span><span class="o">());</span>
-   <span class="n">bean</span><span class="o">.</span><span class="na">getMap</span><span class="o">().</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;id&quot;</span><span class="o">,</span> <span class="k">new</span> <span class="n">Integer</span><span class="o">(</span><span class="mi">1</span><span class="o">));</span>
-   <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;bean&quot;</span><span class="o">,</span> <span class="n">bean</span><span class="o">);</span>
-   <span class="n">Account</span> <span class="n">account</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Account</span><span class="o">();</span>
-   <span class="n">account</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
-   <span class="n">Account</span> <span class="n">anotherAccount</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Account</span><span class="o">();</span>
-   <span class="n">anotherAccount</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">3</span><span class="o">);</span>
-   <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;accounts&quot;</span><span class="o">,</span> <span class="k">new</span> <span class="n">Account</span><span class="o">[]</span> <span class="o">{</span><span class="n">account</span><span class="o">,</span> <span class="n">anotherAccount</span><span class="o">});</span>
-   <span class="n">Integer</span> <span class="n">id</span> <span class="o">=</span> <span class="o">(</span><span class="n">Integer</span><span class="o">)</span> <span class="n">sqlMap</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="s">&quot;mapBeanMap&quot;</span><span class="o">,</span> <span class="n">map</span><span class="o">);</span>
-</code></pre></div>
-
-
-<h4>ibatis配置1:</h4>
-
-<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;select</span> <span class="na">id=</span><span class="s">&quot;mapBeanMap&quot;</span>
-   <span class="na">parameterClass=</span><span class="s">&quot;map&quot;</span>
-   <span class="na">resultClass=</span><span class="s">&quot;int&quot;</span> <span class="nt">&gt;</span>
-   select count(ACC_ID) from Account where ACC_ID in (#bean.map.id#,#accounts[0].id#,#accounts[1].id#)
- <span class="nt">&lt;/select&gt;</span>
-</code></pre></div>
-
-
-<h4>java代码2:</h4>
-
-<div class="highlight"><pre><code class="java">   <span class="n">Map</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">();</span>
-   <span class="n">ComplexBean</span> <span class="n">bean</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ComplexBean</span><span class="o">();</span>
-   <span class="n">bean</span><span class="o">.</span><span class="na">setMap</span><span class="o">(</span><span class="k">new</span> <span class="n">HashMap</span><span class="o">());</span>
-   <span class="n">Account</span> <span class="n">account</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Account</span><span class="o">();</span>
-   <span class="n">account</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
-   <span class="n">Account</span> <span class="n">anotherAccount</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Account</span><span class="o">();</span>
-   <span class="n">anotherAccount</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">3</span><span class="o">);</span>
-   <span class="n">bean</span><span class="o">.</span><span class="na">getMap</span><span class="o">().</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;accounts&quot;</span><span class="o">,</span> <span class="k">new</span> <span class="n">Account</span><span class="o">[]</span> <span class="o">{</span><span class="n">account</span><span class="o">,</span> <span class="n">anotherAccount</span><span class="o">});</span>
-   <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;bean&quot;</span><span class="o">,</span> <span class="n">bean</span><span class="o">);</span>
-</code></pre></div>
-
-
-<h4>ibatis配置2:</h4>
-
-<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;select</span> <span class="na">id=</span><span class="s">&quot;mapBeanMap2&quot;</span>
-   <span class="na">parameterClass=</span><span class="s">&quot;map&quot;</span>
-   <span class="na">resultClass=</span><span class="s">&quot;int&quot;</span> <span class="nt">&gt;</span>
-   select count(ACC_ID) from Account where ACC_ID in
-   <span class="nt">&lt;iterate</span> <span class="na">close=</span><span class="s">&quot;)&quot;</span> <span class="na">open=</span><span class="s">&quot;(&quot;</span> <span class="na">conjunction=</span><span class="s">&quot;,&quot;</span> <span class="na">property=</span><span class="s">&quot;bean.map.accounts&quot;</span><span class="nt">&gt;</span>
-     #bean.map.accounts[].id#
-   <span class="nt">&lt;/iterate&gt;</span>
- <span class="nt">&lt;/select&gt;</span>
-</code></pre></div>
-
-
-<h2>ibatis与泛型</h2>
-
-<p>当使用复杂配置并且参数带有泛型的时候，使用比较标签有可能导致如下错误:There is no READABLE property named ‘XXX’ in class ‘java.lang.Object’.这是因为进行比较的时候，ibatis是通过反射获取类型而不是先计算值的,这样泛型的时候会获取到Object类而不能得到真实的类型,自己简单打个补丁先:</p>
-
-<div class="highlight"><pre><code class="diff"><span class="gh">Index: src/com/ibatis/sqlmap/engine/mapping/sql/dynamic/elements/ConditionalTagHandler.java</span>
-<span class="gh">===================================================================</span>
-<span class="gd">--- src/com/ibatis/sqlmap/engine/mapping/sql/dynamic/elements/ConditionalTagHandler.java (revision 1079874)</span>
-<span class="gi">+++ src/com/ibatis/sqlmap/engine/mapping/sql/dynamic/elements/ConditionalTagHandler.java (working copy)</span>
-<span class="gu">@@ -72,14 +72,13 @@</span>
-
-     if (prop != null) {
-       value1 = PROBE.getObject(parameterObject, prop);
-<span class="gd">-      type = PROBE.getPropertyTypeForGetter(parameterObject, prop);</span>
-     } else {
-       value1 = parameterObject;
-<span class="gd">-      if (value1 != null) {</span>
-<span class="gd">-        type = parameterObject.getClass();</span>
-<span class="gd">-      } else {</span>
-<span class="gd">-        type = Object.class;</span>
-<span class="gd">-      }</span>
-<span class="gi">+    }</span>
-<span class="gi">+    if (value1 != null) {</span>
-<span class="gi">+     type = value1.getClass();</span>
-<span class="gi">+    } else {</span>
-<span class="gi">+     type = Object.class;</span>
-     }
-     if (comparePropertyName != null) {
-       Object value2 = PROBE.getObject(parameterObject, comparePropertyName);
-</code></pre></div>
-
-
-<h2>关于inlineParameterMap</h2>
-
-<p>例如#name#(标准配置),#name:NUMBER#(以:分割),#myVar:javaType=int#都是有效的
-其中以:分割的有两种方式，#name:jdbcTypeName#,#name:jdbcTypeName:nullvalue#(如果后面还有则会被加到nullvalue上去) 这是老配置方法，个人不推荐使用。
-最后一种是新的配置方式,可以带上javaType,jdbcType,mode,nullValue,numericScale,handler等参数(这个文档有详细描述)</p>
-
-<h2>jdbcType,javaType和TypeHandler</h2>
-
-<p>首先要说明一点的是,配置里边的jdbcType和javaType两个配置参数是为了生成TypeHandler(如果没有指定的话);
-查找typeHandler的内部结构是Map&lt;javaType, Map&lt;jdbcType, typeHandler&gt;&gt;,其中javaType是一个类,jdbcType是一个字符串;
-所以jdbcType其实和数据库的字段类型没什么关系,只要能找到相应的TypeHandler即可(当然通常都会对应上);
-typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择setString/setInt还是getString/getObject之类</p>
-
-<h2>只指定resultClass，没有resultMap</h2>
-
-<p>如果没有指定resultMap，ibatis会根据parameterClass生成一个AutoResultMap对象;
-对于AutoResultMap,里边的每个属性的映射对应的typeHandler是什么?</p>
-
-<table markdown="1" class="table">
-  <tr><td>resultClass</td><td>TypeHandler</td></tr>
-  <tr><td>Map</td><td>ObjectTypeHandler</td></tr>
-  <tr><td>原型类型</td><td>相应类对应的typeHandler(javaType=?,jdbcType=null)</td></tr>
-  <tr><td>Bean</td><td>会对实例变量名称进行大写并和ResultSetMetaData信息进行对比,最后生成typeHandler(javaType=?,jdbcType=null)</td></tr>
-</table>
-
-
-<p>所以使用parameterClass是map的时候，某些字段的处理可能会有点问题,例如oracle的NUMBER类型会被转成BigDecimal类;</p>
-
-<h2>只指定parameterClass，没有parameterMap</h2>
-
-<p>如果没有指定parameterMap，就会根据配置的sql解析inlineParameterMap;
-其中每个参数的TypeHandler如果没有指定，会根据参数的类型来寻找，例如#name,jdbcType=NUMBER# 会根据name计算后的类型来制定javaType
-这个typeHandler的好处可以对jdbc api友好，例如对于int默认会采用IntegerTypeHandler，这样会调用PreparedStatement#setInt, 而不是统统setString或者setObject。
-通常参数类型和jdbc类型不对应的时候，需要考虑设置typeHandler或者使用更强类型的Bean而不是统统使用map;</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20121130_findbugs.html">Findbugs使用有感(旧)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-11-30T00:00:00+08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20121130_findbugs.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>最近抽出点时间来处理项目上庞大的findbugs问题,处理过程中总结了下面几类参见的毛病：</p>
-
-<h3>关于IO流</h3>
-
-<p>见过的有写response的outputStream,文件下载,数据导出。这些场景涉及流读取、写入和最后的关闭，是findbugs检查的重灾区.
-解决办法是使用common-io库,常用的方法有IOUtils#copy,IOUtils#write,IOUtils#closeQuietly。</p>
-
-<h3>关于无效变量操作</h3>
-
-<p>包括变量使用后置null,没有被使用的变量，虽然这种findbugs问题很低级,不过在系统中仍然存在很多。
-处理办法是
-1. 变量使用后置null是没什么用的,JVM的GC比想象中智能多了；
-2. 假如变量在稍后的处理过程一定会被赋值,则init是没有意义的。<br/>
-遵循的原则是相关的变量和操作集中在一起，缩短变量的作用域(同时，这样也对JVM比较友好)</p>
-
-<h3>关于对象的延时加载</h3>
-
-<p>系统中有些类实现了延时加载的singleton模式，还有的Action类中的实例变量使用了延时加载的方式。
-很不幸的是，singleton的延时加载实现几乎都是错的, Action类的实例变量延时加载也没什么意义。
-要实现singleton，最简单的方式是预加载方式,如果想做延时加载,可以使用内部静态类的实现方式。</p>
-
-<h3>关于执行效率</h3>
-
-<p>包括string的修改操作,map的遍历操作。如果有string的大量修改操作，应该使用StringBuffer或者StringBuilder
-(在jdk5以上，StringBuilder适用于大多数场合)。而对于map的遍历,应该使用entrySet而不是keySet,这些注意一下就ok了。
-另外系统有很多DateFormater的东西，用了很多静态变量来提高效率，可惜jdk的日期库是非常烂的,DateFormater也不是线程安全的东西，应该避免使用静态变量。</p>
-
-<h3>关于异常处理</h3>
-
-<p>Exception is caught when Exception is not thrown 这个findbugs问题在系统出现非常多，也是最难处理的问题。从这个点
-就可以看出系统实现非常混乱，本来属于不同抽象层次的代码都堆在一起了，没有层次之分。这个问题一般是需要修改到那段逻辑的时候才会去
-解决，通过抽取方法/类的方式，把异常进行抽象化，最后借助框架层次上的异常统一处理逻辑就通常可以把Action上面的所有的try-catch干掉。</p>
-
-<h3>关于注释</h3>
-
-<p>这其实不是findbugs问题。可以发现java代码里边很多注释是没什么用的，包括一些显而易见的注释,方法注释(通常只有方法描述是有点意义，其他都是抄模板的)
-注释写不好，还不如不写，正确的做法是尽量写出自文档化的代码。</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20121120_oracle-explain-plan.html">Oracle执行计划思维导图</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-11-20T00:00:00+08:00" pubdate data-updated="true">Nov 20<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20121120_oracle-explain-plan.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2><strong>这是为了oracle培训而编制的思维导图</strong></h2>
-
-<h2>可以在Dropbox上下载到这个<a href="https://www.dropbox.com/s/8l53i0h3hphm5bz/%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92.xmind">xmind文件</a></h2>
-
-<p><img src="/assets/images/explain_plan.png" alt="oracle执行计划思维导图" /></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/14/">&larr; Older</a>
@@ -632,6 +601,18 @@ typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择
     
       <li class="post">
         <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140329_was-datasource.html">websphere+spring+jndi数据源配置</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140225_android-jdk7-bug.html">jdk7编译的bug记录</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140219_android-maven-problems.html">android+maven问题记录</a>
       </li>
     
       <li class="post">
@@ -656,18 +637,6 @@ typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择
     
       <li class="post">
         <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
       </li>
     
   </ul>

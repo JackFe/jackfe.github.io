@@ -4,7 +4,7 @@
   <title><![CDATA[Category: android | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/android/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2014-04-10T22:46:22+08:00</updated>
+  <updated>2014-04-11T22:52:51+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -12,6 +12,274 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[android+maven问题记录]]></title>
+    <link href="http://mccxj.github.com/blog/20140219_android-maven-problems.html"/>
+    <updated>2014-02-19T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/android-maven-problems</id>
+    <content type="html"><![CDATA[<h2>参考材料</h2>
+
+<ul>
+<li>https://code.google.com/p/maven-android-plugin/wiki/GettingStarted</li>
+<li>http://books.sonatype.com/mvnref-book/reference/android-dev.html</li>
+<li>http://www.ikoding.com/build-android-project-with-maven/</li>
+<li>https://github.com/mosabua/maven-android-sdk-deployer</li>
+<li>http://rgladwell.github.io/m2e-android/</li>
+<li>http://wiki.eclipse.org/M2E_plugin_execution_not_covered</li>
+</ul>
+
+
+<h2>前提条件</h2>
+
+<ul>
+<li>JDK 1.6+</li>
+<li>Android SDK r21.1+</li>
+<li>Maven 3.1.1+</li>
+<li>Set environment variable ANDROID_HOME to the path of your installed Android SDK and add $ANDROID_HOME/tools as well as $ANDROID_HOME/platform-tools to your $PATH. (or on Windows %ANDROID_HOME%\tools and %ANDROID_HOME%\platform-tools)</li>
+</ul>
+
+
+<p>特别注意maven的版本号</p>
+
+<h2>maven配置</h2>
+
+<p>请设置环境变量M2_HOME，并把settings.xml放到M2_HOME/conf中去。</p>
+
+<h2>eclipse配置</h2>
+
+<p>对于eclipse来说，除了要maven插件，还需要<a href="http://rgladwell.github.io/m2e-android/">m2e-android</a>插件。</p>
+
+<h2>dependency中support-v4的版本号只有很旧r7</h2>
+
+<p>其实除了support-v4,像android也有类似的问题。有一种解决方案是采用<a href="https://github.com/mosabua/maven-android-sdk-deployer">maven-android-sdk-deployer</a>。
+我测试过之后，发现这个解决方案虽然可行，但实际上比较麻烦。我直接在公司内的代理仓库上安装了新版本的。</p>
+
+<h2>Plugin execution not covered by lifecycle configuration</h2>
+
+<p>pom.xml很可能出现下面的错误提示:</p>
+
+<p><code>bash
+Plugin execution not covered by lifecycle configuration:
+ com.jayway.maven.plugins.android.generation2:android-maven-plugin:3.8.2:consume-aar
+ (execution: default-consume-aar, phase: compile)
+</code></p>
+
+<p>虽然不影响编译，但是很怪，可以通过下面的配置进行排除:</p>
+
+<p>```xml
+<pluginManagement></p>
+
+<pre><code>&lt;plugins&gt;
+    &lt;plugin&gt;
+        &lt;groupId&gt;org.eclipse.m2e&lt;/groupId&gt;
+        &lt;artifactId&gt;lifecycle-mapping&lt;/artifactId&gt;
+        &lt;version&gt;1.0.0&lt;/version&gt;
+        &lt;configuration&gt;
+            &lt;lifecycleMappingMetadata&gt;
+                &lt;pluginExecutions&gt;
+                    &lt;pluginExecution&gt;
+                        &lt;pluginExecutionFilter&gt;
+                            &lt;groupId&gt;com.jayway.maven.plugins.android.generation2&lt;/groupId&gt;
+                            &lt;artifactId&gt;android-maven-plugin&lt;/artifactId&gt;
+                            &lt;versionRange&gt;3.8.2&lt;/versionRange&gt;
+                            &lt;goals&gt;
+                                &lt;goal&gt;manifest-update&lt;/goal&gt;
+                                &lt;goal&gt;generate-sources&lt;/goal&gt;
+                                &lt;goal&gt;proguard&lt;/goal&gt;
+                                &lt;goal&gt;consume-aar&lt;/goal&gt;
+                            &lt;/goals&gt;
+                        &lt;/pluginExecutionFilter&gt;
+                        &lt;action&gt;
+                            &lt;ignore /&gt;
+                        &lt;/action&gt;
+                    &lt;/pluginExecution&gt;
+                &lt;/pluginExecutions&gt;
+            &lt;/lifecycleMappingMetadata&gt;
+        &lt;/configuration&gt;
+    &lt;/plugin&gt;
+&lt;/plugins&gt;
+</code></pre>
+
+<p></pluginManagement>
+```</p>
+
+<p>可以参考<a href="http://wiki.eclipse.org/M2E_plugin_execution_not_covered">M2E_plugin_execution_not_covered</a></p>
+
+<h2>OutOfMemory或创建不了虚拟机</h2>
+
+<p>有时候会出现内存溢出或创建不了虚拟机的错误。考虑设置内存大小</p>
+
+<p>```xml
+<plugin></p>
+
+<pre><code>&lt;groupId&gt;com.jayway.maven.plugins.android.generation2&lt;/groupId&gt;
+&lt;artifactId&gt;android-maven-plugin&lt;/artifactId&gt;
+&lt;configuration&gt;
+    &lt;dex&gt;
+        &lt;jvmArguments&gt;
+            &lt;jvmArgument&gt;-Xms256m&lt;/jvmArgument&gt;
+            &lt;jvmArgument&gt;-Xmx512m&lt;/jvmArgument&gt;
+        &lt;/jvmArguments&gt;
+    &lt;/dex&gt;
+&lt;/configuration&gt;
+</code></pre>
+
+<p></plugin>
+```</p>
+
+<h2>出现maven打包太慢的情况</h2>
+
+<p>经过测量，在dex成classes.dex的阶段比较慢，dx工具有提供一些参数进行优化.</p>
+
+<ul>
+<li>incremental 增量打包，开发阶段可以开启，可以比较明显的缩短打包时间</li>
+<li>optimize 是否优化classes.dex，开发阶段可以关闭</li>
+</ul>
+
+
+<p>```xml</p>
+
+<pre><code>                    &lt;dex&gt;
+          &lt;incremental&gt;true&lt;/incremental&gt;
+          &lt;optimize&gt;false&lt;/optimize&gt;
+                    &lt;/dex&gt;
+</code></pre>
+
+<p>```</p>
+
+<h2>libpng error: Not a PNG file</h2>
+
+<p>如果直接把jpg格式换个名字，变成png，编译会报下面的错误，导致后面编译的.9图片也出问题(混淆问题的原因)</p>
+
+<p><code>bash
+[INFO] libpng error: Not a PNG file
+[INFO] ERROR: Failure processing PNG image E:\projects\G3ESOP\ESOP-Hubei2\res\drawable-xhdpi\more_about_pic1.png
+</code></p>
+
+<h2>'build.plugins.plugin.version' is missing</h2>
+
+<p><code>bash
+[WARN] 'build.plugins.plugin.version' is missing fororg.apache.maven.plugins:maven.compiler.plugin
+It is highly recommended to fix these problems because they threaten the stability of your build.
+For this reason, future Maven versions might no longer support building such malformed projects.
+</code></p>
+
+<p>很简单，给maven.compiler.plugin这个插件添加version属性。
+其实所有引用的插件都应该指定版本，不然都会有类似的提示。</p>
+
+<h2>关于编码</h2>
+
+<p>对于源码的编码格式和编译版本，应该进行指定:</p>
+
+<p>```xml
+<plugin></p>
+
+<pre><code>&lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+&lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+&lt;version&gt;3.1&lt;/version&gt;
+&lt;configuration&gt;
+    &lt;source&gt;1.6&lt;/source&gt;
+    &lt;target&gt;1.6&lt;/target&gt;
+    &lt;encoding&gt;UTF8&lt;/encoding&gt;
+&lt;/configuration&gt;
+</code></pre>
+
+<p></plugin>
+```</p>
+
+<p>对于资源处理的话，可能出现下面的提示:</p>
+
+<p><code>bash
+[WARNING] Using platform encoding (GBK actually) to copy filtered resources, i.e. build is platform dependent!
+</code></p>
+
+<p>这个应该设置成UTF-8，如下所示:</p>
+
+<p>```xml</p>
+
+<pre><code>        &lt;plugin&gt;
+            &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+            &lt;artifactId&gt;maven-resources-plugin&lt;/artifactId&gt;
+            &lt;version&gt;2.6&lt;/version&gt;
+            &lt;configuration&gt;
+                &lt;encoding&gt;UTF-8&lt;/encoding&gt;
+            &lt;/configuration&gt;
+        &lt;/plugin&gt;
+</code></pre>
+
+<p>```</p>
+
+<h2>maven-jarsigner-plugin对带特殊字符的口令的处理</h2>
+
+<p>这个弄了好久，最后发现得把密码用引用引起来。切记切记。</p>
+
+<p>后来，发现在linux这样又不能支持。所以只能用profile解决。</p>
+
+<h2>部分代码在jdk7中编译后dex出错</h2>
+
+<p>参考<a href="20140225_android-jdk7-bug.html">jdk7编译的bug记录</a>,暂时只用jdk6编译</p>
+
+<h2>jdk6不支持android-19的proguard</h2>
+
+<p>原因是android-19的API实现了一些jdk7的特性，在proguard会找不到这些api。
+由于和上一个问题有些冲突，暂时不考虑proguard。后续考虑考虑上jdk7。</p>
+
+<h2>如何添加.so支持</h2>
+
+<p>例如下面的百度地图SDK，需要加入一个so文件，在百度SDK里边是这样调用的：</p>
+
+<p><code>java
+System.loadLibrary("BaiduMapSDK_v2_3_1");
+</code></p>
+
+<p>如果要用maven集成的话，可以用下面的配置(已经部署到代理仓库):</p>
+
+<p>```xml
+<dependency></p>
+
+<pre><code>&lt;groupId&gt;com.baidu&lt;/groupId&gt;
+&lt;artifactId&gt;libBaiduMapSDK_v2_3_1&lt;/artifactId&gt;
+&lt;version&gt;2.3.1&lt;/version&gt;
+&lt;classifier&gt;armeabi&lt;/classifier&gt;
+&lt;scope&gt;runtime&lt;/scope&gt;
+&lt;type&gt;so&lt;/type&gt;
+</code></pre>
+
+<p></dependency>
+```</p>
+
+<h2>如何转换成eclipse项目</h2>
+
+<p>项目目录中只有pom.xml，如果要导入eclipse的话，可以考虑使用下面的命令生成.project和.classpath文件</p>
+
+<p><code>bash
+mvn eclipse:eclipse
+</code></p>
+
+<p>生成之后可能会有M2_REPO变量找不到的问题，可以在eclipse中通过window>Preferences>Maven>Installations>Add进行添加maven安装位置。</p>
+
+<p>否则的话，可以按以下方法添加M2_REPO: Window > Preferences > Java > Build Path > Classpath Variables
+新增一个M2_REPO变量指向你maven本地仓库。</p>
+
+<h2>常用命令</h2>
+
+<p>mvn clean package<br/>
+打包，但不部署。</p>
+
+<p>mvn clean install<br/>
+打包，部署并运行。</p>
+
+<p>mvn clean package android:redeploy android:run<br/>
+这个命令通常用于手机上已经安装了要部署的应用，但签名不同，所以我们打包的同时使用redeploy命令将现有应用删除并重新部署，最后使用run命令运行应用。</p>
+
+<p>mvn android:redeploy android:run<br/>
+不打包，将已生成的包重新部署并运行。</p>
+
+<p>mvn android:deploy android:run<br/>
+部署并运行已生成的包，与redeploy不同的是，deploy不会删除已有部署和应用数据</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[对UC文章《实时监控Android设备网络包》的补充]]></title>

@@ -9,9 +9,10 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="备注: 示例中的代码并不是真实代码的完全拷贝 究竟是哪个日期 前阵子代码评审的时候发现一段代码，逻辑是用于查找一个最大日期，代码逻辑大约是这样的：
-如果没有相关的日期记录，则返回当前日期，否则，当日期值为空时，是业务限制异常，并且配置的
-相关日期小于当前日期的话，还是应该选择当前日期。代码如下： &hellip;">
+  <meta name="description" content="备注: 示例中的代码并不是真实代码的完全拷贝 预料之外 预料之外的情况，防御性编程经常会让整洁划一的代码变得混乱。
+我们经常会担心各种各样的空值，例如null不行，换成空字符串，集合为空或取不到值，怎么办？
+字符串都是空格，要不要trim一下？
+往一个很深的属性中取值，判空的逻辑太多了？ if( &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +67,575 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120807_improve-bitter-code-8.html">Improve Bitter Code: 判空的处理</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-08-07T00:00:00+08:00" pubdate data-updated="true">Aug 7<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120807_improve-bitter-code-8.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>预料之外</h3>
+
+<p>预料之外的情况，防御性编程经常会让整洁划一的代码变得混乱。
+我们经常会担心各种各样的空值，例如null不行，换成空字符串，集合为空或取不到值，怎么办？
+字符串都是空格，要不要trim一下？
+往一个很深的属性中取值，判空的逻辑太多了？</p>
+
+<div class="highlight"><pre><code class="java"><span class="k">if</span><span class="o">(</span><span class="n">Objects</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">subs</span><span class="o">)){</span>
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">Attr</span><span class="o">&gt;</span> <span class="n">subsAttrs</span> <span class="o">=</span> <span class="n">subs</span><span class="o">.</span><span class="na">getAttrs</span><span class="o">();</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">Objects</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">subsAttrs</span><span class="o">)){</span>
+        <span class="k">for</span><span class="o">(</span><span class="n">Attr</span> <span class="n">attr</span> <span class="o">:</span> <span class="n">subsAttrs</span><span class="o">){</span>
+            <span class="k">if</span><span class="o">(</span><span class="n">attr</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">){</span>
+                <span class="c1">//do something with attr</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>诸如此类的情况每天都会出现，的确是很麻烦的。
+更多材料可以查看一下<a href="http://code.google.com/p/guava-libraries/wiki/UsingAndAvoidingNullExplained">Google Guava关于避免null的描述</a></p>
+
+<h3>用assert减少麻烦</h3>
+
+<p>有一种叫assert的技巧，用来保证参数必须满足一定的先决条件，不满足则无法继续。
+这作为和客户端代码之间的协议，即使有异常情况，也应该在客户端先处理好。
+当然，assert通常用来防御不正常的调用。以spring这种ioc框架为例，通过get,set无法保证某些必填的值都设对了，
+所以在调用业务接口的时候再assert一把。看下面的代码。</p>
+
+<h5>方式1</h5>
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Map</span> <span class="nf">queryWokrfResult</span><span class="o">(</span><span class="n">String</span> <span class="n">recnum</span><span class="o">){</span>
+    <span class="n">Assert</span><span class="o">.</span><span class="na">isNotNull</span><span class="o">(</span><span class="n">recnum</span><span class="o">,</span>  <span class="s">&quot;业务流水号不能为空!&quot;</span><span class="o">);</span>
+    <span class="c1">// query with recnum</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<h5>方式2</h5>
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Map</span> <span class="nf">queryWokrfResult</span><span class="o">(</span><span class="n">String</span> <span class="n">recnum</span><span class="o">){</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(</span><span class="n">recnum</span><span class="o">)){</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">ReceptionException</span><span class="o">(</span><span class="s">&quot;业务流水号不能为空!&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="c1">// query with recnum</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>我是这么看待的，方式1表示你可以传空，但我会做检测，不会让你得逞。相当于防御性编程。
+方式2，你就不应该传空，你的参数不符合接口规范。
+虽然assert的实现或许就是判断的简单封装，但这里这么不能简单理解。
+<strong>assert与其说是编程技巧，不如说是编程模式。</strong></p>
+
+<p>对于java来说，本身是支持assert的，但这个特性一般没人使用。大多数人选择用异常来封装，例如<a href="http://static.springsource.org/spring/docs/1.2.x/api/org/springframework/util/Assert.html">spring assert</a>,<a href="http://commons.apache.org/lang/api/org/apache/commons/lang3/Validate.html">commons-lang validate</a>等都提供了自己的一套assert api。需要注意的时候，assert里边的条件应该都是非常快的，不要把业务逻辑混淆进去。</p>
+
+<h3>封装,封装,由底层处理</h3>
+
+<p>实际上，提供一些工具类(如常用的判空操作和带默认值操作)可以减轻痛苦，
+还可以根据具体应用在底层框架上处理，在提高容错性的同时，让代码更优雅。</p>
+
+<p>在项目的老代码中，我们会看到这样的判空处理。</p>
+
+<div class="highlight"><pre><code class="java"><span class="c1">// example 1</span>
+<span class="n">MapVo</span> <span class="n">vo</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MapVo</span><span class="o">();</span>
+<span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">name</span><span class="o">)){</span>
+    <span class="n">vo</span><span class="o">.</span><span class="na">setAttribute</span><span class="o">(</span><span class="s">&quot;name&quot;</span><span class="o">,</span> <span class="n">name</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">subsid</span><span class="o">)){</span>
+    <span class="n">vo</span><span class="o">.</span><span class="na">setAttribute</span><span class="o">(</span><span class="s">&quot;subsid&quot;</span><span class="o">,</span> <span class="n">subsid</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="c1">// ... other conditions</span>
+
+<span class="n">DBUtils</span><span class="o">.</span><span class="na">queryByVo</span><span class="o">(</span><span class="s">&quot;queryXXX&quot;</span><span class="o">,</span> <span class="n">vo</span><span class="o">);</span>
+</code></pre></div>
+
+
+<p>为什么这么写，是因为框架的sql生成配置只提供了null的配置方式，而不支持常见的空字符串，无内容的字符串等常见模式。
+为此，通过增加特性，像ibatis那样支持isEmpty模式的配置，就可以省略大量显式判断。
+修改后的代码如下：</p>
+
+<div class="highlight"><pre><code class="java"><span class="c1">// example 2</span>
+<span class="n">MapVo</span> <span class="n">vo</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MapVo</span><span class="o">();</span>
+<span class="n">vo</span><span class="o">.</span><span class="na">setAttribute</span><span class="o">(</span><span class="s">&quot;name&quot;</span><span class="o">,</span> <span class="n">name</span><span class="o">);</span>
+<span class="n">vo</span><span class="o">.</span><span class="na">setAttribute</span><span class="o">(</span><span class="s">&quot;subsid&quot;</span><span class="o">,</span> <span class="n">subsid</span><span class="o">);</span>
+<span class="c1">// ... other conditions</span>
+
+<span class="n">DBUtils</span><span class="o">.</span><span class="na">queryByVo</span><span class="o">(</span><span class="s">&quot;queryXXX&quot;</span><span class="o">,</span> <span class="n">vo</span><span class="o">);</span>
+</code></pre></div>
+
+
+<p>再看，例如老页面jsp里边这样的逻辑也很多(嵌入java代码)</p>
+
+<div class="highlight"><pre><code class="java"><span class="o">&lt;%</span> <span class="n">Subscriber</span> <span class="n">subs</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="na">getAttribute</span><span class="o">(</span><span class="s">&quot;subscriber&quot;</span><span class="o">);</span> <span class="o">%&gt;</span>
+<span class="o">&lt;%</span> <span class="k">if</span><span class="o">(</span><span class="n">subs</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+     <span class="n">out</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="s">&quot;&lt;span&gt;&quot;</span> <span class="o">+</span> <span class="n">subs</span><span class="o">.</span><span class="na">getServnumber</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot;&lt;/span&gt;&quot;</span><span class="o">);</span>
+<span class="o">&lt;%</span> <span class="o">}</span> <span class="o">%&gt;</span>
+</code></pre></div>
+
+
+<p>对于这种代码有很好的方式，如el表达式，又或者velocity等模板解决方案，都具有很好的容错性。</p>
+
+<p>再来看看其他语言框架的解决模式，如javascript框架jquery，对错误保护就很好，对不存在的东西，提供了默认行为: 视而不见。
+通过基础框架提供的保障，避免一些琐碎的工作，代码可以更关注于逻辑处理。</p>
+
+<h3>空对象模式</h3>
+
+<p><a href="http://www.cs.oberlin.edu/~jwalker/nullObjPattern/">空对象模式</a>就是用一个特殊的对象代替空对象，这个对象和正常对象有着同样的接口，但调用的时候会表现出异常处理逻辑。<a href="http://en.wikipedia.org/wiki/Null_Object_pattern">wiki上有关于这个模式的各种编程语言的描述</a>。
+通过这种模式，把异常处理逻辑封装起来，对于客户端代码来说，调用方式和正常情况是一样的。</p>
+
+<p>例如，对于数据查询接口返回空的列表而不是null，使用一些空集合对象。</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">emptyList</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">emptyMap</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">emptySet</span><span class="o">()</span>
+</code></pre></div>
+
+
+<p>对于返回列表的接口，使用空列表对象，很多判空的逻辑就没有必要存在了。
+又例如，返回不可修改或线程安全的特殊列表，也可以看成是这种模式的变化</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">Arrays</span><span class="err">#</span><span class="n">asList</span><span class="o">()</span>
+
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">unmodifiableList</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">unmodifiableMap</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">unmodifiableSet</span><span class="o">()</span>
+
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">synchronizedList</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">synchronizedMap</span><span class="o">()</span>
+<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">synchronizedSet</span><span class="o">()</span>
+</code></pre></div>
+
+
+<h3>总结</h3>
+
+<p><strong>对接口进行约定，约束参数和返回值，可以简化判空的处理。</strong></p>
+
+<p><strong>在框架层面进行统一封装，可以专注于业务逻辑。</strong></p>
+
+<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
+
+
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li>2012-08-07 improve bitter code: 判空的处理</li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120804_improve-bitter-code-7.html">Improve Bitter Code: 多掌握一门语言</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-08-04T00:00:00+08:00" pubdate data-updated="true">Aug 4<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120804_improve-bitter-code-7.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>语言是有区别的</h3>
+
+<p>语言是有&#8217;好坏&#8217;之分的，在不同的应用背景下，有些语言就是比其他一些语言更为合适！
+语言是有它的设计目的，有些是为了效率(c)，有些是为了快乐编程(ruby)，有些则是了并发做准备(erlang)。
+学习不同类型的语言也有助于锻炼编程思维，像c,java,ruby,javascript,erlang都教会了我许多东西。</p>
+
+<p>来到这边之后，主要工作语言是java，但并不是说其他语言没有了用武之地，我一直在寻找使用其他语言的机会。
+下面举些例子，来说明一下。由于我以前大量使用ruby语言，的确我也是特别喜欢。
+所以例子以ruby为主，但并不是说其他语言没法做到，或许有更好的做法也不一定。</p>
+
+<h5>临时生成xml文件</h5>
+
+<p>前几天维护那边需要我提供一个xml文件，它提供了一组txt数据:每半个小时的登陆及操作统计。
+我需要生成一个xml，我不熟悉excel操作(花了几分钟尝试了一下)，所以我选择使用脚本来生成。
+脚本只花了一分钟,比我预想得还要顺利。</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;a.xml&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span>
+  <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;a.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">ff</span><span class="o">|</span>
+    <span class="n">ff</span><span class="o">.</span><span class="n">readlines</span><span class="o">.</span><span class="n">each_with_index</span> <span class="k">do</span> <span class="o">|</span><span class="n">l</span><span class="p">,</span> <span class="n">i</span><span class="o">|</span>
+      <span class="n">dl</span><span class="p">,</span> <span class="n">cz</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+      <span class="n">f</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;&lt;data&gt;&lt;seq&gt;</span><span class="si">#{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">&lt;/seq&gt;&lt;czvalue&gt;</span><span class="si">#{</span><span class="n">cz</span><span class="si">}</span><span class="s2">&lt;/czvalue&gt;&lt;dlvalue&gt;</span><span class="si">#{</span><span class="n">dl</span><span class="si">}</span><span class="s2">&lt;/dlvalue&gt;&lt;/data&gt;&quot;</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+
+
+<p>对于这种一次性的文本处理，java真是太繁琐了，没有任何优势可言。</p>
+
+<h5>定位数据问题</h5>
+
+<p>曾经有次上版本之后发现一个菜单树不能使用。通过代码定位应该是菜单出现循环依赖了(菜单在表中是父子关系的)。
+同事也把生产的数据拿过来了。数据格式类似下面的，第一列是菜单id，第二列是父菜单id，还有其他的数据列。</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">ITEM1</span> <span class="n">ITEM2</span> <span class="n">OTHERS</span><span class="o">...</span>
+<span class="n">ITEM2</span> <span class="n">ITEM3</span> <span class="n">OTHERS</span><span class="o">...</span>
+<span class="n">ITEM4</span> <span class="n">ITEM2</span> <span class="n">OTHERS</span><span class="o">...</span>
+<span class="n">ITEM5</span> <span class="n">ITEM3</span> <span class="n">OTHERS</span><span class="o">...</span>
+</code></pre></div>
+
+
+<p>问题已经变成：父子是否出现循环。当时我用了几分钟写了一段脚本来找到出现循环的菜单项，最后发现是其他项目组增加的菜单有问题。</p>
+
+<h5>传数据的偷懒方法</h5>
+
+<p>以前还是老邮箱的时候，由于网络隔离，需要把测试相关的东西通过邮箱发到测试环境去。
+我每次都是这么弄的：通过网页登录邮箱，新建邮件，把已经打包加密好的文件作为附件添加，保存为草稿，退出。
+次数多了，真的很无聊，有时候一天要弄好几次。</p>
+
+<p>我知道有种测试方式叫自动化测试，所以我用watir(一个用ruby写的自动化测试框架)模拟了整个过程。后来我把这个脚本调用集成到菜单右键上，
+只需要把需要上传的文件选中，再触发一个右键菜单。打包加密，上传文件就搞定了。那时候的感觉就是，世界清净了。</p>
+
+<h5>实现codediff应用</h5>
+
+<p>有些框架工具有非常高的生产效率，ruby on rails就是其中一个。在项目中进行codediff使用的工具，主要是通过这个框架开发的。
+说真的，这么一个东西，用java实现也不是什么难事。但对我来说，1k行的ruby代码量，sql一行也没有写，维护上要省心得多。</p>
+
+<p>只要能够对项目有意义，谁会关心我是用什么来实现的呢?</p>
+
+<h5>部署应用</h5>
+
+<p>这是个cmo比较熟悉的领域。大多数情况下，我们会选择bash等shell工具。
+不过我在开发codediff工具的时候，我想在本地直接就把应用部署到开发环境上去。</p>
+
+<p>windows的bat很烂，shell等有比较多限制，所以我又选择了脚本语言。
+使用perl,ruby等脚本来做管理脚本并不少见，我这里选择一个好几年前写的脚本作为例子：</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">cmd</span> <span class="o">=</span> <span class="no">Proc</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">shell</span><span class="o">|</span>
+  <span class="n">shell</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="s2">&quot;/opt/xxx&quot;</span><span class="p">)</span>
+  <span class="nb">print</span> <span class="s2">&quot;current directory:&quot;</span><span class="p">,</span><span class="n">shell</span><span class="o">.</span><span class="n">pwd</span><span class="o">.</span><span class="n">stdout</span>
+  <span class="nb">print</span> <span class="n">shell</span><span class="o">.</span><span class="n">sh</span><span class="p">(</span><span class="s2">&quot;/opt/getupdate.sh&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">stdout</span>
+  <span class="n">shell</span><span class="o">.</span><span class="n">exit</span>
+<span class="k">end</span>
+ 
+<span class="ss">Net</span><span class="p">:</span><span class="ss">:SSH</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s1">&#39;192.168.1.32&#39;</span><span class="p">,</span> <span class="ss">:username</span> <span class="o">=&gt;</span> <span class="s1">&#39;root&#39;</span><span class="p">,</span> <span class="ss">:password</span><span class="o">=&gt;</span><span class="s1">&#39;psword&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">session</span><span class="o">|</span>
+  <span class="n">shell</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="n">shell</span><span class="o">.</span><span class="n">sync</span>
+  <span class="n">cmd</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">shell</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre></div>
+
+
+<p>上面的例子比较简单，现实的例子是本地打包，通过ftp上传，解压发布，重启服务器，每个步骤都带交互功能。
+脚本语言和普通shell相比，具有完整语言和跨平台的优势，用来做系统管理是一个不错的选择。</p>
+
+<h3>多掌握一门语言</h3>
+
+<p>整篇内容没有涉及编程技巧上的东西，但这却是我最想表达的内容。
+在这里，我用Martin Fowler中国行的时候，<a href="http://www.ituring.com.cn/article/2083">图灵社区对他的采访内容</a>来结束，
+里边有关于学习编程语言建议的内容。</p>
+
+<p><strong><em>图灵社区：您曾经建议过程序员应该每年学习一门编程语言。</em></strong></p>
+
+<p><strong><em>M</em></strong>：这实际上是Pragmatic Programmers提出的建议，是他们出版的书中的一条建议，我本人很赞同。我认为应该有意地学习一些新的语言，特别是那些和你所熟知的语言的运作方式相差甚远的语言，所以不要在相似的语言上浪费时间。如果你是一位Java程序员，那么C#对于你来说就太过熟悉了，你需要学习一些很不同的语言，比如说Lisp，或者Clojure；如果你是一位Lisp程序员，你也不需要学Clojure，因为那就是另一种Lisp而已。总之你应该尝试一些很不同的语言。</p>
+
+<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
+
+
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li>2012-08-04 improve bitter code: 多掌握一门语言</li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120731_improve-bitter-code-6.html">Improve Bitter Code: 对付魔鬼数字</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-31T00:00:00+08:00" pubdate data-updated="true">Jul 31<span>st</span>, 2012</time>
+        
+         | <a href="/blog/20120731_improve-bitter-code-6.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>道高一尺，魔高一丈</h3>
+
+<p>魔鬼数字在项目中大量出现，是代码可读性维护性变差的重要推手。
+为了控制事态恶化，项目中加入findbugs，checkstyle等静态检查工具，试图让人自觉修复魔鬼数字这类头疼的问题。</p>
+
+<p>最近在review N项目的代码时，发现有新童鞋对修复checkstyle的问题热情高涨，有些修改的确是有益的，
+但是对魔鬼数字的修改就显得不是正路了。大家先看看：</p>
+
+<div class="highlight"><pre><code class="java"><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_2</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
+<span class="kd">private</span> <span class="n">Static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_80</span> <span class="o">=</span> <span class="mi">80</span><span class="o">;</span>
+<span class="kd">private</span> <span class="n">Static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_1000</span> <span class="o">=</span> <span class="mi">1000</span><span class="o">;</span>
+<span class="kd">private</span> <span class="n">Static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_60000</span> <span class="o">=</span> <span class="mi">60000</span><span class="o">;</span>
+</code></pre></div>
+
+
+<p>这种情况以前也出现过，那个时候刚推广checkstyle，结果有人定义了NumberUtil类，里边就有ONE, TWO&#8230;等变量，
+一直延伸到好几十。这让我非常纠结，劝说了很多次，结果这个类最终还是扎下根来了。我对此深恶痛绝。</p>
+
+<p>今天再次看到这种方式，真是道高一尺魔高一丈呀。我又要发牢骚了。</p>
+
+<h3>认清工具的本质</h3>
+
+<p>这种做法完全就是为了对付checkstyle，而不是对付那对问题代码。工具本来是想提醒程序员，避免写出难以维护的代码。
+结果我们更聪明，把代码藏起来，眼不见为净。这样其实是把数字和变量名直接关联起来了，
+你能想象一个叫INT_2的变量值确是1么? 如果在不同含义的逻辑里边使用这样一个魔鬼变量，
+一旦值发生变化，就会顺带把不应该修改的地方也改动了。</p>
+
+<p>如果我们真的是为了提高自己的编码水平，提高项目的代码质量，就应该认真的对待这些魔鬼数字。
+对于魔鬼数字，应该有一个良好的命名，对于经常出现的，还应该找个合适的地方加以管理。接下来以上面的例子继续分析。</p>
+
+<h3>解决魔鬼数字</h3>
+
+<p>要解决魔鬼数字，首先是认清魔鬼数字代表的意义，给它起一个合适的名字。</p>
+
+<p>查看源代码，可以发现，做了下面的代码调整：</p>
+
+<ol>
+<li>2是某个值在列表中的位置索引，换成XXX_IDX</li>
+<li>80是http的默认端口，换成DEFAULT_HTTP_PROT</li>
+<li>1000是用来把秒换成毫秒的，可以用MILLISECONDS_PER_SECOND</li>
+<li>60000是默认超时时间来的，换成DEFAULT_TIMEOUT</li>
+</ol>
+
+
+<p>同样，经常会看到魔鬼字符串，&#8221;0&#8221;,&#8221;1&#8221;这样的值出现代码里边，也应该
+把给他们起一个好的名字，例如作为执行结果，有SUCCESS、FAILED等。</p>
+
+<h3>更进一步</h3>
+
+<p>需要考虑的还有常量定义的地方，另外考虑使用方法封装来处理魔鬼数字的逻辑。
+这样可以隐藏一些细节，把作用域限制在很小的地方。
+例如下面经常出现的魔鬼字符串，就可以考虑把整个判断逻辑封装到user类里边去，
+而不只是简单的定义出ACTIVE这样一个常量。</p>
+
+<div class="highlight"><pre><code class="java"><span class="c1">// 原有的代码</span>
+<span class="k">if</span><span class="o">(</span><span class="s">&quot;1&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">user</span><span class="o">.</span><span class="na">getStatus</span><span class="o">())){</span>
+    <span class="c1">// ...</span>
+<span class="o">}</span>
+
+<span class="c1">// 改造后,&quot;1&quot;作为user的常量使用于isActive方法</span>
+<span class="k">if</span><span class="o">(</span><span class="n">user</span><span class="o">.</span><span class="na">isActive</span><span class="o">()){</span>
+    <span class="c1">// ...</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>不过话说回来，解决魔鬼数字、字符串之类等&#8217;小枝小节&#8217;，花费的精力不小。
+但不要忽视这些细节，这样可以让自己不断提高对代码的认识，也便于其他人维护你的代码。</p>
+
+<p>对付魔鬼数字，还是不要走捷径的好！</p>
+
+<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
+
+
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li>2012-07-31 improve bitter code: 对付魔鬼数字</li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -420,502 +990,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120728_improve-bitter-code-3.html">Improve Bitter Code: 看不懂的正则表达式</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-28T00:00:00+08:00" pubdate data-updated="true">Jul 28<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120728_improve-bitter-code-3.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
-
-<h3>偶然的发现</h3>
-
-<p>今天好奇浏览了一下N项目的代码变更历史，发现有人提交了一段关于校验文件格式的代码。
-其中包括一段校验日期格式的java代码。代码是这样的：</p>
-
-<div class="highlight"><pre><code class="java"><span class="n">String</span> <span class="n">validDateStr</span> <span class="o">=</span> <span class="c1">// read from file lines</span>
-<span class="n">String</span> <span class="n">regex</span> <span class="o">=</span> <span class="s">&quot;(([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})(((0[13578]|1[02])(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)(0[1-9]|[12][0-9]|30))|(02(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))0229)&quot;</span><span class="o">;</span>
-<span class="k">if</span><span class="o">(</span><span class="n">validDateStr</span><span class="o">.</span><span class="na">matches</span><span class="o">(</span><span class="n">regex</span><span class="o">)){</span>
-    <span class="c1">// do something</span>
-<span class="o">}</span>
-</code></pre></div>
-
-
-<p>看到这个正则表达式，我立马纠结了，这个正则表达式不知是什么意思。
-虽然前几天写代码的同事来问过怎么写校验日期的正则，我当时比较忙，叫他找找有没有现成的。
-这次看到这个正则，还是被雷了一把。</p>
-
-<p>于是我问了一下，原来这个正则是校验日期格式，不过加了闰年的判断，所以变得相当复杂。
-我晚上还去搜了一下，大概是出自<a href="http://www.cnblogs.com/mgod/archive/2007/04/26/728628.html">这里</a>的吧！不同的是文中判断的是YYYY-MM-DD的格式，而同事的代码
-是判断YYYYMMDD的格式，显得更为难懂。</p>
-
-<h3>保持代码的可读性、可维护性</h3>
-
-<p>对于这种拿来的复杂代码，的确很cool，不过即使今天你看懂了，别人不一定看得懂，也难保过些日子自己也看不懂了。</p>
-
-<p>所以通常需要一些保持代码可读性、可维护性的手段：
-1. 加多几段注释,或者把来源url标注一下，就像有人喜欢标注那个需求一样。
-2. 把正则弄成常量，并把验证方法封装起来，只需调用method就可以了。
-3. 选择另外一种比较清晰的实现方式, another way, 或许有惊喜。</p>
-
-<p>应该说，这几种情况都应该考虑一下，例如对于上面的例子来说，要使用这么复杂的正则，加上一些简单的注释
-是相当有必要的，至少要说明你是想验证什么样的格式。更进一步，封装到方法里边去，例如</p>
-
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">isStrictYYYYMMDD</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">){</span>
-    <span class="k">return</span> <span class="n">datestr</span><span class="o">.</span><span class="na">matches</span><span class="o">(</span><span class="n">STRICT_YYYYMMDD_REGEX</span><span class="o">);</span>
-<span class="o">}</span>
-</code></pre></div>
-
-
-<p>不过这里有个缺点，只能校验一种日期格式，因为日期格式不像邮箱地址，它的形式多样，这样处理能得到的收益并不是很高。
-如果我们可以传递校验日期的格式就更好了。</p>
-
-<h3>换个实现方式</h3>
-
-<p>换个思路，如果不使用正则表达式会怎样，例如<a href="http://docs.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html">SimpleDateFormat</a>就提供了严格验证的格式，示例代码如下：</p>
-
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">isStrictYYYYMMDD</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">){</span>
-    <span class="n">SimpleDateFormat</span> <span class="n">format</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SimpleDateFormat</span><span class="o">(</span><span class="s">&quot;yyyyMMdd&quot;</span><span class="o">);</span>  
-    <span class="c1">//设置为严格验证模式</span>
-    <span class="n">format</span><span class="o">.</span><span class="na">setLenient</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
-    <span class="k">try</span><span class="o">{</span>
-        <span class="n">format</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="n">str</span><span class="o">);</span>
-        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
-    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ParseException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
-        <span class="c1">// ignore exeeption</span>
-    <span class="o">}</span>
-    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
-<span class="o">}</span>
-</code></pre></div>
-
-
-<p>如果没有设置为严格验证模式的话，20090230这种日期就会变成20090302。</p>
-
-<p>相对于上面正则的方式来说，代码是多了几行，但是因为格式可以变，灵活性有所提高，代码也容易理解了。
-另外一方面，由于SimpleDateFormat非线程安全，必须每次都定义一个，在多次处理的情况下显得有些多余。
-当然有个折中的方法就是由客户端代码构造format作为传输传递，这样做还有个好处就是，验证日期格式的方法完全就是通用的。</p>
-
-<p>例如，我们可以提供下面的api和调用方式:</p>
-
-<div class="highlight"><pre><code class="java"><span class="c1">//client</span>
-<span class="n">SimpleDateFormat</span> <span class="n">format</span> <span class="o">=</span> <span class="c1">// 由客户端代码构建format</span>
-<span class="kt">boolean</span> <span class="n">isDate</span> <span class="o">=</span> <span class="n">DateUtil</span><span class="o">.</span><span class="na">isDateFormat</span><span class="o">(</span><span class="n">datestr</span><span class="o">,</span> <span class="n">format</span><span class="o">);</span>
-
-<span class="c1">//DateUtil api</span>
-<span class="kt">boolean</span> <span class="nf">isDateFormat</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">,</span> <span class="n">SimpleDateFormat</span> <span class="n">format</span><span class="o">);</span>
-<span class="kt">boolean</span> <span class="nf">isDateFormat</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">,</span> <span class="n">String</span> <span class="n">formatstr</span><span class="o">);</span><span class="c1">//单次调用</span>
-<span class="kt">boolean</span> <span class="nf">isStrictDateFormat</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">,</span> <span class="n">String</span> <span class="n">formatstr</span><span class="o">);</span><span class="c1">//单次使用,用于严格处理</span>
-</code></pre></div>
-
-
-<p>在不改变接口的情况下，最初的代码可以调整成以下形式</p>
-
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">isStrictYYYYMMDD</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">){</span>
-    <span class="k">return</span> <span class="nf">isStrictDateFormat</span><span class="o">(</span><span class="n">datestr</span><span class="o">,</span> <span class="n">DateUtil</span><span class="o">.</span><span class="na">YYYYMMDD</span><span class="o">);</span>
-<span class="o">}</span>
-</code></pre></div>
-
-
-<h3>总结</h3>
-
-<ol>
-<li>隐藏某些复杂的细节是必要的，提供的接口要simple, clear。</li>
-<li>封装有助于焦距局部代码，即使要更换实现方式，也更加easy。</li>
-<li>可以提供通用可定制接口和常用特殊化接口,方便client调用。</li>
-<li><a href="http://commons.apache.org/lang/api-2.5/org/apache/commons/lang/time/DateUtils.html">commons-lang</a>和<a href="http://joda-time.sourceforge.net/">joda-time</a>开源库提供了非常成熟的解决方案。</li>
-</ol>
-
-
-<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
-
-
-<ul>
- 
-  
-  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
-  
- 
-  
-  <li>2012-07-28 improve bitter code: 看不懂的正则表达式</li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
-  
- 
-  
-  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
-  
- 
-  
-  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
-  
- 
-  
-  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
-  
-
-</ul>
-
-
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120724_improve-bitter-code-2.html">Improve Bitter Code: 更友好的链式写法</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-24T00:00:00+08:00" pubdate data-updated="true">Jul 24<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120724_improve-bitter-code-2.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
-
-<h3>无意出现的链式代码</h3>
-
-<p>还是前几天的事情，群里边有同事提到一个账单相关的需求，其中涉及到组装打印用数据。
-有个新同事在Service里边写了一段这样的代码：</p>
-
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">XXService</span> <span class="nf">fillItem</span><span class="o">(</span><span class="n">String</span> <span class="n">content</span><span class="o">,</span> <span class="n">String</span> <span class="n">tag</span><span class="o">)</span> <span class="o">{</span>
-    <span class="c1">// some codes</span>
-    <span class="k">this</span><span class="o">.</span><span class="na">printitems</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">Item</span><span class="o">(</span><span class="n">tag</span><span class="o">,</span> <span class="n">content</span><span class="o">));</span>
-    <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
-<span class="o">}</span>
-</code></pre></div>
-
-
-<p>有同学不是特别理解为什么要这么写，甚至发出return this是什么对象的疑问。</p>
-
-<p>这段代码原来是这么写的:</p>
-
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kt">void</span> <span class="nf">fillItem</span><span class="o">(</span><span class="n">String</span> <span class="n">content</span><span class="o">,</span> <span class="n">String</span> <span class="n">tag</span><span class="o">,</span> <span class="n">List</span> <span class="n">printitems</span><span class="o">)</span> <span class="o">{</span>
-    <span class="c1">// some codes</span>
-    <span class="n">printitems</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">Item</span><span class="o">(</span><span class="n">tag</span><span class="o">,</span> <span class="n">content</span><span class="o">));</span>
-<span class="o">}</span>
-</code></pre></div>
-
-
-<p>有同学奇怪，为什么再提交一次printitems就会重新加一遍，认为第一段代码的问题出现在return this上面。
-这样要说明一下，我们使用的是struts1，所以如果Service实例作为action的实例变量，那也是只有一个对象来的。
-所以每次刷新一次重复加一遍就没什么奇怪的了。</p>
-
-<p>回头来看那段新写的代码，出发点是好的。毕竟采用这种方式可以使用链式写法（如下所示），代码有时候会变得很sexy。</p>
-
-<div class="highlight"><pre><code class="java"><span class="n">XXService</span><span class="o">.</span><span class="na">fillItem</span><span class="o">(</span><span class="s">&quot;a&quot;</span><span class="o">,</span> <span class="s">&quot;A&quot;</span><span class="o">).</span><span class="na">fillItem</span><span class="o">(</span><span class="s">&quot;b&quot;</span><span class="o">,</span> <span class="s">&quot;B&quot;</span><span class="o">);</span>
-</code></pre></div>
-
-
-<p>这段代码的问题不在于是否采用链式写法，而是对这种单例，变量生命周期了解不足造成的。
-链式写法在代码中很少会使用到，但在设计api，也是可以考虑的。设计的好，可以有效提高代码的编写效率和api的友好型。
-例如，我就对java collection api里边的add方法深恶痛绝,就是不能连续add，要add多少个就要写多少行，还真的挺烦的。</p>
-
-<h3>采用链式写法的代码</h3>
-
-<p>在很多有名的开源框架中，链式写法也不是很少见，下面举几个例子:</p>
-
-<p>很常见的有jquery</p>
-
-<div class="highlight"><pre><code class="javascript"><span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#name&quot;</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;readonly&quot;</span><span class="p">,</span> <span class="kc">true</span><span class="p">).</span><span class="nx">val</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">);</span>
-</code></pre></div>
-
-
-<p>还有mock框架mockito</p>
-
-<div class="highlight"><pre><code class="java"><span class="n">when</span><span class="o">(</span><span class="n">mockedList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">)).</span><span class="na">thenReturn</span><span class="o">(</span><span class="s">&quot;first&quot;</span><span class="o">);</span>
-<span class="n">when</span><span class="o">(</span><span class="n">mockedList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">1</span><span class="o">)).</span><span class="na">thenThrow</span><span class="o">(</span><span class="k">new</span> <span class="n">RuntimeException</span><span class="o">());</span>
-</code></pre></div>
-
-
-<p>再看看rails的写法</p>
-
-<div class="highlight"><pre><code class="ruby"><span class="no">Post</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s1">&#39;id &gt; 10&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">order</span><span class="p">(</span><span class="s1">&#39;id desc&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">only</span><span class="p">(</span><span class="ss">:order</span><span class="p">,</span> <span class="ss">:where</span><span class="p">)</span>
-<span class="no">Client</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">offset</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
-</code></pre></div>
-
-
-<h3>我的看法</h3>
-
-<p>那么，如果你想采用链式写法，有什么地方需要注意呢?
-1. 先写一下客户端代码，看调用方式合理么，符合sexy api么?
-2. 采用链式操作的interface相关性比较强，经常一起出现。
-3. 参数parameter一般较少，因为参数多了，代码很容易变得模糊不清。
-4. 链式操作要么容错强(像jquery)，要么就得直接抛出异常，对返回值不关心。</p>
-
-<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
-
-
-<ul>
- 
-  
-  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
-  
- 
-  
-  <li>2012-07-24 improve bitter code: 更友好的链式写法</li>
-  
- 
-  
-  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
-  
- 
-  
-  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
-  
- 
-  
-  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
-  
- 
-  
-  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
-  
-
-</ul>
-
-
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120724_improve-bitter-code-1.html">Improve Bitter Code: 迷惑的boolean参数</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-24T00:00:00+08:00" pubdate data-updated="true">Jul 24<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120724_improve-bitter-code-1.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
-
-<h3>群里的讨论</h3>
-
-<p>前两天在开发群里边，有同事讨论一个api: 增加一个取特定序列值的方法。并给出了以下的原型代码：</p>
-
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Object</span> <span class="nf">getSeqValue</span><span class="o">(</span><span class="n">String</span> <span class="n">seqname</span><span class="o">,</span> <span class="n">String</span> <span class="n">maindb</span><span class="o">){</span>
-    <span class="k">if</span><span class="o">(</span><span class="s">&quot;1&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">maindb</span><span class="o">)){</span>
-        <span class="n">DbRunContext</span><span class="o">.</span><span class="na">setRegion</span><span class="o">(</span><span class="n">DbRunContext</span><span class="o">.</span><span class="na">MAINDB</span><span class="o">);</span>
-    <span class="o">}</span>
-    <span class="c1">// more codes</span>
-    <span class="k">return</span> <span class="n">XXDao</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
-<span class="o">}</span>
-</code></pre></div>
-
-
-<p>其中maindb是因为项目支持多数据库的缘故，传入参数maindb来判断是否走主库还是地市库。
-我不知道这个&#8221;1&#8221;是怎么来的，我随口冒出一句：能不能不传递maindb,谁知道要传递什么呢?</p>
-
-<p>于是很快冒出&#8221;改进&#8221;方案，换成一个布尔值，代码变成这样:</p>
-
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Object</span> <span class="nf">getSeqValue</span><span class="o">(</span><span class="n">String</span> <span class="n">seqname</span><span class="o">,</span> <span class="kt">boolean</span> <span class="n">isMaindb</span><span class="o">){</span>
-    <span class="k">if</span><span class="o">(</span><span class="n">isMaindb</span><span class="o">){</span>
-        <span class="n">DbRunContext</span><span class="o">.</span><span class="na">setRegion</span><span class="o">(</span><span class="n">DbRunContext</span><span class="o">.</span><span class="na">MAINDB</span><span class="o">);</span>
-    <span class="o">}</span>
-    <span class="c1">// more codes</span>
-    <span class="k">return</span> <span class="n">XXDao</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
-<span class="o">}</span>
-</code></pre></div>
-
-
-<p>很显然这不是一个好的解决办法，我从使用者的角度来说，举了下面的例子:</p>
-
-<div class="highlight"><pre><code class="java"><span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
-<span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
-</code></pre></div>
-
-
-<p>单单看上面的调用方式，谁能很清楚的说明分别是什么意思?</p>
-
-<p>很明显，这相当的困难。所以我建议对方法进行重命名，例如</p>
-
-<div class="highlight"><pre><code class="java"><span class="n">getSeqValueFromMaindb</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
-<span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
-</code></pre></div>
-
-
-<p>当然，可以考虑把原来的方法换成私有的，这样避免代码重复而不会对调用者造成困惑。</p>
-
-<h3>迷惑人的参数随处可见</h3>
-
-<p>在我们的代码里边，类似这样的参数困惑随处可见，除了这种布尔值，还有&#8221;1&#8221;和&#8221;0&#8221;
-这种魔法数字，字符串，因为调用太频繁了，很多人不愿意给他取个好听的名字。</p>
-
-<p>例如区分调用后台逻辑是否起事务，用得太多了，加上老代码就这么用，所以很多同事
-没有意识加个IS_TRANSACTION这类的静态变量。看，代码就变成下面的样子：</p>
-
-<div class="highlight"><pre><code class="java"><span class="n">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">cmd</span><span class="o">,</span> <span class="n">subcmd</span><span class="o">,</span> <span class="s">&quot;1&quot;</span><span class="o">);</span>
-<span class="n">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">cmd</span><span class="o">,</span> <span class="n">subcmd</span><span class="o">,</span> <span class="s">&quot;0&quot;</span><span class="o">);</span>
-</code></pre></div>
-
-
-<p>参数这东西，对看代码的人来说没什么特别的帮助，参数越多越迷惑。
-当两个方法调用就差一个布尔值不一样的时候，那是相当痛苦的。
-所以最好还是从方法名上进行区分，保持代码的可读性。对于接口方法，公用方法，更是应该如此。</p>
-
-<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
-
-
-<ul>
- 
-  
-  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
-  
- 
-  
-  <li>2012-07-24 improve bitter code: 迷惑的boolean参数</li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
-  
- 
-  
-  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
-  
- 
-  
-  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
-  
- 
-  
-  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
-  
-
-</ul>
-
-
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/18/">&larr; Older</a>
@@ -934,6 +1008,18 @@
     
       <li class="post">
         <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140329_was-datasource.html">websphere+spring+jndi数据源配置</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140225_android-jdk7-bug.html">jdk7编译的bug记录</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140219_android-maven-problems.html">android+maven问题记录</a>
       </li>
     
       <li class="post">
@@ -958,18 +1044,6 @@
     
       <li class="post">
         <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131106_jsch-session-connect.html">小心jsch的sftp连接泄露</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131103_word-contact.html">单词接龙问题</a>
       </li>
     
   </ul>
