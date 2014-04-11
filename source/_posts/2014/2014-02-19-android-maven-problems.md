@@ -182,7 +182,7 @@ For this reason, future Maven versions might no longer support building such mal
 
 ## 部分代码在jdk7中编译后dex出错
 
-参考[jdk7编译的bug记录](20140225_android-jdk7-bug.html),暂时只用jdk6编译
+参考[jdk7编译的bug记录](/blog/20140225_android-jdk7-bug.html),暂时只用jdk6编译
 
 ## jdk6不支持android-19的proguard
 
