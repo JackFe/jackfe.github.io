@@ -112,10 +112,10 @@ Plugin execution not covered by lifecycle configuration:
 * optimize 是否优化classes.dex，开发阶段可以关闭
  
 ```xml
-						<dex>
-              <incremental>true</incremental>
-              <optimize>false</optimize>
-						</dex>
+<dex>
+  <incremental>true</incremental>
+  <optimize>false</optimize>
+</dex>
 ```
 
 ## libpng error: Not a PNG file
