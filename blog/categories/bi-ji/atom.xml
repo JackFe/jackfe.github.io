@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 笔记 | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/bi-ji/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2014-04-11T23:00:38+08:00</updated>
+  <updated>2014-04-19T09:40:43+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -18,7 +18,21 @@
     <link href="http://mccxj.github.com/blog/20140410_books-to-be-read.html"/>
     <updated>2014-04-10T00:00:00+08:00</updated>
     <id>http://mccxj.github.com/blog/books-to-be-read</id>
-    <content type="html"><![CDATA[<h3>Go语言编程</h3>
+    <content type="html"><![CDATA[<h3>CSS实战手册</h3>
+
+<ul>
+<li>作者David Sawyer McFarland</li>
+<li>阅读于2014-04-18,大约7天</li>
+<li>适合想系统学习点CSS的童鞋，书籍出版了有些年头，不过的确经典，强力推荐</li>
+</ul>
+
+
+<p>最近在弄个网站，苦恼bootstrap水太深，想调整难度大，所以看看书找找感觉。
+这个The Missing Manual系列还是比较出名的，特别是这本CSS实战手册，难度也不是大，但讲解得很系统化。
+其实，这本书还出了新版，专注CSS3了。可惜的是，现在只有英文版，不是很适合我这种CSS初哥，不过下一阶段打算看看。
+那么多概念，还是浮云呀，终究还是看基础扎不扎实。</p>
+
+<h3>Go语言编程</h3>
 
 <ul>
 <li>作者许式伟、吕桂华(七牛云存储团队)</li>
