@@ -4,7 +4,7 @@
   <title><![CDATA[小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2014-04-19T09:45:55+08:00</updated>
+  <updated>2014-04-24T22:14:50+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -18,7 +18,18 @@
     <link href="http://mccxj.github.com/blog/20140410_books-to-be-read.html"/>
     <updated>2014-04-10T00:00:00+08:00</updated>
     <id>http://mccxj.github.com/blog/books-to-be-read</id>
-    <content type="html"><![CDATA[<h3>CSS实战手册</h3>
+    <content type="html"><![CDATA[<h3>ruby元编程</h3>
+
+<ul>
+<li>作者Paolo Perrotta</li>
+<li>阅读于2014-04-22,大约5天</li>
+<li>适合有一定ryby/rails开发经验的同学,对认识ruby魔法很有帮助</li>
+</ul>
+
+
+<p>最近看这本书，主要是跟别人谈起这本书，一时兴起又阅读一下，主要是复习复习。毕竟自己搞ruby/rails有好几个年头了，虽然现在主要以java为主，但是ruby还是我工作以外的首选。说回这本书，是系统介绍ruby魔法的魔法书，如果想了解一下那些神奇的库是怎么实现的，又或者想用ruby构建自己的DSL，这本书可以给你足够的知识点。放马去吧！</p>
+
+<h3>CSS实战手册</h3>
 
 <ul>
 <li>作者David Sawyer McFarland</li>
