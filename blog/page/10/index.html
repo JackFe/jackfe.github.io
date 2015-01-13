@@ -9,8 +9,9 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="这是前两天在家里用手机敲的文字记录，小小的总结，希望对写作信心不足的童鞋有所帮助。 写博客，不需要太在意写作技巧，文学性的问题，只需要把事情描述出来就可以了。
-假如有个场景是水龙头漏水，写下来的是什么偷税漏税，积少成多的东西，那是文学。不需要想得那么远，能赶紧把事情描述好，赶紧修理好就行了。 &hellip;">
+  <meta name="description" content="github page不支持.htaccess功能(参考Blogging on Jekyll: URL Redirects)，
+所以发生URL调整的时候，无法让原有路径自动跳转到新路径。
+Alias generator这个插件提供了一个解决方案，就是生成多一个页面，采用auto &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +66,473 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130127_jekyll-alias-generator.html">jekyll插件:支持URL跳转</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-27T00:00:00+08:00" pubdate data-updated="true">Jan 27<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130127_jekyll-alias-generator.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/assets/images/2013/jekyll-alias-generator.png" alt="jekyll插件:支持URL跳转" /></p>
+
+<p>github page不支持.htaccess功能(参考<a href="http://rawsyntax.com/blog/blogging-on-jekyll-url-redirects/">Blogging on Jekyll: URL Redirects</a>)，
+所以发生URL调整的时候，无法让原有路径自动跳转到新路径。
+<a href="http://github.com/tsmango/jekyll_alias_generator">Alias generator</a>这个插件提供了一个解决方案，就是生成多一个页面，采用auto refresh的方式跳转到新路径。</p>
+
+<p>这次我也调整了一些博客的路径，我也采用了这个方式。不过我只对当前已有的页面生成一次，以后的就不用这个插件了。
+另外，我不想去修改每个页面的alias标签，所以我调整了代码，只对我的url规则进行处理。下面是我使用的版本。</p>
+
+<div><script src='https://gist.github.com/4645990.js?file=alias_generator.rb'></script>
+<noscript><pre><code># Alias Generator for Posts.
+#
+# Example:
+#   alias /20121010_hello.html to /blog/20121010_hello.html
+#   alias /hello.html to /pages/20121010_hello.html
+#
+# Place the full path of the alias (place to redirect from) inside the
+# destination post's YAML Front Matter. One or more aliases may be given.
+#
+# Forked from Thomas Mango 's jekyll_alias_generator
+# At http://github.com/tsmango/jekyll_alias_generator
+# PLugin License: MIT
+
+module Jekyll
+
+  class AliasGenerator &lt; Generator
+
+    def generate(site)
+      @site = site
+
+      process_posts
+      process_pages
+    end
+
+    def process_posts
+      # alias /20121010_hello.html to /blog/20121010_hello.html
+      @site.posts.each do |post|
+        generate_aliases(post.url, &quot;\/#{$1}&quot;) if /^\/blog\/(.+)$/ =~ post.url
+      end
+    end
+
+    def process_pages
+      # alias /hello.html to /pages/20121010_hello.html
+      @site.pages.each do |page|
+        dest = page.destination('')
+        generate_aliases(dest, &quot;\/#{$1}&quot;)  if /^\/pages\/(.+)$/ =~ dest
+      end
+    end
+
+    def generate_aliases(destination_path, aliases)
+      alias_paths ||= Array.new
+      alias_paths &lt;&lt; aliases
+      alias_paths.compact!
+
+      alias_paths.flatten.each do |alias_path|
+        alias_path = alias_path.to_s
+
+        alias_dir  = File.extname(alias_path).empty? ? alias_path : File.dirname(alias_path)
+        alias_file = File.extname(alias_path).empty? ? &quot;index.html&quot; : File.basename(alias_path)
+        fs_path_to_dir   = File.join(@site.dest, alias_dir)
+        alias_index_path = File.join(alias_dir, alias_file)
+
+        FileUtils.mkdir_p(fs_path_to_dir)
+
+        File.open(File.join(fs_path_to_dir, alias_file), 'w') do |file|
+          file.write(alias_template(destination_path))
+        end
+
+        (alias_index_path.split('/').size + 1).times do |sections|
+          @site.static_files &lt;&lt; Jekyll::AliasFile.new(@site, @site.dest, alias_index_path.split('/')[0, sections].join('/'), nil)
+        end
+      end
+    end
+
+    def alias_template(destination_path)
+      &lt;&lt;-EOF
+      &lt;!DOCTYPE html&gt;
+      &lt;html&gt;
+      &lt;head&gt;
+      &lt;link rel=&quot;canonical&quot; href=&quot;#{destination_path}&quot;/&gt;
+      &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;
+      &lt;meta http-equiv=&quot;refresh&quot; content=&quot;0;url=#{destination_path}&quot; /&gt;
+      &lt;/head&gt;
+      &lt;/html&gt;
+      EOF
+    end
+  end
+
+  class AliasFile &lt; StaticFile
+    require 'set'
+
+    def destination(dest)
+      File.join(dest, @dir)
+    end
+
+    def modified?
+      return false
+    end
+
+    def write(dest)
+      return true
+    end
+  end
+end</code></pre></noscript></div>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130127_gist-tag-blog.html">Jekyll插件:嵌入github Gist</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-27T00:00:00+08:00" pubdate data-updated="true">Jan 27<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130127_gist-tag-blog.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/assets/images/2013/gist-tag-blog.png" alt="jekyll插件:嵌入github gist" /></p>
+
+<p>gist是gtihub的一个代码块功能，用来粘贴一些比较长的代码还是挺有用的。
+github page可以直接嵌入gist，并且能显示高亮。
+不过我不想太依赖gist，所以<strong>修改成使用pygments高亮的方式</strong>。
+看看下面gist_tag.rb这个插件的效果:</p>
+
+<div><script src='https://gist.github.com/4648237.js?file=gist_tag.rb'></script>
+<noscript><pre><code>require 'cgi'
+require 'digest/md5'
+require 'net/https'
+require 'uri'
+
+module Jekyll
+  class GistTag &lt; Liquid::Tag
+    include Liquid::StandardFilters
+    def initialize(tag_name, text, token)
+      super
+      @text           = text
+      @options        = {:encoding =&gt; &quot;utf-8&quot;}
+      @cache_disabled = false
+      @cache_folder   = File.expand_path &quot;../_gist_cache&quot;, File.dirname(__FILE__)
+      FileUtils.mkdir_p @cache_folder
+    end
+
+    def render(context)
+      if parts = @text.match(/([\d]*) lang=(.+) (.*)/)
+        gist, @lang, file = parts[1].strip, parts[2].strip, parts[3].strip
+        script_url = script_url_for gist, file
+        code       = get_cached_gist(gist, file) || get_gist_from_web(gist, file)
+
+        context.registers[:site].pygments
+        html_output_for context, script_url, code
+      else
+        &quot;&quot;
+      end
+    end
+
+    def html_output_for(context, script_url, code)
+      if context.registers[:site].pygments
+        output = add_code_tags(Pygments.highlight(code, :lexer =&gt; @lang, :options =&gt; @options))
+      else
+        render_codehighlighter(code)
+      end
+    end
+
+    def add_code_tags(code)
+      # Add nested &lt;code&gt; tags to code blocks
+      code = code.sub(/&lt;pre&gt;/,'&lt;pre&gt;&lt;code class=&quot;#{@lang}&quot;&gt;')
+      code = code.sub(/&lt;\/pre&gt;/,&quot;&lt;/code&gt;&lt;/pre&gt;&quot;)
+    end
+
+    def render_codehighlighter(code)
+      #The div is required because RDiscount blows ass
+      &lt;&lt;-HTML
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class='#{@lang}'&gt;#{h(code).strip}&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+      HTML
+    end
+
+    def script_url_for(gist_id, filename)
+      &quot;https://gist.github.com/#{gist_id}.js?file=#{filename}&quot;
+    end
+
+    def get_gist_url_for(gist, file)
+      &quot;https://raw.github.com/gist/#{gist}/#{file}&quot;
+    end
+
+    def cache(gist, file, data)
+      cache_file = get_cache_file_for gist, file
+      File.open(cache_file, &quot;w&quot;) do |io|
+        io.write data
+      end
+    end
+
+    def get_cached_gist(gist, file)
+      return nil if @cache_disabled
+      cache_file = get_cache_file_for gist, file
+      File.read cache_file if File.exist? cache_file
+    end
+
+    def get_cache_file_for(gist, file)
+      bad_chars = /[^a-zA-Z0-9\-_.]/
+      gist      = gist.gsub bad_chars, ''
+      file      = file.gsub bad_chars, ''
+      md5       = Digest::MD5.hexdigest &quot;#{gist}-#{file}&quot;
+      File.join @cache_folder, &quot;#{gist}-#{file}-#{md5}.cache&quot;
+    end
+
+    def get_gist_from_web(gist, file)
+      gist_url          = get_gist_url_for gist, file
+      raw_uri           = URI.parse gist_url
+      https             = Net::HTTP.new raw_uri.host, raw_uri.port
+      https.use_ssl     = true
+      https.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      request           = Net::HTTP::Get.new raw_uri.request_uri
+      data              = https.request request
+      data              = data.body
+      cache gist, file, data unless @cache_disabled
+      data
+    end
+  end
+
+  class GistTagNoCache &lt; GistTag
+    def initialize(tag_name, text, token)
+      super
+      @cache_disabled = true
+    end
+  end
+end
+
+Liquid::Template.register_tag('gist', Jekyll::GistTag)
+Liquid::Template.register_tag('gistnocache', Jekyll::GistTagNoCache)</code></pre></noscript></div>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130121_async-javascript.html">Async Javascript读书笔记</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-21T00:00:00+08:00" pubdate data-updated="true">Jan 21<span>st</span>, 2013</time>
+        
+         | <a href="/blog/20130121_async-javascript.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/assets/images/2013/async-javascript.jpg" alt="Async Javascript" /></p>
+
+<p>这篇读书笔记的主要内容是在家里用ipad上输入的，感觉输入还是比较吃力呀。</p>
+
+<p>本书的副标题是Build More Responsive Apps with Less Code，
+关键词是异步、响应式，主要是对如何书写异步js代码提供一些指导意见，描述js的异步特性，回调代码的书写，还介绍了PubSub、Promises等通用模式。
+最后介绍了worker多线程模型，js异步加载等内容。书的页数可谓少得可怜，内容还算比较实在，
+提供了大量的开源库实现供读者参考，对于框架选型的话倒是可以参考一下。</p>
+
+<h2>js事件</h2>
+
+<p>主要是了解事件背后的本质。提供了象setTimeout document.onready都是事件的典型案例。
+因为js基本都是单线程模型，所以事件的触发和代码的执行有时候并不一致，而是有些时间差。即使是setTimeout(fn,0)这样的代码。
+这样的逻辑也不是立即执行的。它的执行模型大概是这样的(在ipad上手绘的)。
+<img src="/assets/images/2013/runjs.jpg" alt="js执行模型" /></p>
+
+<p>任何回调方法的执行都是需要按队列顺序来执行。如果当前代码没有执行完,就不会执行其他回调方法。
+因此理解js的异步处理模型非常重要，<strong>代码应该尽快执行完毕，避免阻塞其他代码的执行</strong>。</p>
+
+<h2>哪些是异步逻辑</h2>
+
+<p>主要是一些io操作。例如</p>
+
+<ol>
+<li>ajax调用</li>
+<li>webkit里边的console.log</li>
+<li>dom操作，浏览器可能会延迟的效果出现</li>
+<li>Node服务端里边比比皆是</li>
+</ol>
+
+
+<p>当然还有些是时间片操作。例如</p>
+
+<ol>
+<li>setTimeout或setInterval</li>
+<li>node的<a href="http://nodejs.org/docs/latest/api/process.html">process.nextTick</a></li>
+<li>html5提供的requestAnimationFrame等特性</li>
+</ol>
+
+
+<h2>异步逻辑注意</h2>
+
+<p>如果使用回调方法进行异步处理，就不要在后面的代码中按同步的逻辑来考虑。<br/>
+异步回调方法中用到的对象也应该先定义，避免由于缓存等造成奇怪的问题。<br/>
+可以使用web worker api或异步调用来生成缓存数据。<br/>
+避免超过两层的回调方法。</p>
+
+<h2>处理错误</h2>
+
+<p>使用异步调用时，stack trace可能会不全<br/>
+使用异步调用时，try-catch可能会失效<br/>
+使用err来作为回调方法的参数，或者区分success和error的回调方法<br/>
+处理uncaught异常，可以使用:</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="err">#</span> <span class="nx">Broswer</span>
+<span class="nb">window</span><span class="p">.</span><span class="nx">onerror</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+<span class="p">}</span>
+
+<span class="err">#</span> <span class="nx">Node</span> 
+<span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;uncaughtException&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+<span class="p">})</span>
+</code></pre></div>
+
+
+<h2>流程控制</h2>
+
+<p>回调方法太多，流程控制变得异常困难，很容易造成错误，应该避免超过两层的回调方法。
+比较常用的办法有PubSub、Promises等解决方案/模式。</p>
+
+<h3>PubSub</h3>
+
+<p>就是publish/subscribe,发布订阅，常见的监听器模式。通常是把回调方法组织为带名字的事件，模拟事件触发。例如</p>
+
+<ol>
+<li>Node的<a href="http://nodejs.org/api/events.html">EventEmitter</a></li>
+<li>Backbone的<a href="http://backbonejs.org/#Events">Event</a>模型</li>
+<li>jQuery的<a href="http://api.jquery.com/on/">自定义事件</a></li>
+</ol>
+
+
+<p>需要注意的是，<strong>PubSub模式的逻辑不一定是异步的</strong>。
+如果trigger是同步逻辑，应该注意避免在回调方法中再次trigger某个事件而造成死循环，
+例如jQuery就可能出现这个问题，而像<a href="http://backbonejs.org/">backbone</a>在值没有变化时不再触发change事件，也提供了slient的选项。而<a href="http://emberjs.com/">Ember</a>之类是采用setTimeout的方式
+加入队列进行处理的方式，就是采用了异步的方式。</p>
+
+<h3>Promises</h3>
+
+<p>书中主要使用了jquery做例子，显示了<a href="http://api.jquery.com/jQuery.Deferred/">deferred</a>的用法，对callback的用法有个比较。
+熟悉jquery的童鞋通过Deferred的用法就有个大体的印象了。我个人的感觉就是，Promises模型是对PubSub常用功能的抽象，
+有点规范的意思，事实上也的确有commonjs的<a href="http://wiki.commonjs.org/wiki/Promises/A">Promises/A</a>规范。</p>
+
+<p>介绍了promises和deferred的区别，deferred是promises一个子集，它不能自己控制状态变更，需要有由其他事件出触发。
+对于node来说，现在是采用回调方法的方式，要采用deferred方式，主要做些改变。例如：</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="nx">deferredCallback</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">deferred</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">deferred</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">deferred</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
+    <span class="p">};</span>
+  <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">fileReading</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">$</span><span class="p">.</span><span class="nx">Deferred</span><span class="p">();</span>
+<span class="nx">fs</span><span class="p">.</span><span class="nx">readFile</span><span class="p">(</span><span class="nx">filename</span><span class="p">,</span> <span class="s1">&#39;utf8&#39;</span><span class="p">,</span> <span class="nx">deferredCallback</span><span class="p">(</span><span class="nx">fileReading</span><span class="p">));</span>
+</code></pre></div>
+
+
+<h2>Async.js</h2>
+
+<p>介绍了async.js的用法，用来解决异步处理中的流程控制问题，例如iterator的问题。包括串行和并行的控制。
+这个库还提供了更加复杂的并发性控制。具体的用法还是看<a href="https://github.com/caolan/async">官方的介绍</a>吧。还提供了另外一个库<a href="https://github.com/creationix/step">step</a>的介绍</p>
+
+<h2>Worker</h2>
+
+<p>提供<a href="http://www.w3.org/TR/workers/">worker</a>的功能，在浏览器上worker还是有一些受限制的地方，例如不能涉及DOM。
+而在node上，可以用<a href="http://nodejs.org/api/cluster.html">cluster</a>来支持类似worker的功能。</p>
+
+<h2>异步加载js</h2>
+
+<p>主要探讨了几种方案，如在head加载，缺点是页面显示太慢。在body末尾加载，问题是还是要等js结束还能让事件生效，并且同样需要顺序加载。
+解决方案有<a href="http://www.w3schools.com/tags/att_script_defer.asp">defer</a>/<a href="http://www.w3schools.com/tags/att_script_async.asp">async</a>和ajax加载等方案。</p>
+
+<p>对于比较现代的浏览器，支持defer关键字用于异步js加载，还有async关键字，区别是后者不会顺序加载，先加载完先处理。
+async在有些插件化的js时async可能可以用到，其他就很难用到，因为很多js都是存在依赖的关系。</p>
+
+<p>当然，还有一些介绍了自定义的异步加载方案，如html5对象有onready事件,还有ajax加载方式。
+不过业界已经有些比较成熟的异步加载库了，如<a href="http://yepnopejs.com/">yepnope</a></p>
+
+<p>最后还介绍了一些异步加载的其他方案，例如增强的语法来支持异步逻辑。这种预编译的方式，我感觉不如在coffeescript上增加关键字的预处理方式，
+类似coffeescript的class关键字。另外还介绍<a href="https://developer.mozilla.org/en-US/docs/JavaScript/New_in_JavaScript/1.7?redirectlocale=en-US&amp;redirectslug=New_in_JavaScript_1.7">js1.7</a>关于异步逻辑的新特性:Generator。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -183,384 +651,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130113_to-be-times-friend.html">把时间当作朋友读书笔记</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-01-13T00:00:00+08:00" pubdate data-updated="true">Jan 13<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130113_to-be-times-friend.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/assets/images/2013/tobe-times-friend.gif" alt="把时间当作朋友" /></p>
-
-<p>刚读到这本书的时候，有种相见恨晚的感觉。不同于一般的时间管理类书籍，无病呻吟式的洗脑不见了，例子也少了强加因果关系的痕迹，有些观点印象比较深，值得一读。下面是一些比较有感觉的部分，和大家分享一下。</p>
-
-<h3>欲望</h3>
-
-<p>人希望欲望尽快得到满足。这是人性，所以衍生了速成，不劳而获，学习浮于表面这些浮躁的社会现象。在这之前，我真的没有意识到这是人性本质的的一种表现，对于有些新同事急于求成的想法，甚至是自己，也经常有难以理解的感觉。没能理解到这点，就很难说感同身受了。</p>
-
-<h3>成功学</h3>
-
-<p>虽然我也读过一些成功人士的经验之谈，我向来对成功学理论不大感冒，因为多读几本就会发现，他们经常夸大某一方面对结果的影响，很多例子也很牵强，再加上环境的不同，这些经历基本是不可复制的。李老师在书中也反复强调，要警惕成功学，要有自己的独立思考。独立思考，成熟心智，管理自我，才是书中强调的思想。</p>
-
-<h3>时间管理</h3>
-
-<p>读书，除了希望能找到不同的观点，还希望能有些支持这些观点的可操作性方案。其实关于时间管理方面的著作，我也知道一些，例如使用TODO，GTD等工具，番茄工作法。 李老师也有类似的一些做法，例如代办列表，下一阶段代办列表，每日事项回顾。关于每天晚上回顾做了那些事，这个在其他书上没有特别指出，不过李老师提到的回顾发现没什么可以写的尴尬，我也经常遇到。让我产生这些做法不可靠的感觉，后来才发现，这个和代办事项的优先级与难度有关。自己经常会倾向于先完成熟悉的，简单的，感兴趣的，而不是重要的，困难的。这样即使看上去完成很多东西，回顾的时候发现没什么可以值得一提的事情。</p>
-
-<h3>计划</h3>
-
-<p>计划不如变化快，但我们还是需要计划的。关于计划，我发现自己经常高估自己的能力，这个需要多考虑意外，给自己心理估计时间多加一段时间，并且把计划细分，对于不熟悉不感兴趣的事情，更应该如此，把时间分为多个时间片，不断接近目标。书中关于这部分的内容和番茄工作法的理论有交叉，个人感觉番茄工作的理论更详细和有针对性些吧！</p>
-
-<h3>有趣言语</h3>
-
-<p>李老师常说的一句话是，相信我，你并不孤单。并引用了正态分布的理论，使得这句话特别的深刻。整本书妙语连珠，读起来比较轻松。</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130103_how-to-wunderlist.html">使用wunderlist进行TODO管理</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-01-03T00:00:00+08:00" pubdate data-updated="true">Jan 3<span>rd</span>, 2013</time>
-        
-         | <a href="/blog/20130103_how-to-wunderlist.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/assets/images/2013/wunderlist.jpg" alt="Wunderlist" /></p>
-
-<p>Wunderlist是一个TODO管理工具，支持多种客户端的同步，在多个客户端中的界面风格不会差别很大，实用性、可操作性都相当不错。
-关于这类TODO工具的具体使用，我就不再长篇累牍了。<strong>这里主要结合wundeler，讲讲自己对TODO管理的经验教训</strong>。</p>
-
-<p>首先，要焦距于你需要处理的事情，而不是你使用的工具。无论使用怎样的工具，都应该把焦点放在TODO事项上。
-有些人喜欢玩弄软件的新功能，我也经常迷恋于寻找软件的功能而忽略事情的本身，导致浪费在使用软件上的时间太多。
-所以使用TODO工具，<strong>关键是TODO事项是否能够有计划的进行</strong>。</p>
-
-<p>其次，<strong>工具尽量要简单实用</strong>，在使用某个工具的时候，有时候感觉功能有所缺失，所以有些人可能会尝试不同的工具或者在多个工具换来换去，
-试图寻找那完美的工具。说实在，这个成本太高了，多关注待处理的问题本身吧，多反向思考:真的需要这个功能么?频繁使用么?
-就wunderlist来说，我也感觉缺少些功能，例如结合日历功能，有时候同步会有些问题。不过这些都不影响我使用关键功能，也让我能够
-焦距于TODO本身。</p>
-
-<p>最后，说说我使用wunderlist的方式吧。一般来说，我会在某天当做一个周期的开始，<strong>把我能够想到的TODO事项记录上去</strong>，不区分轻重缓急，
-也不考虑工作量和时间因素，也不管是工作、生活还是学习的范畴。总之有多少就写多少，如果事项比较大并且有些明显的分割点，<strong>我也会拆分成多个TODO</strong>。
-然后开始对任务进行挑选，得到需要处理的事情列表，如果列表太长，会把某些重要和紧急的进行加星。这样就可以<strong>让关注的事情就在一定的范围之内</strong>。
-从这部分列表中挑选事项，<strong>集中精神逐项处理</strong>。周而复始，这样<strong>让每天都可以看到成果</strong>，激发自己的动力。</p>
-
-<p>ps: 我不是什么GTD专家，仅供参考。不过wunderlist真的是不错的TODO工具，推荐使用。</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130102_nodejs-best-practices.html">Node.js Best Practices</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-01-02T00:00:00+08:00" pubdate data-updated="true">Jan 2<span>nd</span>, 2013</time>
-        
-         | <a href="/blog/20130102_nodejs-best-practices.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><strong>完整的ppt来源于<a href="http://www.slideshare.net/the_undefined/nodejs-best-practices-10428790">Node.js Best practices</a>,作者<a href="http://www.slideshare.net/the_undefined">Felix Geisendörfer</a>,需翻越</strong></p>
-
-<h3>Callbacks</h3>
-
-<p>下面是关于解析json文件的示例代码:</p>
-
-<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs);</span>
-<span class="s1">function readJSON(path, cb){</span>
-<span class="s1">  fs.readFile(path, &#39;</span><span class="nx">utf8</span><span class="err">&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span>
-    <span class="nx">cb</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">));</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-
-
-<p>显然，上面的代码没有处理异常情况，因此再加个异常处理逻辑上去:</p>
-
-<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs);</span>
-<span class="s1">function readJSON(path, cb){</span>
-<span class="s1">  fs.readFile(path, &#39;</span><span class="nx">utf8</span><span class="err">&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span>
-    <span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
-    <span class="nx">cb</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">));</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-
-
-<p>还没有结束，我们还没考虑到文件内容不是json这种情况，会导致parse出现异常，因此再处理一下：</p>
-
-<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs);</span>
-<span class="s1">function readJSON(path, cb){</span>
-<span class="s1">  fs.readFile(path, &#39;</span><span class="nx">utf8</span><span class="err">&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span>
-    <span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
-    <span class="k">try</span><span class="p">{</span>
-      <span class="nx">cb</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">));</span>
-    <span class="p">}</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
-      <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
-    <span class="p">}</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-
-
-<p>对于cb来说，仍然无法区分正常结果和异常内容，这个问题通常可以通过增加一个err参数来处理，如:</p>
-
-<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs);</span>
-<span class="s1">function readJSON(path, cb){</span>
-<span class="s1">  fs.readFile(path, &#39;</span><span class="nx">utf8</span><span class="err">&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span>
-    <span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
-    <span class="k">try</span><span class="p">{</span>
-      <span class="kd">var</span> <span class="nx">json</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
-    <span class="p">}</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
-      <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
-    <span class="p">}</span>
-    <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">json</span><span class="p">);</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div>
-
-
-<p><strong>这个示例告诉我们，对于callback，需要时刻准备应付正常结果和异常情况的处理。</strong></p>
-
-<p>再来看看另外一个常见错误:</p>
-
-<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">readJSONFiles</span><span class="p">(</span><span class="nx">files</span><span class="p">,</span> <span class="nx">cb</span><span class="p">){</span>
-  <span class="kd">var</span> <span class="nx">results</span> <span class="o">=</span> <span class="p">{};</span>
-  <span class="kd">var</span> <span class="nx">remaining</span> <span class="o">=</span> <span class="nx">files</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
-  
-  <span class="nx">files</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">file</span><span class="p">){</span>
-    <span class="nx">readJSON</span><span class="p">(</span><span class="nx">file</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">json</span><span class="p">){</span>
-      <span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
-      
-      <span class="nx">results</span><span class="p">[</span><span class="nx">file</span><span class="p">]</span> <span class="o">=</span> <span class="nx">json</span><span class="p">;</span>
-      <span class="k">if</span><span class="p">(</span><span class="o">!--</span><span class="nx">remaining</span><span class="p">)</span> <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">results</span><span class="p">);</span>
-    <span class="p">}</span>
-  <span class="p">});</span>
-<span class="p">}</span>
-</code></pre></div>
-
-
-<p>这里隐含了一个常见的场景:<strong>批量处理时，任意一个失败，及时退出</strong>。有时候可以用标识符，这里采用另外一种手法：<strong>重置回调方法</strong>。</p>
-
-<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">readJSONFiles</span><span class="p">(</span><span class="nx">files</span><span class="p">,</span> <span class="nx">cb</span><span class="p">){</span>
-  <span class="kd">var</span> <span class="nx">results</span> <span class="o">=</span> <span class="p">{};</span>
-  <span class="kd">var</span> <span class="nx">remaining</span> <span class="o">=</span> <span class="nx">files</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
-  
-  <span class="nx">files</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">file</span><span class="p">){</span>
-    <span class="nx">readJSON</span><span class="p">(</span><span class="nx">file</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">json</span><span class="p">){</span>
-      <span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
-        <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
-        <span class="nx">cb</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){};</span>
-        <span class="k">return</span><span class="p">;</span>
-      <span class="p">}</span>
-      
-      <span class="nx">results</span><span class="p">[</span><span class="nx">file</span><span class="p">]</span> <span class="o">=</span> <span class="nx">json</span><span class="p">;</span>
-      <span class="k">if</span><span class="p">(</span><span class="o">!--</span><span class="nx">remaining</span><span class="p">)</span> <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">results</span><span class="p">);</span>
-    <span class="p">}</span>
-  <span class="p">});</span>
-<span class="p">}</span>
-</code></pre></div>
-
-
-<h3>Nested Callbacks</h3>
-
-<p>先看看一个恐怖的例子:</p>
-
-<div class="highlight"><pre><code class="javascript"><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT A ...&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
-  <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT B ...&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
-    <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT C ...&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
-      <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT D ...&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
-      <span class="p">});</span>
-    <span class="p">});</span>
-  <span class="p">});</span>
-<span class="p">});</span>
-</code></pre></div>
-
-
-<p>活生生就是一个怪物:)，多层嵌套的回调不是很好的风格，我们需要一些流程控制的东西来辅助，例如Control Flow Libs:</p>
-
-<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">async</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;async&#39;</span><span class="p">);</span>
-
-<span class="nx">async</span><span class="p">.</span><span class="nx">series</span><span class="p">({</span>
-  <span class="nx">queryA</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">next</span><span class="p">){</span>
-    <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT A ...&#39;</span><span class="p">,</span> <span class="nx">next</span><span class="p">);</span>
-  <span class="p">},</span>
-  <span class="nx">queryB</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">next</span><span class="p">){</span>
-    <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT B ...&#39;</span><span class="p">,</span> <span class="nx">next</span><span class="p">);</span>
-  <span class="p">},</span>
-  <span class="nx">queryA</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">next</span><span class="p">){</span>
-    <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT C ...&#39;</span><span class="p">,</span> <span class="nx">next</span><span class="p">);</span>
-  <span class="p">}</span>
-  <span class="c1">// ...</span>
-<span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">results</span><span class="p">){</span>
-  <span class="c1">//...</span>
-<span class="p">});</span>
-</code></pre></div>
-
-
-<p>像上面的代码，最明显的地方就是异常处理被完全隔离出来。<strong>如果要把代码分布到很多小方法里边的话，Node.js的确不是很容易做到</strong>。</p>
-
-<h3>Exceptions</h3>
-
-<p>通常throw new Error(msg)可以让你的程序进行异常退出，并在控制台上输入错误信息和堆栈信息。</p>
-
-<p>但有时候我们要考虑的是，<strong>一些未知的bug</strong>，例如下面一个有bug的示例:</p>
-
-<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">MyClass</span><span class="p">(){}</span>
-
-<span class="nx">MyClass</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">myMethod</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
-  <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">myOtherMethod</span><span class="p">();</span>
-  <span class="p">},</span> <span class="mi">10</span><span class="p">);</span>
-<span class="p">}</span>
-
-<span class="nx">MyClass</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">myOtherMethod</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){};</span>
-
-<span class="p">(</span><span class="k">new</span> <span class="nx">MyClass</span><span class="p">).</span><span class="nx">myMethod</span><span class="p">();</span>
-</code></pre></div>
-
-
-<p>我们可以采用Global Catch的方式:</p>
-
-<div class="highlight"><pre><code class="javascript"><span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;uncaughtException&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">err</span><span class="p">(</span><span class="s1">&#39;uncaught exception: &#39;</span> <span class="o">+</span> <span class="nx">err</span><span class="p">.</span><span class="nx">stack</span><span class="p">);</span> 
-<span class="p">});</span>
-</code></pre></div>
-
-
-<p>更好的处理方式是:<strong>进程挂了，认栽了，到更高层面上去处理</strong>。</p>
-
-<div class="highlight"><pre><code class="javascript"><span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;uncaughtException&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
-  <span class="c1">// You could use node-airbake for this</span>
-  <span class="nx">sendErrorToLog</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
-    <span class="c1">// Once the error was logged, kill the process</span>
-    <span class="nx">console</span><span class="p">.</span><span class="nx">err</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nx">stack</span><span class="p">);</span>
-    <span class="nx">process</span><span class="p">.</span><span class="nx">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
-  <span class="p">}</span>
-<span class="p">});</span>
-</code></pre></div>
-
-
-<h3>Deployment</h3>
-
-<p>比较初级的方式是采用node直接运行或在后台运行。老手可能会采用一个脚本来搞:</p>
-
-<div class="highlight"><pre><code class="bash"><span class="c">#! /bin/bash</span>
-
-<span class="k">while</span> :
-<span class="k">do</span>
-<span class="k">  </span>node server.js
-  <span class="nb">echo</span> <span class="s2">&quot;Server crashed!&quot;</span>
-  sleep 1
-<span class="k">done</span>
-</code></pre></div>
-
-
-<p>专家级采用的方式可能是(借助成熟的集成工具):</p>
-
-<div class="highlight"><pre><code class="bash"><span class="c">#!upstart</span>
-
-description <span class="s2">&quot;myapp&quot;</span>
-author <span class="s2">&quot;felix&quot;</span>
-
-start on<span class="o">(</span><span class="nb">local</span>-filesystems and net-device-up <span class="nv">IFACE</span><span class="o">=</span>eth0<span class="o">)</span>
-stop on shutdown
-
-respawn <span class="c"># restart when job dies</span>
-respawn limit 5 60 <span class="c"># give up restart after 5 respawns in 60 seconds</span>
-
-script
-  <span class="nb">exec </span>sudo -u www-data /path/to/server.js &gt;&gt; /var/log/myapp.log 2&gt;&amp;1
-end script
-</code></pre></div>
-
-
-<p>当然，还有些创新风格的(基于托管平台的):</p>
-
-<div class="highlight"><pre><code class="bash"><span class="nv">$git</span> push joyent master
-<span class="nv">$git</span> push nodejitsu master
-<span class="nv">$git</span> push heroku master
-</code></pre></div>
-
-
-<p><strong>没有托管平台的话，借助成熟的工具应该是最好的选择，性价比高。</strong></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/11/">&larr; Older</a>
@@ -576,6 +666,18 @@ end script
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141225_java-common-util.html">java常见工具库培训</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141126_org-json-and-xml.html">使用org.json库进行xml和json转换存在的问题</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
@@ -603,18 +705,6 @@ end script
     
       <li class="post">
         <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
       </li>
     
   </ul>
@@ -660,7 +750,7 @@ end script
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2014 - 蔡晓建 -
+  Copyright &copy; 2015 - 蔡晓建 -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 

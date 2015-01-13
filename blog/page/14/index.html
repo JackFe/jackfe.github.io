@@ -9,7 +9,11 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="Ibatis比较少人使用的配置语法 简单来说，ibatis3虽然没有ognl,不过也支持基本的表达式（看起来有点像el表达式的样子) 上次有个问题，说到两个表单数据(两个javabean)，入同一个表，传参就应该不成问题了 java代码1: Map map = new HashMap(); &hellip;">
+  <meta name="description" content="10年时接触activemq和drools时收集的一些资料 activeMQ资料 activeMQ官方网站
+JMS消息类型模型
+实战activeMQ
+ActiveMQ4.1 +Spring2.0的POJO JMS方案(上)整理版
+ActiveMQ4.1 +Spring2.0的POJO JMS方案( &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +68,392 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121202_avtivemq-and-rule-engine.html">Avtivemq和规则引擎资料(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-02T00:00:00+08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2012</time>
+        
+         | <a href="/blog/20121202_avtivemq-and-rule-engine.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>10年时接触activemq和drools时收集的一些资料</p>
+
+<h2>activeMQ资料</h2>
+
+<p><a href="http://activemq.apache.org/">activeMQ官方网站</a><br/>
+<a href="http://andyao.javaeye.com/blog/153173">JMS消息类型模型</a><br/>
+<a href="http://www.javaeye.com/topic/275045">实战activeMQ</a><br/>
+<a href="http://wiki.springside.org.cn/display/springside/ActiveMQ">ActiveMQ4.1 +Spring2.0的POJO JMS方案(上)整理版</a><br/>
+<a href="http://wiki.springside.org.cn/display/springside/ActiveMQ-part2">ActiveMQ4.1 +Spring2.0的POJO JMS方案(下)整理版</a><br/>
+<a href="http://www.javaeye.com/topic/153171">ActiveMQ5.0实战一: 安装配置ActiveMQ5.0</a><br/>
+<a href="http://www.javaeye.com/topic/154092">ActiveMQ5.0实战二: 基本配置</a><br/>
+<a href="http://www.javaeye.com/topic/234101">ActiveMQ5.0实战三:使用Spring发送,消费topic和queue消息</a><br/>
+<a href="http://sdh5724.javaeye.com/blog/318376">ActiveMQ测试报告</a>,这是一个很棒的报告<br/>
+<a href="http://www.javaeye.com/topic/397902">ActiveMQ 高级特性</a><br/>
+<a href="http://activemq.apache.org/articles.html">Articles on ActiveMQ, Messaging and JMS</a> 来自官网的文章集锦</p>
+
+<h4>客户端</h4>
+
+<p>关于客户端都可以在相应的官网上找到，这里要说的一个客户端是openamq-jms，简单来说，这是针对java JMS的客户端，
+可用于OpenAMQ和其他AMQP服务器。还有一个是StompConnect，当然这是走stomp协议的，特色就是把JMS弄成一个Stomp Broker，
+具体是怎样的，还没实践过。不过，要跨语言消息交互，更好的选择是使用已经提供的本地Stomp支持。另外，关于stomp的erlang客户端可以选择gigix推荐的stomperl</p>
+
+<h4>书籍</h4>
+
+<p>其实官方文档已经非常丰富，书籍的意义并没有那么大<del>~另一方面，关于ActiveMQ的书籍暂时还没有上市，只有本期书(activeMQ in action)，
+现在可以在网上找到这本书的手稿版</del>确实找不到的话，可以找我要，呵</p>
+
+<h4>activemq和rabbitmq</h4>
+
+<p>activemq和rabbitmq都是非常有名的开源消息队列。activemq是java写的，而rabbitmq是erlang写的。
+activemq支持的是stomp和openwire，xmpp等协议，而rabbitmq支持的是amqp(Advanced Message Queuing Protocol)。
+stomp是一个简单的容易实现的基于文本的协议，openwire是一种快速的二进制协议，activemq计划在amqp协议1.0版本完成的时候提供amqp协议的支持。
+通过这些协议，activemq可以支持多种客户端，如C, C++, C#, Ruby, Python, Perl, PHP等等。而amqp同时定义了消息中间件的语意层面和协议层面，
+并且是语言中立的，它可以让MQ成为一个可编程的消息中间件，可以想象这样的场景：
+你使用java写的消息通过Erlang编写的中间件来和一个C编写的遗留系统进行消息交互。所以amqp前途是光明的～～</p>
+
+<h4>2009-01-15附加</h4>
+
+<p>activemq的failover功能配置很简单~例如简单修改brokerURL为&#8221;failover:(tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0)&#8221;，正常情况是会出现下面的信息：</p>
+
+<div class="highlight"><pre><code class="properties"><span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:43,672 DEBUG [failover.FailoverTransport]-802 Waiting 5120 ms before attempting connection.</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,569 DEBUG [failover.FailoverTransport]-593 urlList connectionList:[tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0]</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,569 DEBUG [failover.FailoverTransport]-712 Attempting connect to: tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,570 DEBUG [failover.FailoverTransport]-753 Connect fail to: tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0, reason: java.net.ConnectException: Connection refused</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,570 DEBUG [ tcp.TcpTransport]-458 Stopping transport tcp://null:0</span>
+</code></pre></div>
+
+
+<h4>2009-01-16附加</h4>
+
+<p>结合spring和activemq的时候，发现启动挺慢的。因为老是会去网上寻找xsd文件，把xml里边的schemaLocation换成下面这个样子就可以了：
+http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd
+ActiveMQ的Virtual Destinations和Mirrored Queues非常有价值，5.3新增的Message Groups也是很有用的特性来的</p>
+
+<h2>规则引擎资料</h2>
+
+<p><a href="http://www.ibm.com/developerworks/cn/java/j-java-rules/">Java规则引擎与其API(JSR-94)</a> 介绍jsr94标准<br/>
+<a href="http://www.ibm.com/developerworks/cn/java/j-drools/">使用 Drools 规则引擎实现业务逻辑</a> 一个简单的例子<br/>
+<a href="http://javahy.javaeye.com/blog/384538">在你的企业级java应用中使用Drools</a> 提供web层和dao层的简单继承，不过rule用的xml格式～<br/>
+<a href="http://blog.csdn.net/nimeimei/archive/2005/12/23/560379.aspx">drools和spring的集成</a> 集成spring好像是必备功能似的<br/>
+<a href="http://www.javaeye.com/topic/25215">规则引擎实现探讨</a> 一个小讨论，还看到一段Erlang代码<br/>
+<a href="http://www.javaeye.com/topic/18198">应用规则引擎组织业务规则的注意要点</a> 里边提到一些建议和规范<br/>
+看惯中文的，感觉<a href="http://www.blogjava.net/guangnian0412/">这个blog</a>还行,但是内容是基于drools3的<br/>
+<a href="http://www.javaeye.com/topic/257039">一个小学题目的解: 采用规则引擎Drools实现</a> 一个喝汽水的智力题,一个比较不错的例子<br/>
+<a href="http://wiki.springside.org.cn/display/springside/JBossRules">springside里边用的jboss rules</a><br/>
+另外还有drools官方文档，关于最重要的rule language和example部分是在Drools Expert上</p>
+
+<h4>其他想法</h4>
+
+<p>我对规则引擎理解不深，从drools的例子可以看到一些AI,workflow,专家系统的影子，看似用途很广很强大，可是规则引擎不是这么个用法的把<br/>
+按照我的想法，规则引擎应该用在局部复杂的流程控制上(局部复杂的if else&#8230;),应该是基于业务走向的判断。<br/>
+如上面<a href="http://yimlin.javaeye.com/">yimlin</a>提到的，我觉得规则引擎是来简化工作的，所以要避免任何具有实际意义的业务操作，很容易让人混淆。<br/>
+怎么说这些规则也不大可能是客户来维护的了，因为可能涉及事实库的修改，dsl顶多也是对程序员友好的方式。<br/>
+<strong>哪些业务规则适合抽象出来由规则引擎处理，规则引擎和业务系统的交互方式是主要问题。</strong></p>
+
+<p>引入规则引擎真的会带来很多好处么？对很多系统来说，这种<a href="http://ivan.javaeye.com/blog/373237">java应用中嵌入groovy</a>的方案还算满经济的。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121130_maven-quickstart.html">Maven学习要点(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-11-30T00:00:00+08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20121130_maven-quickstart.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>我感觉maven这东西比ant容易上手(ant每个项目规则都不一样),看那个100页的迷你书+例子(推荐basecrm或spring3.0)基本就ok了~~
+哎，本来想写的很多，发现写出来的却很少。多多包涵!</p>
+
+<ul>
+<li>maven是一个项目管理工具，跟ant相比亮点在于它遵守了COC规则，只要遵守就好处多多</li>
+<li>maven可以分为三部分:maven本身(提供基本功能),仓库(提供jar),maven插件(提供更多的集成功能)</li>
+<li>maven的配置文件是settings.xml,maven项目的配置文件是pom.xml</li>
+<li>settings.xml主要是配置仓库镜像,本地仓库,网络访问设置等信息,常用配置:</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;localRepository&gt;</span>D:/repository<span class="nt">&lt;/localRepository&gt;</span> --本地仓库
+   <span class="nt">&lt;proxy&gt;</span>  --网络代理
+     <span class="nt">&lt;id&gt;</span>optional<span class="nt">&lt;/id&gt;</span>
+     <span class="nt">&lt;active&gt;</span>true<span class="nt">&lt;/active&gt;</span>
+     <span class="nt">&lt;protocol&gt;</span>http<span class="nt">&lt;/protocol&gt;</span>
+     <span class="nt">&lt;username&gt;</span>proxyuser<span class="nt">&lt;/username&gt;</span>
+     <span class="nt">&lt;password&gt;</span>proxypass<span class="nt">&lt;/password&gt;</span>
+     <span class="nt">&lt;host&gt;</span>proxy.host.net<span class="nt">&lt;/host&gt;</span>
+     <span class="nt">&lt;port&gt;</span>80<span class="nt">&lt;/port&gt;</span>
+     <span class="nt">&lt;nonProxyHosts&gt;</span>local.net|some.host.com<span class="nt">&lt;/nonProxyHosts&gt;</span>
+   <span class="nt">&lt;/proxy&gt;</span>
+  <span class="nt">&lt;mirror&gt;</span>  --仓库镜像
+    <span class="nt">&lt;id&gt;</span>nexus<span class="nt">&lt;/id&gt;</span>
+    <span class="nt">&lt;mirrorOf&gt;</span>*<span class="nt">&lt;/mirrorOf&gt;</span>
+    <span class="nt">&lt;name&gt;</span>Mirror for maven central.<span class="nt">&lt;/name&gt;</span>
+    <span class="nt">&lt;url&gt;</span>http://10.137.27.223:8080/nexus/content/groups/public<span class="nt">&lt;/url&gt;</span>
+  <span class="nt">&lt;/mirror&gt;</span>
+</code></pre></div>
+
+
+<ul>
+<li>pom.xml主要分为三部分:项目本身的信息,使用的插件,依赖的jar</li>
+<li>项目本身的信息,用于唯一标识(groupid-artifactId-version, 通常是这3部分)，例如</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;modelVersion&gt;</span>4.0.0<span class="nt">&lt;/modelVersion&gt;</span> --maven3.x都是使用4.0.0
+ <span class="nt">&lt;groupId&gt;</span>com.huawei.boss<span class="nt">&lt;/groupId&gt;</span>
+ <span class="nt">&lt;artifactId&gt;</span>boss-common<span class="nt">&lt;/artifactId&gt;</span>
+ <span class="nt">&lt;version&gt;</span>0.0.1-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
+ <span class="nt">&lt;packaging&gt;</span>jar<span class="nt">&lt;/packaging&gt;</span>
+</code></pre></div>
+
+
+<p>类似这个，默认就会被打包成boss-common-0.0.1-SNAPSHOT.jar。同样，项目的依赖库也是通过这种坐标在仓库中寻找的。</p>
+
+<ul>
+<li>artifactId通常推荐使用项目名当前缀,当项目是打包成war的时候,通常需要制定发布后的命名:</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;build&gt;</span>
+   <span class="nt">&lt;finalName&gt;</span>bossbase<span class="nt">&lt;/finalName&gt;</span>
+ <span class="nt">&lt;/build&gt;</span>
+</code></pre></div>
+
+
+<ul>
+<li>可以通过properties定义一些常量,并通过${spring.version}之类来引用</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;properties&gt;</span>
+       <span class="nt">&lt;project.build.sourceEncoding&gt;</span>UTF-8<span class="nt">&lt;/project.build.sourceEncoding&gt;</span>
+       <span class="nt">&lt;spring.version&gt;</span>2.5.6<span class="nt">&lt;/spring.version&gt;</span>
+ <span class="nt">&lt;/properties&gt;</span>
+</code></pre></div>
+
+
+<ul>
+<li>jar包依赖常用的有如下配置(仅举例说明):</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;dependencies&gt;</span>
+     <span class="nt">&lt;dependency&gt;</span>
+           <span class="nt">&lt;groupId&gt;</span>org.springframework<span class="nt">&lt;/groupId&gt;</span>
+               <span class="nt">&lt;artifactId&gt;</span>spring-core<span class="nt">&lt;/artifactId&gt;</span>
+             <span class="nt">&lt;version&gt;</span>${spring.version}<span class="nt">&lt;/version&gt;</span>  --常量引用,在引用同个项目多个模块的时候相当有效
+           <span class="nt">&lt;type&gt;</span>jar<span class="nt">&lt;/type&gt;</span>  --默认就是jar
+             <span class="nt">&lt;scope&gt;</span>compile<span class="nt">&lt;/scope&gt;</span>  --默认是compile,表示对编译,测试,运行都有效
+       <span class="nt">&lt;/dependency&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+          <span class="nt">&lt;groupId&gt;</span>geronimo-spec<span class="nt">&lt;/groupId&gt;</span>
+            <span class="nt">&lt;artifactId&gt;</span>geronimo-spec-jta<span class="nt">&lt;/artifactId&gt;</span> --这个是为了不依赖sun的专用东东
+           <span class="nt">&lt;version&gt;</span>1.0.1B-rc4<span class="nt">&lt;/version&gt;</span>
+                <span class="nt">&lt;type&gt;</span>pom<span class="nt">&lt;/type&gt;</span>
+          <span class="nt">&lt;scope&gt;</span>provided<span class="nt">&lt;/scope&gt;</span>  --在运行的时候不依赖，我们常见的时候j2ee规范之类的api,如servlet-api
+  <span class="nt">&lt;/dependency&gt;</span>
+       <span class="nt">&lt;dependency&gt;</span>
+             <span class="nt">&lt;groupId&gt;</span>junit<span class="nt">&lt;/groupId&gt;</span>
+               <span class="nt">&lt;artifactId&gt;</span>junit<span class="nt">&lt;/artifactId&gt;</span>
+           <span class="nt">&lt;version&gt;</span>4.8.2<span class="nt">&lt;/version&gt;</span>
+             <span class="nt">&lt;type&gt;</span>jar<span class="nt">&lt;/type&gt;</span>
+               <span class="nt">&lt;scope&gt;</span>test<span class="nt">&lt;/scope&gt;</span>  --只在测试的时候生效,另外还有个ruuntime的scope,用于运行时依赖(如jdbc驱动等)
+      <span class="nt">&lt;/dependency&gt;</span>
+   <span class="nt">&lt;dependency&gt;</span>
+     <span class="nt">&lt;groupId&gt;</span>org.hibernate<span class="nt">&lt;/groupId&gt;</span>
+     <span class="nt">&lt;artifactId&gt;</span>hibernate<span class="nt">&lt;/artifactId&gt;</span>
+     <span class="nt">&lt;version&gt;</span>3.2.5.ga<span class="nt">&lt;/version&gt;</span>
+     <span class="nt">&lt;exclusions&gt;</span>  --这里是排除依赖，因为jta官方版是在maven仓库中找不到的
+       <span class="nt">&lt;exclusion&gt;</span>
+         <span class="nt">&lt;groupId&gt;</span>javax.transaction<span class="nt">&lt;/groupId&gt;</span>
+         <span class="nt">&lt;artifactId&gt;</span>jta<span class="nt">&lt;/artifactId&gt;</span>
+       <span class="nt">&lt;/exclusion&gt;</span>
+     <span class="nt">&lt;/exclusions&gt;</span>
+   <span class="nt">&lt;/dependency&gt;</span>
+ <span class="nt">&lt;/dependencies&gt;</span>
+</code></pre></div>
+
+
+<ul>
+<li>当项目是分模块进行的时候,通常会考虑使用modules,如:</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml">   <span class="nt">&lt;modules&gt;</span>
+       <span class="nt">&lt;module&gt;</span>basecrm-parent<span class="nt">&lt;/module&gt;</span>
+       <span class="nt">&lt;module&gt;</span>common<span class="nt">&lt;/module&gt;</span>
+       <span class="nt">&lt;module&gt;</span>systemmgr<span class="nt">&lt;/module&gt;</span>
+       <span class="nt">&lt;module&gt;</span>prodmgr<span class="nt">&lt;/module&gt;</span>
+   <span class="nt">&lt;/modules&gt;</span>
+</code></pre></div>
+
+
+<p>这个时候至少会有两级pom.xml,这样像properties,dependency等都是可以继承的(可参考basecrm项目或者spring3.x)</p>
+
+<ul>
+<li><p>plugin资源非常多，简单举几个常用插件(配置请上网找)<br/>
+maven-compiler-plugin 主要是配置编译方面的选项(例如使用什么版本的jdk)<br/>
+maven-surefire-plugin 跟测试有关的,例如配置测试失败是否继续,是否跳过测试等<br/>
+build-helper-maven-plugin 用于配置项目的目录结构,例如配置多个源代码目录等<br/>
+maven-shade-plugin 我只知道可以用来给打包加点料~~<br/>
+tomcat-maven-plugin 顾名思义,用于集成tomcat<br/>
+maven-jetty-plugin 顾名思义,用于集成jetty</p></li>
+<li><p>others <br/>
+maven仓库代理推荐nexus(网内已经有个现成的:http://10.137.27.223:8080/nexus)<br/>
+eclipse中的maven插件推荐m2eclipse(update-site: http://m2eclipse.sonatype.org/sites/m2e)<br/>
+maven实战迷你书(http://www.infoq.com/cn/minibooks/maven-in-action)</p></li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121130_jstl.html">Jstl学习经验(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-11-30T00:00:00+08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20121130_jstl.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>为了在公司里边推广jstl，而总结的一些jstl使用技巧:</p>
+
+<h4>jstl可以很方便的处理NullPointException,访问越界等常见问题</h4>
+
+<div class="highlight"><pre><code class="jsp"><span class="nt">&lt;c:set</span> <span class="na">var=</span><span class="s">”SPExtraInfoList”</span> <span class="na">value=</span><span class="s">”${queryresult[3]}”/</span><span class="nt">&gt;</span>
+<span class="nt">&lt;c:out</span> <span class="na">value=</span><span class="s">”${queryresult[3]}”/</span><span class="nt">&gt;</span>
+</code></pre></div>
+
+
+<p>这2个表达式不会因为没有第四个元素而报错</p>
+
+<h4>这2个表达式一般情况下表现是一样的，只是用c:out可以带上default的参数来处理NullPointException</h4>
+
+<div class="highlight"><pre><code class="jsp"><span class="nt">&lt;td&gt;&lt;c:out</span> <span class="na">value=</span><span class="s">”${spservice.m_SpID}”/</span><span class="nt">&gt;&lt;/td&gt;</span>
+<span class="nt">&lt;td&gt;</span>${spservice.m_SpID}<span class="nt">&lt;/td&gt;</span>
+</code></pre></div>
+
+
+<h4>即使担心其他Exception,也可以通过c:catch来做防御</h4>
+
+<div class="highlight"><pre><code class="jsp"><span class="nt">&lt;c:catch&gt;&lt;c:out</span> <span class="na">value=</span><span class="s">”${values[9]/1000.00}”/</span><span class="nt">&gt;&lt;/c:catch&gt;</span>
+</code></pre></div>
+
+
+<h4>fn:length的使用</h4>
+
+<p>用来判断集合类型或String的长度，不过只是用来判断obj是否为空的话，用le语言${empty obj}更方便(同样支持多种类型)</p>
+
+<h4>关于fn:split</h4>
+
+<p>用这个方法切割会丢失空字符串,原因是这个标签使用StringTokenizer来处理而不是split方法。</p>
+
+<div class="highlight"><pre><code class="jsp"><span class="k">&lt;%</span> <span class="n">String</span><span class="o">[]</span> <span class="n">values</span> <span class="o">=</span> <span class="o">((</span><span class="n">CEntityString</span><span class="o">)</span><span class="n">pageContext</span><span class="o">.</span><span class="na">getAttribute</span><span class="o">(</span><span class="err">“</span><span class="n">service</span><span class="err">”</span><span class="o">)).</span><span class="na">EntityString</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="err">“</span><span class="o">,</span><span class="err">”</span><span class="o">);</span>
+   <span class="n">pageContext</span><span class="o">.</span><span class="na">setAttribute</span><span class="o">(</span><span class="err">“</span><span class="n">values</span><span class="err">”</span><span class="o">,</span> <span class="n">values</span><span class="o">);</span>  <span class="k">%&gt;</span>
+</code></pre></div>
+
+
+<p>这是比较丑的例子，对格式依赖比较严重，所以最好就使用比较清晰的结构</p>
+
+<h4>关于if-else和三元表达式</h4>
+
+<p>jstl做判断分支是比较麻烦的，只提供了c:otherwise的方式，只好将就点先用着吧。如</p>
+
+<div class="highlight"><pre><code class="jsp"><span class="nt">&lt;c:choose&gt;&lt;c:when</span> <span class="na">test=</span><span class="s">”${’1′</span> <span class="err">eq</span> <span class="err">spextrainfo[0]}”</span><span class="nt">&gt;</span>是<span class="nt">&lt;/c:when&gt;&lt;c:otherwise&gt;</span>否<span class="nt">&lt; /c:otherwise&gt;&lt;/c:choose&gt;</span>
+</code></pre></div>
+
+
+<h4>jstl改变操作</h4>
+
+<p>jstl里边要做访问操作是比较方便的，不过涉及改变就挺麻烦的，如对某个字符串加个头，然后在Map里边检索，这样就不能在一个表达式里边写完，需要先c:set一下,如</p>
+
+<div class="highlight"><pre><code class="jsp"><span class="nt">&lt;c:set</span> <span class="na">var=</span><span class="s">”bzType”</span> <span class="na">value=</span><span class="s">”BizType${spservice.m_SpBizType}”/</span><span class="nt">&gt;</span>
+<span class="nt">&lt;c:out</span> <span class="na">value=</span><span class="s">”${BizTypeMap[bzType]}”/</span><span class="nt">&gt;</span>
+</code></pre></div>
+
+
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -298,285 +688,6 @@ typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20121120_oracle-explain-plan.html">Oracle执行计划思维导图</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-11-20T00:00:00+08:00" pubdate data-updated="true">Nov 20<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20121120_oracle-explain-plan.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2><strong>这是为了oracle培训而编制的思维导图</strong></h2>
-
-<h2>可以在Dropbox上下载到这个<a href="https://www.dropbox.com/s/8l53i0h3hphm5bz/%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92.xmind">xmind文件</a></h2>
-
-<p><img src="/assets/images/explain_plan.png" alt="oracle执行计划思维导图" /></p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20121120_how-to-share.html">关于分享</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-11-20T00:00:00+08:00" pubdate data-updated="true">Nov 20<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20121120_how-to-share.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>分享好处多多</h2>
-
-<p>通过做一些分享活动，一方面可以扩大自己的影响力，让更多的人知道你。
-另外一方面，可以加深自己对知识的理解，在交流中纠正一些错误的理解。
-还可以提高自己的表达能力。可以说，除了需要花时间准备之外，分享对自己来说，几乎是百利而无一害的。</p>
-
-<h2>参与度与氛围</h2>
-
-<p>自己做分享，总是希望有更多的人来参与，并从中营造一个愉悦的氛围，
-互惠互利，从中可以学习到更多。但是，经常遇到的事实是，参与的童鞋常常不愿意发言。
-一方面是可能是自己不擅长，更多看成是培训，而不是交流活动，害怕犯错。还有就是，
-他们没有事先做一些准备，对内容理解不够快，所以也没什么特别的疑问。
-我认为，提出一些低级问题，并不是什么丢人的事情，可能是分享人没有照顾到你(经常是一类人)，
-如果你不提出来的话，或许分享人会自认为大家都很明白。总之，参与一些分享活动，能全身心
-投入，收获会更大。</p>
-
-<h2>敢于分享</h2>
-
-<p>很多童鞋都害怕分享，总是担心自己水平不够，准备不够充分，所以一拖再拖。
-以我的经验，分享的内容你刚刚够得着就可以了，因为你准备的过程中，会对自己掌握的内容进行
-筛选，收集更多的资料，然后进行浓缩总结，到最后你把它分享给其他人，整个过程下来，就是一次很好的
-锻炼机会。不要太担心做不好，即使有些地方自己说不清，但或许经过众人的讨论，理解得就更好了。
-还有就是，什么都要计划，给自己的分享计划加个合理的期限吧，少许的压力能让你做得更好。</p>
-
-<h2>节奏与时间</h2>
-
-<p>每次分享的时间不要过长，我就犯过这样的错误，到后面很多人都开始走神了。
-还有就是，主题要比较单一，免得铺开太大，不好收缩，影响时间和效果。
-时间比较长的话，中间可以适当休息一下。</p>
-
-<h2>想不到的收获</h2>
-
-<p>最近做了一次关于oracle执行计划的分享活动，说实话，我对这个主题不是很熟悉。
-但是我觉得这东西很有用，也非常适合团队里的童鞋，所以花了几个星期的时间收集资料，
-最后做了这么一个分享活动。经自己讲解了一遍，自己对这些知识加深了理解。更让我想不到的事情就是，
-有其他项目组的童鞋遇到了相关的问题，跑来跟我讨论(哥俨然是专家啦)。正因为这样，我才有机会遇到更多现实的问题，
-从而促进我对这些东西的理解，如果没有这次分享，有些东西可能就没法用在实践上了。
-我想，很多高手也是这么炼成的。:)</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20121111_javacore.html">Javacore入门介绍</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-11-11T00:00:00+08:00" pubdate data-updated="true">Nov 11<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20121111_javacore.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>什么是javacore</h2>
-
-<ul>
-<li>javacore是java应用程序在某个时间点的<strong>线程转储文件</strong>，通常也称为<strong>Thead Dump</strong></li>
-<li>记录了整个JVM的运行情况(线程, 垃圾回收, JVM运行参数, 内存地址等信息)</li>
-<li>用来诊断程序问题,其中比较典型的包括线程阻塞, CPU使用率过高, JVM Crash, 堆内存不足和类装载等问题</li>
-</ul>
-
-
-<h2>文件命名方式</h2>
-
-<p>javacore文件通常以txt方式结尾,名称格式主要是以javacore开头, <strong>加上日期,产生的时间,当时的线程编号</strong>,如javacore.20100719.003424.299228.txt(<strong>Unix</strong>)</p>
-
-<h2>javacore获取方式</h2>
-
-<ul>
-<li>发送中断signal<br/>
-AIX和Linux: SIGQUIT, <strong>kill -3 PID</strong><br/>
-Windows: Ctrl+Break, DrAdmin in WAS(未验证过)</li>
-<li>在java的执行代码中使用JavaDump()方法(未验证过)<br/>
-com.ibm.jvm.Dump.javaDump()方法促使JVM dump<br/>
-发布ProblemDiagnosticsLabToolkit应用包,通过可视化页面直接生成相关文件</li>
-<li>系统在异常时自动throw(<strong>程序不一定退出</strong>)<br/>
-严重的本地调用出错<br/>
-内存不足(例如 OutOfMemory)</li>
-</ul>
-
-
-<h2>javacore基本内容</h2>
-
-<p><img src="/assets/images/javacore1.jpg" alt="javacore基本内容" /></p>
-
-<ul>
-<li>操作系统相关信息JDK版本信息<br/>
-关注jdk的版本(1.5前后差别比较大),32位和64位在内存要求上也有区别</li>
-<li>JVM的启动参数信息<br/>
-关注一些特殊的虚拟机参数如xms,xmx,xss,java.ext.dirs等，特别是内存分配要和线程数匹配，避免xms太小(频繁gc和扩展)</li>
-<li>JVM堆内存信息,已装载入的类信息<br/>
-JIT Core Cache和JIT Data Cache是JIT编译器使用的，用于提高运行效率。一般关注Object(Reversed)(堆内存分配)和Class(用于类加载)的内存使用率</li>
-<li>dump产生原因与时间<br/>
-用于追溯当时的现状</li>
-<li>GC记录<br/>
-关注Full GC(Global GC)情况,通常伴随比较多的GC线程</li>
-<li>所有Thread执行情况(包括应用程序内部执行线程,容器线程,垃圾回收线程,定时线程,线程池线程,页面请求转发线程等多种线程信息)</li>
-</ul>
-
-
-<h2>线程状态分类</h2>
-
-<p><img src="/assets/images/javacore2.png" alt="线程状态分类" /></p>
-
-<p>整个图包括三部分，左边是线程列表，选择某个线程后，中间会展示该线程与其他线程的等待依赖关系，右边会显示线程的详细堆栈信息。
-通过在线程列表中对Name,State,Stack几列进行排序，可以对每类线程数量、是否有明显的瓶颈有个大概的印象，便于接下来的具体分析。</p>
-
-<ul>
-<li>死锁 Deadlock<br/>
-多个线程竞争多个资源，出现相互等待资源又不释放资源的情况，这种情况在现实中并不多见。</li>
-<li>执行中 Runnable<br/>
-通常这类线程堆栈真处于发送数据，数值计算，类型转换等操作。</li>
-<li>等待资源 Waiting on condition<br/>
-等待资源，如果堆栈信息明确是应用代码，则证明该线程正在等待资源，一般是大量读取某资源，且该资源采用了资源锁的情况下，
-线程进入等待状态，等待资源的读取。又或者，正在等待其他线程的执行等</li>
-<li>等待监控器检查资源 Waiting on monitor</li>
-<li>暂停 Suspended</li>
-<li>对象等待中 Object.wait()</li>
-<li>阻塞 Blocked<br/>
-线程阻塞，是指当前线程执行过程中，所需要的资源长时间等待却一直未能获取到，被容器的线程管理器标识为阻塞状态，
-可以理解为等待资源超时的线程。这种情况在was的日志中，一般可以看到CPU饥渴，或者某线程已执行了XX秒的信息</li>
-<li>停止 Parked</li>
-</ul>
-
-
-<h3>常见的线程分类</h3>
-
-<table markdown="1" class="table">
-  <tr><td>Thread开头</td><td>一般是应用自己起的后台线程，或者自己搞的线程池(没有重命名的时候),如果是独立进程大多业务都跑在这里</td></tr>
-  <tr><td>WebContainer</td><td>was容器线程，was的话业务一般都在这里，受容器线程数量控制</td></tr>
-  <tr><td>Timer</td><td>Timer定时任务，一些连接池等用于监控池内对象</td></tr>
-  <tr><td>Quartz</td><td>Quartz用于定时任务的线程，不受容器控制</td></tr>
-  <tr><td>Finalizer</td><td>用于实现finalize特殊方法的线程</td></tr>
-  <tr><td>GC Slave</td><td>GC线程，频繁gc的时候会出现不少</td></tr>
-  <tr><td>Main</td><td>主线程</td></tr>
-  <tr><td>JIT</td><td>用于实现JIT的线程</td></tr>
-</table>
-
-
-<h2>相关工具与资料</h2>
-
-<h2>策略分析</h2>
-
-<ul>
-<li>数百K的纯文本,最好借助工具,例如jca分析工具</li>
-<li><strong>采集连续的多个时间点的javacore,方便对比(手动)</strong><br/>
-一般的线程执行都会非常快，如果出现某个资源的阻塞，在短时间内的两个javacore，该线程的堆栈会变化不大。
-或多次javacore的线程都集中在等待某些资源。</li>
-<li>了解app的性质,基本处理流程</li>
-<li>app相关的处理能力(以前的数据,用于对比)</li>
-<li>问题出现时,多了解周边情况(cpu,io,外围),记录现状</li>
-<li><strong>对thread状态进行分类,业务分布情况,资源等待情况(细化)</strong></li>
-<li>如有必要,获取heapdump分析(oom)</li>
-</ul>
-
-
-<h2>javacore和heapdump的区别</h2>
-
-<p>javacore经常和heapdump联系在一起，有时候也一起出现。这里简单对两个文件进行对比，希望大家有个印象：</p>
-
-<table markdown="1" class="table">
-  <tr><td></td><td>heapdump</td><td>javacore</td></tr>
-  <tr><td>文件类型</td><td>二进制</td><td>文本</td></tr>
-  <tr><td>分析工具</td><td>Heap Analyzer</td><td>jca</td></tr>
-  <tr><td>文件内容</td><td>内存映射 对象占用信息</td><td>CPU执行信息,线程堆栈</td></tr>
-  <tr><td>作用</td><td>分析内存泄漏 大对象</td><td>分析进程挂死,响应速度慢,大对象</td></tr>
-  <tr><td>影响</td><td>对系统影响大,生成文件大,较少使用</td><td>对系统影响小,生成文件小,比较方便</td></tr>
-</table>
-
-
-<h2>相关工具与资料</h2>
-
-<ul>
-<li>javacore-tutorial.pdf 出自IBM的文档</li>
-<li>jca  javacore分析工具</li>
-<li>heap analyzer  heapdump分析工具</li>
-</ul>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/15/">&larr; Older</a>
@@ -592,6 +703,18 @@ JIT Core Cache和JIT Data Cache是JIT编译器使用的，用于提高运行效�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141225_java-common-util.html">java常见工具库培训</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141126_org-json-and-xml.html">使用org.json库进行xml和json转换存在的问题</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
@@ -619,18 +742,6 @@ JIT Core Cache和JIT Data Cache是JIT编译器使用的，用于提高运行效�
     
       <li class="post">
         <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
       </li>
     
   </ul>
@@ -676,7 +787,7 @@ JIT Core Cache和JIT Data Cache是JIT编译器使用的，用于提高运行效�
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2014 - 蔡晓建 -
+  Copyright &copy; 2015 - 蔡晓建 -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 

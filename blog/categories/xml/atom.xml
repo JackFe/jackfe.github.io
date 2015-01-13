@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: xml | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/xml/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2015-01-13T21:22:15+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[使用org.json库进行xml和json转换存在的问题]]></title>
+    <link href="http://mccxj.github.com/blog/20141126_org-json-and-xml.html"/>
+    <updated>2014-11-26T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/org-json-and-xml</id>
+    <content type="html"><![CDATA[<p>org.json库中提供一个xml和json进行转换的工具类，XML.java</p>
+
+<p>使用方式如下：
+* xmlstr = XML.toString(jsonstr)
+* jsonstr = XML.toJSONObject(xmlstr).toString()</p>
+
+<p>中间层原有代码使用这种方式进行格式转换，不过存在一些问题：
+* json转换为xml的时候，对带content字段的节点，是直接生成文本，而不是<content>xx</content>
+* xml转换为json的时候，会对指为整形(还有true/false/null等)的字符串尝试进行转换，变成原生类型</p>
+
+<p>为了避免这两个问题，对org.json库的XML.java进行了一些修改:
+* 去掉content字段的特殊处理
+* 去掉整形字符串尝试转换的逻辑</p>
+
+<p>见https://github.com/mccxj/JSON-java</p>
+
+<p>经验教训: 以后引用第三方库的时候，要小心呀，避免触碰到一些特殊开关。</p>
+]]></content>
+  </entry>
+  
+</feed>

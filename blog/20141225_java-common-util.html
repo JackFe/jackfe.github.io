@@ -1,0 +1,373 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>java常见工具库培训 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="一些常见工具库的用法">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20141225_java-common-util.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Java常见工具库培训</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-12-25T00:00:00+08:00" pubdate data-updated="true">Dec 25<span>th</span>, 2014</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>目前项目中常见的工具库有apache commons,google guava,再算上spring的话，需要自己从头开始写工具类的情况大大减少。
+为了给广大童鞋普及一下工具库用法，减少无用功(还可能因为实现的不好留后遗症的)，这里简单的介绍一下相关工具类。<strong>google guava大家应该比较陌生，这里先不介绍，:)</strong></p>
+
+<h2>apache commons</h2>
+
+<p>官方地址： http://commons.apache.org/</p>
+
+<p>apache commons历史悠久，涉及范围也是最广的，在官网上分了数十个模块，但有些模块是新开发的，就不要贸然使用啦。</p>
+
+<p>这里只是介绍最最常用的commons库，排名不分先后，如下：</p>
+
+<h3>commons-codec</h3>
+
+<p>包括常见的编码、解码算法，例如MD5,Base64，举例如下:</p>
+
+<ul>
+<li>Base64#encode 加密成base64串</li>
+<li>Base64#decode 解密base64串</li>
+<li>DigestUtils.md5Hex 进行MD5加密，注意得到的是小写的MD5(MD5标准不区分大小写),在比较的时候需要注意</li>
+<li>DigestUtils.shaHex 进行SHA1加密 SHA256,512之类也是支持的，可以自行查阅</li>
+</ul>
+
+
+<h3>commons-collections</h3>
+
+<p>包括一堆增强的集合类（我了解不多，大家可以自行学习），各种和集合类相关的工具类，举例如下：</p>
+
+<ul>
+<li>CollectionUtils.isEmpty 是否null或空集合，这一类的方法很多，看看有个大概印象</li>
+<li>MapUtils.isEmpty 是否null或空Map</li>
+<li>ListUtils.removeAll 从某个列表中删除存在于另外个列表的元素</li>
+</ul>
+
+
+<p>同类型的还有SetUtils、IteratorUtils等，大体上是集合相关的操作，如过滤、是否相等、交集、差集、转换(变同步、变不可变)等，其实这个用到的机会也不是很大。</p>
+
+<h3>commons-net</h3>
+
+<p>实现了一些常见的网络协议，可能关系最大的要数ftp、smtp的实现了。而jdk带的sun.net.ftp，这个尽量就少用拉。</p>
+
+<p>这套api的实现用法得google一下了，看<a href="http://commons.apache.org/proper/commons-net/">官方文档的例子</a>,
+又或者别人的经验代码，例如这个http://my.oschina.net/hly3825/blog/33657</p>
+
+<h3>commons-httpclient</h3>
+
+<p>http客户端实现，貌似已经从commons独立出去了。3.x版本和4.x版本变化比较大，大家要使用的时候自行查阅资料。
+尽量避免使用HttpURLConnection去直接搞。</p>
+
+<h3>commons-io</h3>
+
+<p>io方面的工具类，主要包括文件处理、流处理,常见的类有IOUtils、FileUtils、FilenameUtils。举例如下：</p>
+
+<ul>
+<li>IOUtils.closeQuietly 安静关闭输出输出流，常用于finally关闭流的时候</li>
+<li>IOUtils.copy 把某个输入流拷贝到某个输出流中去</li>
+<li>IOUtils.toString 把某个输入流、URI的内容转换成字符串</li>
+<li>IOUtils.readLines 按行读取流</li>
+<li>Charset.UTF_8 有一些常见的、系统都会支持的字符集，已经定义成常量</li>
+<li>FileUtils.readLines 按行读取文件</li>
+<li>FileUtils.readFileToString 读取文件保存在一个字符串中</li>
+</ul>
+
+
+<p>IOUtils针对的是stream，FileUtils针对的是File对象，相应的有文件拷贝、删除等操作。<br/>
+注意的是，<strong>使用字符流格式的时候，务必指定编码</strong></p>
+
+<h3>commons-lang</h3>
+
+<p>这个是使用最多的库了，有lang2.x和3.x版本，尽量使用3.x版本。</p>
+
+<p>常见的有StringUtils、SystemUtils、RandomStringUtils、DateFormatUtils、DateUtils、各种Builder、Validate，举例如下：</p>
+
+<ul>
+<li>StringUitls.isEmpty 判空，和isBlank的区别在于它不进行trim</li>
+<li>StringUtils.join 按分隔符合并，这个很常用</li>
+<li>StringUtils.repeat 重复某个字符或字符串，有些需要格式化的是会用到</li>
+<li>StringUtils.startsWith  和endsWith那样，是增强版本，还有endsWithAny、endsWithIgnoreCase等</li>
+<li>SystemUtils 主要是一些常见系统环境变量，如临时目录、用户目录、分隔符等</li>
+<li>RandomStringUtils 用来生成各种随即字符串，例如全字母、全数字或混合型的</li>
+<li>DateFormatUtils、DateUtils 一个是字符串变日期，一个是日期相关的操作</li>
+<li>各种Builder 主要用实现常见的toString、compareTo、equals、hashcode等常见类，例如ReflectionToStringBuilder就很方便实现toString方法。同理，CompareToBuilder、EqualsBuilder、HashCodeBuilder都很好理解。</li>
+<li>Validate 实现一些assert，例如Validate.notNull可以用来做前置校验，和spring的Assert类是类似的。</li>
+</ul>
+
+
+<h3>其他commons库</h3>
+
+<ul>
+<li>commons-fileupload 仅限于在文件上传的类中使用，虽然它也有一些工具类，但是就不要在其他地方使用啦。</li>
+<li>commons-dbcp 一个数据库连接池，现在就比较少用了</li>
+<li>commons-pool 一个java对象池实现，通常用来缓存一些耗时较大的对象，dbcp也是基于它的，一般也少直接用。</li>
+<li>commons-logging 日志包装实现，在开源项目中使用广泛，项目中一般直接用log4j等。</li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-12-25T00:00:00+08:00" pubdate data-updated="true">Dec 25<span>th</span>, 2014</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/java/'>Java</a>, <a class='category' href='/blog/categories/pei-xun/'>培训</a>, <a class='category' href='/blog/categories/gong-ju-ku/'>工具库</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20141126_org-json-and-xml.html" title="Previous Post: 使用org.json库进行xml和json转换存在的问题">&laquo; 使用org.json库进行xml和json转换存在的问题</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20150108_net-sf-json-problem.html" title="Next Post: 使用net.sf.json库进行json反序列化时存在的问题">使用net.sf.json库进行json反序列化时存在的问题 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141225_java-common-util.html">java常见工具库培训</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141126_org-json-and-xml.html">使用org.json库进行xml和json转换存在的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140329_was-datasource.html">websphere+spring+jndi数据源配置</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140225_android-jdk7-bug.html">jdk7编译的bug记录</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140219_android-maven-problems.html">android+maven问题记录</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20141225_java-common-util.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20141225_java-common-util.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

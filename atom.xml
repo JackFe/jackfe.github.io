@@ -4,7 +4,7 @@
   <title><![CDATA[小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2014-04-24T22:14:50+08:00</updated>
+  <updated>2015-01-13T21:22:15+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -12,6 +12,279 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[使用net.sf.json库进行json反序列化时存在的问题]]></title>
+    <link href="http://mccxj.github.com/blog/20150108_net-sf-json-problem.html"/>
+    <updated>2015-01-08T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/net-sf-json-problem</id>
+    <content type="html"><![CDATA[<h3>问题描述</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">String</span> <span class="n">content</span> <span class="o">=</span> <span class="s">&quot;{\&quot;response_head\&quot;:{\&quot;menuid\&quot;:\&quot;xxx\&quot;,\&quot;process_code\&quot;:\&quot;xxx\&quot;,\&quot;verify_code\&quot;:\&quot;\&quot;,\&quot;resp_time\&quot;:\&quot;20150107103234\&quot;,\&quot;sequence\&quot;:{\&quot;resp_seq\&quot;:\&quot;20150107103301\&quot;,\&quot;operation_seq\&quot;:\&quot;\&quot;},\&quot;retinfo\&quot;:{\&quot;retcode\&quot;:\&quot;120\&quot;,\&quot;rettype\&quot;:\&quot;0\&quot;,\&quot;retmsg\&quot;:\&quot;[182096|]处理失败,原因:[屏蔽具体的失败原因！]\&quot;}},\&quot;response_body\&quot;:{} }&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="n">JSONObject</span> <span class="n">object</span> <span class="o">=</span> <span class="n">JSONObject</span><span class="o">.</span><span class="na">fromObject</span><span class="o">(</span><span class="n">content</span><span class="o">);</span>
+</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">object</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">{&quot;response_head&quot;:{&quot;menuid&quot;:&quot;xxx&quot;,&quot;process_code&quot;:&quot;xxx&quot;,&quot;verify_code&quot;:&quot;&quot;,&quot;resp_time&quot;:&quot;20150107103234&quot;,&quot;sequence&quot;:{&quot;resp_seq&quot;:&quot;20150107103301&quot;,&quot;operation_seq&quot;:&quot;&quot;},&quot;retinfo&quot;:{&quot;retcode&quot;:&quot;120&quot;,&quot;rettype&quot;:&quot;0&quot;,&quot;retmsg&quot;:[&quot;182096|&quot;]}},&quot;response_body&quot;:{}}</span>
+</span><span class='line'><span class="cm">*/</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>问题分析</h3>
+
+<p>采用json-lib-2.4-jdk15.jar，测试代码如上，会发现retmsg的值变成&#8221;[182096|&#8221;.</p>
+
+<p>测试简化json字符串，最终效果如下：</p>
+
+<p>解析失败的例子：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="s2">&quot;{\&quot;response_head\&quot;:{\&quot;retmsg\&quot;:\&quot;[182096|]处理失败,原因:[屏蔽具体的失败原因！]\&quot;}}&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>继续简化的话，就会解析成功</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="s2">&quot;{\&quot;response_head\&quot;:\&quot;[182096|]处理失败,原因:[屏蔽具体的失败原因！]\&quot;}&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>找了一下源码，发现json-lib在某些情况下(绕来绕去，断点发现的)会尝试解析字符串，看看是不是json对象。（尼玛，太智能了）</p>
+
+<p>AbstractJSON.java中的260行,这个时候str是后面的内容。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>     <span class="o">}</span> <span class="k">else</span> <span class="k">if</span><span class="o">(</span> <span class="n">JSONUtils</span><span class="o">.</span><span class="na">mayBeJSON</span><span class="o">(</span> <span class="n">str</span> <span class="o">)</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">try</span> <span class="o">{</span>
+</span><span class='line'>           <span class="k">return</span> <span class="n">JSONSerializer</span><span class="o">.</span><span class="na">toJSON</span><span class="o">(</span> <span class="n">str</span><span class="o">,</span> <span class="n">jsonConfig</span> <span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span> <span class="k">catch</span><span class="o">(</span> <span class="n">JSONException</span> <span class="n">jsone</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>           <span class="k">return</span> <span class="n">str</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>     <span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>JsonArray.java中的1130行，这个时候v已经是&#8221;182096|&#8221;。这个时候会判断v是不是一个json对象，如果搞一个数组回去，否则就是搞一个字符串(上述现象)。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>           <span class="n">tokener</span><span class="o">.</span><span class="na">back</span><span class="o">();</span>
+</span><span class='line'>           <span class="n">Object</span> <span class="n">v</span> <span class="o">=</span> <span class="n">tokener</span><span class="o">.</span><span class="na">nextValue</span><span class="o">(</span> <span class="n">jsonConfig</span> <span class="o">);</span>
+</span><span class='line'>           <span class="k">if</span><span class="o">(</span> <span class="o">!</span><span class="n">JSONUtils</span><span class="o">.</span><span class="na">isFunctionHeader</span><span class="o">(</span> <span class="n">v</span> <span class="o">)</span> <span class="o">){</span>
+</span><span class='line'>              <span class="k">if</span><span class="o">(</span> <span class="n">v</span> <span class="k">instanceof</span> <span class="n">String</span> <span class="o">&amp;&amp;</span> <span class="n">JSONUtils</span><span class="o">.</span><span class="na">mayBeJSON</span><span class="o">(</span> <span class="o">(</span><span class="n">String</span><span class="o">)</span> <span class="n">v</span> <span class="o">)</span> <span class="o">){</span>
+</span><span class='line'>                 <span class="n">jsonArray</span><span class="o">.</span><span class="na">addValue</span><span class="o">(</span> <span class="n">JSONUtils</span><span class="o">.</span><span class="na">DOUBLE_QUOTE</span> <span class="o">+</span> <span class="n">v</span> <span class="o">+</span> <span class="n">JSONUtils</span><span class="o">.</span><span class="na">DOUBLE_QUOTE</span><span class="o">,</span>
+</span><span class='line'>                       <span class="n">jsonConfig</span> <span class="o">);</span>
+</span><span class='line'>              <span class="o">}</span><span class="k">else</span><span class="o">{</span>
+</span><span class='line'>                 <span class="n">jsonArray</span><span class="o">.</span><span class="na">addValue</span><span class="o">(</span> <span class="n">v</span><span class="o">,</span> <span class="n">jsonConfig</span> <span class="o">);</span>
+</span><span class='line'>              <span class="o">}</span>
+</span><span class='line'>              <span class="n">fireElementAddedEvent</span><span class="o">(</span> <span class="n">index</span><span class="o">,</span> <span class="n">jsonArray</span><span class="o">.</span><span class="na">get</span><span class="o">(</span> <span class="n">index</span><span class="o">++</span> <span class="o">),</span> <span class="n">jsonConfig</span> <span class="o">);</span>
+</span><span class='line'>           <span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>例如，下面的情况会产生一个数组：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="s2">&quot;{\&quot;response_head\&quot;:{\&quot;retmsg\&quot;:\&quot;[{1820: 96|}]处理失败,原因:[屏蔽具体的失败原因！]\&quot;}}&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">{</span><span class="nt">&quot;response_head&quot;</span><span class="p">:{</span><span class="nt">&quot;retmsg&quot;</span><span class="p">:[{</span><span class="nt">&quot;1820&quot;</span><span class="p">:</span><span class="s2">&quot;96|&quot;</span><span class="p">}]}}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>关于如何判断是否是json,是会判断以[开头，以]结束的，刚好中枪。而尝试去截取中间内容的时候，又碰巧遇到中间的]字符，所以生成的字符串就是被截断了一部分的。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>   <span class="cm">/**</span>
+</span><span class='line'><span class="cm">    * Tests if the String possibly represents a valid JSON String.&lt;br&gt;</span>
+</span><span class='line'><span class="cm">    * Valid JSON strings are:</span>
+</span><span class='line'><span class="cm">    * &lt;ul&gt;</span>
+</span><span class='line'><span class="cm">    * &lt;li&gt;&quot;null&quot;&lt;/li&gt;</span>
+</span><span class='line'><span class="cm">    * &lt;li&gt;starts with &quot;[&quot; and ends with &quot;]&quot;&lt;/li&gt;</span>
+</span><span class='line'><span class="cm">    * &lt;li&gt;starts with &quot;{&quot; and ends with &quot;}&quot;&lt;/li&gt;</span>
+</span><span class='line'><span class="cm">    * &lt;/ul&gt;</span>
+</span><span class='line'><span class="cm">    */</span>
+</span><span class='line'>   <span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">mayBeJSON</span><span class="o">(</span> <span class="n">String</span> <span class="n">string</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>      <span class="k">return</span> <span class="n">string</span> <span class="o">!=</span> <span class="kc">null</span>
+</span><span class='line'>            <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="s">&quot;null&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span> <span class="n">string</span> <span class="o">)</span>
+</span><span class='line'>                  <span class="o">||</span> <span class="o">(</span><span class="n">string</span><span class="o">.</span><span class="na">startsWith</span><span class="o">(</span> <span class="s">&quot;[&quot;</span> <span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="n">string</span><span class="o">.</span><span class="na">endsWith</span><span class="o">(</span> <span class="s">&quot;]&quot;</span> <span class="o">))</span> <span class="o">||</span> <span class="o">(</span><span class="n">string</span><span class="o">.</span><span class="na">startsWith</span><span class="o">(</span> <span class="s">&quot;{&quot;</span> <span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="n">string</span><span class="o">.</span><span class="na">endsWith</span><span class="o">(</span> <span class="s">&quot;}&quot;</span> <span class="o">)));</span>
+</span><span class='line'>   <span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>问题结论</h3>
+
+<ul>
+<li>当json对象中某个值是以&#8221;{&#8220;开头，&#8221;}&#8221;结束，或者&#8221;[&#8220;开头,&#8221;]&#8221;结束的时候，解析结果可能不是期望的。</li>
+<li>不幸的是，目前来看，这个问题是无解的，考虑使用其他json库吧。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[java常见工具库培训]]></title>
+    <link href="http://mccxj.github.com/blog/20141225_java-common-util.html"/>
+    <updated>2014-12-25T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/java-common-util</id>
+    <content type="html"><![CDATA[<p>目前项目中常见的工具库有apache commons,google guava,再算上spring的话，需要自己从头开始写工具类的情况大大减少。
+为了给广大童鞋普及一下工具库用法，减少无用功(还可能因为实现的不好留后遗症的)，这里简单的介绍一下相关工具类。<strong>google guava大家应该比较陌生，这里先不介绍，:)</strong></p>
+
+<h2>apache commons</h2>
+
+<p>官方地址： http://commons.apache.org/</p>
+
+<p>apache commons历史悠久，涉及范围也是最广的，在官网上分了数十个模块，但有些模块是新开发的，就不要贸然使用啦。</p>
+
+<p>这里只是介绍最最常用的commons库，排名不分先后，如下：</p>
+
+<h3>commons-codec</h3>
+
+<p>包括常见的编码、解码算法，例如MD5,Base64，举例如下:</p>
+
+<ul>
+<li>Base64#encode 加密成base64串</li>
+<li>Base64#decode 解密base64串</li>
+<li>DigestUtils.md5Hex 进行MD5加密，注意得到的是小写的MD5(MD5标准不区分大小写),在比较的时候需要注意</li>
+<li>DigestUtils.shaHex 进行SHA1加密 SHA256,512之类也是支持的，可以自行查阅</li>
+</ul>
+
+
+<h3>commons-collections</h3>
+
+<p>包括一堆增强的集合类（我了解不多，大家可以自行学习），各种和集合类相关的工具类，举例如下：</p>
+
+<ul>
+<li>CollectionUtils.isEmpty 是否null或空集合，这一类的方法很多，看看有个大概印象</li>
+<li>MapUtils.isEmpty 是否null或空Map</li>
+<li>ListUtils.removeAll 从某个列表中删除存在于另外个列表的元素</li>
+</ul>
+
+
+<p>同类型的还有SetUtils、IteratorUtils等，大体上是集合相关的操作，如过滤、是否相等、交集、差集、转换(变同步、变不可变)等，其实这个用到的机会也不是很大。</p>
+
+<h3>commons-net</h3>
+
+<p>实现了一些常见的网络协议，可能关系最大的要数ftp、smtp的实现了。而jdk带的sun.net.ftp，这个尽量就少用拉。</p>
+
+<p>这套api的实现用法得google一下了，看<a href="http://commons.apache.org/proper/commons-net/">官方文档的例子</a>,
+又或者别人的经验代码，例如这个http://my.oschina.net/hly3825/blog/33657</p>
+
+<h3>commons-httpclient</h3>
+
+<p>http客户端实现，貌似已经从commons独立出去了。3.x版本和4.x版本变化比较大，大家要使用的时候自行查阅资料。
+尽量避免使用HttpURLConnection去直接搞。</p>
+
+<h3>commons-io</h3>
+
+<p>io方面的工具类，主要包括文件处理、流处理,常见的类有IOUtils、FileUtils、FilenameUtils。举例如下：</p>
+
+<ul>
+<li>IOUtils.closeQuietly 安静关闭输出输出流，常用于finally关闭流的时候</li>
+<li>IOUtils.copy 把某个输入流拷贝到某个输出流中去</li>
+<li>IOUtils.toString 把某个输入流、URI的内容转换成字符串</li>
+<li>IOUtils.readLines 按行读取流</li>
+<li>Charset.UTF_8 有一些常见的、系统都会支持的字符集，已经定义成常量</li>
+<li>FileUtils.readLines 按行读取文件</li>
+<li>FileUtils.readFileToString 读取文件保存在一个字符串中</li>
+</ul>
+
+
+<p>IOUtils针对的是stream，FileUtils针对的是File对象，相应的有文件拷贝、删除等操作。<br/>
+注意的是，<strong>使用字符流格式的时候，务必指定编码</strong></p>
+
+<h3>commons-lang</h3>
+
+<p>这个是使用最多的库了，有lang2.x和3.x版本，尽量使用3.x版本。</p>
+
+<p>常见的有StringUtils、SystemUtils、RandomStringUtils、DateFormatUtils、DateUtils、各种Builder、Validate，举例如下：</p>
+
+<ul>
+<li>StringUitls.isEmpty 判空，和isBlank的区别在于它不进行trim</li>
+<li>StringUtils.join 按分隔符合并，这个很常用</li>
+<li>StringUtils.repeat 重复某个字符或字符串，有些需要格式化的是会用到</li>
+<li>StringUtils.startsWith  和endsWith那样，是增强版本，还有endsWithAny、endsWithIgnoreCase等</li>
+<li>SystemUtils 主要是一些常见系统环境变量，如临时目录、用户目录、分隔符等</li>
+<li>RandomStringUtils 用来生成各种随即字符串，例如全字母、全数字或混合型的</li>
+<li>DateFormatUtils、DateUtils 一个是字符串变日期，一个是日期相关的操作</li>
+<li>各种Builder 主要用实现常见的toString、compareTo、equals、hashcode等常见类，例如ReflectionToStringBuilder就很方便实现toString方法。同理，CompareToBuilder、EqualsBuilder、HashCodeBuilder都很好理解。</li>
+<li>Validate 实现一些assert，例如Validate.notNull可以用来做前置校验，和spring的Assert类是类似的。</li>
+</ul>
+
+
+<h3>其他commons库</h3>
+
+<ul>
+<li>commons-fileupload 仅限于在文件上传的类中使用，虽然它也有一些工具类，但是就不要在其他地方使用啦。</li>
+<li>commons-dbcp 一个数据库连接池，现在就比较少用了</li>
+<li>commons-pool 一个java对象池实现，通常用来缓存一些耗时较大的对象，dbcp也是基于它的，一般也少直接用。</li>
+<li>commons-logging 日志包装实现，在开源项目中使用广泛，项目中一般直接用log4j等。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[使用org.json库进行xml和json转换存在的问题]]></title>
+    <link href="http://mccxj.github.com/blog/20141126_org-json-and-xml.html"/>
+    <updated>2014-11-26T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/org-json-and-xml</id>
+    <content type="html"><![CDATA[<p>org.json库中提供一个xml和json进行转换的工具类，XML.java</p>
+
+<p>使用方式如下：
+* xmlstr = XML.toString(jsonstr)
+* jsonstr = XML.toJSONObject(xmlstr).toString()</p>
+
+<p>中间层原有代码使用这种方式进行格式转换，不过存在一些问题：
+* json转换为xml的时候，对带content字段的节点，是直接生成文本，而不是<content>xx</content>
+* xml转换为json的时候，会对指为整形(还有true/false/null等)的字符串尝试进行转换，变成原生类型</p>
+
+<p>为了避免这两个问题，对org.json库的XML.java进行了一些修改:
+* 去掉content字段的特殊处理
+* 去掉整形字符串尝试转换的逻辑</p>
+
+<p>见https://github.com/mccxj/JSON-java</p>
+
+<p>经验教训: 以后引用第三方库的时候，要小心呀，避免触碰到一些特殊开关。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[2014读书笔记]]></title>
@@ -1479,827 +1752,6 @@ java这边也要使用补\0的做法，如果使用java解密的话，就只能�
 我都是对数据库技术有点不屑的感觉，所以学得很少，直到最近这两年我才接触得多一些。</p>
 
 <p>娱乐而已，勿当真。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[redis简报]]></title>
-    <link href="http://mccxj.github.com/blog/20130908_redis-introduction.html"/>
-    <updated>2013-09-08T00:00:00+08:00</updated>
-    <id>http://mccxj.github.com/blog/redis-introduction</id>
-    <content type="html"><![CDATA[<p><strong>RE</strong>mote <strong>DI</strong>ctionary <strong>S</strong>erver(Redis) 是一个由Salvatore Sanfilippo写的key-value存储系统，
-与memcached相比，redis支持更丰富的数据结构，特点是高性能、持久存储，适应高并发的应用场景。它起步较晚，发展迅速，
-目前已被许多大型机构采用，比如Twitter、Github、新浪微博等。</p>
-
-<h2>Redis安装</h2>
-
-<p>redis的安装没有其他依赖，非常简单。操作如下：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>wget http://download.redis.io/releases/redis-2.6.16.tar.gz
-</span><span class='line'>tar zxvf redis-2.6.16.tar.gz
-</span><span class='line'><span class="nb">cd </span>redis-2.6.16/
-</span><span class='line'>make
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>这样就会在src目录下生成以下几个可执行文件：redis-benchmark、redis-check-aof、redis-check-dump、redis-cli、redis-server。
-这几个文件加上redis.conf就是redis的最终可用包了。可以考虑把这几个文件拷贝到你希望的地方。例如:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>mkdir -p /usr/local/redis/bin
-</span><span class='line'>mkdir -p /usr/local/redis/etc
-</span><span class='line'>cp redis.conf /usr/local/redis/etc
-</span><span class='line'><span class="nb">cd </span>src
-</span><span class='line'>cp redis-benchmark redis-check-aof redis-check-dump redis-cli redis-server /usr/local/redis/bin
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>现在就可以启动redis了。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd</span> /usr/local/redis
-</span><span class='line'>bin/redis-server etc/redis.conf
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>注意，默认复制过去的redis.conf文件的daemonize参数为no，所以redis不会在后台运行，可以修改为yes则为后台运行redis。
-另外配置文件中规定了pid文件，log文件和数据文件的地址，如果有需要先修改，默认log信息定向到stdout.
-这时候就可以打开终端进行测试了，默认的监听端口是6379，所以用telnet进行连接如下：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># telnet localhost 6379</span>
-</span><span class='line'>Trying 127.0.0.1...
-</span><span class='line'>Connected to localhost.
-</span><span class='line'>Escape character is <span class="s1">&#39;^]&#39;</span>.
-</span><span class='line'>SET hello world
-</span><span class='line'>+OK
-</span><span class='line'>GET hello
-</span><span class='line'><span class="nv">$5</span>
-</span><span class='line'>world
-</span><span class='line'>quit
-</span><span class='line'>+OK
-</span><span class='line'>Connection closed by foreign host.
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>或者使用redis-cli客户端:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># redis-cli</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; SET hello world
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; GET hello
-</span><span class='line'><span class="s2">&quot;world&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>redis数据结构</h2>
-
-<p>redis相对memcached来说，支持更加丰富的数据结构，正如作者所说的，redis是一个数据结构服务器（data structures server），
-redis的所有功能就是将数据以其固有的几种结构保存，并提供给用户操作这几种结构的接口。redis目前支持以下几种数据类型：</p>
-
-<ul>
-<li>String类型</li>
-</ul>
-
-
-<p>字符串是最简单的类型，和memcached支持的类型是一样的，但是在功能上更加丰富。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; SET name <span class="s2">&quot;Redis 2.6.16&quot;</span>
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; GET name
-</span><span class='line'><span class="s2">&quot;Redis 2.6.16&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>另外，它还支持批量读写:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; MSET age 30 sex Male
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; MGET age sex
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;30&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Male&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>还可以当成数字来使用，并支持对数字的加减操作:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; INCR age
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 31
-</span><span class='line'>redis 127.0.0.1:6379&gt; INCRBY age 2
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 33
-</span><span class='line'>redis 127.0.0.1:6379&gt; GET age
-</span><span class='line'><span class="s2">&quot;33&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; DECR age
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 32
-</span><span class='line'>redis 127.0.0.1:6379&gt; DECRBY age 2
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 30
-</span><span class='line'>redis 127.0.0.1:6379&gt; GET age
-</span><span class='line'><span class="s2">&quot;30&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>还支持对字符串进行部分修改或获取操作</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; STRLEN name
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 12
-</span><span class='line'>redis 127.0.0.1:6379&gt; GETRANGE name 0 4
-</span><span class='line'><span class="s2">&quot;Redis&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; APPEND name <span class="s2">&quot;, NoSQL&quot;</span>
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 19
-</span><span class='line'>redis 127.0.0.1:6379&gt; GET name
-</span><span class='line'><span class="s2">&quot;Redis 2.6.16, NoSQL&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>List类型</li>
-</ul>
-
-
-<p>Redis能够把数据存储成一个链表，并能对这个链表进行操作:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; LPUSH language Java
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; LPUSH language C++
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 2
-</span><span class='line'>redis 127.0.0.1:6379&gt; RPUSH language C
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 3
-</span><span class='line'>redis 127.0.0.1:6379&gt; LLEN language
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 3
-</span><span class='line'>redis 127.0.0.1:6379&gt; LRANGE language 0 2
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;C++&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Java&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;C&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; LPOP language
-</span><span class='line'><span class="s2">&quot;C++&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; LLEN language
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 2
-</span><span class='line'>redis 127.0.0.1:6379&gt; LREM language 1 Java
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; LLEN language
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Redis也支持很多修改操作</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; LRANGE language 0 2
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;C&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; LINSERT language BEFORE C C++
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 2
-</span><span class='line'>redis 127.0.0.1:6379&gt; LINSERT language BEFORE C Java
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 3
-</span><span class='line'>redis 127.0.0.1:6379&gt; LLEN language
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 3
-</span><span class='line'>redis 127.0.0.1:6379&gt; LRANGE language 0 2
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;C++&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Java&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;C&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; LTRIM language 2 -1
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; LLEN language
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; LRANGE language 0 2
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;C&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>Sets类型</li>
-</ul>
-
-
-<p>Redis能够将一系列不重复的值存储成一个集合，并支持修改和集合关系操作。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; SADD system Win
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; SADD system Linux
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; SADD system Mac
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; SADD system Linux
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 0
-</span><span class='line'>redis 127.0.0.1:6379&gt; SMEMBERS system
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Win&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Mac&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;Linux&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Sets结构也支持相应的修改操作</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; SREM system Win
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; SMEMBERS system
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Mac&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Linux&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; SADD system Win
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; SMEMBERS system
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Mac&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Win&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;Linux&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Redis还支持对集合的子交并补等操作</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; SADD phone Android
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; SADD phone Iphone
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; SADD phone Win
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; SMEMBERS phone
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Win&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Iphone&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;Android&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; SINTER system phone
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Win&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; SUNION system phone
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Win&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Iphone&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;Mac&quot;</span>
-</span><span class='line'>4<span class="o">)</span> <span class="s2">&quot;Linux&quot;</span>
-</span><span class='line'>5<span class="o">)</span> <span class="s2">&quot;Android&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; SDIFF system phone
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Mac&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Linux&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>Sorted Sets类型</li>
-</ul>
-
-
-<p>Sorted Sets和Sets结构非常相似，不同的是Sorted Sets中的数据会有一个score属性，并会在写入时就按这个score排好序。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; ZADD days 0 mon
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZADD days 1 tue
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZADD days 2 wed
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZADD days 3 thu
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZADD days 4 fri
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZADD days 5 sat
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZADD days 6 sun
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZCARD days
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 7
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZRANGE days 0 6
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;mon&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;tue&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;wed&quot;</span>
-</span><span class='line'>4<span class="o">)</span> <span class="s2">&quot;thu&quot;</span>
-</span><span class='line'>5<span class="o">)</span> <span class="s2">&quot;fri&quot;</span>
-</span><span class='line'>6<span class="o">)</span> <span class="s2">&quot;sat&quot;</span>
-</span><span class='line'>7<span class="o">)</span> <span class="s2">&quot;sun&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZSCORE days sat
-</span><span class='line'><span class="s2">&quot;5&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZCOUNT days 3 6
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 4
-</span><span class='line'>redis 127.0.0.1:6379&gt; ZRANGEBYSCORE days 3 6
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;thu&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;fri&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;sat&quot;</span>
-</span><span class='line'>4<span class="o">)</span> <span class="s2">&quot;sun&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>Hash类型</li>
-</ul>
-
-
-<p>Redis能够存储多个键值对的数据</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; HMSET student name Tom age 12 sex Male
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; HKEYS student
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;name&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;age&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;sex&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; HVALS student
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Tom&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;12&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;Male&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; HGETALL student
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;name&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Tom&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;age&quot;</span>
-</span><span class='line'>4<span class="o">)</span> <span class="s2">&quot;12&quot;</span>
-</span><span class='line'>5<span class="o">)</span> <span class="s2">&quot;sex&quot;</span>
-</span><span class='line'>6<span class="o">)</span> <span class="s2">&quot;Male&quot;</span>
-</span><span class='line'>redis 127.0.0.1:6379&gt; HDEL student sex
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; HGETALL student
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;name&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;Tom&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;age&quot;</span>
-</span><span class='line'>4<span class="o">)</span> <span class="s2">&quot;12&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Redis能够支持Hash的批量修改和获取</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; HMSET kid name Akshi age 2 sex Female
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; HMGET kid name age sex
-</span><span class='line'>1<span class="o">)</span> <span class="s2">&quot;Akshi&quot;</span>
-</span><span class='line'>2<span class="o">)</span> <span class="s2">&quot;2&quot;</span>
-</span><span class='line'>3<span class="o">)</span> <span class="s2">&quot;Female&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>在这些数据结构的基础上，跟memcached一样，Redis也支持设置数据过期时间，并支持一些简单的组合型的命令。</p>
-
-<p>设置数据过期时间</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; SET name <span class="s2">&quot;John Doe&quot;</span>
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; EXISTS name
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>redis 127.0.0.1:6379&gt; EXPIRE name 5
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 1
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>5秒后再查看</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; EXISTS name
-</span><span class='line'><span class="o">(</span>integer<span class="o">)</span> 0
-</span><span class='line'>redis 127.0.0.1:6379&gt; GET name
-</span><span class='line'><span class="o">(</span>nil<span class="o">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>简单的组合型的命令。通过MULTI和EXEC，将几个命令组合起来执行</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; SET counter 0
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; MULTI
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; INCR counter
-</span><span class='line'>QUEUED
-</span><span class='line'>redis 127.0.0.1:6379&gt; INCR counter
-</span><span class='line'>QUEUED
-</span><span class='line'>redis 127.0.0.1:6379&gt; INCR counter
-</span><span class='line'>QUEUED
-</span><span class='line'>redis 127.0.0.1:6379&gt; EXEC
-</span><span class='line'>1<span class="o">)</span> <span class="o">(</span>integer<span class="o">)</span> 1
-</span><span class='line'>2<span class="o">)</span> <span class="o">(</span>integer<span class="o">)</span> 2
-</span><span class='line'>3<span class="o">)</span> <span class="o">(</span>integer<span class="o">)</span> 3
-</span><span class='line'>redis 127.0.0.1:6379&gt; GET counter
-</span><span class='line'><span class="s2">&quot;3&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>你还可以用DICARD命令来中断执行中的命令序列</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>redis 127.0.0.1:6379&gt; SET newcounter 0
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; MULTI
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; INCR newcounter
-</span><span class='line'>QUEUED
-</span><span class='line'>redis 127.0.0.1:6379&gt; INCR newcounter
-</span><span class='line'>QUEUED
-</span><span class='line'>redis 127.0.0.1:6379&gt; INCR newcounter
-</span><span class='line'>QUEUED
-</span><span class='line'>redis 127.0.0.1:6379&gt; DISCARD
-</span><span class='line'>OK
-</span><span class='line'>redis 127.0.0.1:6379&gt; GET newcounter
-</span><span class='line'><span class="s2">&quot;0&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[JUnit参数化介绍与实践]]></title>
-    <link href="http://mccxj.github.com/blog/20130901_junit-parameterized.html"/>
-    <updated>2013-09-01T00:00:00+08:00</updated>
-    <id>http://mccxj.github.com/blog/junit-parameterized</id>
-    <content type="html"><![CDATA[<p>junit在4.11版本实现了参数化功能，基于这个功能，相当于可以动态生成测试用例的。先看看官方例子:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@RunWith</span><span class="o">(</span><span class="n">Parameterized</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">FibonacciTest</span> <span class="o">{</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="nd">@Parameters</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;{index}: fib({0})={1}&quot;</span><span class="o">)</span>
-</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="n">Iterable</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">[]&gt;</span> <span class="nf">data</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>        <span class="k">return</span> <span class="n">Arrays</span><span class="o">.</span><span class="na">asList</span><span class="o">(</span><span class="k">new</span> <span class="n">Object</span><span class="o">[][]</span> <span class="o">{</span> <span class="o">{</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">0</span> <span class="o">},</span> <span class="o">{</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">1</span> <span class="o">},</span> <span class="o">{</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">1</span> <span class="o">},</span>
-</span><span class='line'>                <span class="o">{</span> <span class="mi">3</span><span class="o">,</span> <span class="mi">2</span> <span class="o">},</span> <span class="o">{</span> <span class="mi">4</span><span class="o">,</span> <span class="mi">3</span> <span class="o">},</span> <span class="o">{</span> <span class="mi">5</span><span class="o">,</span> <span class="mi">5</span> <span class="o">},</span> <span class="o">{</span> <span class="mi">6</span><span class="o">,</span> <span class="mi">8</span> <span class="o">}</span> <span class="o">});</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="kd">private</span> <span class="kt">int</span> <span class="n">input</span><span class="o">;</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="kt">int</span> <span class="n">expected</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="kd">public</span> <span class="nf">FibonacciTest</span><span class="o">(</span><span class="kt">int</span> <span class="n">input</span><span class="o">,</span> <span class="kt">int</span> <span class="n">expected</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">input</span> <span class="o">=</span> <span class="n">input</span><span class="o">;</span>
-</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">expected</span> <span class="o">=</span> <span class="n">expected</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="nd">@Test</span>
-</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>        <span class="n">assertEquals</span><span class="o">(</span><span class="n">expected</span><span class="o">,</span> <span class="n">Fibonacci</span><span class="o">.</span><span class="na">compute</span><span class="o">(</span><span class="n">input</span><span class="o">));</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>使用要点如下:</p>
-
-<ol>
-<li>类名用@RunWith(Parameterized.class)进行注解</li>
-<li>需要一个用于准备参数的方法，可以返回列表，但是注意列表中的元素需要是数组，对应于构造方法中的参数顺序。相当于junit会自动根据参数调用构造方法，然后再执行测试用例。这个准备参数的方法需要用@Parameters进行注解。</li>
-<li>可以通过设置@Parameters中的name属性自定义展示的测试名称。其中{index}表示当前参数在准备好的参数列表中的索引位置，{0},{1}&#8230;表示当前用例中的第x个参数值。以上面为例，第一个用例名称就是0::fib(0)=0</li>
-</ol>
-
-
-<p>我在最近的工程中，就使用了这一特性。我准备了两个目录，一个用来配置请求报文，另外一个用来配置响应报文。
-就是想通过测试用来来比较实际的响应报文和期望的响应报文是否规则匹配。</p>
-
-<p>一开始我使用了在一个测试用例中做这个事情，虽然用例可以跑，但几十个报文是作为一个用例来运行的，
-不能直观的展现出具体报文的处理情况。</p>
-
-<p>后来我采用参数化的办法，在准备参数的时候，读取这两个目录生成对应的报文列表，再由测试用例根据请求报文进行业务处理，
-得到实际响应报文后，与期望的响应报文进行规则匹配。整个架子的代码写完之后，只需要配置报文就可以增加测试用例了，
-更重要的是，可以直观的展现出具体报文的处理情况。示例代码如下:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@RunWith</span><span class="o">(</span><span class="n">Parameterized</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">IntegrationTest</span> <span class="o">{</span>
-</span><span class='line'>    <span class="kd">public</span> <span class="nf">IntegrationTest</span><span class="o">(</span><span class="n">String</span> <span class="n">name</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="nd">@Parameterized.Parameters</span><span class="o">(</span><span class="n">name</span> <span class="o">=</span> <span class="s">&quot;{index}: {0}&quot;</span><span class="o">)</span>
-</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="n">Collection</span><span class="o">&lt;</span><span class="n">String</span><span class="o">[]&gt;</span> <span class="nf">data</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>        <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">[]&gt;</span> <span class="n">testData</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">[]&gt;();</span>
-</span><span class='line'>
-</span><span class='line'>        <span class="n">ClassLoader</span> <span class="n">loader</span> <span class="o">=</span> <span class="n">IntegrationTest</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getClassLoader</span><span class="o">();</span>
-</span><span class='line'>        <span class="n">String</span> <span class="n">reqpath</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="na">getResource</span><span class="o">(</span><span class="s">&quot;req&quot;</span><span class="o">).</span><span class="na">getPath</span><span class="o">();</span>
-</span><span class='line'>        <span class="n">String</span><span class="o">[]</span> <span class="n">files</span> <span class="o">=</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="n">reqpath</span><span class="o">).</span><span class="na">list</span><span class="o">(</span><span class="k">new</span> <span class="n">FilenameFilter</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>            <span class="nd">@Override</span>
-</span><span class='line'>            <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">accept</span><span class="o">(</span><span class="n">File</span> <span class="n">dir</span><span class="o">,</span> <span class="n">String</span> <span class="n">name</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>                <span class="k">return</span> <span class="n">name</span><span class="o">.</span><span class="na">endsWith</span><span class="o">(</span><span class="s">&quot;_req.xml&quot;</span><span class="o">);</span>
-</span><span class='line'>            <span class="o">}</span>
-</span><span class='line'>        <span class="o">});</span>
-</span><span class='line'>
-</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="n">String</span> <span class="n">file</span> <span class="o">:</span> <span class="n">files</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>            <span class="kt">int</span> <span class="n">ldx</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="na">lastIndexOf</span><span class="o">(</span><span class="s">&quot;_req.xml&quot;</span><span class="o">);</span>
-</span><span class='line'>            <span class="n">testData</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">[]{</span><span class="n">file</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">ldx</span><span class="o">)});</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>        <span class="k">return</span> <span class="n">testData</span><span class="o">;</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="nd">@Test</span>
-</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">clientTest</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>        <span class="c1">//TODO with this.name</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[数独随机生成探讨]]></title>
-    <link href="http://mccxj.github.com/blog/20130821_soduku-generate.html"/>
-    <updated>2013-08-21T00:00:00+08:00</updated>
-    <id>http://mccxj.github.com/blog/soduku-generate</id>
-    <content type="html"><![CDATA[<h3>思路</h3>
-
-<p>数独游戏应该很多人都玩过，规则也很简单。以前写过数独的程序解法，最近考虑了一下数独的随机生成。毕竟，每个数独一开始都是残缺的，它是怎么生成的?</p>
-
-<p>如果通过正向生成的话，还需要判断剩余的空格是否能够满足数独的问题。所以，我认为应该通过反向来创建，意思是通过一个完整的数独，然后随机从上面抠取，抠得越多，表明完成的难度越大。</p>
-
-<h3>具体方案</h3>
-
-<p>问题就变成，如何生成一个完整的随机的数独?根据数独的特点，我认为可以通过一个已有的数独来生成其他数独。方案如下:</p>
-
-<p><img src="http://mccxj.github.com/assets/images/2013/soduku/1.png" alt="row1" /></p>
-
-<ol>
-<li>首先看看上面的图案，对于一个完整的数独，1,2,3行调换次序，仍然可以保证变换后的数独是成立。
-同理，456,789也是同样的道理。行是如此，列也是可以成立的，abc,def,ghi的内部调换都是可以成立的。
-<img src="http://mccxj.github.com/assets/images/2013/soduku/2.png" alt="row2" /></li>
-<li>还有上图所示的情况，123和456整三行一起调换也是可以的。同样，在列上面也是一样的道理。</li>
-<li>还有其他一些思路，例如进行旋转操作，或者反过来的做法。</li>
-</ol>
-
-
-<h3>关于重复性</h3>
-
-<p>对于上述1,2两种方案，会不会出现重复的情况呢？我们进行下面的分析:</p>
-
-<p><img src="http://mccxj.github.com/assets/images/2013/soduku/3.png" alt="row3" /></p>
-
-<ol>
-<li>假设A1是x,B1是y,C1是z，我们想找到某个变化可以达到同样的效果。</li>
-<li>如果通过行变换的话，因为数独的限制，不可能有某一行在同样的列上有xyz存在，所以不能做到。</li>
-<li>同理，如果是列变化的话，在第一行的位置也不可能再有xyz存在，所以也是不能做到的。</li>
-</ol>
-
-
-<p>意思就是说，如果从某个变化开始，每做一次变换，都能得到一个新的数独，这样我们可以统计一下，一共可以有多少种变换方式。每三行中的行内的变化有6种排列，三行三行的也是有6中排列，计算上列的变换，就有
-6X6X6X6X6X6X6X6=1679616种。</p>
 ]]></content>
   </entry>
   

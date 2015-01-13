@@ -1,0 +1,326 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="百度面试题 有一根27厘米的细木杆，在第3厘米、7厘米、11厘米、17厘米、23厘米这五个位置上各有一只蚂蚁。
+木杆很细，不能同时通过一只蚂蚁。开始时，蚂蚁的头朝左还是朝右是任意的，它们只会朝前走或调头，但不会后退。
+当任意两只蚂蚁碰头时，两只蚂蚁会同时调头朝反方向走。 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/page/22/index.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120625_ant-on-wood-stick.html">蚂蚁走木棍</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-25T00:00:00+08:00" pubdate data-updated="true">Jun 25<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120625_ant-on-wood-stick.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/assets/images/ant_on_wood_stick.gif" alt="蚂蚁走木棍" /></p>
+
+<h2>百度面试题</h2>
+
+<p>有一根27厘米的细木杆，在第3厘米、7厘米、11厘米、17厘米、23厘米这五个位置上各有一只蚂蚁。
+木杆很细，不能同时通过一只蚂蚁。开始时，蚂蚁的头朝左还是朝右是任意的，它们只会朝前走或调头，但不会后退。
+当任意两只蚂蚁碰头时，两只蚂蚁会同时调头朝反方向走。假设蚂蚁们每秒钟可以走一厘米的距离。
+编写程序，求所有蚂蚁都离开木杆的最小时间和最大时间。</p>
+
+<h2>简化问题</h2>
+
+<p>看上去很复杂，但可以这样看问题：假设可以过两只蚂蚁，那么蚂蚁相撞两蚂蚁调头相当于不调头继续前进。
+这样问题就可以迎刃而解了。最大的时间就是每只蚂蚁往远端前进(算出来是离一端最远的那只)，最小的时间就是每只蚂蚁往近端前进(算出来是最后爬出来的那只)。
+这样，最大时间就是3厘米的那只，耗时24秒。最小时间是11厘米那只，它最快要11秒才能出来。</p>
+
+<h2>小学竞赛题</h2>
+
+<p>这个题目让我想起一个竞赛题，大概是说，有两个人相距x米迎面走来(速度已知)，其中有只狗在他们之间来回跑(狗的速度较快)，
+求两人相逢的时候，狗跑了多长距离。如果着眼点在狗每次跑动的距离，那一样非常复杂。如果着眼于时间，
+则问题也就迎刃而解了。话说回来，类似的这些题目，更像是智力题而非编程题。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120622_new-blog-in-github.html">Blog in Github,新的开始</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-06-22T00:00:00+08:00" pubdate data-updated="true">Jun 22<span>nd</span>, 2012</time>
+        
+         | <a href="/blog/20120622_new-blog-in-github.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>老掉牙的故事</h2>
+
+<p>我写博客也不算新鲜事了，不过已经有2年没写过博客了。很早之前就有<a href="http://uptolife.blogspot.com" title="google blogspot">blogspot</a>和<a href="http://bonyfish.cn" title="blog">bonyfish.cn</a>，
+blogspot是我最初的博客地址，因为我比较喜欢blogspot那种简洁的风格，只是后来在天朝无法访问，所以把数据迁移出来。
+后来自己弄了个域名，用wordpress重新搭建了一个，又这样持续了一两天。
+前后加起来写过超过1000篇大大小小的博客，只是因为各种原因，后来没有坚持下来，回想起来，还是有些可惜的。
+不过，我手头上还是有一份完整的数据库备份，算是留个纪念。</p>
+
+<h2>why blog, why github</h2>
+
+<p>这两年的工作比较忙，这也是没坚持下来的原因之一，但同样也是这次想重新捡起来的主要动力。
+在这家公司里边，忙已经成为一种常态，常常没有时间停下来思考，把好的东西沉淀下来。
+这是一家感觉很特别的公司，有很多人很认真，却忙得一塌糊涂，没时间学习。
+不得不说，这真是很无奈的一件事。但我不想这样，我需要时常回顾一下做过的事情，希望能从中获取到一些东西。
+或许哪天我离开这家公司，我希望带走更多东西，而不只是一些钱和一个漂亮的工作简历。</p>
+
+<p>为什么选择github作为博客？我非常喜欢github，它给我的体验非常好，我在公司弄的code diff工具也借鉴了github的review功能。
+github的博客功能其实是一个只支持静态页面的page功能，相对于正式的博客来说，只能用简陋来形容，但它符合KISS原则，能够让我关注不至于过于分散。
+借助<a href="https://github.com/mojombo/jekyll" title="jekyll">jekyll</a>和markdown标记语言来生成静态页面也很简单，稍微试了一下，符合我的要求:足够简单。</p>
+
+<p>关于jekyll的更多内容，可以参考原作者的博文:<a href="http://tom.preston-werner.com/2008/11/17/blogging-like-a-hacker.html">像黑客一样写博客</a>(<a href="http://kyle.xlau.org/posts/blogging-like-a-hacker.html">中文版</a>)</p>
+
+<p>关于markdown的更多内容，可以参考这个教程:<a href="http://wowubuntu.com/markdown/">Markdown 语法说明</a>，你只要花半个小时到一个小时就差不多了。</p>
+
+<p>我还整理了一个<a href="/20120629_problem-about-jekyll-and-markdown.html">使用jekyll和markdown中遇到的问题</a></p>
+
+<h2>plan&#8230;and so on</h2>
+
+<p>我是使用<a href="http://jekyllbootstrap.com/" title="jekyll bootstrap">Jekyll Bootstrap</a>弄的，因为我对<a href="http://twitter.github.com/bootstrap/" title="twitter bootstrap">twitter bootstrap</a>这套简洁的css框架还算了解。同时，我相信你也是喜欢上这个风格的。</p>
+
+<p>我会争取一个星期至少更新一篇，这个频率虽然有点慢，但目标不要定太高，万事开头难嘛 :)
+另外，我会抽时间整理一下以前老的博客，把还有点用的东西重新分享一番，但愿这些年没有白过了。</p>
+
+<p>拭目以待吧!</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/blog/page/21/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141225_java-common-util.html">java常见工具库培训</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141126_org-json-and-xml.html">使用org.json库进行xml和json转换存在的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140329_was-datasource.html">websphere+spring+jndi数据源配置</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140225_android-jdk7-bug.html">jdk7编译的bug记录</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140219_android-maven-problems.html">android+maven问题记录</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        var disqus_script = 'count.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

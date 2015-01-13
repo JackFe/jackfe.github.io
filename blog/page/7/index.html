@@ -9,8 +9,11 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="1 什么是Fiddler? Fiddler是一个http调试代理，以代理服务器的方式，监听系统的Http网络数据流动，
-Fiddler可以也可以让你检查所有的http通讯，设置断点，以及Fiddle所有的“进出”的数据。 Fiddler还包含一个简单却功能强大的基于JScript .NET &hellip;">
+  <meta name="description" content="最近有个需求，是关于一个Socket连接池的功能改造，要求实现下面的需求: 可配置多个服务器地址
+服务器地址可以配置权重(比如3:2:1)
+连接池可以设置最小连接和最大连接
+某服务器从崩溃中恢复后，连接池中的连接数可以自动恢复到服务器之间的权重比。
+连接可设置最大空闲释放时间 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +68,746 @@ Fiddler可以也可以让你检查所有的http通讯，设置断点，以及Fid
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130630_object-balance-pool.html">带平衡的对象池设计</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-30T00:00:00+08:00" pubdate data-updated="true">Jun 30<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130630_object-balance-pool.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>最近有个需求，是关于一个Socket连接池的功能改造，要求实现下面的需求:</p>
+
+<ol>
+<li>可配置多个服务器地址</li>
+<li>服务器地址可以配置权重(比如3:2:1)</li>
+<li>连接池可以设置最小连接和最大连接</li>
+<li>某服务器从崩溃中恢复后，连接池中的连接数可以自动恢复到服务器之间的权重比。</li>
+<li>连接可设置最大空闲释放时间</li>
+</ol>
+
+
+<p>一开始有同事自定义了一个链表来做取数和归还的操作，在线程安全方面操作感觉还是有点麻烦。
+后来我采用PriorityBlockingQueue来实现，其实就是内部变成了堆的结构。见下面的图:</p>
+
+<p><img src="/assets/images/2013/pool/1.png" alt="数据结构" /></p>
+
+<p><img src="/assets/images/2013/pool/2.png" alt="类图" /></p>
+
+<p><img src="/assets/images/2013/pool/3.png" alt="状态图" /></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130615_java-string-constant-pool.html">初探Java字符串</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-15T00:00:00+08:00" pubdate data-updated="true">Jun 15<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130615_java-string-constant-pool.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>String印象</h2>
+
+<p>String是java中的无处不在的类，使用也很简单。初学java，就已经有字符串是不可变的盖棺定论，解释通常是:它是final的。</p>
+
+<p>不过，String是有字面量这一说法的，这是其他类型所没有的特性(除原生类型)。另外，java中也有字符串常量池这个说法，用来存储字符串字面量，不是在堆上，而是在方法区里边存在的。</p>
+
+<h2>字面量和常量池初探</h2>
+
+<p>字符串对象内部是用字符数组存储的，那么看下面的例子:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">String</span> <span class="n">m</span> <span class="o">=</span> <span class="s">&quot;hello,world&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="n">String</span> <span class="n">n</span> <span class="o">=</span> <span class="s">&quot;hello,world&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="n">String</span> <span class="n">u</span> <span class="o">=</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="n">m</span><span class="o">);</span>
+</span><span class='line'><span class="n">String</span> <span class="n">v</span> <span class="o">=</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;hello,world&quot;</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这些语句会发生什么事情? 大概是这样的:</p>
+
+<ol>
+<li>会分配一个11长度的char数组，并在常量池分配一个由这个char数组组成的字符串，然后由m去引用这个字符串。</li>
+<li>用n去引用常量池里边的字符串，所以和n引用的是同一个对象。</li>
+<li>生成一个新的字符串，但内部的字符数组引用着m内部的字符数组。</li>
+<li>同样会生成一个新的字符串，但内部的字符数组引用常量池里边的字符串内部的字符数组，意思是和u是同样的字符数组。</li>
+</ol>
+
+
+<p>如果我们使用一个图来表示的话，情况就大概是这样的(使用虚线只是表示两者其实没什么特别的关系):</p>
+
+<p><img src="/assets/images/2013/string/string1.png" alt="对象在内存中的布局" /></p>
+
+<p>结论就是,m和n是同一个对象，但m,u,v都是不同的对象，但都使用了同样的字符数组，并且用equal判断的话也会返回true。</p>
+
+<p>我们可以使用反射修改字符数组来验证一下效果，可以试试下面的测试代码:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Test</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">test1</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">String</span> <span class="n">m</span> <span class="o">=</span> <span class="s">&quot;hello,world&quot;</span><span class="o">;</span>
+</span><span class='line'>    <span class="n">String</span> <span class="n">n</span> <span class="o">=</span> <span class="s">&quot;hello,world&quot;</span><span class="o">;</span>
+</span><span class='line'>    <span class="n">String</span> <span class="n">u</span> <span class="o">=</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="n">m</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">String</span> <span class="n">v</span> <span class="o">=</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;hello,world&quot;</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Field</span> <span class="n">f</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getDeclaredField</span><span class="o">(</span><span class="s">&quot;value&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">f</span><span class="o">.</span><span class="na">setAccessible</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+</span><span class='line'>    <span class="kt">char</span><span class="o">[]</span> <span class="n">cs</span> <span class="o">=</span> <span class="o">(</span><span class="kt">char</span><span class="o">[])</span> <span class="n">f</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">m</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">cs</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span> <span class="o">=</span> <span class="sc">&#39;H&#39;</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">String</span> <span class="n">p</span> <span class="o">=</span> <span class="s">&quot;Hello,world&quot;</span><span class="o">;</span>
+</span><span class='line'>    <span class="n">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">(</span><span class="n">p</span><span class="o">,</span> <span class="n">m</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">(</span><span class="n">p</span><span class="o">,</span> <span class="n">n</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">(</span><span class="n">p</span><span class="o">,</span> <span class="n">u</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">Assert</span><span class="o">.</span><span class="na">assertEquals</span><span class="o">(</span><span class="n">p</span><span class="o">,</span> <span class="n">v</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>从上面的例子可以看到，经常说的字符串是不可变的，其实和其他的final类还是没什么区别，还是引用不可变的意思。
+虽然String类不开放value，但同样是可以通过反射进行修改，只是通常没人这么做而已。
+即使是涉及&#8221;修改&#8221;的方法，都是通过产生一个新的字符串对象来实现的，例如replace、toLower、concat等。
+这样做的好处就是让字符串是一个状态不可变类，在多线程操作时没有后顾之忧。</p>
+
+<p>当然，在字符串修改的时候，会产生一个新的对象，如果执行很频繁，就会导致大量对象的创建，性能问题也就随之而来了。
+为了应付这个问题，通常我们会采用StringBuffer或StringBuilder类来处理。</p>
+
+<p>另外，字符串常量通常是在编译的时候就确定好的，定义在类的方法区里边，也就是说，不同的类，即使用了同样的字符串，
+还是属于不同的对象。所以才需要<strong>通过引用字符串常量来减少相同的字符串的数量</strong>。可以通过下面的代码来测试一下：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">class</span> <span class="nc">A</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">print</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;hello&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">class</span> <span class="nc">B</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">print</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">String</span> <span class="n">s</span> <span class="o">=</span> <span class="s">&quot;hello&quot;</span><span class="o">;</span>
+</span><span class='line'>        <span class="c1">// 修改s的第一个字符为H</span>
+</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;hello&quot;</span><span class="o">);</span> <span class="c1">// 输出Hello</span>
+</span><span class='line'>        <span class="k">new</span> <span class="nf">A</span><span class="o">().</span><span class="na">print</span><span class="o">();</span> <span class="c1">// 输出hello</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>字符串操作细节</h2>
+
+<p>String类内部处理有个字符数组之外，还使用偏移位置offset和长度count，
+通过offset和count来确定字符数组的一部分，这部分才是这个字符串的真正的内容。
+例如，有substring这个常用方法，看下面的例子:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">String</span> <span class="n">m</span> <span class="o">=</span> <span class="s">&quot;hello,world&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="n">String</span> <span class="n">u</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span><span class="mi">10</span><span class="o">);</span>
+</span><span class='line'><span class="n">String</span> <span class="n">v</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="mi">4</span><span class="o">,</span><span class="mi">7</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>按照上面的说法，m,n的数据结构就如下图所示:</p>
+
+<p><img src="/assets/images/2013/string/string2.png" alt="substring在内存中的布局" /></p>
+
+<p>可以发现，m,n,v是三个不同的字符串对象，但引用的value数组其实是同一个。
+同样可以通过上述反射的代码进行验证，这里就不详述了。</p>
+
+<p>但字符串操作时，可能需要修改原来的字符串数组内容或者原数组没法容纳的时候，就会使用另外一个新的数组，例如replace,concat,+等操作。另外，oracle的JDK实现中，String的构造方法，对于字符串参数只是引用部分字符数组的情况(count小于字符数组长度)，采用的是拷贝新数组的方式，是比较特别的，不过这个构造方法也没什么机会使用到。</p>
+
+<p>例如下面的代码:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">String</span> <span class="n">m</span> <span class="o">=</span> <span class="s">&quot;hello,&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="n">String</span> <span class="n">u</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="na">concat</span><span class="o">(</span><span class="s">&quot;world&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">String</span> <span class="n">v</span> <span class="o">=</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="n">m</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span><span class="mi">2</span><span class="o">));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>得到的结构图如下:</p>
+
+<p><img src="/assets/images/2013/string/string3.png" alt="新字符数组在内存中的布局" /></p>
+
+<p>可以发现，m,u,v内部的字符数组并不是同一个，有兴趣可以试验一下。</p>
+
+<h2>常量池中字符串的产生</h2>
+
+<p>常量池中的字符串通常是通过字面量的方式产生的，就像上述m语句那样。
+并且他们是在编译的时候就准备好了，类加载的时候，顺便就在常量池生成。</p>
+
+<p>可以通过javap命令检查一下class的字节码，可以发现下面的高亮部分(以上面代码为例):</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='diff'><span class='line'> javap -v StringTest
+</span><span class='line'>
+</span><span class='line'> Compiled from &quot;StringTest.java&quot;
+</span><span class='line'> public class com.github.mccxj.StringTest extends java.lang.Object
+</span><span class='line'>   SourceFile: &quot;StringTest.java&quot;
+</span><span class='line'>   minor version: 0
+</span><span class='line'>   major version: 50
+</span><span class='line'>   Constant pool:
+</span><span class='line'> const #1 = Method       #9.#28; //  java/lang/Object.&quot;&lt;init&gt;&quot;:()V
+</span><span class='line'><span class="gi">+ const #2 = String       #29;    //  hello,</span>
+</span><span class='line'><span class="gi">+ const #3 = String       #30;    //  world</span>
+</span><span class='line'> ...
+</span><span class='line'><span class="gi">+ const #46 = Asciz       hello,;</span>
+</span><span class='line'><span class="gi">+ const #47 = Asciz       world;</span>
+</span><span class='line'> ...
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>大家不知有没有发现，上面的图中，u和v的字符数组没有被常量池里边的字符串引用到。
+原因就是这些字符串(字符数组)都是运行时生成的，而常量池里边的字符串和字符数组是完整对应上的(count等于数组长度)。</p>
+
+<p>即使是字符串的内容是一样的，都不能保证是同一个字符串数组。例如下面的代码:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">String</span> <span class="n">m</span> <span class="o">=</span> <span class="s">&quot;hello,world&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="n">String</span> <span class="n">u</span> <span class="o">=</span> <span class="n">m</span> <span class="o">+</span> <span class="s">&quot;.&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="n">String</span> <span class="n">v</span> <span class="o">=</span> <span class="s">&quot;hello,world.&quot;</span><span class="o">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>u和v虽然是一样内容的字符串，但内部的字符数组不是同一个。画成图的话就是这样的:</p>
+
+<p><img src="/assets/images/2013/string/string4.png" alt="不同字符数组在内存中的布局" /></p>
+
+<p>另外有一点，如果让m声明为final，你就会发现u和v变成是同一个对象。画成图的话就是这样的:</p>
+
+<p><img src="/assets/images/2013/string/string5.png" alt="u和v在内存中的布局" /></p>
+
+<p>这应该怎么解释的？这其实都是编译器搞的鬼，因为m是final的，
+u直接被编译成&#8221;hello,world.&#8221;了，如果使用javap查看的话，会发现下面一段逻辑:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='diff'><span class='line'>const #2 = String       #25;    //  hello,world
+</span><span class='line'>const #3 = String       #26;    //  hello,world.
+</span><span class='line'>...
+</span><span class='line'>public void test1()   throws java.lang.Exception;
+</span><span class='line'>  Code:
+</span><span class='line'>   Stack=1, Locals=4, Args_size=1
+</span><span class='line'>   0:   ldc     #2; //String hello,world
+</span><span class='line'>   2:   astore_1
+</span><span class='line'>   3:   ldc     #3; //String hello,world.
+</span><span class='line'>   5:   astore_2
+</span><span class='line'>   6:   ldc     #3; //String hello,world.
+</span><span class='line'>   8:   astore_3
+</span><span class='line'>   9:   return
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>那么，如何让运行时产生的字符串放到常量池里边呢? 可以借助String类的intern方法。
+例如下面的用法</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">String</span> <span class="n">m</span> <span class="o">=</span> <span class="s">&quot;hello,world&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="n">String</span> <span class="n">u</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span><span class="mi">2</span><span class="o">);</span>
+</span><span class='line'><span class="n">String</span> <span class="n">v</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="na">intern</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>上面我们已经知道m,n使用的是同一个字符数组，但intern方法会到常量池里边去寻找字符串&#8221;he&#8221;,如果找到的话，就直接返回该字符串，
+否则就在常量池里边创建一个并返回，所以v使用的字符数组和m,n不是同一个。画成图的话就是这样的:</p>
+
+<p><img src="/assets/images/2013/string/string6.png" alt="intern在内存中的布局" /></p>
+
+<h2>字符串的内存释放问题</h2>
+
+<p>像字面量字符串，因为存放在常量池里边，被常量池引用着，是没法被GC的。例如下面的代码:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">String</span> <span class="n">m</span> <span class="o">=</span> <span class="s">&quot;hello,world&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="n">String</span> <span class="n">n</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span><span class="mi">2</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">m</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'><span class="n">n</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>经过上述的操作，画成图的话就是这样的:</p>
+
+<p><img src="/assets/images/2013/string/string7.png" alt="内存释放后的布局" /></p>
+
+<p>而经过上面的分析，我们知道像substring、split等方法得到的结果都是引用原字符数组的。
+如果某字符串很大，而且不是在常量池里存在的，当你采用substring等方法拿到一小部分新字符串之后，长期保存的话(例如用于缓存等)，
+会造成原来的大字符数组意外无法被GC的问题。</p>
+
+<p>关于这个问题，常见的解决办法就是使用new String(String original)或java.io.StreamTokenizer类。并且在网上已经有比较广泛的讨论，大家可以去阅读一下:</p>
+
+<ul>
+<li><a href="http://blog.xebia.com/2007/10/04/leaking-memory-in-java/">Leaking Memory in Java</a></li>
+<li><a href="http://www.iteye.com/topic/626801">优化变成了忧患：String类的split方法引起的内存泄漏</a></li>
+</ul>
+
+
+<h2>结论</h2>
+
+<ul>
+<li>任何时候，比较字符串内容都应该使用equals方法</li>
+<li>修改字符串操作，应该使用StringBuffer，StringBuilder</li>
+<li>可以使用intern方法让运行时产生字符串的复用常量池中的字符串</li>
+<li>字符串操作可能会复用原字符数组，在某些情况可能造成内存泄露的问题</li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130602_introduce-to-trove.html">性能优化:Trove集合库</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-02T00:00:00+08:00" pubdate data-updated="true">Jun 2<span>nd</span>, 2013</time>
+        
+         | <a href="/blog/20130602_introduce-to-trove.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>1 初见Trove</h2>
+
+<p>昨天在<a href="http://news.dbanotes.net/news">Startup News</a>上看到一篇文章:<a href="http://blog.jobbole.com/40666/">优化技巧分享：把内存消耗降低至原来的1/20</a>。里边提到了一个案例，Java应用中如何降低内存消耗，总结了他的优化过程:</p>
+
+<ul>
+<li>开始时,存放1.3M个Person对象，消耗堆空间1.5GB</li>
+<li>修改为java.util.HashMap&lt;Long, Person>进行缓存,从1.5GB降低为214MB</li>
+<li>修改HashMap为Trove的TLongObjectHashMap<Person>，从214MB降低为143MB</li>
+<li>优化Person内部结构,减少重复字段,从143MB降低为93MB</li>
+<li>开启64位JDK的XX:UseCompressedOops参数进行指针压缩,从93MB降低为73MB</li>
+</ul>
+
+
+<p>优化经常得针对具体的场景、数据特性来优化，上述提到的<a href="http://trove.starlight-systems.com/">Trove</a>集合库就是这么一个典型例子,它针对的是JDK集合类中处理原生类型的场景。</p>
+
+<h2>2 使用Trove</h2>
+
+<ul>
+<li>如果使用Maven的话,可使用下面的配置</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;dependency&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;groupId&gt;</span>net.sf.trove4j<span class="nt">&lt;/groupId&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;artifactId&gt;</span>trove4j<span class="nt">&lt;/artifactId&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;version&gt;</span>3.0.3<span class="nt">&lt;/version&gt;</span>
+</span><span class='line'><span class="nt">&lt;/dependency&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>常用方法和JDK集合类是一样的，方便迁移</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">TIntObjectMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">ints</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TIntObjectHashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;();</span>
+</span><span class='line'><span class="n">ints</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="mi">100</span><span class="o">,</span> <span class="s">&quot;John&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">ints</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="mi">101</span><span class="o">,</span> <span class="s">&quot;Tom&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">ints</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">100</span><span class="o">));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Trove相当于把JDK集合类都针对原生类型处理了一遍，例如int，常见的类有
+TIntList、TIntObjectMap<V>、TObjectIntMap<K>、TIntSet，可想而知，<strong>维护Trove的工作量是挺大的</strong>。</p>
+
+<p>Trove还提供了开放寻址法的Map,Set,LinkedList实现,可以参考<a href="http://www.onjava.com/pub/a/onjava/2002/06/12/trove.html?page=2">Enhance Collection Performance with this Treasure Trove</a>的做法,类似于:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">CollectionFactory</span> <span class="o">{</span>
+</span><span class='line'>  <span class="kd">static</span> <span class="kt">boolean</span> <span class="n">useTrove</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="cm">/**</span>
+</span><span class='line'><span class="cm">  *  Return a hashmap based on the properties</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="n">Map</span> <span class="nf">getHashMap</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>      <span class="k">if</span> <span class="o">(</span> <span class="n">useTrove</span> <span class="o">)</span> <span class="k">return</span> <span class="k">new</span> <span class="n">THashMap</span><span class="o">();</span>
+</span><span class='line'>      <span class="k">else</span>            <span class="k">return</span> <span class="k">new</span> <span class="nf">HashMap</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/**</span>
+</span><span class='line'><span class="cm">  *  Return a hashset based on the properties</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="n">Set</span> <span class="nf">getHashSet</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>      <span class="k">if</span> <span class="o">(</span> <span class="n">useTrove</span> <span class="o">)</span> <span class="k">return</span> <span class="k">new</span> <span class="n">THashSet</span><span class="o">();</span>
+</span><span class='line'>      <span class="k">else</span>            <span class="k">return</span> <span class="k">new</span> <span class="nf">HashSet</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="cm">/**</span>
+</span><span class='line'><span class="cm">  *  Return a linkedlist based on the properties</span>
+</span><span class='line'><span class="cm">  */</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="n">List</span> <span class="nf">getLinkedList</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>      <span class="k">if</span> <span class="o">(</span> <span class="n">useTrove</span> <span class="o">)</span> <span class="k">return</span> <span class="k">new</span> <span class="n">TLinkedList</span><span class="o">();</span>
+</span><span class='line'>      <span class="k">else</span>            <span class="k">return</span> <span class="k">new</span> <span class="nf">LinkedList</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>迭代集合中的元素</li>
+</ul>
+
+
+<p><strong>Trove不推荐JDK的entryXX的做法，而是采用了forEach的回调方式</strong>。
+代码显得更好看些，另外内存方面也有优势，因为使用entryXX的做法，需要创建一个新的数组。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">TIntObjectMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">ints</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TIntObjectHashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;();</span>
+</span><span class='line'><span class="n">ints</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="mi">100</span><span class="o">,</span> <span class="s">&quot;John&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">ints</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="mi">101</span><span class="o">,</span> <span class="s">&quot;Tom&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">ints</span><span class="o">.</span><span class="na">forEachEntry</span><span class="o">(</span><span class="k">new</span> <span class="n">TIntObjectProcedure</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">execute</span><span class="o">(</span><span class="kt">int</span> <span class="n">a</span><span class="o">,</span> <span class="n">String</span> <span class="n">b</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;key: &quot;</span> <span class="o">+</span> <span class="n">a</span> <span class="o">+</span> <span class="s">&quot;, val: &quot;</span> <span class="o">+</span> <span class="n">b</span><span class="o">);</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">});</span>
+</span><span class='line'><span class="n">ints</span><span class="o">.</span><span class="na">forEachKey</span><span class="o">(</span><span class="k">new</span> <span class="n">TIntProcedure</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">execute</span><span class="o">(</span><span class="kt">int</span> <span class="n">value</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;key: &quot;</span> <span class="o">+</span> <span class="n">value</span><span class="o">);</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">});</span>
+</span><span class='line'><span class="n">ints</span><span class="o">.</span><span class="na">forEachValue</span><span class="o">(</span><span class="k">new</span> <span class="n">TObjectProcedure</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">execute</span><span class="o">(</span><span class="n">String</span> <span class="n">object</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;val: &quot;</span> <span class="o">+</span> <span class="n">object</span><span class="o">);</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">});</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>自定义Hash策略</li>
+</ul>
+
+
+<p>我们知道，在JDK集合类里边，有时候是没法自定义Hash策略的，例如String。
+<strong>不过Trove提供了自定义Hash策略的功能，让你可以根据数据特性进行优化</strong>。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kt">char</span><span class="o">[]</span> <span class="n">foo</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[]{</span><span class="sc">&#39;a&#39;</span><span class="o">,</span> <span class="sc">&#39;b&#39;</span><span class="o">,</span> <span class="sc">&#39;c&#39;</span><span class="o">};</span>
+</span><span class='line'>    <span class="kt">char</span><span class="o">[]</span> <span class="n">bar</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="o">[]{</span><span class="sc">&#39;a&#39;</span><span class="o">,</span> <span class="sc">&#39;b&#39;</span><span class="o">,</span> <span class="sc">&#39;c&#39;</span><span class="o">};</span>
+</span><span class='line'>    <span class="n">TCustomHashMap</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">[],</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">ch</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TCustomHashMap</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">[],</span> <span class="n">String</span><span class="o">&gt;(</span><span class="k">new</span> <span class="n">CharArrayStrategy</span><span class="o">());</span>
+</span><span class='line'>    <span class="n">ch</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">foo</span><span class="o">,</span> <span class="s">&quot;John&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">ch</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">bar</span><span class="o">,</span> <span class="s">&quot;Tom&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">class</span> <span class="nc">CharArrayStrategy</span> <span class="kd">implements</span> <span class="n">HashingStrategy</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">[]&gt;</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">computeHashCode</span><span class="o">(</span><span class="kt">char</span><span class="o">[]</span> <span class="n">c</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="c1">// use the shift-add-xor class of string hashing functions</span>
+</span><span class='line'>        <span class="c1">// cf. Ramakrishna and Zobel, &quot;Performance in Practice</span>
+</span><span class='line'>        <span class="c1">// of String Hashing Functions&quot;</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">h</span> <span class="o">=</span> <span class="mi">31</span><span class="o">;</span> <span class="c1">// seed chosen at random</span>
+</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">c</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span> <span class="c1">// could skip invariants</span>
+</span><span class='line'>            <span class="n">h</span> <span class="o">=</span> <span class="n">h</span> <span class="o">^</span> <span class="o">((</span><span class="n">h</span> <span class="o">&lt;&lt;</span> <span class="mi">5</span><span class="o">)</span> <span class="o">+</span> <span class="o">(</span><span class="n">h</span> <span class="o">&gt;&gt;</span> <span class="mi">2</span><span class="o">)</span> <span class="o">+</span> <span class="n">c</span><span class="o">[</span><span class="n">i</span><span class="o">]);</span> <span class="c1">// L=5, R=2 works well for</span>
+</span><span class='line'>                                                  <span class="c1">// ASCII input</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">h</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="kt">char</span><span class="o">[]</span> <span class="n">c1</span><span class="o">,</span> <span class="kt">char</span><span class="o">[]</span> <span class="n">c2</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">c1</span><span class="o">.</span><span class="na">length</span> <span class="o">!=</span> <span class="n">c2</span><span class="o">.</span><span class="na">length</span><span class="o">)</span> <span class="o">{</span> <span class="c1">// could drop this check for fixed-length</span>
+</span><span class='line'>                                      <span class="c1">// keys</span>
+</span><span class='line'>            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">,</span> <span class="n">len</span> <span class="o">=</span> <span class="n">c1</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">len</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span> <span class="c1">// could skip</span>
+</span><span class='line'>                                                         <span class="c1">// invariants</span>
+</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">c1</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">!=</span> <span class="n">c2</span><span class="o">[</span><span class="n">i</span><span class="o">])</span> <span class="o">{</span>
+</span><span class='line'>                <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>3 Trove内幕</h2>
+
+<p>Trove是以减少内存消耗为主要目的的，同时也要保持性能。我们这里简单描述一下Trove的实现内幕。
+这里有有另外一篇文章可以参考：<a href="http://www.ibm.com/developerworks/cn/java/j-perf09284.html">性能观察: Trove 集合类</a></p>
+
+<ul>
+<li>直接使用原生类型,而不是包装类型</li>
+</ul>
+
+
+<p>JDK5的自动封箱机制，让我们可以暂时忽略原生类型和包准类型的区别。自动封箱机制只是一种语法糖，实际上并没有提高效率。
+直接使用原生类型替代包装类型，明显可以占用更小的内存、运行起来也更有效率。对于基本类型的集合组合，Trove都提供了
+等价的集合类。</p>
+
+<ul>
+<li>使用开放寻址法，而不是链地址法</li>
+</ul>
+
+
+<p>大多数的JDK集合类都是采用链地址法实现的，它需要一个地址表，并且元素之间需要链表结点，而Trove采用开放寻址法，
+虽然需要保持足够的空闲位置(装载因子小于0.5),但因为不需要链表结点，所以总体上内存占用要更少，性能还要更快一些。</p>
+
+<ul>
+<li>HashSet不再通过内置HashMap实现</li>
+</ul>
+
+
+<p>JDK的HashSet是通过内置一个HashSet来实现的，所以白白浪费了value的空间。
+Trove提供的THashSet和其他基本类型的HashSet,都不再采用这种方式，直接使用开放地址存储。</p>
+
+<ul>
+<li>采用素数长度大小的数组</li>
+</ul>
+
+
+<p>为了最大程度避免hash冲突，除了保持较小的装载因子，还采用了素数长度大小的数组。具体见gnu.trove.impl.PrimeFinder</p>
+
+<ul>
+<li>采用代码生成进行维护</li>
+</ul>
+
+
+<p>虽然这个和性能没什么关系。但是我们也知道要维护这么多的原生类型集合类，重复的逻辑多但没法重用，是个很纠结的事情。
+Trove采用代码模板，生成大量的类，通过这种方式，可以大大减少维护的工作量。</p>
+
+<h2>4 总结</h2>
+
+<p>JDK作为通用集合类，大多数情况下我们还是会优先选择的。不过，在一些性能敏感的地方，或者Trove可以提供更好的选择。
+作为靠谱的java开发人员，Trove应该像apache commons、google guava那样，存放在你的工具箱里边。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -660,243 +1403,6 @@ URI既可以看成是资源的地址，也可以看成是资源的名称。如�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130519_rss-reading.html">Goodbye,Google Reader</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-05-19T00:00:00+08:00" pubdate data-updated="true">May 19<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130519_rss-reading.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>今天早上,把Google Reader的订阅迁移到鲜果,顺便整理了Reader里边的RSS订阅,略为增长了一点,到153个，主要增加了许多国内著名互联网公司的团队博客。
-鲜果是把订阅和RSS订阅分开的，对于我来说，这显得很不习惯。对于鲜果来说，想打造社交阅读平台，又不得不保留RSS订阅这种传统模式，也是挺无奈的。</p>
-
-<p>另外，看过Feng写的<a href="http://dbanotes.net/mylife/the_bloggers.html">那些写过博客的人们</a>,我也发现了有不少人的博客很久之前就停止更新了。
-博客这东西，在微博，微信等新媒体的冲击下，更显得步伐缓慢，似乎不适应新时代的要求。但只有这些写下的文字，才显得有点沉淀，
-也只有部分通过写博客获得了某些真实东西的人才坚持下来。</p>
-
-<p>分享一下我的<a href="https://www.dropbox.com/s/ypo8lnsjogbtklm/export-2013-05-19.opml?v=0rc-">RSS订阅</a>.</p>
-
-<p>Google Reader即将关闭，阅读还将继续~</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130517_reading-share-java-puzzle.html">读书会,爱读书</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-05-17T00:00:00+08:00" pubdate data-updated="true">May 17<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130517_reading-share-java-puzzle.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>话说，很久没有更新博客了，真是惭愧呀。</p>
-
-<p>今天下午，在部门里边小范围举行了一场读书分享会。我把最近读的一本书,java解惑跟大家分享一下。
-主要使用了书中的一些范例，跟大家一起学习探讨，分享会下来，大家都觉得挺高兴的。</p>
-
-<p>我的主要目的也达到了，活跃一下大家的气氛，接下来计划每周简单搞一次，或许再弄点吃的，好好享受这个过程。
-当然，这个需要持续进行，还少不了更多人的支持，慢慢把范围和影响扩大，逐渐成为一个招牌节目:)</p>
-
-<p>java解惑也是好几年前的书了，很早之前就听过，这次是在地铁上拿电子版在看，基本上我只能答对里边一半左右的谜题，
-感觉对于java这么古板的语言，坑都不少，跟何况c++这样的庞然大物? 总体来说，我给这本书评4颗星，推荐级别。</p>
-
-<p>下周的读书会，讲一本java网络编程的入门书籍。</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130328_cycle-menu.html">判断循环菜单的思考</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-03-28T00:00:00+08:00" pubdate data-updated="true">Mar 28<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130328_cycle-menu.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>今天下午的时候，在执行gem clean命令看到包依赖的时候，突然想起关于循环菜单的老问题。</p>
-
-<h3>无限级菜单的问题</h3>
-
-<p>很多系统的菜单都要求是无限级的，也就是可以很多层的父子菜单关系。
-在进行数据存储的设计的时候，以数据库为例，通常都会给菜单表增加一个父菜单的字段，用来标识从属于哪个菜单。</p>
-
-<p>这里就要求菜单的配置不能出现循环，例如某个菜单的父父菜单是它的子菜单，这是不允许的。
-但有时候难免出现一些错误，特别不是通过可视化界面增加菜单的时候。我们的系统也曾经出现过，例如见<a href="/blog/20120804_improve-bitter-code-7.html">定位数据问题</a>。</p>
-
-<h3>如何判断循环</h3>
-
-<p>就拿<a href="/blog/20120804_improve-bitter-code-7.html">定位数据问题</a>来说，当时时间比较急就没多想，直接参考了项目中已有的逻辑。</p>
-
-<p>考虑整个菜单结构是一棵树的话，它的判断逻辑的思路是，第一次把根结点去掉(最顶层的菜单)，
-第二次把剩余的树的根结点去掉，以此类推，直到最后没有结点(没有循环)，或没有结点可以删除(出现循环)。
-写成伪代码的话，大约是这样的:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">hasDel</span> <span class="o">=</span> <span class="kc">true</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">do</span>
-</span><span class='line'>  <span class="n">hasDel</span> <span class="o">=</span> <span class="kc">false</span>
-</span><span class='line'>  <span class="k">for</span> <span class="err">结点</span> <span class="n">in</span> <span class="err">树</span>
-</span><span class='line'>    <span class="k">if</span> <span class="err">结点</span> <span class="n">has</span> <span class="n">not</span> <span class="err">父节点</span>
-</span><span class='line'>      <span class="err">删除结点</span> <span class="n">and</span> <span class="n">hasDel</span> <span class="o">=</span> <span class="kc">true</span>
-</span><span class='line'>    <span class="n">end</span>
-</span><span class='line'>  <span class="n">end</span>
-</span><span class='line'><span class="k">while</span> <span class="n">hasDel</span>
-</span><span class='line'>
-</span><span class='line'><span class="k">if</span> <span class="err">还剩下结点</span>
-</span><span class='line'>  <span class="err">出现循环</span>
-</span><span class='line'><span class="k">else</span>
-</span><span class='line'>  <span class="err">没有循环</span>
-</span><span class='line'><span class="n">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>因为每次操作都要循环剩下的整个树，循环的次数很关键，如果树有3层，扫描3次即可，如果层次很深，扫描的次数就比较可观了。</p>
-
-<h3>另一个思路</h3>
-
-<p>以其中某个结点为例，它有父节点..一直到根节点，或者出现循环。
-如果不是循环，则整结点都可以去掉。这样的话，只需要遍历整棵树，对未处理的结点，进行循环判断即可，而处理过的(去掉的)可以忽略。</p>
-
-<p>伪代码如下:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="k">for</span> <span class="err">结点</span> <span class="n">in</span> <span class="err">树</span>
-</span><span class='line'>  <span class="k">if</span> <span class="err">结点已经被标识为已处理</span>
-</span><span class='line'>    <span class="k">continue</span>
-</span><span class='line'>  <span class="k">else</span>
-</span><span class='line'>    <span class="err">判断结点到根结点是否存在循环</span><span class="o">(</span><span class="err">如在路径上遇到已处理的直接返回</span><span class="kc">false</span><span class="o">)</span>
-</span><span class='line'>    <span class="k">if</span> <span class="err">存在循环</span>
-</span><span class='line'>       <span class="err">出现循环</span>
-</span><span class='line'>    <span class="k">else</span>
-</span><span class='line'>       <span class="err">标记结点到根结点为已处理</span>
-</span><span class='line'>    <span class="n">end</span>
-</span><span class='line'>  <span class="n">end</span>
-</span><span class='line'><span class="n">end</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p><strong>问题现在就回到如何判断循环链表</strong>，这其实是个经典的面试笔试题了，我在网上挑了其中一个解答:<a href="http://blog.csdn.net/splendour/article/details/7701449">判断循环链表</a>
-对于我们的情况，在遇到已处理结点的时候，直接就可以说明没有循环了，这里可以小优化一下。</p>
-
-<h3>效率分析</h3>
-
-<p>我们粗略的分析一下，外层循环的数量级是整个树的结点数，判断循环的逻辑是和结点的深度有关系的，
-以极端的情况为例，只有1层的话，很明显，相当于扫描一次结点。如果是个非常深的结点(都是单子结点)，就最后一个的结点的话，循环判断的次数也是和结点数成线性的。</p>
-
-<p><strong>结点越深，循环判断的次数就越多，跟结点到根节点的长度成正比，但一次排除的结点也越多。总体还是跟总的结点数成线性正比的。</strong>
-相对于原来的处理方式，平均效率就是它的最好效率。</p>
-
-<h3>小结</h3>
-
-<p>判断链表是否存在循环这种面试题，还是有点实际用处的，以前真的没特别留意。
-算法这东西，真的是无处不在的呀。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/8/">&larr; Older</a>
@@ -912,6 +1418,18 @@ URI既可以看成是资源的地址，也可以看成是资源的名称。如�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141225_java-common-util.html">java常见工具库培训</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141126_org-json-and-xml.html">使用org.json库进行xml和json转换存在的问题</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
@@ -939,18 +1457,6 @@ URI既可以看成是资源的地址，也可以看成是资源的名称。如�
     
       <li class="post">
         <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a>
       </li>
     
   </ul>
@@ -996,7 +1502,7 @@ URI既可以看成是资源的地址，也可以看成是资源的名称。如�
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2014 - 蔡晓建 -
+  Copyright &copy; 2015 - 蔡晓建 -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
