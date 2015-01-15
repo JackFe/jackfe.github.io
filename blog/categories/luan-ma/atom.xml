@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 乱码 | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/luan-ma/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2015-01-15T21:18:06+08:00</updated>
+  <updated>2015-01-15T22:00:26+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -85,7 +85,7 @@ System.out.println(new String(new String("123你".getBytes("GBK"), "ISO-8859-1")
 CCustGroupPrompt.java:43: 警告：编码 UTF-8 的不可映射字符
 </code></p>
 
-<p>更多java相关的，见<a href="2015-01-14-java-charset-problem">java字符编码问题</a></p>
+<p>更多java相关的，见<a href="20150114_java-charset-problem.html">java字符编码问题</a></p>
 
 <h2>关于jsp的编码</h2>
 
