@@ -18,7 +18,7 @@ categories: ["编码", "乱码"]
 CCustGroupPrompt.java:43: 警告：编码 UTF-8 的不可映射字符
 ```
 
-更多java相关的，见[java字符编码问题](2015-01-14-java-charset-problem)
+更多java相关的，见[java字符编码问题](20150114_java-charset-problem.html)
 
 ## 关于jsp的编码
 
