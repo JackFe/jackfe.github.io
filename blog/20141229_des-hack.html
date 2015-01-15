@@ -1,0 +1,483 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>常见DES实现陷阱 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="常见DES实现陷阱,很常见的实现问题">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20141229_des-hack.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">常见DES实现陷阱</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-12-29T00:00:00+08:00" pubdate data-updated="true">Dec 29<span>th</span>, 2014</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h3>DES要点说明</h3>
+
+<ul>
+<li>DES走的是分组加密，每次处理对象的是8位byte，所以对字符串加解密的时候，会涉及字符编码格式和补齐8位的问题。</li>
+<li>DES的密钥是固定8位的byte的，其中前7位是加解密用的，最后一位是校验码。</li>
+<li>3DES的增强型的DES，带3个key，如果3个key一样，就是DES，也有一种变种是1、3是一样的。但都是固定8位的。</li>
+<li>3DES通常是EDE,就是先加密(k1)再解密(k2)再加密(k3)</li>
+</ul>
+
+
+<p>目前，项目代码中有3个和DES实现相关的类,下面看看他们有哪些问题：</p>
+
+<h3>案例1</h3>
+
+<ul>
+<li>从字符串到byte的转换，有指定编码格式GBK，这个是可以接受的。</li>
+<li>使用的是DESede,就是3DES的EDE加密方式，但是3个key是一样的，没有意义。</li>
+<li>加密时代码先自行进行了补齐操作(补\0),但是补齐是在字符串上操作的，不是在字节上操作，导致实际上可能没有对齐(中文情况)。</li>
+<li>调用加密API时，没有指定补齐方式，会采用默认补齐，造成重复补齐(当然也修复了上面的补齐操作)。</li>
+<li>解密指定NoPadding，和加密Padding方式不一样，造成解密结果最后会出现很多多余的字节。所以结果必须得trim一下才行。</li>
+</ul>
+
+
+<p>参考代码如下：</p>
+
+<p>补齐实现有误：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">String</span> <span class="nf">encrypt</span><span class="o">(</span><span class="n">String</span> <span class="n">in</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">String</span> <span class="n">strIn</span> <span class="o">=</span> <span class="n">in</span><span class="o">;</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="kc">null</span> <span class="o">==</span> <span class="n">strIn</span> <span class="o">||</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">strIn</span><span class="o">))</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="s">&quot;&quot;</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>    <span class="n">i</span> <span class="o">=</span> <span class="n">strIn</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">%</span> <span class="mi">8</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="mi">0</span> <span class="o">==</span> <span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">strIn</span> <span class="o">+=</span> <span class="s">&quot;\0&quot;</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">while</span> <span class="o">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">strIn</span> <span class="o">+=</span> <span class="s">&quot;\0&quot;</span><span class="o">;</span>
+</span><span class='line'>            <span class="n">i</span><span class="o">--;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="kt">byte</span><span class="o">[]</span> <span class="n">bytes</span> <span class="o">=</span> <span class="n">strIn</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="n">CHARSET</span><span class="o">);</span>
+</span><span class='line'>    <span class="kt">byte</span><span class="o">[]</span> <span class="n">enbytes</span> <span class="o">=</span> <span class="n">encryptCipher</span><span class="o">.</span><span class="na">doFinal</span><span class="o">(</span><span class="n">bytes</span><span class="o">);</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nf">byteArrToHexStr</span><span class="o">(</span><span class="n">enbytes</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>key是一样的，补齐方式没对应上：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="nf">DESedeEncrypt</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kt">byte</span><span class="o">[]</span> <span class="n">buffer</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[]</span> <span class="o">{</span>
+</span><span class='line'>            <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span>
+</span><span class='line'>            <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span>
+</span><span class='line'>    <span class="o">};</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">SecretKeySpec</span> <span class="n">key</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SecretKeySpec</span><span class="o">(</span><span class="n">buffer</span><span class="o">,</span> <span class="s">&quot;DESede&quot;</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">try</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">encryptCipher</span> <span class="o">=</span> <span class="n">Cipher</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">KEY_ALGORITHM</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">encryptCipher</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="n">Cipher</span><span class="o">.</span><span class="na">ENCRYPT_MODE</span><span class="o">,</span> <span class="n">key</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">decryptCipher</span> <span class="o">=</span> <span class="n">Cipher</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="s">&quot;DESede/ECB/NoPadding&quot;</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">decryptCipher</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="n">Cipher</span><span class="o">.</span><span class="na">DECRYPT_MODE</span><span class="o">,</span> <span class="n">key</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">NoSuchAlgorithmException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">Throwables</span><span class="o">.</span><span class="na">propagate</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">NoSuchPaddingException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">Throwables</span><span class="o">.</span><span class="na">propagate</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InvalidKeyException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">Throwables</span><span class="o">.</span><span class="na">propagate</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>案例2</h3>
+
+<ul>
+<li>从字符串到byte的转换，采用了系统默认编码，存在平台移植性问题。</li>
+<li>密钥key的长度布置8位，有多余字符(虽然只取前8位避免出错)，造成混乱。</li>
+</ul>
+
+
+<p>key的格式不标准，有多余字符:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kd">static</span> <span class="n">String</span> <span class="n">strDefaultKey</span> <span class="o">=</span> <span class="s">&quot;mywebsite123456%&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="kd">private</span> <span class="n">Key</span> <span class="nf">getKey</span><span class="o">(</span><span class="kt">byte</span><span class="o">[]</span> <span class="n">arrBTmp</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kt">byte</span><span class="o">[]</span> <span class="n">arrB</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="mi">8</span><span class="o">];</span>
+</span><span class='line'>    <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">arrBTmp</span><span class="o">.</span><span class="na">length</span> <span class="o">&amp;&amp;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">arrB</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">arrB</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">arrBTmp</span><span class="o">[</span><span class="n">i</span><span class="o">];</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Key</span> <span class="n">key</span> <span class="o">=</span> <span class="k">new</span> <span class="n">javax</span><span class="o">.</span><span class="na">crypto</span><span class="o">.</span><span class="na">spec</span><span class="o">.</span><span class="na">SecretKeySpec</span><span class="o">(</span><span class="n">arrB</span><span class="o">,</span> <span class="s">&quot;DES&quot;</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="n">key</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>案例3</h3>
+
+<ul>
+<li>从字符串到byte的转换，采用了系统默认编码，存在平台移植性问题。</li>
+<li>实现不是标准的DES，或3DES，是在DES基础上定义了一套加密。</li>
+<li>根据目前key的长度，比标准3DES都要慢很多，另外没有采用JDK带的API。</li>
+</ul>
+
+
+<p>key的长度不标准：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">DesUtil</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">firstKey</span> <span class="o">=</span> <span class="s">&quot;com.xxx.xxxpro&quot;</span><span class="o">;</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">secondKey</span> <span class="o">=</span> <span class="s">&quot;xxx_web&quot;</span><span class="o">;</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">thirdKey</span> <span class="o">=</span> <span class="s">&quot;xxxservice&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>实现方式是对每个key补齐8位，再切割形成每组多个8位的key，再采用EEE的方式进行处理:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>                    <span class="k">for</span> <span class="o">(</span><span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">firstLength</span><span class="o">;</span> <span class="n">x</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>                        <span class="n">tempBt</span> <span class="o">=</span> <span class="n">enc</span><span class="o">(</span><span class="n">tempBt</span><span class="o">,</span> <span class="o">(</span><span class="kt">int</span><span class="o">[])</span> <span class="n">firstKeyBt</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">x</span><span class="o">));</span>
+</span><span class='line'>                    <span class="o">}</span>
+</span><span class='line'>                    <span class="k">for</span> <span class="o">(</span><span class="n">y</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="n">secondLength</span><span class="o">;</span> <span class="n">y</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>                        <span class="n">tempBt</span> <span class="o">=</span> <span class="n">enc</span><span class="o">(</span><span class="n">tempBt</span><span class="o">,</span> <span class="o">(</span><span class="kt">int</span><span class="o">[])</span> <span class="n">secondKeyBt</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">y</span><span class="o">));</span>
+</span><span class='line'>                    <span class="o">}</span>
+</span><span class='line'>                    <span class="k">for</span> <span class="o">(</span><span class="n">z</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">z</span> <span class="o">&lt;</span> <span class="n">thirdLength</span><span class="o">;</span> <span class="n">z</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>                        <span class="n">tempBt</span> <span class="o">=</span> <span class="n">enc</span><span class="o">(</span><span class="n">tempBt</span><span class="o">,</span> <span class="o">(</span><span class="kt">int</span><span class="o">[])</span> <span class="n">thirdKeyBt</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">z</span><span class="o">));</span>
+</span><span class='line'>                    <span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-12-29T00:00:00+08:00" pubdate data-updated="true">Dec 29<span>th</span>, 2014</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/des/'>des</a>, <a class='category' href='/blog/categories/xian-jing/'>陷阱</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20141225_java-common-util.html" title="Previous Post: java常见工具库培训">&laquo; java常见工具库培训</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20150107_charset-intro.html" title="Next Post: 关于编码与乱码问题">关于编码与乱码问题 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150107_charset-intro.html">关于编码与乱码问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141229_des-hack.html">常见DES实现陷阱</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141225_java-common-util.html">java常见工具库培训</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141126_org-json-and-xml.html">使用org.json库进行xml和json转换存在的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140815_json-intro.html">json格式须知</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140814_xml-intro.html">xml格式须知</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140329_was-datasource.html">websphere+spring+jndi数据源配置</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20141229_des-hack.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20141229_des-hack.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

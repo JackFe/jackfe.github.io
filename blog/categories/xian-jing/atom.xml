@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 陷阱 | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/xian-jing/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2015-01-15T21:18:06+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[常见DES实现陷阱]]></title>
+    <link href="http://mccxj.github.com/blog/20141229_des-hack.html"/>
+    <updated>2014-12-29T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/des-hack</id>
+    <content type="html"><![CDATA[<h3>DES要点说明</h3>
+
+<ul>
+<li>DES走的是分组加密，每次处理对象的是8位byte，所以对字符串加解密的时候，会涉及字符编码格式和补齐8位的问题。</li>
+<li>DES的密钥是固定8位的byte的，其中前7位是加解密用的，最后一位是校验码。</li>
+<li>3DES的增强型的DES，带3个key，如果3个key一样，就是DES，也有一种变种是1、3是一样的。但都是固定8位的。</li>
+<li>3DES通常是EDE,就是先加密(k1)再解密(k2)再加密(k3)</li>
+</ul>
+
+
+<p>目前，项目代码中有3个和DES实现相关的类,下面看看他们有哪些问题：</p>
+
+<h3>案例1</h3>
+
+<ul>
+<li>从字符串到byte的转换，有指定编码格式GBK，这个是可以接受的。</li>
+<li>使用的是DESede,就是3DES的EDE加密方式，但是3个key是一样的，没有意义。</li>
+<li>加密时代码先自行进行了补齐操作(补\0),但是补齐是在字符串上操作的，不是在字节上操作，导致实际上可能没有对齐(中文情况)。</li>
+<li>调用加密API时，没有指定补齐方式，会采用默认补齐，造成重复补齐(当然也修复了上面的补齐操作)。</li>
+<li>解密指定NoPadding，和加密Padding方式不一样，造成解密结果最后会出现很多多余的字节。所以结果必须得trim一下才行。</li>
+</ul>
+
+
+<p>参考代码如下：</p>
+
+<p>补齐实现有误：
+```java</p>
+
+<pre><code>public String encrypt(String in) throws Exception {
+    String strIn = in;
+    if (null == strIn || "".equals(strIn)) {
+        return "";
+    }
+
+    int i = 0;
+    i = strIn.length() % 8;
+
+    if (0 == i) {
+        for (i = 0; i &lt; 8; i++) {
+            strIn += "\0";
+        }
+    } else {
+        while (i &gt; 0) {
+            strIn += "\0";
+            i--;
+        }
+    }
+    byte[] bytes = strIn.getBytes(CHARSET);
+    byte[] enbytes = encryptCipher.doFinal(bytes);
+    return byteArrToHexStr(enbytes);
+}
+</code></pre>
+
+<p>```</p>
+
+<p>key是一样的，补齐方式没对应上：
+```java</p>
+
+<pre><code>public DESedeEncrypt() {
+    byte[] buffer = new byte[] {
+            0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31,
+            0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31, 0x31
+    };
+
+    SecretKeySpec key = new SecretKeySpec(buffer, "DESede");
+
+    try {
+        encryptCipher = Cipher.getInstance(KEY_ALGORITHM);
+        encryptCipher.init(Cipher.ENCRYPT_MODE, key);
+        decryptCipher = Cipher.getInstance("DESede/ECB/NoPadding");
+        decryptCipher.init(Cipher.DECRYPT_MODE, key);
+    } catch (NoSuchAlgorithmException e) {
+        Throwables.propagate(e);
+    } catch (NoSuchPaddingException e) {
+        Throwables.propagate(e);
+    } catch (InvalidKeyException e) {
+        Throwables.propagate(e);
+    }
+}
+</code></pre>
+
+<p>```</p>
+
+<h3>案例2</h3>
+
+<ul>
+<li>从字符串到byte的转换，采用了系统默认编码，存在平台移植性问题。</li>
+<li>密钥key的长度布置8位，有多余字符(虽然只取前8位避免出错)，造成混乱。</li>
+</ul>
+
+
+<p>key的格式不标准，有多余字符:
+```java</p>
+
+<pre><code>private static String strDefaultKey = "mywebsite123456%";
+private Key getKey(byte[] arrBTmp) throws Exception {
+    byte[] arrB = new byte[8];
+    for (int i = 0; i &lt; arrBTmp.length &amp;&amp; i &lt; arrB.length; i++) {
+        arrB[i] = arrBTmp[i];
+    }
+
+    Key key = new javax.crypto.spec.SecretKeySpec(arrB, "DES");
+
+    return key;
+}
+</code></pre>
+
+<p>```</p>
+
+<h3>案例3</h3>
+
+<ul>
+<li>从字符串到byte的转换，采用了系统默认编码，存在平台移植性问题。</li>
+<li>实现不是标准的DES，或3DES，是在DES基础上定义了一套加密。</li>
+<li>根据目前key的长度，比标准3DES都要慢很多，另外没有采用JDK带的API。</li>
+</ul>
+
+
+<p>key的长度不标准：
+```java
+public class DesUtil {</p>
+
+<pre><code>public static final String firstKey = "com.xxx.xxxpro";
+public static final String secondKey = "xxx_web";
+public static final String thirdKey = "xxxservice";
+</code></pre>
+
+<p>}
+```</p>
+
+<p>实现方式是对每个key补齐8位，再切割形成每组多个8位的key，再采用EEE的方式进行处理:
+```java</p>
+
+<pre><code>                    for (x = 0; x &lt; firstLength; x++) {
+                        tempBt = enc(tempBt, (int[]) firstKeyBt.get(x));
+                    }
+                    for (y = 0; y &lt; secondLength; y++) {
+                        tempBt = enc(tempBt, (int[]) secondKeyBt.get(y));
+                    }
+                    for (z = 0; z &lt; thirdLength; z++) {
+                        tempBt = enc(tempBt, (int[]) thirdKeyBt.get(z));
+                    }
+</code></pre>
+
+<p>```</p>
+]]></content>
+  </entry>
+  
+</feed>

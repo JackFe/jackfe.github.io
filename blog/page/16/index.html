@@ -9,10 +9,7 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="这是09年写的一篇入门文章，内容简单得有点傻瓜了。
-以后再写些实用点的内容，这里只是留个纪念。 正文 今天是2009年4月11日，在家听范玮琪的歌，番禺之行再次搁浅。心血来潮，随便写写关于linux的东西。
-想想linux的博大精深，对于自己是否找到门还不敢保证，
-这次就不自量力，写点简单的， &hellip;">
+  <meta name="description" content="这是为了oracle培训而编制的思维导图 可以在Dropbox上下载到这个xmind文件 ">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -73,7 +70,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/20120902_new-to-linux-command.html">Linux命令入门(旧)</a></h1>
+      <h1 class="entry-title"><a href="/blog/20121120_oracle-explain-plan.html">Oracle执行计划思维导图</a></h1>
     
     
       <p class="meta">
@@ -89,1225 +86,20 @@
   
 
 
-<time datetime="2012-09-02T00:00:00+08:00" pubdate data-updated="true">Sep 2<span>nd</span>, 2012</time>
+<time datetime="2012-11-20T00:00:00+08:00" pubdate data-updated="true">Nov 20<span>th</span>, 2012</time>
         
-         | <a href="/blog/20120902_new-to-linux-command.html#disqus_thread">Comments</a>
+         | <a href="/blog/20121120_oracle-explain-plan.html#disqus_thread">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p><strong>这是09年写的一篇入门文章，内容简单得有点傻瓜了。</strong>
-以后再写些实用点的内容，这里只是留个纪念。</p>
+  <div class="entry-content"><h2><strong>这是为了oracle培训而编制的思维导图</strong></h2>
 
-<h2>正文</h2>
+<h2>可以在Dropbox上下载到这个<a href="https://www.dropbox.com/s/8l53i0h3hphm5bz/%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92.xmind">xmind文件</a></h2>
 
-<p>今天是2009年4月11日，在家听范玮琪的歌，番禺之行再次搁浅。心血来潮，随便写写关于linux的东西。
-想想linux的博大精深，对于自己是否找到门还不敢保证，
-这次就不自量力，写点简单的，抛砖引玉。方式嘛，还是流水形式，我个人比较懒，对于段落组织太费力，不做也罢。
-本来按照惯例应该像颁奖典礼一样弄堆名字，可是我就省略了，只是特别祝愿我们的梓恩细妹快高长大，健康快乐。</p>
-
-<p>先扯扯自己神往linux的经历，在学校的时候，没好好学东西，第一次去实验室，对着linux系统，
-那叫哭呀，弄个黑乎乎的界面，仿佛我回到了初中时对着那个DOS的年代。
-回去总得自己装个系统吧，redhat9？不料我x环境没弄好，结果又到了黑乎乎的界面，
-看别人弄才知道可以用startx可以进去界面的，可惜我的就是会出错，同学说我的x没装好。
-我也不知道yum，rpm，就傻傻的重装系统好了。经过一番折腾，我终于找到组织，看到那个&#8221;windows&#8221;，
-可是相当不好用，想想那vi简直是个低级工具呀，rar也不知到哪去解压，没兴趣又跑回winxp去了。
-后来硬盘不够了(60g)，决定把redhat去掉，结果把硬盘格式了，因为这个事情，有次在面试的时候，说到linux的时候，给人笑话了一番。</p>
-
-<p>到06年底，linux的东西写到简历上都觉得汗颜，有次面试的时候，cat，echo是干嘛的也说不出，现在觉得做人还是要谦虚点。
-到了公司，我第一次听到个fedora的系统，那个时候好像是6还是7吧，觉得挺不错的，玩了一下，借助鸟哥的教程还有网上的资料，
-学了一些命令，shell，一些服务配置等等，说为什么弄这个，只是那个时候给人扔到一边凉快去了，自己还有点兴趣，就这么摸索起来了。</p>
-
-<p>07年底的样子，学了点java，学了点ruby，学了点linux，算是有点交代，虽然那些对着教程有些自己的操作，知道的linux还是比较杂乱的，
-那个时候对现在一直用的centos也是没有概念的。转眼就到08年了，在春节回家前，我到书店去搬了一本linux系统管理技术手册第二版回去，
-那个硬皮英文版，花了我100大元，在春节那段时间，我磕磕绊绊的看了一大半，这段时间自己对于linux有个知识的梳理，感觉还是很充实的。
-08年开始了，自从小七的到来，偶开始接触centos，也开始了对redhat系列情有独钟，虽然工具是工具，系统也是个工具，可是我就是不想去弄多一套系统，
-例如很流行的ubuntu，而且现在感觉centos做桌面版也是挺顺手的。所以还是有点体会的，每个发行版都有长处，但不是最重要的地方，
-选择一个资料比较多的发行版，然后坚持下去就好了。至于我选择centos，那是因为redhat是相当流行的系列，服务器上最多人用的，
-centos几乎是100%兼容redhat企业版的，所以资料也很多，系统相当稳定有效率，所以就这么看上了。
-那ubuntu是最流行的桌面版linux系统，用户体验相当好(听说的),资料也很多，选择这个也是不错的。
-我定位是更靠近服务器而不是图更方便(winxp是最方便的系统，哈哈)，所以我选择centos，现在也觉得相当合适我。</p>
-
-<p>unix的哲学是很有趣的，对linux也是合适的(这方面可以参考unix编程艺术)。
-小而精，这方面在linux命令表现得淋漓尽致，由很多小命令组合起来的威力有些出人意料，让我们见识到可扩展性需要复杂性支持并不是必然的。
-说到这里，极力推荐这本unix编程艺术，这是本通用读物，里边没有教我们具体是怎么编程的，这是win迷的“洗脑”必备工具。</p>
-
-<p>想写的东西没有具体规划，也有可能最后沦落为克隆版，呵呵，不过没关系，一来我没想这是什么大作，二来想着只是作为自己的笔记，来一番复习。
-毕竟教程不是最重要的秘籍，是信心，耐心和兴趣，才能让人无畏惧，不断前进。
-我参考的资料大体是google到的，还有网上很流行的linux常用命令全集。好了，现在入正题。</p>
-
-<p>有个很重要的概念，就是文件。跟windows里边的文件的概念很不一样，linux里边什么东西都可以看成文件，就算硬件，io，进程这些东西，
-也是用一系列文件来表示的。首先我们使用ctrl+alt+f1～f6来切换到文本模式界面，
-而用ctrl+alt+f7的话可以切换到xwindow界面去。输入用户名，密码登陆后会出现</p>
-
-<pre><code>[caixj@localhost ~]$
-</code></pre>
-
-<p>如果是用root用户登录的话，就是</p>
-
-<pre><code>[root@localhost ~]#
-</code></pre>
-
-<p>有个明显的区别就是后面管理员帐号是带#而普通用户是用$。
-这里要强调的是一定要警惕诱惑，不要随便使用root用户登录，这涉及安全问题，所以服务器一般都会禁止root远程ssh登录，
-有些桌面版本(ubuntu)会禁止root登录桌面。这里的一个原则就是最小化用户权限。
-如果用<strong>ssh</strong>来登录的话，大概就是这样的(可以使用<strong>putty</strong>或者<em>_F-Secure SSH Client</em>，
-后面这个工具不支持utf8等编码格式，所以显示不了中文)：</p>
-
-<pre><code>[caixj@localhost opt]$ ssh -p22 caixj@192.168.1.46
-caixj@192.168.1.46's password:
-Last login: Sat Apr 11 14:03:42 2009 from 192.168.1.184
-[caixj@localhost ~]$
-</code></pre>
-
-<p>这里说明的就是p是指端口，默认的ssh端口是22来的，默认会使用所在机器的ssh端口，
-例如这个184的机器用的就不是默认的22端口。后面跟着的是用户名和主机ip。
-关于ssh服务的配置请看配置/etc/ssh/sshd_config。</p>
-
-<p>登录系统之后，可以使用whoami(成龙有个电影叫&#8221;我是谁&#8221;看过么？)，或者who/id来查看登录信息</p>
-
-<pre><code>[caixj@localhost hello]$ whoami
-caixj
-[caixj@localhost hello]$ who
-caixj    pts/1        2009-04-11 14:08 (192.168.1.184)
-[caixj@localhost hello]$ id
-uid=500(caixj) gid=500(caixj) groups=500(caixj)
-[caixj@localhost hello]$ id root
-uid=0(root) gid=0(root) groups=0(root),1(bin),2(daemon),3(sys),4(adm),6(disk),10(wheel)还可以查看一下系统的一些版本信息，例如使用uname
-[caixj@localhost ~]$ uname -a
-Linux localhost.localdomain 2.6.18-92.1.18.el5 #1 SMP Wed Nov 12 09:30:27 EST 2008 i686 i686 i386 GNU/Linux
-</code></pre>
-
-<p>如果有需要使用更高级别的用户，可以使用su带用户名来切换到另一个用户：</p>
-
-<pre><code>[caixj@localhost ~]$ su root
-口令：
-[root@localhost caixj]#
-</code></pre>
-
-<p>不带用户名的话，是指切换到root，另外，root可以不输入密码切换到任何用户，
-要退出的时候，使用exit就可以了(记得那个win95的dos，我当时就不知是怎么退出的)。
-这里还是提示一下，尽量不使用root用户，这个问题再强调也不过分。这里可以举例说明一下，
-大家都使用root登录，那还能区分谁是谁么？你一不小心把重要的东西删除了，怎么办？
-我就试过rm -fr /bin就这样系统基本报销了。还有很多服务器如httpd，tomcat，mysql都不能随便使用root用户运行，
-一旦服务给入侵了，就等于有了root的权限，这也是安全隐患。</p>
-
-<p>现在我们想创建一个文件夹，可以使用mkdir(make directory)</p>
-
-<pre><code>[caixj@localhost ~]$ mkdir testdir
-[caixj@localhost ~]$ mkdir -p testdir/subdir/subdir2
-</code></pre>
-
-<p>p参数是如果父文件夹不存在的时候，会自动创建，这对于要建立一个深层次的文件路径的时候非常有用。
-如果你要删除某个文件夹，可以使用rmdir(remove directory)</p>
-
-<pre><code>[caixj@localhost ~]$ rmdir testdir/subdir/subdir2
-rmdir: testdir/subdir/subdir2: 目录非空
-[caixj@localhost ~]$ rm testdir/subdir/subdir2/hello
-[caixj@localhost ~]$ rmdir testdir/subdir/subdir2
-[caixj@localhost ~]$ rm -i testdir/file1
-rm：是否删除 一般文件 “testdir/file1”? n
-</code></pre>
-
-<p>这里出错是因为rmdir在目录下面为空的情况才会成功，同样可以使用p参数递归删除文件夹。
-如果文件夹不为空，可以上面提到使用rm命令。rm命令相当危险，比较常用的命令有f和r，f是force，强制删除的意思，r是
-recursive，递归的意思，所以rm -fr /就等于把系统挂掉了。这个命令要慎用！
-还有那个i的参数是interactive的意思，交互的意思，就是会提示你一下。
-这里说说其他的，我们怎么知道一个命令怎么用，有哪些参数？我们可以求助几个工具，&#8211;help,info,man，help是一般的工具自带的帮助，
-而info和man则像是通用的帮助系统(info一般是man的补充或者包含更新版本的工具介绍)，使用很简单：</p>
-
-<pre><code>[caixj@localhost ~]$ man rm
-[caixj@localhost ~]$ info rm
-[caixj@localhost ~]$ rm --help再回到上面的rm，或许你会发现你的系统上rm不带i也会出现提示，那你可以查看一下alias
-[caixj@localhost ~]$ alias
-alias l.='ls -d .* --color=tty'
-alias ll='ls -l --color=tty'
-alias ls='ls --color=tty'
-alias vi='vim'
-alias which='alias | /usr/bin/which --tty-only --read-alias --show-dot --show-tilde'
-</code></pre>
-
-<p>看看是否存在alias rm=&#8217;rm -i&#8217;的字眼，
-alias是个别名机制，用得好或许可以省点事。例如我这样自己手动加一个rm别名，这样的效果就和加i的是一样的了：</p>
-
-<pre><code>[caixj@localhost ~]$ alias rm='rm -i'
-[caixj@localhost ~]$ rm testdir/file1
-rm：是否删除 一般文件 “testdir/file1”? n
-[caixj@localhost ~]$ unalias rm
-</code></pre>
-
-<p>同样，可以使用unalias来取消这个别名。这里有个安全建议(出自“linux黑客大曝光”),就是对于alias，只使用无负面影响的别名，
-或者不要覆盖原来的命令名，如上面的rm命令，安全的做法是alias del=&#8217;rm -i&#8217;，因为如果覆盖了原来的rm，
-那么你转移到一个无别名的机器上的时候，使用rm的时候对系统没有给出提示而感到诧异，
-我第一次就是对centos上的rm不提示而感到奇怪。这里在友情推销一下这本linux黑客大曝光，安全方面的经典著作，值得收藏。</p>
-
-<p>貌似现在屏幕已经满了，眼花了，可以使用clear命令来清除屏幕。</p>
-
-<pre><code>[caixj@localhost testdir]$ clear
-</code></pre>
-
-<p>现在我们进去一个文件夹看看，可以使用cd(change directory)</p>
-
-<pre><code>[caixj@localhost ~]$ cd testdir/
-[caixj@localhost testdir]$ cd ..
-[caixj@localhost ~]$ cd -
-/home/caixj/testdir
-[caixj@localhost testdir]$
-</code></pre>
-
-<p>这里的..是表示进入上一层目录，-是表示返回到上一次的目录。要知道身处哪个目录，可以使用pwd：</p>
-
-<pre><code>[caixj@localhost ~]$ pwd
-/home/caixj/testdir
-</code></pre>
-
-<p>现在我们在用ls(list)看看目录下有什么内容</p>
-
-<pre><code>[caixj@localhost testdir]$ ls -al
-总计 24
-drwxrwxr-x  3 caixj caixj  4096 04-11 15:20 .
-drwx------ 91 caixj caixj 12288 04-11 14:43 ..
--rw-rw-r--  1 caixj caixj     0 04-11 15:20 file1
-drwxrwxr-x  2 caixj caixj  4096 04-11 14:35 subdir
-</code></pre>
-
-<p>a和l是非常常用的参数，会列出详细信息并每行只有一个文件或文件夹。
-我们要新建一个文件怎么办？</p>
-
-<pre><code>[caixj@localhost testdir]$ touch file2
-[caixj@localhost testdir]$ ls
-file1  file2  subdir
-[caixj@localhost testdir]$ cat \&gt; file3
-hello,world!
-
-[caixj@localhost testdir]$ more file3
-hello,world
-[caixj@localhost testdir]$ cat file1 \&gt;\&gt; file3
-[caixj@localhost testdir]$ more file3
-hello,world!
-file1's content
-</code></pre>
-
-<p>touch可以新建一个空文件，但是可以用来更新一个文件的时间戳(以前用来伪造一些数据的时候用过)，
-cat也可以用来写文本(>)，或者添加文本(>>)。更加有效的工具可以求助vi或者gedit这样的可视化工具。
-再走一下题：>,>>的操作和|一样是属于管道的概念，把输入输出看成管道里边的水流，|就是把前面命令的输出当成后面命令的输入，
-具体的说法，请参考其他资料。</p>
-
-<p>上面也看到了，more是用来查看一个文件内容的工具，而且是一次只显示一部分，适合长文本查看，
-类似有less命令，不同的地方就是它支持回滚方式。还有其他几个常用的cat(查看全部),
-head（查看前面的）,tail（查看后面的），更多参数找man去吧。有个不错的用法是tail -f filename
-会随着文件内容增加而输出，例如在tomcat启动的时候用来观察一下启动日志。</p>
-
-<p>接下来，ctrl+c,ctrl+v,ctrl+x应该是文件操作的必杀技了，可以使用cp（copy）和mv（move）</p>
-
-<pre><code>[caixj@localhost testdir]$ ls
-file1  file2  file3  subdir
-[caixj@localhost testdir]$ mv file3 subdir/
-[caixj@localhost testdir]$ ls
-file1  file2  subdir
-[caixj@localhost testdir]$ cp file2 subdir/
-[caixj@localhost testdir]$ ls subdir/
-file2  file1
-[caixj@localhost testdir]$ cp -R subdir hello
-[caixj@localhost testdir]$ ls
-file1  file2  hello  subdir
-[caixj@localhost testdir]$
-</code></pre>
-
-<p>注意的是，mv可以用来重命名一个文件名，意思就是移动到同个目录的另个文件名去就是了。
-还可以移动整个文件夹，cp可以拷贝整个文件夹，不过就要加上R的参数，不然是不会成功的。
-另外，如果你是拷贝文件到远程机器，或者从远程机器拷贝文件的话，可以求助scp(Secure Copy)命令</p>
-
-<pre><code>[caixj@localhost hello]$ scp -P2281 file.tgz caixj@192.168.1.184:/home/caixj
-caixj@192.168.1.184's password:
-file.tgz                                                                                    100%  198     0.2KB/s   00:00
-[caixj@localhost hello]$ scp -P2281 caixj@192.168.1.184:/home/caixj/file.tgz ./
-caixj@192.168.1.184's password:
-file.tgz                                                                                    100%  198     0.2KB/s   00:00
-[caixj@localhost hello]$
-</code></pre>
-
-<p>其实和ssh的命令一整套的，有个比较特殊的地方是端口用的是大写的P，
-小写的p有其他用途了。不过这也不是非常方便，推荐使用gftp这样的图形化工具，
-而且这个工具也集成了http/https，ftp/ftps,ssh2等各类协议，使用非常方便。好了，继续回到地球。</p>
-
-<p>批量改后缀名的也不错吧，可以使用rename:</p>
-
-<pre><code>[caixj@localhost hello]$ ls
-file2.rb  file3.rb  subdir
-[caixj@localhost hello]$ rename .rb .java *
-[caixj@localhost hello]$ ls
-file2.java  file3.java  subdir
-</code></pre>
-
-<p>不过这个方法我很少用到的，大概是因为linux没有后缀名这个说法，
-至于你经常会看到的.zip,.tar.tgz,.log的东西在linux里边只是一种常用约定，而不是用后缀名来决定文件属性的。
-这个跟win系列是不一样的。</p>
-
-<p>既然说到这几个后缀名，再说说文件的打包压缩解压操作。.rar的文件是蛮受到歧视的，
-因为一般的机器默认不带这个相应的解压工具，当然你可以使用rarlinux来处理，具体做法就不说了。</p>
-
-<pre><code>[caixj@localhost hello]$ ls
-file2.java  file3.java  subdir
-[caixj@localhost hello]$ tar cvf file.tar file2.java file3.java
-file2.java
-file3.java
-[caixj@localhost hello]$ tar zcvf file.tgz file2.java file3.java
-file2.java
-file3.java
-[caixj@localhost hello]$ tar jcvf file.bz2 file2.java file3.java
-file2.java
-file3.java
-[caixj@localhost hello]$ zip file.zip file2.java file3.java
-  adding: file2.java (deflated 99%)
-  adding: file3.java (stored 0%)
-[caixj@localhost hello]$ ls
-file2.java  file3.java  file.bz2  file.tar  file.tgz  file.zip  subdir
-[caixj@localhost hello]$ tar tvf file.tgz
--rw-rw-r-- caixj/caixj   10240 2009-04-11 16:25:56 file2.java
--rw-rw-r-- caixj/caixj      29 2009-04-11 16:00:50 file3.java
-</code></pre>
-
-<p>zip和unzip是一对的，并且有个zipinfo来查看zip包的信息。tar就是集大成者，可以不压缩的简单打包，
-也可以加上z(gzip)或者j(bzip2)进行压缩处理，解压处理只要把对应的c(create)改成x(extract)就可以了。
-现在我们在试试file这个命令</p>
-
-<pre><code>file2.java: POSIX tar archive
-file3.java: ASCII text
-file.bz2:   bzip2 compressed data, block size = 900k
-file.tar:   POSIX tar archive
-file.tgz:   gzip compressed data, from Unix, last modified: Sat Apr 11 16:26:44 2009
-file.zip:   Zip archive data, at least v2.0 to extract
-subdir:     directory
-subfile:    symbolic link to `subdir/file2
-</code></pre>
-
-<p>这个命令可以用来识别文件类型，如上面看到的ascii文本，bzip2，tar，文件夹，链接文件等等，
-从file2.java也可以看出linux不是靠后缀名来识别文件类型的。</p>
-
-<p>文件这个东西涉及非常多的知识点，我们在下载centos的dvd的时候，
-有没有见过网站上还顺便提供了一个md5的值，这就是涉及到文件校验，
-如何确保这个文件是你要的那个，而不是给修改过了？这里有很多工具，
-如sum,cksum(基于crc),不过这两个都太简单了点，工业级的应该是md5sum(最常用的),
-sha1sum(sha有很多版本)，这2个算来的那串值是很难重复的，所以内容具有很难调包。
-使用方法很简单也很类似，也可以使用openssl这个工具来做这个：</p>
-
-<pre><code>[caixj@localhost hello]$ md5sum file.tgz
-28f8084aad424b4187ec404dead6fb95  file.tgz
-[caixj@localhost hello]$ openssl sha1 file.tgz
-SHA1(file.tgz)= 9bafce8ad310aaf8a9384a43613176ad442e6e4f
-[caixj@localhost hello]$ openssl md5 file.tgz
-MD5(file.tgz)= 28f8084aad424b4187ec404dead6fb95
-</code></pre>
-
-<p>这样我们用这个值和网上公布的值做一下对比就可以了。再走一下话题，
-说到这个md5sum虽然挺安全的了，调包内容而保持sum一样几乎是不可能的，
-不过也有可能黑客把网页上的sum给调包了。呵呵，扯远了。在回到上面说的file命令，
-那个链接文件是什么来的？ln(link)命令的链接文件包括两种，一种就是软链接，一种叫硬链接，如下所示</p>
-
-<pre><code>[caixj@localhost hello]$ ln -s subdir/file2 subfile
-[caixj@localhost hello]$ ln subdir/file2 subfile2
-[caixj@localhost hello]$ ls -al subfile subfile2
-lrwxrwxrwx 1 caixj caixj 12 04-11 17:15 subfile -&gt; subdir/file2
--rw-rw-r-- 2 caixj caixj 50 04-11 17:25 subfile2
-</code></pre>
-
-<p>软链接(s)类似于win里边的快捷方式，而硬链接跟像是一个别名，
-效果其实也差不多，就是软链接可以跨档案系统，而硬链接不能。
-一般我是使用软链接，硬链接没用过。删除一个链接也很简单，
-像文件一样rm掉就可以了，非常方便。</p>
-
-<p>在提到ls -al的时候，出现很多信息，其中包括文件的读写属性，所有者，
-所有者使用的组等等。linux的一个文件必须属于某个用户，一个用户可以属于多个用户组，
-一个用户组可以包括多个用户。操作一个用户的过程可以使用useradd/adduser,userdel,usermod,
-操作用户组的是使用groupadd,roupmod,groupdel(需要root)</p>
-
-<pre><code>[root@localhost hello]# /usr/sbin/useradd testme
-[root@localhost hello]# passwd testme
-Changing password for user testme.
-New UNIX password:
-BAD PASSWORD: it does not contain enough DIFFERENT characters
-Retype new UNIX password:
-passwd: all authentication tokens updated successfully.
-[root@localhost hello]# /usr/sbin/userdel testme
-[root@localhost hello]# /usr/sbin/groupdel testme
-</code></pre>
-
-<p>上面的操作就是新建一个testme的用户，并通过passwd更改密码。
-最后删除用户，并删除用户组testme。linux增加个用户的时候，
-默认会弄个相同名字的用户组，并把这个用户加到这个用户组去，
-而删除用户组的时候，只有在用户组下面没有用户的情况下，操作才会成功。
-跟用户相关的文件有/etc/passwd,/etc/groups,/etc/shadow。
-这里再扯扯一些资料和书籍，比较实用的除了鸟哥的，还有linux新手管理员手册，
-Linux系统管理员指南，Linux网络管理员指南。因为没什么资料可以一本万利，
-就算linux系统管理技术手册这样的，也得有所侧重，不能面面俱到。</p>
-
-<p>再回过头来说那个文件的属性/所有者/组等等关系。可以使用chgrp(change group)/chown(change owner)，
-来修改所有者和用户组。不过，只有文件所有者和root才能更改文件所属的用户组，
-并且并且只能用自己所属的用户组，改文件所有者只有root才可以做到。
-考虑一下安全问题就可以理解这样的设计方式了。</p>
-
-<pre><code>[caixj@localhost hello]$ chgrp root file3.java
-chgrp: 正在更改 “file3.java” 的所属组: 不允许的操作
-[caixj@localhost hello]$ chown root file3.java
-chown: 正在更改 “file3.java” 的所有者: 不允许的操作
-</code></pre>
-
-<p>接下来再看看文件的权限属性-rw-rw-r&#8211;，一共有10位，第一位是文件属性，
-常见的有-(普通文件),d(文件夹),s(socket),l(链接文件)等等，
-后面的每位分成一组，分别代表所有者，所属组，其他用户的权限，
-每组从左到右是r(read)w(write)x(execute)的权限。有一些关于文件夹的规则，
-例如你有目录的wx权限，你就可以删除文件夹里边的文件，即使你对这个文件没什么权限。
-如果你没有目录的x权限，你就不能cd，不能修改增加和删除里边的文件，如果没有w权限，
-不能增加和删除里边的文件，但可以修改里边的文件。所以文件的增加和删除是受到文件夹的wx权限限制，
-修改文件除了受到文件的w权限限制之外，还受到文件夹的x权限影响。可以使用chmod来修改权限：</p>
-
-<pre><code>[caixj@localhost testdir]$ chmod u=rwx hello
-[caixj@localhost testdir]$ chmod u-x hello
-[caixj@localhost testdir]$ chmod u+x hello
-[caixj@localhost testdir]$ chmod 775 hello
-</code></pre>
-
-<p>chmod是非常灵活的，用u(user)，g(group)，o(other)，a(all)来代表各个组，
-可以使用+-=来灵活定制，支持使用3位的数字来设定。r，w，x分别代表4，2，1，
-权限就几个数字相加就是了。另外,chgrp/chown/chmod也支持-R的递归参数，
-不过这个参数也是要谨慎，一不小心可能造成极其严重的后果。</p>
-
-<p>我们使用touch或者mkdir的时候，产生的文件/文件夹有个默认的权限，
-这个默认权限可以通过umask命令来设定，也可以用这个命令来查看默认的权限：</p>
-
-<pre><code>[caixj@localhost testdir]$ umask
-0002
-[caixj@localhost testdir]$ touch tmpfile
-[caixj@localhost testdir]$ mkdir tmpdir
-[caixj@localhost testdir]$ ls -l
-总计 4
-drwxrwxr-x 2 caixj caixj 4096 04-11 20:43 tmpdir
--rw-rw-r-- 1 caixj caixj    0 04-11 20:43 tmpfile
-</code></pre>
-
-<p>umask和chmod的操作是相反的效果，umask意思就是没有那些权限的意思，
-根据777(文件夹),666(文件)去减去umask就是默认的权限了。
-linux默认的配置是比较合理的，像root的umask就是0022，一般也无需做调整。
-不过linux文件还有一些特殊的属性可以设置,以加强管理功能。要进行这些操作的话，
-可以使用chattr来修改(有些属性是需要root的)，用lsattr来查看这些属性。例如常用的i参数用于防止文件的修改删除：</p>
-
-<pre><code>[root@localhost testdir]# chattr +i tmpfile
-[root@localhost testdir]# lsattr tmpfile
-----i-------- tmpfile
-[root@localhost testdir]# rm tmpfile
-rm：是否删除有写保护的 一般空文件 “tmpfile”? y
-rm: 无法删除 “tmpfile”: 不允许的操作
-</code></pre>
-
-<p>还有a(append)属性只允许增加内容：</p>
-
-<pre><code>[root@localhost testdir]# chattr -i +a tmpfile
-[root@localhost testdir]# lsattr tmpfile
------a------- tmpfile
-[root@localhost testdir]# vi tmpfile
-[root@localhost testdir]# cat &gt; tmpfile
-bash: tmpfile: 不允许的操作
-[root@localhost testdir]# cat &gt;&gt; tmpfile
-xxxxxxxxx
-
-[root@localhost testdir]# more tmpfile
-xxxxxxxxx
-</code></pre>
-
-<p>这些属性也不是经常会用到，反正我是觉得挺难记得的，每次还是要man一下才行。</p>
-
-<p>再回到上面提到的useradd/userdel/usermod的命令，出现过这么一行</p>
-
-<pre><code>[root@localhost hello]# /usr/sbin/useradd testme
-</code></pre>
-
-<p>但是前面很多文件都没有用上全路径的形式，这里就涉及到$PATH这个东西，我们可以使用echo命令来查看</p>
-
-<pre><code>[caixj@localhost testdir]$ echo $PATH
-/usr/kerberos/sbin:/usr/lib/qt-3.3/bin:/usr/kerberos/bin:/usr/lib/oracle/10.2.0.3/client/lib:/opt/CollabNet_Subversion/bin:/usr/local/grails-1.1/bin:/usr/local/groovy-1.6.0/bin:/usr/local/mysql-5.1.32/bin:/usr/local/wine-1.1.16/bin:/usr/local/scala-2.7.3.final/bin:/usr/local/apache-ant-1.7.1/bin:/usr/java/default/bin:/usr/local/python-2.6.1/bin:/usr/local/ruby-1.8.7-p72/bin:/usr/local/jruby-1.2.0/bin:/usr/local/bin:/bin:/usr/bin:/home/caixj/bin
-</code></pre>
-
-<p>你甚至可以使用set命令来查看所有的变量。</p>
-
-<pre><code>[caixj@localhost ~]$ set
-.......
-PATH=/usr/lib/oracle/10.2.0.3/client/lib:/opt/CollabNet_Subversion/bin:/usr/local/grails-1.1/bin:/usr/local/groovy-1.6.0/bin:/usr/local/mysql-5.1.32/bin:/usr/local/wine-1.1.16/bin:/usr/local/scala-2.7.3.final/bin:/usr/local/apache-ant-1.7.1/bin:/usr/java/default/bin:/usr/local/python-2.6.1/bin:/usr/local/ruby-1.8.7-p72/bin:/usr/local/jruby-1.2.0/bin:/usr/lib/qt-3.3/bin:/usr/kerberos/bin:/usr/lib/oracle/10.2.0.3/client/lib:/opt/CollabNet_Subversion/bin:/usr/local/grails-1.1/bin:/usr/local/groovy-1.6.0/bin:/usr/local/mysql-5.1.32/bin:/usr/local/wine-1.1.16/bin:/usr/local/scala-2.7.3.final/bin:/usr/local/apache-ant-1.7.1/bin:/usr/java/default/bin:/usr/local/python-2.6.1/bin:/usr/local/ruby-1.8.7-p72/bin:/usr/local/jruby-1.2.0/bin:/usr/local/bin:/bin:/usr/bin:/home/caixj/bin
-.......
-</code></pre>
-
-<p>如果不带路径名的时候，就会在$PATH里边寻找这个某个可执行文件，我这个路径没有牵涉到/usr/sbin所以就要自己加上去了。</p>
-
-<p>关于PATH或者其他变量可以在登录的时候设定好，例如在/etc/profile,~/.bash_profile,~/.bashrc里边写好,例如/etc/profile的某个片段：</p>
-
-<pre><code>RUBY_HOME=/usr/local/ruby-1.8.7-p72
-PATH=$RUBY_HOME/bin:$PATH
-.......
-export RUBY_HOME JAVA_HOME
-export PATH USER LOGNAME MAIL HOSTNAME HISTSIZE INPUTRC
-</code></pre>
-
-<p>我们这样设置好之后,可以直接使用source命令读取文件命令并在当前shell环境中执行，这样就可以了。</p>
-
-<pre><code>[caixj@localhost ~]$ source /etc/profile
-</code></pre>
-
-<p>或者我们直接使用export的命令更新一个变量,或者unset来取消一个变量的定义</p>
-
-<pre><code>[caixj@localhost ~]$ export xx=333
-[caixj@localhost ~]$ echo $xx
-333
-[caixj@localhost ~]$ export xx=$xx+3
-[caixj@localhost ~]$ echo $xx
-333+3
-[caixj@localhost ~]$ unset xx
-[caixj@localhost ~]$ echo $xx
-</code></pre>
-
-<p>上面看到的set命令输出是蛮多行的，我们如何迅速定位到PATH呢?这里可以配合管道|和grep命令来找到所有符合某个模式的行，例如</p>
-
-<pre><code>[caixj@localhost ~]$ set | grep PATH
-LD_LIBRARY_PATH=/usr/lib/oracle/10.2.0.3/client/lib
-PATH=/usr/lib/oracle/10.2.0.3/client/lib:/opt/CollabNet_Subversion/bin:/usr/local/grails-1.1/bin:/usr/local/groovy-1.6.0/bin:/usr/local/mysql-5.1.32/bin:/usr/local/wine-1.1.16/bin:/usr/local/scala-2.7.3.final/bin:/usr/local/apache-ant-1.7.1/bin:/usr/java/default/bin:/usr/local/python-2.6.1/bin:/usr/local/ruby-1.8.7-p72/bin:/usr/local/jruby-1.2.0/bin:/usr/lib/qt-3.3/bin:/usr/kerberos/bin:/usr/lib/oracle/10.2.0.3/client/lib:/opt/CollabNet_Subversion/bin:/usr/local/grails-1.1/bin:/usr/local/groovy-1.6.0/bin:/usr/local/mysql-5.1.32/bin:/usr/local/wine-1.1.16/bin:/usr/local/scala-2.7.3.final/bin:/usr/local/apache-ant-1.7.1/bin:/usr/java/default/bin:/usr/local/python-2.6.1/bin:/usr/local/ruby-1.8.7-p72/bin:/usr/local/jruby-1.2.0/bin:/usr/local/bin:/bin:/usr/bin:/home/caixj/bin
-[caixj@localhost ~]$ set | grep P.*
-GROUPS=()
-HOSTTYPE=i686
-INPUTRC=/etc/inputrc
-KDE_IS_PRELINKED=1
-KDE_NO_IPV6=1
-LD_LIBRARY_PATH=/usr/lib/oracle/10.2.0.3/client/lib
-LESSOPEN='|/usr/bin/lesspipe.sh %s'
-MACHTYPE=i686-redhat-linux-gnu
-.......
-</code></pre>
-
-<p>现在，我们就可以把一些自己需要的命令加到PATH上去了。
-这里又有个常见的安全隐患需要介绍一下，就是在PATH路径添加.(当前目录)，
-这样一来./hello，就可以用hello来代替了。看起来的确是不错，可是这不是安全的做法，
-例如别有用心的用户或黑客在/tmp目录上弄个hack过的ls的脚本，
-root不小心在/tmp目录下执行个ls就可能出现安全问题了。所以推荐不添加.来节省一点点的方便而留个安全隐患。</p>
-
-<p>好了，现在的问题变成，我们怎么知道useradd命令在/usr/sbin目录里边呢?
-linux也提供了一些工具便于查找，常用的有which,whereis,locate，
-当然有更加强大的find(以后在介绍)，前面几个就很够用了。</p>
-
-<pre><code>[caixj@localhost ~]$ whereis ruby
-ruby: /usr/bin/ruby /usr/lib/ruby /usr/share/man/man1/ruby.1.gz
-[caixj@localhost ~]$ which ruby
-/usr/local/ruby-1.8.7-p72/bin/ruby
-[caixj@localhost ~]$ locate useradd
-/etc/default/useradd
-/mnt/d/fisheye-1.3.5/content/web-inf/classes/org/apache/jsp/WEB_002dINF/jsp/admin/useradd_jsp.class
-/mnt/d/fisheye-1.3.5/content/web-inf/jsp/admin/useradd.jsp
-/usr/sbin/luseradd
-/usr/sbin/useradd
-/usr/share/man/fr/man8/useradd.8.gz
-/usr/share/man/id/man8/useradd.8.gz
-/usr/share/man/it/man8/useradd.8.gz
-/usr/share/man/ja/man8/useradd.8.gz
-/usr/share/man/man1/luseradd.1.gz
-/usr/share/man/man8/useradd.8.gz
-/usr/share/man/pl/man8/useradd.8.gz
-/usr/share/man/ru/man8/useradd.8.gz
-/usr/share/man/tr/man8/useradd.8.gz
-/usr/share/man/zh_CN/man8/useradd.8.gz
-/usr/share/man/zh_TW/man8/useradd.8.g
-</code></pre>
-
-<p>有一些区别，which是在PATH里边找的，所以对前面的需求来说，是没什么用处的。
-whereis是可以设定在一定目录上找，是我用得最多的工具。
-而locate是基于预先建立的一个包括系统内所有档案名称及路径的数据库，
-一般是通过cron任务来定时更新这个数据库，可以搜索到非常详细的内容，不过不是实时的。</p>
-
-<p>快12点了，今天到此为止，关机睡觉。说起关机呢，对于linux来说，并不是很常用，
-服务器几年都不关机一次那是家常便饭。不过这里还是要讲讲，关机的命令也不少，
-shutdown,halt,reboot是我用得最多的。shutdown是包括很多选项，包含了reboot和halt的功能。
-这些命令都需要root权限，具体是怎么操作就不演示了，不然我的文档没法写了。</p>
-
-<p>下课了，待续。</p>
-
-<p>2008年4月12日，一大早外边就在吵，等我爬起来又不吵了，做人真不厚道。洗衣服后刚刚开机，忘了现在是几点了怎么办？
-可以用date来查看(其实看手机也挺方便:))</p>
-
-<pre><code>[caixj@localhost ~]$ date
-</code></pre>
-
-<p>2009年 04月 12日 星期日 07:57:31 CSTdate同样也可以用来调整时间，服务器时间也是很重要的因素，
-特别要保证集群服务器的时间同步，要不同一时间操作的2条数据就可能时间差好远。另外，也可以看看日历，
-虽然这个cal命令很少用到(看来我也没什么时间概念)：</p>
-
-<pre><code>[caixj@localhost ~]$ cal
-     四月 2009    
-日 一 二 三 四 五 六
-   1    2   3   4
- 5    6    7   8   9  10  11
-12  13  14 15  16  17 18
-19  20  21 22  23 24 25
-26  27 28 29  30
-</code></pre>
-
-<p>那怎么知道最近有那些人登录过呢？可以使用last来看看，它会记录系统开机到现在的登录信息：</p>
-
-<pre><code>[caixj@localhost testdir]$ last|head
-caixj    pts/1        192.168.1.184    Sun Apr 12 07:57   still logged in   
-caixj    pts/1        192.168.1.184    Sat Apr 11 21:36 - 23:56  (02:20)    
-caixj    pts/1        192.168.1.184    Sat Apr 11 14:08 - 21:35  (07:26)    
-caixj    pts/1        192.168.1.184    Sat Apr 11 14:03 - 14:08  (00:04)    
-root     pts/1        192.168.1.184    Sat Apr 11 14:01 - 14:03  (00:01)    
-caixj    pts/1        192.168.1.184    Sat Apr 11 13:52 - 14:01  (00:08)    
-caixj    pts/1        192.168.1.184    Sat Apr 11 12:45 - 12:45  (00:00)    
-caixj    pts/1        :0.0             Fri Apr 10 16:29 - 16:32  (00:02)    
-caixj    pts/1        :0.0             Fri Apr 10 16:26 - 16:28  (00:02)    
-caixj    pts/1        :0.0             Fri Apr 10 16:07 - 16:08  (00:01)   
-</code></pre>
-
-<p>这也是为什么不提倡使用root的原因，不然清一色的root，看得过来么？从左到右分别是登录用户，终端，登录地址，登录时间段，登录时间。</p>
-
-<p>有些人是软件狂，什么软件都想试试，那么总得知道linux下面怎么安装软件吧？
-像很多发行版都自带了自己的一套软件包管理器，例如rpm(RedHat Package Manager),deb。
-对于redhat系列，还有个基于rpm的前端软件包管理工具，叫yum(Yellow dog Updater, Modified)，是相当的方便，可以自动包依赖关系。</p>
-
-<pre><code>[root@localhost testdir]# yum install ruby*
-Loaded plugins: fastestmirror
-Loading mirror speeds from cached hostfile
- * epel: mirror.yandex.ru
-base                                                                                                   | 1.1 kB     00:00   
-updates                                                                                                |  951 B     00:00   
-primary.xml.gz                                                                                         |  99 kB     00:00   
-updates                                                        150/150
-addons                                                                                                 |  951 B     00:00   
-extras                                                                                                 | 1.1 kB     00:00   
-Setting up Install Process
-Parsing package install arguments
-Package ruby-1.8.5-5.el5_2.6.i386 already installed and latest version
-Package ruby-libs-1.8.5-5.el5_2.6.i386 already installed and latest version
-Resolving Dependencies
---&gt; Running transaction check
----&gt; Package rubygem-rake.noarch 0:0.8.3-1.el5 set to be updated
----&gt; Package rubygem-mongrel.i386 0:1.0.1-6.el5 set to be updated
-.......
-
-[root@localhost testdir]# yum update
-Loaded plugins: fastestmirror
-Loading mirror speeds from cached hostfile
- * epel: ftp.yz.yamagata-u.ac.jp
-Setting up Update Process
-Resolving Dependencies
---&gt; Running transaction check
----&gt; Package mono-core.i386 0:1.2.6-6.1.el5 set to be updated
----&gt; Package NetworkManager.i386 1:0.7.0-4.el5_3 set to be updated
-.......
-
-[root@localhost caixj]# yum erase ruby*
-Loaded plugins: fastestmirror
-Setting up Remove Process
-Resolving Dependencies
---&gt; Running transaction check
----&gt; Package ruby.i386 0:1.8.5-5.el5_2.6 set to be erased
---&gt; Processing Dependency: ruby &gt;= 1.8 for package: kdebindings
----&gt; Package ruby-libs.i386 0:1.8.5-5.el5_2.6 set to be erased
-</code></pre>
-
-<p>yum还带有其他很多参数，
-我基本就靠上面几个过活，另外clean参数也是比较常用的。直接用rpm安装也是很方便的。</p>
-
-<pre><code>[root@localhost caixj]# rpm -ivh xxx.rpm
-error: open of xxx.rpm failed: 没有那个文件或目录
-[root@localhost caixj]# rpm -Uvh xxx.rpm
-error: open of xxx.rpm failed: 没有那个文件或目录
-[root@localhost caixj]# rpm -qa | grep openssl
-openssl-0.9.8e-7.el5
-openssl-devel-0.9.8e-7.el5
-</code></pre>
-
-<p>当然最好是使用yum来安装，省事又省心，具体的yum源的配置参考/etc/yum.repos.d/*.repo并参考其他资料。</p>
-
-<p>话说回来，有时候没有现成的rpm包，或者rpm很旧(看上面centos下的ruby才1.8.5)，
-又或者存在潜在的性能问题(前段日子报道的ubuntu的ruby的性能问题)。
-当然也有可能是工作学习需要(需要测试多个软件版本)，或者压根就是个软件狂。
-在linux下是免不了要用到源码安装的，跟windows下安装软件相比，安装多个版本简单得多，而且不容易发生冲突。</p>
-
-<p>首先，我们要下载源码包,一般的源码包是上面提到那几个压缩格式。可以使用wget(web get)来下载,</p>
-
-<pre><code>[caixj@localhost testdir]$ export http_proxy=http://user:paswd@192.168.1.184
-[caixj@localhost testdir]$ wget http://www.lighttpd.net/download/lighttpd-1.4.22.tar.gz
-.......
-[caixj@localhost testdir]$ tar zxvf lighttpd-1.4.22.tar.gz
-.......
-[caixj@localhost testdir]$ cd lighttpd-1.4.22
-</code></pre>
-
-<p>上面第一行，是因为网络有限制，设置个代理而已:).接下去的工作基本是标准流程(有些不一样的就要自己参考文档了)：</p>
-
-<pre><code>[root@localhost caixj]# .configure --prefix=/usr/local/lighttpd-1.4.22
-[root@localhost caixj]# make
-[root@localhost caixj]# make install
-</code></pre>
-
-<p>基本上都是这样，configure推荐带上prefix的参数，不然版本不好控制，
-卸载也不容易。make和make install，很多时候可以写成make &amp;&amp; make install。</p>
-
-<p>最后当你安装(yum或源码)之后，会不会觉得每次启动都要手动一把很无聊呢？
-例如我的mysql每天都要用，像windows那样当成服务启动就好了。
-linux也有开机启动这样的功能，具体怎么把一个程序弄成服务自动启动请自行google,redhat系列的基本流程是写个包括start/stop/restart的一定格式的脚本,
-然后扔到/etc/init.d(这是/etc/rc.d/init.d的一个soft link)，最后再使用chkconfig来配置.例如我们已经弄了个httpd的脚本</p>
-
-<pre><code>[root@localhost ~]# ls -al /etc/init.d/ | grep httpd
--rwxr-xr-x  1 root root  3200 01-22 11:05 httpd
-[root@localhost ~]# /sbin/chkconfig --add httpd
-[root@localhost ~]# /sbin/chkconfig --list httpd
-httpd           0:关闭  1:关闭  2:关闭  3:关闭  4:关闭  5:关闭  6:关闭
-[root@localhost ~]# /sbin/chkconfig --level 3 httpd on
-[root@localhost ~]# /sbin/chkconfig --list httpd
-httpd           0:关闭  1:关闭  2:关闭  3:启用  4:关闭  5:关闭  6:关闭
-</code></pre>
-
-<p>0－6是指不同的运行状态,具体参考/etc/inittab，关闭/启动表示在某个运行状态下该服务是否自动启动。
-假如你想调整某些运行状态的服务，用chkconfig一个个调整不是很方便，这时可以求助ntsysv:</p>
-
-<pre><code> [root@localhost ~]# /usr/sbin/ntsysv
- [root@localhost ~]# /usr/sbin/ntsysv --level 35
-</code></pre>
-
-<p>不加level参数就表示当前运行状态。
-会出现一个图形化的界面，只需设置并保存就可以了。
-最后，要让某个关闭的服务启动或者正在运行的服务关闭,可以使用service方法,例如</p>
-
-<pre><code> [root@localhost ~]# /sbin/service httpd start
- 启动 httpd：                                               [确定]
- [root@localhost ~]# /sbin/service httpd stop
- 停止 httpd：                                               [确定]
-</code></pre>
-
-<p>程序总算启动了，可是一切还没完。我们怎么能看到这些程序的进程呢？
-或者突然你机器慢得不行了，想知道那个程序不知好歹？
-你会不会怀念windows那个ctrl+alt+del的任务管理器呢？还是忘了它吧，
-当真的很卡的时候，任务管理器都自身难保了！再来看看linux的进程管理工具ps和top</p>
-
-<pre><code>[caixj@localhost ~]$ ps aux
-USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-root         1  0.0  0.0   2068   592 ?        Ss    2008   1:19 init [3]       
-root         2  0.0  0.0      0     0 ?        S&lt;    2008   0:00 [migration/0]
-root         3  0.0  0.0      0     0 ?        SN    2008   0:00 [ksoftirqd/0]
-root         4  0.0  0.0      0     0 ?        S&lt;    2008   0:00 [watchdog/0]
-root         5  0.0  0.0      0     0 ?        S&lt;    2008   0:00 [migration/1]
-root         6  0.0  0.0      0     0 ?        SN    2008   0:00 [ksoftirqd/1]
-root         7  0.0  0.0      0     0 ?        S&lt;    2008   0:00 [watchdog/1]
-root         8  0.0  0.0      0     0 ?        S&lt;    2008   0:00 [events/0]
-root         9  0.0  0.0      0     0 ?        S&lt;    2008   0:00 [events/1]
-root        10  0.0  0.0      0     0 ?        S&lt;    2008   0:00 [khelper]
-</code></pre>
-
-<p>昨天下午开始就没干活了，今天是4月13号，刚刚看完倾城之恋，继续开工！</p>
-
-<p>ps可以用来获取进程的瞬时状态，也有很多选项可供选择。如上面所示，USER表示运行该进程的用户，
-PID是process id就是进程id，1一般就是init，这是系统启动的时候第一个运行的程序。%CPU，
-就是占用的CPU时间，是很重要的数据项，当你的系统反应缓慢的时候，或许就是有个进程占用了大部分的CPU。
-%MEM就是占用的物理内存使用率，VSZ是占用的虚拟内存大小，RSS是占用的内存大小，TTY是终端号，
-STAT就是运行状态，特别需要注意的是Z这样的僵尸进程(已经运行完了却没有消除)，
-START和TIME分别是运行开始时间和运行的时间，COMMAND就是执行的命令。</p>
-
-<p>一般都会有很多行，所以经常配合grep进行过滤，例如查找java相关的,ps aux | grep java，
-还有经常用的就是查找某个用户执行的进程状态,ps ux -U caixj,更多的选项还是要用man查阅，
-不过这也基本够用了。再看看下面是用lax参数的情况：</p>
-
-<pre><code>[caixj@localhost ~]$ ps lax
-F   UID   PID  PPID PRI  NI    VSZ   RSS WCHAN  STAT TTY        TIME COMMAND
-4     0     1     0  15   0   2068   592 -      Ss   ?          1:19 init [3]       
-1     0     2     1 -100  -      0     0 -      S&lt;   ?          0:00 [migration/0]
-1     0     3     1  34  19      0     0 -      SN   ?          0:00 [ksoftirqd/0]
-5     0     4     1 -100  -      0     0 -      S&lt;   ?          0:00 [watchdog/0]
-1     0     5     1 -100  -      0     0 -      S&lt;   ?          0:00 [migration/1]
-1     0     6     1  39  19      0     0 -      SN   ?          0:00 [ksoftirqd/1]
-5     0     7     1 -100  -      0     0 -      S&lt;   ?          0:00 [watchdog/1]
-1     0     8     1  10  -5      0     0 -      S&lt;   ?          0:00 [events/0]
-1     0     9     1  10  -5      0     0 -      S&lt;   ?          0:00 [events/1]
-1     0    10     1  10  -5      0     0 -      S&lt;   ?          0:00 [khelper]
-</code></pre>
-
-<p>这个有几列比较重要的数据是PPID，parent process id，父进程ID，PRI是priority优先级，
-NI是nice优先权。这几个选项还是有一定用处的。不过先来看看top命令是怎样的？</p>
-
-<pre><code>[caixj@localhost ~]$ top
-top - 00:23:13 up 117 days,  7:42,  1 user,  load average: 0.01, 0.03, 0.01
-Tasks: 128 total,   1 running, 127 sleeping,   0 stopped,   0 zombie
-Cpu(s): 33.3%us, 33.3%sy,  0.0%ni, 33.3%id,  0.0%wa,  0.0%hi,  0.0%si,  0.0%st
-Mem:   3115980k total,  3016584k used,    99396k free,    83396k buffers
-Swap:  5164856k total,    65684k used,  5099172k free,  2022860k cached
-
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
-15346 caixj     15   0  2196 1008  812 R  0.3  0.1   0:00.01 top
-    1 root      15   0  2064  580  536 S  0.0  0.1   0:00.35 init
-    2 root      RT  -5     0    0    0 S  0.0  0.0   0:00.00 migration/0
-    3 root      34  19     0    0    0 S  0.0  0.0   0:00.00 ksoftirqd/0
-    4 root      RT  -5     0    0    0 S  0.0  0.0   0:00.00 watchdog/0
-    5 root      10  -5     0    0    0 S  0.0  0.0   0:00.44 events/0
-    6 root      10  -5     0    0    0 S  0.0  0.0   0:00.00 khelper
-    7 root      20  -5     0    0    0 S  0.0  0.0   0:00.00 kthread
-   10 root      10  -5     0    0    0 S  0.0  0.0   0:02.27 kblockd/0 
-</code></pre>
-
-<p>top是一个实时的进程监控工具，默认是10秒更新一次状态。可以看到输出的信息非常丰富。简单解析一下，第一行和uptime命令的内容大同小异：</p>
-
-<pre><code>[caixj@localhost ~]$ uptime
- 23:54:11 up 3 days,  7:48,  1 user,  load average: 0.00, 0.01, 0.00
-</code></pre>
-
-<p>除了列出当前时间，系统运行的时间，用户数，还有很有价值的系统负载参数，分别是最近1分钟，5分钟，15分钟的系统负载平均值。
-以某个值(如3)为基准，当值过高的时候，就需要研究对策加以处理了。
-第二行是任务统计，还是特别强调一下zombie，就是上面提到的僵尸进程，其实是不占用什么进程的。
-第三行描述CPU周期是如何使用的。从左到右，us(user)用户模式，sy(system)内核模式,ni(nice)用户进程空间内改变过优先级的进程，
-id(idle)处于空闲的，wa(iowait)IO等待，hi(hard irq)硬件中断,si(soft irq)软件中断，st(???不清楚,谁来告诉一下)。
-特别注意的是wa，当系统运行缓慢的时候，是否是IO瓶颈?
-第四行显示物理内存的使用情况，包括总的可以使用的内存、已用内存、空闲内存、缓冲区占用的内存。
-第五行显示交换分区使用情况，包括总的交换分区、使用的、空闲的和用于高速缓存的大小。
-和windows的不一样，物理内存剩余很少是正常的，因为linux会最大化利用内存，并不代表物理内存不足了。
-后面的很多和ps是差不多的，只是说说其中几个，VIRT是使用的虚拟内存的总量，VIRT = SWAP + RES.SWAP是被交换出去的部分，
-RES是进程占用的物理内存值，RES = CODE + DATA，CODE是运行的代码，DATA是运行的代码使用的数据和堆栈空间大小，SHR是进程使用的共享内存值。</p>
-
-<p>假如某个进程失控了，占用了大量的CPU和内存，我们想把它“结束任务”，可以使用kill，只要找到相应的PID就可以了，例如</p>
-
-<pre><code>[caixj@localhost ~]$ kill -9 3227
-</code></pre>
-
-<p>其中的9是信号值，就是KILL，这个信号不能被拦截，
-能够保证进程被杀死。不过对于上面提到的僵尸进程是没什么效果的。要去掉它，
-可以使用ps lax找到进程的PPID，先把父进程杀掉才行，如果父进程是1，就是init，那么对不起，只能等重启了。</p>
-
-<p>还有，那个top命令涉及到了内存这个东西，我们可以使用free来查看系统内存状况</p>
-
-<pre><code>[caixj@localhost ~]$ free -m
-                            total       used       free     shared    buffers     cached
-Mem:                       978        332        646          0         23        204
--/+ buffers/cache:     103        874
-Swap:                    2047         13       2034
-</code></pre>
-
-<p>带m参数是为了用MB为单位而已。上面提到，在linux中认为内存不用白不用，
-因此它尽可能的cache和buffer一些数据，所以空闲内存=free+buffers+cached。
-如果还要更加详细的内容，可以使用下面的命令(linux设备也是文件)</p>
-
-<pre><code>[caixj@localhost ~]$ cat /proc/meminfo
-MemTotal:      1001956 kB
-MemFree:        660660 kB
-Buffers:         25032 kB
-Cached:         209904 kB
-SwapCached:       2544 kB
-Active:         126664 kB
-Inactive:       133652 kB
-.......
-</code></pre>
-
-<p>那就再多说几句，对于某个进程PID，我们可以通过查看文件的方式来了解它的内存使用情况，例如
-显示进程所占用的虚拟地址(pid为进程号)</p>
-
-<pre><code>#cat /proc/pid/maps
-</code></pre>
-
-<p>显示进程所占用的内存情况(pid为进程号)</p>
-
-<pre><code>#cat /proc/pid/status
-</code></pre>
-
-<p>我们的结论就是，/proc就是内存的映射,就是是top，也是来这里找内存信息的。</p>
-
-<p>很晚了，明天还要上班，睡觉好了。不过，先写个倾城之恋的影评先。</p>
-
-<p>周二了，影评还没写，继续弄这个。</p>
-
-<p>关于内存，还有一个命令vmstat，是用来实时查看内存使用情况的，不带参数的话，显示的是当前的情况。
-可以在后面加个时间间隔来采集数据，例如每3秒采集一次</p>
-
-<pre><code>[caixj@localhost updates]$ vmstat 3
-procs -------memory--------swap---io----system-- -----cpu------
- r  b      swpd   free   buff  cache     si   so    bi    bo   in   cs us        sy id wa st
- 0  0      70860  16048   3688  98676    0    4    68    60     1167 1096 14     2 82  2  0
- 1  0      70860  16048   3688  98680    0    0     0      5      1202 2248 25    2 73  0  0
- 0  0      70860  16080   3696  98672    0    0     0      16     1167 1309 41     2 57  0  0
- 2  0      70860  16112   3696  98680    0    0     0      44    1170 1360 44      1 54  0  0
- 0  0      70860  16112   3704  98672    0    0     0       5     1159 1178 22      1 77  0  0
- 2  0      70860  16020   3704  98680    0    0     0      0     1156 1189 30      1 68  0  0
- 5  0      70860  16020   3716  98668    0    0     0      71     1171 1190 31      1 68  0  0
- 0  0      70860  16020   3716  98680    0    0     0       0    1163 1143 22       1 77  0  0
-</code></pre>
-
-<p>担心解释不好各列的意思，还是直接上英文吧：</p>
-
-<pre><code>Procs
-    r: The number of processes waiting for run time.
-    b: The number of processes in uninterruptible sleep.
-Memory
-    swpd: the amount of virtual memory used.
-    free: the amount of idle memory.
-    buff: the amount of memory used as buffers.
-    cache: the amount of memory used as cache.
-    inact: the amount of inactive memory. (-a option)
-    active: the amount of active memory. (-a option)
-Swap
-    si: Amount of memory swapped in from disk (/s).
-    so: Amount of memory swapped to disk (/s).
-IO
-    bi: Blocks received from a block device (blocks/s).
-    bo: Blocks sent to a block device (blocks/s).
-System
-    in: The number of interrupts per second, including the clock.
-    cs: The number of context switches per second.
-CPU
-    These are percentages of total CPU time.
-    us: Time spent running non-kernel code. (user time, including nice time)
-    sy: Time spent running kernel code. (system time)
-    id: Time spent idle. Prior to Linux 2.5.41, this includes IO-wait time.
-    wa: Time spent waiting for IO. Prior to Linux 2.5.41, included in idle.
-    st: Time stolen from a virtual machine. Prior to Linux 2.6.11, unknown.
-</code></pre>
-
-<p>上次提到内存，现在就再来看看硬盘，先使用命令fdisk来看看系统的分区表信息，如下(需要root)</p>
-
-<pre><code>[root@localhost caixj]# fdisk -l
-
-Disk /dev/sda: 36.4 GB, 36401479680 bytes
-255 heads, 63 sectors/track, 4425 cylinders
-Units = cylinders of 16065 * 512 = 8225280 bytes
-
-   Device Boot      Start         End      Blocks   Id  System
-/dev/sda1   *           1          13      104391   83  Linux
-/dev/sda2              14        1543    12289725   83  Linux
-/dev/sda3            1544        2574     8281507+  83  Linux
-/dev/sda4            2575        4425    14868157+   f  W95 Ext'd (LBA)
-/dev/sda5            2575        3217     5164866   82  Linux swap / Solaris
-/dev/sda6            3218        4425     9703228+  83  Linux
-</code></pre>
-
-<p>/dev/hd<em>是IDE硬盘，而/dev/sd</em> 是SCSI硬盘，a,b,c&#8230;这些是指第几块硬盘。
-1,2,3就是硬盘的分区。和vmstat类似的磁盘吞吐量工具有iostat，并可以使用间隔和计数参数，如</p>
-
-<pre><code>[caixj@localhost ~]$ iostat 5 3
-Linux 2.6.18-128.1.6.el5 (localhost.localdomain)        2009年04月14日
-
-avg-cpu:  %user   %nice %system %iowait  %steal   %idle
-          15.27    0.00    1.91    2.43    0.00   80.40
-
-Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
-hda              10.25       158.19       143.35    5941103    5383713
-hda1              0.00         0.02         0.00        858          0
-hda2              0.00         0.00         0.00         26          0
-hda5              0.00         0.02         0.00        675          0
-hda6              0.00         0.02         0.00        712          0
-hda7              0.01         0.16         0.00       6036         33
-hda8              2.82        59.62        55.55    2239234    2086152
-hda9              7.41        98.32        87.80    3692594    3297528
-</code></pre>
-
-<p>其中的Blk列是512字节块的意思，avg-cpu的信息基本上和top一样的字段，这里就不做解释了。</p>
-
-<p>接下去用df(disk file)来看看系统的系统硬盘空间的使用情况。</p>
-
-<pre><code>[caixj@localhost ~]$ df
-文件系统               1K-块        已用     可用 已用% 挂载点
-/dev/sda3              8022104   6296016   1312016  83% /
-/dev/sda1               101086     21729     74138  23% /boot
-tmpfs                  1557988         0   1557988   0% /dev/shm
-/dev/sda2             12096756  11042992    439280  97% /opt
-/dev/sda6              9549556   3213036   5948392  36% /sdb
-</code></pre>
-
-<p>硬盘的某个分区可以挂载到某个目录上去，其中的tmpfs是交换分区来的。
-可以通过可用空间，空间使用率来监控硬盘空间是否足够。一般来说，如果你是双系统的话，
-windows分区在Linux系统中默认是不会自动挂载的(有些发行版已经是自动识别的了)。
-你可以用fdisk命令查看system列为W95 FAT32的分区，然后所以mount命令来挂载一个文件系统，如</p>
-
-<pre><code>/dev/hda7            6689        9964    26314438+   b  W95 FAT32
-........
-[root@localhost caixj]# mount -t vfat /dev/hda7 /mnt/f
-</code></pre>
-
-<p>mount支持很多文件类型，
-如vfat,ramfs,iso9660(光驱),ext2/3之类，更多信息参考man。所以例如移动硬盘，U盘，
-光盘这些都是要mount进去才能使用的。你也可以把配置写到/etc/fstab里边去，如</p>
-
-<pre><code>[root@localhost caixj]# more /etc/fstab
-.......
-/dev/hda5               /mnt/d                  vfat    defaults        0 0
-/dev/hda6               /mnt/e                  vfat    defaults        0 0
-/dev/hda7               /mnt/f                  vfat    defaults        0 0
-</code></pre>
-
-<p>相反，要卸载一个文件系统，只是简单的使用umount就可以了</p>
-
-<pre><code>[root@localhost caixj]# umount /mnt/f
-</code></pre>
-
-<p>需要注意的是，像光盘之类，需要先umount再取出光盘，而不会像windows那样弹出就自动消失了。</p>
-
-<p>如果df之后发现某个文件系统空间突然紧张了，这个时候你需要知道究竟是什么东西占用了。
-这个时候进入某个文件系统后，我们可以用tree来查看整个目录结构</p>
-
-<pre><code>[caixj@localhost ~]$ tree updates/
-updates/
-|-- datasheets
-|   |-- edit.rhtml
-|   |-- index.rhtml
-|   |-- new.rhtml
-|   `-- show.rhtml
-|-- datasheets_controller.rb
-|-- field.rb
-|-- fields
-|   |-- edit.rhtml
-|   |-- index.rhtml
-|   |-- new.rhtml
-|   `-- show.rhtml
-`-- fields_controller.rb
-
-2 directories, 11 files
-</code></pre>
-
-<p>不过这个工具用处不大，一般文件结构太复杂，而且也没有显示占用空间。
-这个时候应该使用du(disk usage)</p>
-
-<pre><code>[caixj@localhost updates]$ du -h .
-20K     ./datasheets
-20K     ./fields
-64K     .
-</code></pre>
-
-<p>这里的h参数是human，人性化格式的意思。但是如果文件层次很多，还是会出现很多行，并且统计起来还是很久。
-其实我们大部分时候只是想要类似文件夹属性看到文件夹大小的功能，
-这个时候可以使用&#8211;max-depth=n的参数，n是指目录层次，一般1或者2就够了。</p>
-
-<p>有时候我们想在某个文件系统中查找某个文件，虽然有locate，但是它不是实时的，这个时候或许可以求助功能强大的find命令，如</p>
-
-<pre><code>[caixj@localhost ~]$ find . -name style.xml -type f
-./style.xml
-</code></pre>
-
-<p>其中的name是文件名，type是查找的文件类型，还有其他很多参数，关于这个可以参考man，
-这里有一个文章也是写的很好，可以参考：http://www.oracle.com/technology/global/cn/pub/articles/calish-find.html</p>
-
-<p>到这里，已经出现了不少命令了，虽然命令是需要多用用，才能熟悉的。
-如果万一对以前用过的命令记不起来了，或者不想再敲打一遍，这个时候你需要history来提供点帮助</p>
-
-<pre><code>[caixj@localhost ~]$ history
-.......
-  994  su
-  995  exit
-  996  ssh -p2281 caixj@192.168.1.184
-</code></pre>
-
-<p>你可以结合grep进行过滤。例如上面的ssh那个命令，我想执行，可以直接使用!996。
-另外，你也可以使用c(clear)参数进行清理，这样可以避免给偷窥到你敲打过的命令。</p>
-
-<pre><code>[caixj@localhost ~]$ history -c
-</code></pre>
-
-<p>没想到一放下就一个星期了，又是周末了。加紧继续干活，假如现在有个文本：</p>
-
-<pre><code>[caixj@localhost ~]$ more book
-mysql
-spring
-linux
-linux
-spring
-hibernate
-oracle
-lighttpd
-mysql
-mysql
-</code></pre>
-
-<p>可以用wc(word count)来统计一下文本行数，词数，字符数等等</p>
-
-<pre><code>[caixj@localhost ~]$ more book | wc -l
-10
-[caixj@localhost ~]$ more book | wc
-     10      10      70
-[caixj@localhost ~]$ more book | wc -lw
-     10      10
-[caixj@localhost ~]$ more book | wc -lwc
-     10      10      70
-</code></pre>
-
-<p>可是10行里边有重复了，能不能知道不同的有多少个?试试uniq(unique)</p>
-
-<pre><code>[caixj@localhost ~]$ cat book | uniq
-mysql
-spring
-linux
-spring
-hibernate
-oracle
-lighttpd
-</code></pre>
-
-<p>mysql可是还是有重复的，uniq不能跨行识别重复的，这个时候需要先sort一下</p>
-
-<pre><code>[caixj@localhost ~]$ cat book | sort | uniq -c
-      1 hibernate
-      1 lighttpd
-      2 linux
-      3 mysql
-      1 oracle
-      2 spring
-</code></pre>
-
-<p>来个稍稍复杂点，统计一下你最常用的10个命令</p>
-
-<pre><code>[root@localhost caixj]# history | awk '{print $2}' | sort | uniq -c | sort -nr | head -10
-     24 history
-     12 ls
-     11 exit
-      8 cd
-      6 ssh
-      6 mount
-      5 cat
-      4 umount
-      3 ps
-      3 man
-</code></pre>
-
-<p>上面有些参数也是man过来，大概比较怪异的就那个awk命令了。
-awk是一个相当复杂的文本编辑命令，功能强大，说实话，我只好一点最简单的，
-再复杂我会用其他脚本语言来处理。awk可以对某些行的各列进行处理，
-这里的列是指特定的分隔符来区分的，用F来指定，例如查看passwd文件来看有多少用户，
-还可以用NR来指定对某些行有效</p>
-
-<pre><code>[root@localhost caixj]# awk -F: '{print $1}' /etc/passwd
-root
-bin
-daemon
-adm
-lp
-sync
-shutdown
-halt
-mail
-[root@localhost caixj]# awk -F: 'NR==3,NR==5 {print $1}' /etc/passwd
-daemon
-adm
-lp
-</code></pre>
-
-<p>总体来说，这个命令还是不是很好学习的。有兴趣的话，多参考其他资料吧。现在我们来看看下面这2个命令</p>
-
-<pre><code>[root@localhost caixj]# ps axu | grep mongrel | awk '{print "kill -9",$2}' | sh
-[root@localhost caixj]# lsof -i :80 | grep -v "PID" | awk '{print "kill -9",$2}'| sh
-</code></pre>
-
-<p>其中sh就是用来执行一些命令的子shell。第一句是用来杀死所有的mongrel进程的，
-不过需要确认是不是所有的进程，别把不是的也杀掉了，特别用来那些进程已经无法控制，
-要强制杀死而且数量还不少的时候，例如做mongrel cluster的时候，手动一个个杀掉不是个什么好办法。
-第二句是类似的，是用在端口给占用的时候，例如上面的是apache httpd占用的80端口，
-就是占用80端口的那些进程要给杀掉。两个手段其实是差不多的效果。</p>
-
-<p>现在来看看这个lsof(list open files)，一般有以下用法：
-找出正在使用某个文件的进程</p>
-
-<pre><code>[root@localhost caixj]# lsof /var/log/messages
-</code></pre>
-
-<p>用来解除阻塞</p>
-
-<pre><code>[root@localhost caixj]# lsof /mnt/f
-</code></pre>
-
-<p>搜索打开的网络</p>
-
-<pre><code>[root@localhost caixj]# lsof -i@192.168.1.184
-</code></pre>
-
-<p>找出程序打开的所有文件</p>
-
-<pre><code>[root@localhost caixj]# lsof -p 6800
-</code></pre>
-
-<p>说起打开的所有文件，一个进程所能打开的文件是有限制的。这个可以通过命令ulimit来查看和设置</p>
-
-<pre><code>[root@localhost ~]# ulimit -a
-core file size          (blocks, -c) 0 # 设定core文件的最大值，单位为区块
-data seg size           (kbytes, -d) unlimited # 程序数据节区的最大值，单位为KB
-scheduling priority             (-e) 0  # 最大的任务优先值(nice)
-file size               (blocks, -f) unlimited # # shell所能建立的最大文件，单位为区块
-pending signals                 (-i) 32255 # 未结束的信号的最大数量
-max locked memory       (kbytes, -l) 32 # 可锁定在内存中的最大值，单位为KB
-max memory size         (kbytes, -m) unlimited # 可使用内存的上限，单位为KB
-open files                      (-n) 8192 # 同一时间最多可开启的文件数
-pipe size            (512 bytes, -p) 8 # 管道缓冲区的大小，单位512字节
-POSIX message queues     (bytes, -q) 819200 # POSIX的消息队列的最大字节
-real-time priority              (-r) 0 # 实时任务优先级的数值
-stack size              (kbytes, -s) 10240 # 栈的上限，单位为KB
-cpu time               (seconds, -t) unlimited # CPU使用时间的上限，单位为秒
-max user processes              (-u) 2047 # 用户最多可开启的程序数目
-virtual memory          (kbytes, -v) unlimited # 可使用的虚拟内存上限，单位为KB
-file locks                      (-x) unlimited #文件锁的数量
-</code></pre>
-
-<p>再回过头来看看网络相关的命令，首先查看一下网络配置，类似ipconfig的命令是ifconfig</p>
-
-<pre><code>[root@localhost caixj]# ifconfig eth0
-eth0      Link encap:Ethernet  HWaddr 00:D2:55:DF:07:73  
-          inet addr:192.168.1.184  Bcast:192.168.1.255  Mask:255.255.255.0
-          inet6 addr: fe80::202:55ef:fedf:773/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:136087020 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:60190414 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:2454973828 (2.2 GiB)  TX bytes:2764993762 (2.5 GiB)
-          Interrupt:185ifconfig
-</code></pre>
-
-<p>也可以用来设置网络，例如</p>
-
-<pre><code>[root@localhost ~]# ifconfig eth0 down
-[root@localhost ~]# ifconfig eth0 192.168.1.99 broadcast 192.168.1.255 netmask 255.255.255.0
-[root@localhost ~]# ifconfig eth0 up
-[root@localhost ~]# ifconfig eth0
-</code></pre>
-
-<p>如何查看或检测网络状态呢？最普通的ping可以用来试试，如</p>
-
-<pre><code>[root@localhost caixj]# ping 192.168.1.63
-PING 192.168.1.63 (192.168.1.63) 56(84) bytes of data.
-64 bytes from 192.168.1.63: icmp_seq=1 ttl=64 time=1.27 ms
-64 bytes from 192.168.1.63: icmp_seq=2 ttl=64 time=0.314 ms
-64 bytes from 192.168.1.63: icmp_seq=3 ttl=64 time=0.294 ms
-</code></pre>
-
-<p>再复杂的命令有netstat,如检测正在监听的端口，包括t(tcp),u(udp)</p>
-
-<pre><code>[root@localhost caixj]# netstat -ntul
-Active Internet connections (only servers)
-Proto Recv-Q Send-Q Local Address               Foreign Address             State   
-tcp        0      0 0.0.0.0:3938                0.0.0.0:*                   LISTEN      
-tcp        0      0 0.0.0.0:1158                0.0.0.0:*                   LISTEN      
-tcp        0      0 0.0.0.0:742                 0.0.0.0:*                   LISTEN      
-tcp        0      0 0.0.0.0:3306                0.0.0.0:*                   LISTEN      
-tcp        0      0 0.0.0.0:29355               0.0.0.0:*                   LISTEN      
-tcp        0      0 192.168.1.184:11211         0.0.0.0:*                   LISTEN      
-tcp        0      0 0.0.0.0:3468                0.0.0.0:*                   LISTEN      
-tcp        0      0 0.0.0.0:111                 0.0.0.0:*                   LISTEN      
-tcp        0      0 0.0.0.0:8080                0.0.0.0:*                   LISTEN      
-tcp        0      0 0.0.0.0:5520                0.0.0.0:*                   LISTEN      
-tcp        0      0 0.0.0.0:1521                0.0.0.0:*                   LISTEN      
-tcp        0      0 ::ffff:127.0.0.1:8005       :::*                        LISTEN      
-tcp        0      0 :::2281                     :::*                        LISTEN      
-udp        0      0 127.0.0.1:9603              0.0.0.0:*                               
-udp        0      0 127.0.0.1:32534             0.0.0.0:*                               
-udp        0      0 127.0.0.1:34463             0.0.0.0:*                               
-udp        0      0 0.0.0.0:61638               0.0.0.0:*                               
-udp        0      0 0.0.0.0:12360               0.0.0.0:*                               
-udp        0      0 192.168.1.184:11211         0.0.0.0:*                               
-udp        0      0 127.0.0.1:63571             0.0.0.0:*                               
-udp        0      0 0.0.0.0:736                 0.0.0.0:*                               
-udp        0      0 127.0.0.1:3809              0.0.0.0:*                               
-udp        0      0 0.0.0.0:739                 0.0.0.0:*                               
-udp        0      0 0.0.0.0:111                 0.0.0.0:*               
-</code></pre>
-
-<p>就暂时到此为止好了，越发觉得不好掌控。很多东西自己也不是很清楚。无论学什么做什么都好，
-还是要在学习中实践，在实践中学习，是一个交互的过程，这样才能朝着广度和深度的方向不断进步。
-这里只是简单介绍了一些常用命令，可能会不是很全，我水平有限，精力有限，再更深的学习，
-还是要靠自己努力。就这样了，以后或许会继续补充，并且在版本更新中注明，谢谢大家支持。</p>
+<p><img src="/assets/images/explain_plan.png" alt="oracle执行计划思维导图" /></p>
 </div>
   
   
@@ -1320,7 +112,7 @@ udp        0      0 0.0.0.0:111                 0.0.0.0:*
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/20120902_linux-config-introduction.html">Linux文件目录结构简介(旧)</a></h1>
+      <h1 class="entry-title"><a href="/blog/20121120_how-to-share.html">关于分享</a></h1>
     
     
       <p class="meta">
@@ -1336,311 +128,214 @@ udp        0      0 0.0.0.0:111                 0.0.0.0:*
   
 
 
-<time datetime="2012-09-02T00:00:00+08:00" pubdate data-updated="true">Sep 2<span>nd</span>, 2012</time>
+<time datetime="2012-11-20T00:00:00+08:00" pubdate data-updated="true">Nov 20<span>th</span>, 2012</time>
         
-         | <a href="/blog/20120902_linux-config-introduction.html#disqus_thread">Comments</a>
+         | <a href="/blog/20121120_how-to-share.html#disqus_thread">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p><strong>这是09~10年的时候弄的一份总结文档，一直存在在google docs里边。这次把它弄过来，做个见证，留个纪念。</strong></p>
+  <div class="entry-content"><h2>分享好处多多</h2>
 
-<h2>正文</h2>
+<p>通过做一些分享活动，一方面可以扩大自己的影响力，让更多的人知道你。
+另外一方面，可以加深自己对知识的理解，在交流中纠正一些错误的理解。
+还可以提高自己的表达能力。可以说，除了需要花时间准备之外，分享对自己来说，几乎是百利而无一害的。</p>
 
-<h3>总体的，不好归类的</h3>
+<h2>参与度与氛围</h2>
 
-<div class="highlight"><pre><code class="bash">/media 用来挂载usb存储设备，DVD, CD-ROM等
-/mnt 用来临时挂载文件系统，可插拔的设备应该挂载到/media上去
-/home 除root之外的用户目录的默认所在地
-/root root用户目录
-/bin 最常用的命令
-/sbin 系统管理员使用的命令<span class="o">(</span><span class="nv">sbin</span><span class="o">=</span>system bin<span class="o">)</span>
-/usr/local 使用源码安装的话，一般把prefix目录指定到这里，如/usr/local/ruby
-/usr/share/applications desktop文件是桌面的菜单项
-~/.gnome*,~/.gconf* gnome面板的个人配置信息，当gnome面板乱了，可以尝试删除这些文件来恢复默认面板
-</code></pre></div>
+<p>自己做分享，总是希望有更多的人来参与，并从中营造一个愉悦的氛围，
+互惠互利，从中可以学习到更多。但是，经常遇到的事实是，参与的童鞋常常不愿意发言。
+一方面是可能是自己不擅长，更多看成是培训，而不是交流活动，害怕犯错。还有就是，
+他们没有事先做一些准备，对内容理解不够快，所以也没什么特别的疑问。
+我认为，提出一些低级问题，并不是什么丢人的事情，可能是分享人没有照顾到你(经常是一类人)，
+如果你不提出来的话，或许分享人会自认为大家都很明白。总之，参与一些分享活动，能全身心
+投入，收获会更大。</p>
 
+<h2>敢于分享</h2>
 
-<h3>/boot目录，kernel相关部分</h3>
+<p>很多童鞋都害怕分享，总是担心自己水平不够，准备不够充分，所以一拖再拖。
+以我的经验，分享的内容你刚刚够得着就可以了，因为你准备的过程中，会对自己掌握的内容进行
+筛选，收集更多的资料，然后进行浓缩总结，到最后你把它分享给其他人，整个过程下来，就是一次很好的
+锻炼机会。不要太担心做不好，即使有些地方自己说不清，但或许经过众人的讨论，理解得就更好了。
+还有就是，什么都要计划，给自己的分享计划加个合理的期限吧，少许的压力能让你做得更好。</p>
 
-<div class="highlight"><pre><code class="bash">/boot/symvers-%<span class="o">{</span>KRELEASE<span class="o">}</span>.gz 保存着内核中所有符号的crc值
-/boot/System.map-%<span class="o">{</span>KRELEASE<span class="o">}</span> 给kernel使用的符号表<span class="o">(</span>symbol table<span class="o">)</span>
-/boot/vmlinuz-%<span class="o">{</span>KRELEASE<span class="o">}</span> 可引导的、压缩的内核
-/boot/initrd-%<span class="o">{</span>KRELEASE<span class="o">}</span>.img 包含了支持 Linux 系统两阶段引导过程所需要的必要可执行程序和系统文件
-/boot/config-%<span class="o">{</span>KRELEASE<span class="o">}</span> 包括kernel的make config
-/boot/message cpio格式的打包文件，存放Grub的配置信息，里面包括了图片，文字说明等内容
-</code></pre></div>
+<h2>节奏与时间</h2>
 
+<p>每次分享的时间不要过长，我就犯过这样的错误，到后面很多人都开始走神了。
+还有就是，主题要比较单一，免得铺开太大，不好收缩，影响时间和效果。
+时间比较长的话，中间可以适当休息一下。</p>
 
-<h3>/boot目录，grub配置</h3>
+<h2>想不到的收获</h2>
 
-<div class="highlight"><pre><code class="bash">/boot/grub/menu.lst 一个链接文件，真实文件是grub.conf
-/boot/grub/grub.conf grub的配置文件
-/boot/grub/device.map 设备的映射文件
-/boot/grub/splash.xpm.gz grub开机画面的gzip压缩包
-/boot/grub/stageN 一般有stage1和stage2，是grub的核心，受限于mbr512字节的大小限制，所以切开成几个，stage1是用来加载stage2的
-/boot/grub/XXX_stage1_5 stage2文件较大，一般存放于文件系统中，需要XXX_stage1_5来识别各种各样的文件系统
-</code></pre></div>
-
-
-<h3>/etc目录，系统用户/用户组</h3>
-
-<div class="highlight"><pre><code class="bash">/etc/passwd 存放所有系统用户及相关信息
-/etc/shadow 存放所有系统用户的密码信息
-/etc/group 存放所有系统用户组及相关信息
-/etc/gshadow 存放所有系统用户组的密码信息
-</code></pre></div>
+<p>最近做了一次关于oracle执行计划的分享活动，说实话，我对这个主题不是很熟悉。
+但是我觉得这东西很有用，也非常适合团队里的童鞋，所以花了几个星期的时间收集资料，
+最后做了这么一个分享活动。经自己讲解了一遍，自己对这些知识加深了理解。更让我想不到的事情就是，
+有其他项目组的童鞋遇到了相关的问题，跑来跟我讨论(哥俨然是专家啦)。正因为这样，我才有机会遇到更多现实的问题，
+从而促进我对这些东西的理解，如果没有这次分享，有些东西可能就没法用在实践上了。
+我想，很多高手也是这么炼成的。:)</p>
+</div>
+  
+  
 
 
-<h3>/etc目录，系统启动流程相关</h3>
-
-<div class="highlight"><pre><code class="bash">/etc/issue 发行版信息
-/etc/redhat-release redhat版本信息
-/etc/inittab 系统初始化配置
-/etc/init.d 存放服务脚本的地方
-/etc/rc<span class="o">[</span>0-6S<span class="o">]</span>.d 每个运行级别对应的服务，里边的脚本都是链接到/etc/init.d目录
-/etc/rc rc启动脚本
-/etc/rc.local 在所有init脚本结束后调用
-/etc/rc.sysinit 在系统启动时运行一次
-/etc/profile 环境变量配置
-/etc/profile.d 保存一些脚本，可在/etc/profile中调用
-~/.bash_profile  针对某个用户的配置，会调用.bash_rc
-~/.bashrc 针对某个用户的配置，会调用/etc/bashrc
-/etc/bashrc 使用bash时，可设置全局环境配置
-~/.bash_history  命令的历史记录
-~/.bash_logout   用户退出时执行
-/etc/xinetd.conf xinetd的配置文件
-/etc/xinetd.d 存放xinetd服务的地方
-/etc目录，基本应用配置相关
-/etc/skel 存放用户文件的“骨架”，当一个用户创建的时候，里边的文件就会拷贝到相应的home目录
-
-/etc/X11 存放X Window的系统配置文件，例如xorg.conf
-
-/etc/DIR_COLORS ls的时候，文件/文件夹显示的颜色
-/etc/mtab 记录目前挂载的文件系统信息
-/etc/fastboot 由shutdown -f 所产生的 ,在重启之后, 系统会去检查这个文件是否存在以决定是否要执行fsck
-/etc/nologin 系统关闭的时候自动产生，里边放着shutdown message。在这个时候如果有用户企图登录，就会打印出这个文件存放的message，然后阻止你登录
-
-/etc/fstab 默认的文件系统挂载情况
-
-/etc/virc vi的配置
-/etc/vimrc vim的配置
-/etc/wgetrc wget的配置
-/etc/yum.conf yum的配置
-/etc/yum.repos.d yum源的存放位置
-
-/etc/kdump.conf kdump内核的配置文件
-/etc/my.cnf mysql的配置文件
-/etc/ssh ssh的配置文件目录，重要的有sshd_config
-/etc/syslog.conf syslog的配置文件
-/etc/updatedb.conf updatedb的配置文件
-/etc/mtools.conf mtools配置，用于在*UNIX系统中直接访问dos/win文件系统
-/etc/sysctl.conf sysctl预加载的配置文件
-/etc/moprobe.conf modprobe的配置文件
-/etc/ld.so.conf 加载动态链接库的配置文件，默认会加载ld.so.conf.d里边的配置
-/etc/ld.so.conf.d 存放动态链接库的配置文件
-/etc/ld.so.cache 动态链接库的缓存，二进制文件，可以通过ldconfig --print-cache查看
-
-/etc/services 网络服务列表<span class="o">(</span>服务名,端口，协议等<span class="o">)</span>
-/etc目录，域名解析，主机访问控制
-/etc/host.conf  定义DNS客户端主机发出域名解析的处理顺序，默认是先查看/etc/hosts文件，再发送远程请求
-/etc/hosts 自定义ip-域名解析
-/etc/resolv.conf DNS服务器地址
-/etc/hosts.allow 和hosts.deny一起用来作为tcpd服务器的配置文件，tcpd服务器可以控制外部IP对本机服务的访问。hosts.allow控制可以访问本机的IP地址
-/etc/hosts.deny  控制禁止访问本机的IP。如果和hosts.allow的配置有冲突，以hosts.deny为准
-
-/etc目录，定时任务控制
-/etc/crontab cron任务的配置文件，一般在里边配置有cron.hourly，cron.daily，cron.weekly和cron.monthly
-/etc/cron.d 如果你要在特殊的时间使用crontab，可以把配置放到文件夹里边，配置的格式和/etc/crontab一样
-/etc /cron.daily 每天定时任务
-/etc/cron.hourly 每小时定时任务
-/etc/cron.monthly 每月定时任务
-/etc/cron.weekly 每星期定时任务
-/etc/cron.allow 指定那些用户可以使用crontab
-/etc/cron.deny 指定哪些用户禁止使用crontab，如果文件存在且为空，所有人都可以使用，如果文件不存在，那么只有root可以使用
-/etc/at.allow 指定那些用户可以使用at
-/etc/at.deny 指定哪些用户禁止使用at，如果文件存在且为空，所有人都可以使用，如果文件不存在，那么只有root可以使用
-</code></pre></div>
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121111_javacore.html">Javacore入门介绍</a></h1>
+    
+    
+      <p class="meta">
+        
 
 
-<h3>/dev目录 硬件设备信息</h3>
-
-<div class="highlight"><pre><code class="bash">/dev/hd<span class="o">[</span>a-z<span class="o">]</span>  第几个IDE硬盘
-/dev/tty<span class="o">[</span>0-9<span class="o">]</span> 第几个虚拟控制台
-/dev/sd<span class="o">[</span>a-z<span class="o">]</span>  第几个SCSI或SATA硬盘
-/dev/zero 一个无穷尽地提 供0<span class="o">(</span>NULL<span class="o">)</span>的设备，可以用来初始化文件
-/dev/null 一个空设备，可以向它输出任何数据，而任何写入它的输出都会被抛弃。如果不想让消息以标准输出显示或写入文件，那么可以将消息重定向到位桶
-/dev/stderr  链接文件，指向/proc/self/fd/2<span class="o">(</span>标准错误<span class="o">)</span>
-
-/dev/stdin  链接文件，指向/proc/self/fd/0<span class="o">(</span>标准输入<span class="o">)</span>
-/dev/stdout 链接文件，指向/proc/self/fd/1<span class="o">(</span>标准输出<span class="o">)</span>
-/dev/console 系统控制台，也就是直接和系统连接的监视器。如果你用cat查看该设备，并敲入一些内容，可以看到在屏幕上回显
-/dev/fd<span class="o">[</span>0-9<span class="o">]</span> 第几个软驱设备
-/dev/st SCSI磁带驱动器
-/dev/pty 提供远程登陆伪终端支持。在进行Telnet登录时就要用到该设备
-/dev/ttys 计算机串行接口，对于DOS来说就是com1口
-/dev/cua 计算机串行接口，与调制解调器一起使用的设备
-</code></pre></div>
 
 
-<h3>/proc目录 虚拟文件系统</h3>
-
-<div class="highlight"><pre><code class="bash">/proc/apm Advanced Power Management<span class="o">(</span>APM<span class="o">)</span>系统信息，与apm命令相关
-/proc/buddyinfo 每个内存区中的每个order有多少块可用,和内存碎片问题有关
-/proc/cmdline 启动时传递给kernel的参数信息
-/proc/cpuinfo cpu的信息
-/proc/crypto 内核使用的所有已安装的加密密码及细节
-/proc/devices 已经加载的设备并分类
-/proc/dma 已注册使用的ISA DMA频道列表
-/proc/execdomains Linux内核当前支持的execution domains
-/proc/fb 帧缓冲设备列表，包括数量和控制它的驱动
-/proc/filesystems 内核当前支持的文件系统类型
-/proc/interrupts x86架构中的每个IRQ中断数
-/proc/iomem 每个物理设备当前在系统内存中的映射
-/proc/ioports 一个设备的输入输出所使用的注册端口范围
-/proc/kcore 代表系统的物理内存，存储为核心文件格式，里边显示的是字节数，等于RAM大小加上4kb
-/proc/kmsg 记录内核生成的信息，可以通过/sbin/klogd或/bin/dmesg来处理
-/proc/loadavg 根据过去一段时间内CPU和IO的状态得出的负载状态，与uptime命令有关
-/proc/locks 内核锁住的文件列表
-/proc/mdstat 多硬盘，RAID配置信息<span class="o">(</span><span class="nv">md</span><span class="o">=</span>multiple disks<span class="o">)</span>
-/proc/meminfo RAM使用的相关信息
-/proc/misc 其他的主要设备<span class="o">(</span>设备号为10<span class="o">)</span>上注册的驱动
-/proc/modules 所有加载到内核的模块列表
-/proc/mounts 系统中使用的所有挂载
-/proc/mtrr 系统使用的Memory Type Range Registers <span class="o">(</span>MTRRs<span class="o">)</span>
-/proc/partitions 分区中的块分配信息
-/proc/pci 系统中的PCI设备列表
-
-/proc/slabinfo 系统中所有活动的 slab 缓存信息
-/proc/stat 所有的CPU活动信息
-/proc/sysrq-trigger 使用echo命令来写这个文件的时候，远程root用户可以执行大多数的系统请求关键命令，就好像在本地终端执行一样。要写入这个文件，需要把/proc/sys/kernel/sysrq不能设置为0。这个文件对root也是不可读的
-/proc/uptime 系统已经运行了多久
-/proc/swaps 交换空间的使用情况
-/proc/version Linux内核版本和gcc版本
-/proc/bus 系统总线<span class="o">(</span>Bus<span class="o">)</span>信息，例如pci/usb等
-/proc/driver 驱动信息
-/proc/fs 文件系统信息
-/proc/ide ide设备信息
-/proc/irq 中断请求设备信息
-/proc/net 网卡设备信息
-/proc/scsi scsi设备信息
-/proc/tty tty设备信息
-/proc/net/dev 显示网络适配器及统计信息
-/proc/vmstat 虚拟内存统计信息
-/proc/vmcore 内核panic时的内存映像
-/proc/diskstats 取得磁盘信息
-/proc/schedstat kernel调度器的统计信息
-/proc/zoneinfo 显示内存空间的统计信息，对分析虚拟内存行为很有用
-/proc目录， 进程N的信息
-/proc/N pid为N的进程信息
-/proc/N/cmdline 进程启动命令
-/proc/N/cwd 链接到进程当前工作目录
-/proc/N/environ 进程环境变量列表
-/proc/N/exe 链接到进程的执行命令文件
-/proc/N/fd 包含进程相关的所有的文件描述符
-/proc/N/maps 与进程相关的内存映射信息
-/proc/N/mem 指代进程持有的内存，不可读
-/proc/N/root 链接到进程的根目录
-/proc/N/stat 进程的状态
-/proc/N/statm 进程使用的内存的状态
-/proc/N/status 进程状态信息，比stat/statm更具可读性
-/proc/self 链接到当前正在运行的进程
-</code></pre></div>
 
 
-<h3>/var目录 存放经常变化数据的地方</h3>
-
-<div class="highlight"><pre><code class="bash">/var/lib/rpm 存放大多数rpm相关的文件
-/var/cache/yum yum升级时下载的rpm文件的临时存放地，还包括系统中rpm包的头信息
-/var/spool/cron/<span class="nv">$username</span> 每个用户自定义的cron任务，可以使用crontab或vi来操作
-
-/var/lock 一般用来存放文件锁
-/var/log 一般用来存放日志文件
-/var/run 一般用来存放pid文件
-/var/crash 一般是存放系统崩溃时产生的信息
-/var/cache 一般用来存放缓存信息,例如yum package的缓存
-</code></pre></div>
 
 
-<h3>/etc/sysconfig目录 系统基本配置</h3>
-
-<div class="highlight"><pre><code class="bash">/etc/sysconfig/amd 为amd提供操作参数，用来自动mount/unmount文件系统
-/etc/sysconfig/apmd   由apmd使用来配置电源设置
-/etc/sysconfig/arpwatch 在启动的时候传递给arpwatch守护进程的参数
-/etc/sysconfig/authconfig 设置主机使用的验证方式
-/etc/sysconfig/autofs 自动挂载设备的自定义选项
-/etc/sysconfig/clock 系统硬件时钟的设置
-/etc/sysconfig/desktop 设置新用户的桌面和进入运行级别5所使用的显示管理器
-/etc/sysconfig/dhcpd 在启动的时候传递给dhcpd守护进程的参数
-/etc/sysconfig/gpm 在启动的时候传递给gpm守护进程的参数
-/etc/sysconfig/hwconf 列出kudzu检测到的所有硬件
-/etc/sysconfig/i18n 默认系统语言，系统支持的所有语言，默认系统字体
-/etc/sysconfig/init 系统启动时的显示方式
-/etc/sysconfig/ip6tables-config  在系统启动或者ip6tables服务启动时，内核用来设置IPv6包过滤
-/etc/sysconfig/iptables-config 在系统启动或者iptables服务启动时，内核用来设置包过滤
-/etc/sysconfig/keyboard 控制键盘的行为
-/etc/sysconfig/kudzu 在启动的时候通过kudzu触发一次安全的系统硬件探查
-/etc/sysconfig/named 在启动的时候传递给named守护进程的参数
-/etc/sysconfig/netdump netdump服务的配置文件
-/etc/sysconfig/network 网络的配置信息
-/etc/sysconfig/ntpd 在启动的时候传递给ntpd守护进程的参数
-/etc/sysconfig/radvd 在启动的时候传递给radvd守护进程的参数
-/etc/sysconfig/samba 在启动的时候传递给smbd/nmbd守护进程的参数
-/etc/sysconfig/selinux selinux的基本控制选项
-/etc/sysconfig/spamassassin 在启动的时候传递给spamd守护进程的参数
-/etc/sysconfig/squid 在启动的时候传递给squid守护进程的参数
-/etc/sysconfig/vncservers 配置vnc服务启动的方式
-/etc/sysconfig/xinetd 在启动的时候传递给xinetd守护进程的参数
-</code></pre></div>
+  
 
 
-<h3>/proc/sys目录 系统重要配置参数，涉及众多内核参数</h3>
-
-<div class="highlight"><pre><code class="bash">/proc/sys/fs/file-max 可以分配的文件句柄的最大数目
-/proc/sys/fs/file-nr 已分配文件句柄的数目、已使用文件句柄的数目、文件句柄的最大数目
-/proc/sys/fs/inode-* 任何以名称“inode”开头的文件所执行的操作与上面那些以名称“file”开头的文件所执行的操作一样，但所执行的操作与索引节点有关，而与文件句柄无关
-/proc/sys/fs/overflowuid 和 /proc/sys/fs/overflowgid 这两个文件分别保存那些支持 16 位用户标识和组标识的任何文件系统的用户标识（UID）和组标识（GID）
-/proc/sys/fs/super-max 该文件指定超级块处理程序的最大数目。挂装的任何文件系统需要使用超级块，所以如果挂装了大量文件系统，则可能会用尽超级块处理程序
-/proc/sys/fs/super-nr　显示当前已分配超级块的数目
-/proc/sys/kernel/acct 该文件有三个可配置值，根据包含日志的文件系统上可用空间的数量（以百分比表示），这些值控制何时开始进行进程记帐：如果可用空间低于这个百分比值，则停止进程记帐/如果可用空间高于这个百分比值，则开始进程记帐/检查上面两个值的频率（以秒为单位）
-/proc/sys/kernel/ctrl-alt-del 该值控制系统在接收到 ctrl+alt+delete 按键组合时如何反应
-/proc/sys/kernel/domainname 配置网络域名
-/proc/sys/kernel/hostname 主机名
-/proc/sys/kernel/msgmax 指定了从一个进程发送到另一个进程的消息的最大长度
-/proc/sys/kernel/msgmnb  指定在一个消息队列中最大的字节数
-/proc/sys/kernel/msgmni 指定消息队列标识的最大数目
-/proc/sys/kernel/panic 如果发生“内核严重错误（kernel panic）”，内核在重新引导之前等待的时间
-/proc/sys/kernel/printk 该文件有四个数字值，它们根据日志记录消息的重要性，定义将其发送到何处
-/proc/sys/kernel/shmall 在任何给定时刻系统上可以使用的共享内存的总量（以字节为单位）
-/proc/sys/kernel/shmax 内核所允许的最大共享内存段的大小（以字节为单位）
-/proc/sys/kernel/shmmni 用于整个系统共享内存段的最大数目
-/proc/sys/kernel/sysrq  如果该文件指定的值为非零，则激活 System Request Key
-/proc/sys/kernel/threads-max 内核所能使用的线程的最大数目
-/proc/sys/net/core/message_burst 写新的警告消息所需的时间（以 1/10 秒为单位）；在这个时间内所接收到的其它警告消息会被丢弃。这用于防止某些企图用消息“淹没”您系统的人所使用的拒绝服务攻击
-/proc/sys/net/core/message_cost 存有与每个警告消息相关的成本值。该值越大，越有可能忽略警告消息
-/proc/sys/net/core/netdev_max_backlog  在接口接收数据包的速率比内核处理这些包的速率快时，允许送到队列的数据包的最大数目
-/proc/sys/net/core/optmem_max 每个套接字所允许的最大缓冲区的大小
-/proc/sys/net/core/rmem_default 接收套接字缓冲区大小的缺省值（以字节为单位）
-/proc/sys/net/core/rmem_max 接收套接字缓冲区大小的最大值（以字节为单位）。
-/proc/sys/net/core/wmem_default 发送套接字缓冲区大小的缺省值（以字节为单位）。
-/proc/sys/net/core/wmem_max 发送套接字缓冲区大小的最大值（以字节为单位）
-
-/proc/sys/net/ipv4/ip_forward ip转发是否生效
-/proc/sys/net/ipv4/tcp_retrans_collapse 控制TCP双方窗口协商出现错误的时候的一些重传的行为。但是在老的2.6的核 <span class="o">(</span>&lt;2.6.18<span class="o">)</span>里头，这个重传会导致kernel oops，kernel panic，所以如果出现有 tcp_retrans_*样子的kernel panic，可以把这个参数给设置成0
-/proc/sys/vm/buffermem 控制用于缓冲区内存的整个系统内存的数量（以百分比表示）。它有三个值，通过把用空格相隔的一串数字写入该文件来设置这三个值。用于缓冲区的内存的最低百分比/如果发生所剩系统内存不多，而且系统内存正在减少这种情况，系统将试图维护缓冲区内存的数量/用于缓冲区的内存的最高百分比
-/proc/sys/vm/freepages 控制系统如何应对各种级别的可用内存。它有三个值，通过把用空格相隔的一串数字写入该文件来设置这三个值。如果系统中可用页面的数目达到了最低限制，则只允许内核分配一些内存/如果系统中可用页面的数目低于这一限制，则内核将以较积极的方式启动交换，以释放内存，从而维持系统性能/内核将试图保持这个数量的系统内存可用。低于这个值将启动内核交换
-/proc/sys/vm/kswapd 控制允许内核如何交换内存。它有三个值，通过把用空格相隔的一串数字写入该文件来设置这三个值：内核试图一次释放的最大页面数目。如果想增加内存交换过程中的带宽，则需要增加该值/内核在每次交换中试图释放页面的最少次数/内核在一次交换中所写页面的数目。这对系统性能影响最大。这个值越大，交换的数据越多，花在磁盘寻道上的时间越少。然而，这个值太大会因“淹没”请求队列而反过来影响系统性能
-/proc/sys/vm/pagecache 该文件与/proc/sys/vm/buffermem 的工作内容一样，但它是针对文件的内存映射和一般高速缓存
-/proc/sys/vm/dirty_background_ratio 记录当所有被更改页面总大小占工作内存超过某个限制时，pdflush 会开始写回工作,默认是10%
-/proc/sys/vm/dirty_ratio 控制文件系统的文件系统写缓冲区的大小，单位是百分比，表示系统内存的百分比，表示当写缓冲使用到系统内存多少的时候，开始向磁盘写出数据。默认是40%
-/proc/sys/vm/dirty_writeback_centisecs 记录pdflush进程把page cache里边的内容写入磁盘的时间周期，默认是5秒
-/proc/sys/vm/dirty_expire_centisecs 控制一个更改过的页面经过多长时间后被认为是过期的、必须被写回的页面，默认是30秒
-/proc/sys/vm/laptop_mode 是否使用笔记本模式，在kernel2.6之后支持
-</code></pre></div>
+<time datetime="2012-11-11T00:00:00+08:00" pubdate data-updated="true">Nov 11<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20121111_javacore.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
 
 
+  <div class="entry-content"><h2>什么是javacore</h2>
+
+<ul>
+<li>javacore是java应用程序在某个时间点的<strong>线程转储文件</strong>，通常也称为<strong>Thead Dump</strong></li>
+<li>记录了整个JVM的运行情况(线程, 垃圾回收, JVM运行参数, 内存地址等信息)</li>
+<li>用来诊断程序问题,其中比较典型的包括线程阻塞, CPU使用率过高, JVM Crash, 堆内存不足和类装载等问题</li>
+</ul>
+
+
+<h2>文件命名方式</h2>
+
+<p>javacore文件通常以txt方式结尾,名称格式主要是以javacore开头, <strong>加上日期,产生的时间,当时的线程编号</strong>,如javacore.20100719.003424.299228.txt(<strong>Unix</strong>)</p>
+
+<h2>javacore获取方式</h2>
+
+<ul>
+<li>发送中断signal<br/>
+AIX和Linux: SIGQUIT, <strong>kill -3 PID</strong><br/>
+Windows: Ctrl+Break, DrAdmin in WAS(未验证过)</li>
+<li>在java的执行代码中使用JavaDump()方法(未验证过)<br/>
+com.ibm.jvm.Dump.javaDump()方法促使JVM dump<br/>
+发布ProblemDiagnosticsLabToolkit应用包,通过可视化页面直接生成相关文件</li>
+<li>系统在异常时自动throw(<strong>程序不一定退出</strong>)<br/>
+严重的本地调用出错<br/>
+内存不足(例如 OutOfMemory)</li>
+</ul>
+
+
+<h2>javacore基本内容</h2>
+
+<p><img src="/assets/images/javacore1.jpg" alt="javacore基本内容" /></p>
+
+<ul>
+<li>操作系统相关信息JDK版本信息<br/>
+关注jdk的版本(1.5前后差别比较大),32位和64位在内存要求上也有区别</li>
+<li>JVM的启动参数信息<br/>
+关注一些特殊的虚拟机参数如xms,xmx,xss,java.ext.dirs等，特别是内存分配要和线程数匹配，避免xms太小(频繁gc和扩展)</li>
+<li>JVM堆内存信息,已装载入的类信息<br/>
+JIT Core Cache和JIT Data Cache是JIT编译器使用的，用于提高运行效率。一般关注Object(Reversed)(堆内存分配)和Class(用于类加载)的内存使用率</li>
+<li>dump产生原因与时间<br/>
+用于追溯当时的现状</li>
+<li>GC记录<br/>
+关注Full GC(Global GC)情况,通常伴随比较多的GC线程</li>
+<li>所有Thread执行情况(包括应用程序内部执行线程,容器线程,垃圾回收线程,定时线程,线程池线程,页面请求转发线程等多种线程信息)</li>
+</ul>
+
+
+<h2>线程状态分类</h2>
+
+<p><img src="/assets/images/javacore2.png" alt="线程状态分类" /></p>
+
+<p>整个图包括三部分，左边是线程列表，选择某个线程后，中间会展示该线程与其他线程的等待依赖关系，右边会显示线程的详细堆栈信息。
+通过在线程列表中对Name,State,Stack几列进行排序，可以对每类线程数量、是否有明显的瓶颈有个大概的印象，便于接下来的具体分析。</p>
+
+<ul>
+<li>死锁 Deadlock<br/>
+多个线程竞争多个资源，出现相互等待资源又不释放资源的情况，这种情况在现实中并不多见。</li>
+<li>执行中 Runnable<br/>
+通常这类线程堆栈真处于发送数据，数值计算，类型转换等操作。</li>
+<li>等待资源 Waiting on condition<br/>
+等待资源，如果堆栈信息明确是应用代码，则证明该线程正在等待资源，一般是大量读取某资源，且该资源采用了资源锁的情况下，
+线程进入等待状态，等待资源的读取。又或者，正在等待其他线程的执行等</li>
+<li>等待监控器检查资源 Waiting on monitor</li>
+<li>暂停 Suspended</li>
+<li>对象等待中 Object.wait()</li>
+<li>阻塞 Blocked<br/>
+线程阻塞，是指当前线程执行过程中，所需要的资源长时间等待却一直未能获取到，被容器的线程管理器标识为阻塞状态，
+可以理解为等待资源超时的线程。这种情况在was的日志中，一般可以看到CPU饥渴，或者某线程已执行了XX秒的信息</li>
+<li>停止 Parked</li>
+</ul>
+
+
+<h3>常见的线程分类</h3>
+
+<table markdown="1" class="table">
+  <tr><td>Thread开头</td><td>一般是应用自己起的后台线程，或者自己搞的线程池(没有重命名的时候),如果是独立进程大多业务都跑在这里</td></tr>
+  <tr><td>WebContainer</td><td>was容器线程，was的话业务一般都在这里，受容器线程数量控制</td></tr>
+  <tr><td>Timer</td><td>Timer定时任务，一些连接池等用于监控池内对象</td></tr>
+  <tr><td>Quartz</td><td>Quartz用于定时任务的线程，不受容器控制</td></tr>
+  <tr><td>Finalizer</td><td>用于实现finalize特殊方法的线程</td></tr>
+  <tr><td>GC Slave</td><td>GC线程，频繁gc的时候会出现不少</td></tr>
+  <tr><td>Main</td><td>主线程</td></tr>
+  <tr><td>JIT</td><td>用于实现JIT的线程</td></tr>
+</table>
+
+
+<h2>相关工具与资料</h2>
+
+<h2>策略分析</h2>
+
+<ul>
+<li>数百K的纯文本,最好借助工具,例如jca分析工具</li>
+<li><strong>采集连续的多个时间点的javacore,方便对比(手动)</strong><br/>
+一般的线程执行都会非常快，如果出现某个资源的阻塞，在短时间内的两个javacore，该线程的堆栈会变化不大。
+或多次javacore的线程都集中在等待某些资源。</li>
+<li>了解app的性质,基本处理流程</li>
+<li>app相关的处理能力(以前的数据,用于对比)</li>
+<li>问题出现时,多了解周边情况(cpu,io,外围),记录现状</li>
+<li><strong>对thread状态进行分类,业务分布情况,资源等待情况(细化)</strong></li>
+<li>如有必要,获取heapdump分析(oom)</li>
+</ul>
+
+
+<h2>javacore和heapdump的区别</h2>
+
+<p>javacore经常和heapdump联系在一起，有时候也一起出现。这里简单对两个文件进行对比，希望大家有个印象：</p>
+
+<table markdown="1" class="table">
+  <tr><td></td><td>heapdump</td><td>javacore</td></tr>
+  <tr><td>文件类型</td><td>二进制</td><td>文本</td></tr>
+  <tr><td>分析工具</td><td>Heap Analyzer</td><td>jca</td></tr>
+  <tr><td>文件内容</td><td>内存映射 对象占用信息</td><td>CPU执行信息,线程堆栈</td></tr>
+  <tr><td>作用</td><td>分析内存泄漏 大对象</td><td>分析进程挂死,响应速度慢,大对象</td></tr>
+  <tr><td>影响</td><td>对系统影响大,生成文件大,较少使用</td><td>对系统影响小,生成文件小,比较方便</td></tr>
+</table>
+
+
+<h2>相关工具与资料</h2>
+
+<ul>
+<li>javacore-tutorial.pdf 出自IBM的文档</li>
+<li>jca  javacore分析工具</li>
+<li>heap analyzer  heapdump分析工具</li>
+</ul>
 
 </div>
   
@@ -1654,7 +349,7 @@ udp        0      0 0.0.0.0:111                 0.0.0.0:*
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/20120819_reverse-svn-diff-file.html">生成svn补丁的回退补丁</a></h1>
+      <h1 class="entry-title"><a href="/blog/20121017_reflection-in-java.html">Reflection in Java</a></h1>
     
     
       <p class="meta">
@@ -1670,48 +365,432 @@ udp        0      0 0.0.0.0:111                 0.0.0.0:*
   
 
 
-<time datetime="2012-08-19T00:00:00+08:00" pubdate data-updated="true">Aug 19<span>th</span>, 2012</time>
+<time datetime="2012-10-17T00:00:00+08:00" pubdate data-updated="true">Oct 17<span>th</span>, 2012</time>
         
-         | <a href="/blog/20120819_reverse-svn-diff-file.html#disqus_thread">Comments</a>
+         | <a href="/blog/20121017_reflection-in-java.html#disqus_thread">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h3>生成回退补丁的脚本</h3>
+  <div class="entry-content"><h2>什么是反射</h2>
 
-<div class="highlight"><pre><code class="ruby"><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;C:/Users/peipei/Desktop/svn2.diff&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span>
-    <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;C:/Users/peipei/Desktop/svn.diff&quot;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">ff</span><span class="o">|</span>
-        <span class="n">ff</span><span class="o">.</span><span class="n">readlines</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">line</span><span class="o">|</span>
-            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">start_with?</span><span class="p">(</span><span class="s2">&quot;@@&quot;</span><span class="p">)</span>
-                <span class="n">line</span> <span class="o">=~</span> <span class="sr">/@@\ \-(.+)\ \+(.+)\ @@/</span>
-                <span class="n">f</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;@@\ \-</span><span class="si">#{</span><span class="vg">$2</span><span class="si">}</span><span class="s2">\ \+</span><span class="si">#{</span><span class="vg">$1</span><span class="si">}</span><span class="s2">\ @@</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="k">elsif</span> <span class="n">line</span><span class="o">.</span><span class="n">start_with?</span><span class="p">(</span><span class="s2">&quot;+ &quot;</span><span class="p">)</span>
-                <span class="n">f</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;-</span><span class="si">#{</span><span class="n">line</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="k">elsif</span> <span class="n">line</span><span class="o">.</span><span class="n">start_with?</span><span class="p">(</span><span class="s2">&quot;- &quot;</span><span class="p">)</span>
-                <span class="n">f</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;+</span><span class="si">#{</span><span class="n">line</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="k">else</span>
-                <span class="n">f</span> <span class="o">&lt;&lt;</span> <span class="n">line</span>
-            <span class="k">end</span>
-        <span class="k">end</span>
-    <span class="k">end</span>
-<span class="k">end</span>
+<p>Java反射机制是在运行状态中，对于任意一个类，都能够知道这个类的所有属性和方法；
+对于任意一个对象，都能够调用它的任意一个方法和属性；这种动态获取信息以及动态调用
+对象方法的功能成为java语言的反射机制。</p>
+
+<h2>典型应用</h2>
+
+<ul>
+<li>spring生成Bean对象</li>
+<li>struts2使用配置进行对象校验</li>
+<li>hibernate,ibatis进行数据库对象映射</li>
+<li>xml与java对象的相互转化</li>
+<li>springmvc进行方法参数注入</li>
+<li>more&#8230;&#8230;</li>
+</ul>
+
+
+<h2>理解类型</h2>
+
+<h3>原型类型vs包装类型(XXX.TYPE)</h3>
+
+<div class="highlight"><pre><code class="java"><span class="n">Void</span> <span class="o">-&gt;</span> <span class="kt">void</span> <span class="o">-&gt;</span> <span class="n">V</span>
+<span class="n">Byte</span> <span class="o">-&gt;</span> <span class="kt">byte</span> <span class="o">-&gt;</span> <span class="n">B</span>
+<span class="n">Character</span> <span class="o">-&gt;</span> <span class="kt">char</span> <span class="o">-&gt;</span> <span class="n">C</span>
+<span class="n">Short</span> <span class="o">-&gt;</span> <span class="kt">short</span> <span class="o">-&gt;</span> <span class="n">S</span>
+<span class="n">Integer</span> <span class="o">-&gt;</span> <span class="kt">int</span> <span class="o">-&gt;</span> <span class="n">I</span>
+<span class="n">Long</span> <span class="o">-&gt;</span> <span class="kt">long</span> <span class="o">-&gt;</span> <span class="n">J</span>
+<span class="n">Float</span> <span class="o">-&gt;</span> <span class="kt">float</span> <span class="o">-&gt;</span> <span class="n">F</span>
+<span class="n">Double</span> <span class="o">-&gt;</span> <span class="kt">double</span> <span class="o">-&gt;</span> <span class="n">D</span>
+<span class="n">Boolean</span> <span class="o">-&gt;</span> <span class="kt">boolean</span> <span class="o">-&gt;</span> <span class="n">Z</span>
 </code></pre></div>
 
 
-<h3>其他计划</h3>
+<h3>类与接口</h3>
+
+<ul>
+<li>接口(Interface)是一种特殊的类</li>
+<li>注解(Annotation)是一种特殊的接口</li>
+<li>枚举(Enum)是一种特殊的类</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="java"><span class="kd">class</span> <span class="nc">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="c1">//类</span>
+<span class="kd">class</span> <span class="nc">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">AbstractList</span> <span class="c1">//抽象类</span>
+<span class="kd">interface</span> <span class="nc">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Runnable</span> <span class="c1">//接口</span>
+</code></pre></div>
+
+
+<h3>数组类型</h3>
+
+<div class="highlight"><pre><code class="java"><span class="c1">//基本类型数组</span>
+<span class="kt">int</span><span class="o">[].</span><span class="na">class</span> <span class="o">-&gt;</span> <span class="o">[</span><span class="n">I</span>
+<span class="kt">int</span><span class="o">[][].</span><span class="na">class</span> <span class="o">-&gt;</span> <span class="o">[[</span><span class="n">I</span>
+
+<span class="c1">//普通类型数组</span>
+<span class="n">String</span><span class="o">[].</span><span class="na">class</span> <span class="o">-&gt;</span> <span class="o">[</span><span class="n">Ljava</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">;</span>
+<span class="n">Integer</span><span class="o">[][].</span><span class="na">class</span> <span class="o">-&gt;</span> <span class="o">[[</span><span class="n">Ljava</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Integer</span><span class="o">;</span>
+</code></pre></div>
+
+
+<h2>理解类型判断方法</h2>
+
+<div class="highlight"><pre><code class="java"><span class="c1">//是否某个类型的实例</span>
+<span class="n">i</span> <span class="k">instanceof</span> <span class="n">Integer</span>
+<span class="n">Integer</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">isInstance</span><span class="o">(</span><span class="n">i</span><span class="o">)</span>
+<span class="n">Person</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">isInstance</span><span class="o">(</span><span class="k">new</span> <span class="n">SuperTeacher</span><span class="o">(</span><span class="s">&quot;&quot;</span><span class="o">))</span>
+
+<span class="c1">//是否数组</span>
+<span class="n">x</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">isArray</span><span class="o">()</span>
+
+<span class="c1">//是否父子类/接口关系</span>
+<span class="n">Number</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">isAssignableFrom</span><span class="o">(</span><span class="n">Integer</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+
+<span class="c1">//是否原型类型</span>
+<span class="n">i</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">isPrimitive</span><span class="o">()</span>
+<span class="n">Integer</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">isPrimitive</span><span class="o">()</span>
+<span class="n">Integer</span><span class="o">.</span><span class="na">TYPE</span><span class="o">.</span><span class="na">isPrimitive</span><span class="o">()</span>
+
+<span class="c1">//是否注解</span>
+<span class="n">Logger</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">isAnnotation</span><span class="o">()</span>
+
+<span class="c1">//是否枚举</span>
+<span class="n">Status</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">isEnum</span><span class="o">()</span>
+
+<span class="c1">//是否接口</span>
+<span class="n">List</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">isInterface</span><span class="o">()</span>
+</code></pre></div>
+
+
+<h2>理解修饰符</h2>
+
+<ul>
+<li>手段:Class#getModifiers()和Modifier工具类</li>
+<li>适用于Class,Method,Field,Constructor</li>
+</ul>
+
+
+<p>示例代码如下:</p>
+
+<div class="highlight"><pre><code class="java"><span class="kt">int</span> <span class="n">mod</span> <span class="o">=</span> <span class="n">Teacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getModifiers</span><span class="o">();</span>
+<span class="n">assertTrue</span><span class="o">(</span><span class="n">Modifier</span><span class="o">.</span><span class="na">isPublic</span><span class="o">(</span><span class="n">mod</span><span class="o">));</span>
+</code></pre></div>
+
+
+<p>常见的修饰符判断方法有:</p>
+
+<div class="highlight"><pre><code class="java"><span class="c1">//可见性</span>
+<span class="n">isPublic</span><span class="o">,</span><span class="n">isProtected</span><span class="o">,</span><span class="n">isPrivate</span>
+<span class="c1">//类型属性相关</span>
+<span class="n">isInterface</span><span class="o">,</span><span class="n">isAbstract</span><span class="o">,</span><span class="n">isFinal</span><span class="o">,</span><span class="n">isStatic</span>
+<span class="c1">//特殊作用</span>
+<span class="n">isSynchronized</span><span class="o">,</span><span class="n">isNative</span><span class="o">,</span><span class="n">isTransient</span><span class="o">,</span><span class="n">isVolatile</span>
+</code></pre></div>
+
+
+<h2>理解类型关系</h2>
+
+<div class="highlight"><pre><code class="java"><span class="c1">//类-&gt;父类(单继承,只有一个)</span>
+<span class="n">Class</span><span class="err">#</span><span class="n">getSuperclass</span><span class="o">()</span>
+
+<span class="c1">//类、接口-&gt;实现接口(多继承,可能有多个)</span>
+<span class="n">Class</span><span class="err">#</span><span class="n">getInterfaces</span><span class="o">()</span>
+
+<span class="c1">//类-&gt;内部类(可能有多个)</span>
+<span class="n">Class</span><span class="err">#</span><span class="n">getDeclaredClasses</span><span class="o">()</span>
+
+<span class="c1">//内部类-&gt;外部类(只有一个)</span>
+<span class="n">Class</span><span class="err">#</span><span class="n">getEnclosingClass</span><span class="o">()</span>
+</code></pre></div>
+
+
+<h3>相关练习</h3>
+
+<ul>
+<li>Test:输出某个类实现的所有接口</li>
+<li>Test:输出某个类实现的继承结构</li>
+<li>Test:能够获取到之类的信息么?</li>
+</ul>
+
+
+<h2>理解对象生成与调用</h2>
+
+<h3>对象生成</h3>
+
+<p>可以采用无参数构造方法或有参数方式</p>
+
+<div class="highlight"><pre><code class="java"><span class="c1">//需要存在无参构造方法</span>
+<span class="n">String</span> <span class="n">s</span> <span class="o">=</span> <span class="s">&quot;com.xxx.Student&quot;</span><span class="o">;</span>
+<span class="n">Class</span> <span class="n">t</span> <span class="o">=</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="n">s</span><span class="o">);</span>
+<span class="n">Teacher</span> <span class="n">teacher</span> <span class="o">=</span> <span class="o">(</span><span class="n">Teacher</span><span class="o">)</span><span class="n">t</span><span class="o">.</span><span class="na">newInstance</span><span class="o">();</span>
+
+<span class="c1">//直接调用构造方法</span>
+<span class="n">Constructor</span><span class="o">[]</span> <span class="n">cons</span> <span class="o">=</span> <span class="n">SuperTeacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getConstructors</span><span class="o">();</span>
+<span class="n">Object</span> <span class="n">obj</span> <span class="o">=</span> <span class="n">cons</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">newInstance</span><span class="o">(</span><span class="s">&quot;hello&quot;</span><span class="o">);</span>
+</code></pre></div>
+
+
+<h3>获取成员</h3>
+
+<p>成员一般指Field,Method,Constructor等信息</p>
+
+<div class="highlight"><pre><code class="java"><span class="c1">//属性</span>
+<span class="n">Field</span><span class="o">[]</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">Teacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getDeclaredFields</span><span class="o">();</span>
+<span class="n">Field</span><span class="o">[]</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">Teacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getFields</span><span class="o">();</span><span class="c1">//只有公有的</span>
+
+<span class="c1">//方法</span>
+<span class="n">Medhod</span><span class="o">[]</span> <span class="n">ms</span> <span class="o">=</span> <span class="n">Teacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getDeclaredMethods</span><span class="o">();</span>
+<span class="n">Medhod</span><span class="o">[]</span> <span class="n">ms</span> <span class="o">=</span> <span class="n">Teacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getdMethods</span><span class="o">();</span><span class="c1">//只有公有的</span>
+
+<span class="c1">//构造方法</span>
+<span class="n">Constructor</span><span class="o">[]</span> <span class="n">cs</span> <span class="o">=</span> <span class="n">Teacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getDeclaredConstructors</span><span class="o">();</span>
+<span class="n">Constructor</span><span class="o">[]</span> <span class="n">cs</span> <span class="o">=</span> <span class="n">Teacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getConstructors</span><span class="o">();</span><span class="c1">//只有公有的</span>
+</code></pre></div>
+
+
+<p>获取成员可以通过参数直接定位,以属性和方法为例:</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">SuperTeacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getField</span><span class="o">(</span><span class="s">&quot;name&quot;</span><span class="o">);</span>
+
+<span class="n">SuperTeacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getMethod</span><span class="o">(</span><span class="s">&quot;setBounds&quot;</span><span class="o">,</span> <span class="n">Integer</span><span class="o">.</span><span class="na">TYPE</span><span class="o">);</span><span class="c1">//参数是int</span>
+<span class="n">SuperTeacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getMethod</span><span class="o">(</span><span class="s">&quot;setBounds&quot;</span><span class="o">,</span> <span class="n">Integer</span><span class="o">.</span><span class="na">class</span><span class="o">);</span><span class="c1">//参数是Integer</span>
+</code></pre></div>
+
+
+<p>相关练习
+* Test:找到某个类所有的非private的普通方法</p>
+
+<h3>调用方式</h3>
+
+<p>拿到成员之后，就可以进行调用了。像Field需要使用get/set方法，
+Method使用invoke方法，Constructor使用newInstance方法。如：</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">Field</span><span class="err">#</span><span class="n">set</span><span class="o">(</span><span class="n">obj</span><span class="o">);</span>
+<span class="n">Field</span><span class="err">#</span><span class="n">get</span><span class="o">(</span><span class="n">obj</span><span class="o">);</span>
+
+<span class="n">Method</span><span class="err">#</span><span class="n">invoke</span><span class="o">(</span><span class="n">obj</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
+</code></pre></div>
+
+
+<p>有时候需要绕过可见性进行调用，需要通过setAccessible方法进行处理，如</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">Field</span><span class="err">#</span><span class="n">setAccessible</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span><span class="c1">// if not set, fail</span>
+</code></pre></div>
+
+
+<p>对于参数数组的话，通过args并不能区分是数组类型还是不定参数类型(都是通过数组进行传递)。
+如果需要继续区别，应该对Method进行检测，检测方式是Method#isVarArgs</p>
+
+<h3>处理返回值</h3>
+
+<p>对于方法调用，可以对返回值进行处理。即使返回为void或数组类型也是可以识别的。如:</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">Class</span><span class="o">&lt;?&gt;</span> <span class="n">returnType</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="na">getReturnType</span><span class="o">();</span>
+<span class="n">assertEquals</span><span class="o">(</span><span class="kt">void</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">returnType</span><span class="o">);</span>
+<span class="n">assertTrue</span><span class="o">(</span><span class="n">returnType</span><span class="o">.</span><span class="na">isArray</span><span class="o">());</span>
+</code></pre></div>
+
+
+<p>如果是数组的话，由于返回值是Object类型，需要通过Array工具类进行处理(见java api文档)</p>
+
+<h3>其他:关于内部类调用的秘密</h3>
+
+<h4>普通内部类</h4>
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">A</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="n">List</span> <span class="n">stus</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="k">new</span> <span class="n">B</span><span class="o">().</span><span class="na">test</span><span class="o">();</span> <span class="o">}</span>
+    <span class="kd">class</span> <span class="nc">B</span><span class="o">{</span>
+        <span class="kd">public</span> <span class="kt">int</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="n">stus</span><span class="o">.</span><span class="na">size</span><span class="o">();</span> <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>关于上面的内部类，为什么B能够调用到A的stus属性，通过观察生成的字节码，得到的实际结果是:</p>
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">A</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="n">List</span> <span class="n">stus</span><span class="o">;</span>
+    <span class="kd">static</span> <span class="n">List</span> <span class="n">access$0</span><span class="o">(</span><span class="n">A</span> <span class="n">a</span><span class="o">)</span> <span class="o">{</span> <span class="k">return</span> <span class="n">a</span><span class="o">.</span><span class="na">stus</span><span class="o">;</span> <span class="o">}</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="k">new</span> <span class="n">A$B</span><span class="o">(</span><span class="k">this</span><span class="o">).</span><span class="na">test</span><span class="o">();</span> <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">A</span><span class="n">$B</span><span class="o">{</span>
+    <span class="n">A</span> <span class="k">this</span><span class="n">$0</span><span class="o">;</span>
+    <span class="n">A$B</span><span class="o">(</span><span class="n">A</span> <span class="n">a</span><span class="o">)</span> <span class="o">{</span> <span class="k">this</span><span class="n">$0</span> <span class="o">=</span> <span class="n">a</span><span class="o">;</span> <span class="o">}</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="n">A</span><span class="o">.</span><span class="na">access</span><span class="n">$0</span><span class="o">(</span><span class="k">this</span><span class="n">$0</span><span class="o">),</span><span class="n">size</span><span class="o">();</span> <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>我们可以发现:</p>
 
 <ol>
-<li>在codediff工具中添加通过文件名查询功能(已经实现)</li>
-<li>通过codediff工具直接生成提交补丁和回退补丁(这个延后)</li>
-<li>能够支持补丁合并(这个不是那么好弄)</li>
+<li>A对B类需要访问的每一个私有属性生成对应的一个静态访问方法,B的访问就是通过这个私有方法的</li>
+<li>生成B类实例的时候把A类实例引用传入并进行保存,所以每一个B类实例都有一个A类实例关联</li>
+<li>通过反射可以看到新方法access$0和新内部变量this$0</li>
 </ol>
 
 
-<h3>关于代码评审</h3>
+<h4>静态内部类</h4>
 
-<p>已经有个简单的方案了，我决定在codediff应用上支持每周代码评审功能，这周上线试用一下。</p>
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">A</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="n">List</span> <span class="n">stus</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="k">new</span> <span class="n">B</span><span class="o">().</span><span class="na">test</span><span class="o">();</span> <span class="o">}</span>
+    <span class="kd">static</span> <span class="kd">class</span> <span class="nc">B</span><span class="o">{</span>
+        <span class="kd">public</span> <span class="kt">int</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="n">stus</span><span class="o">.</span><span class="na">size</span><span class="o">();</span> <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>对于静态内部类，情况就比较简单，得到的实际结果是:</p>
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">A</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="n">List</span> <span class="n">stus</span><span class="o">;</span>
+    <span class="kd">static</span> <span class="n">List</span> <span class="n">access$0</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="n">stus</span><span class="o">;</span> <span class="o">}</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="k">new</span> <span class="n">A$B</span><span class="o">().</span><span class="na">test</span><span class="o">();</span> <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">A</span><span class="n">$B</span><span class="o">{</span>
+    <span class="n">A$B</span><span class="o">()</span> <span class="o">{}</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="n">A</span><span class="o">.</span><span class="na">access</span><span class="n">$0</span><span class="o">(),</span><span class="n">size</span><span class="o">();</span> <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>我们可以发现:</p>
+
+<ol>
+<li>A对B类需要访问的静态私有属性生成一个静态访问方法,B的访问就是通过这个私有方法的</li>
+<li>由于是static方法，所以不需要保存实例的引用</li>
+<li>通过反射可以看到新方法access$0</li>
+</ol>
+
+
+<p>所以，如果可以的话，优先使用静态内部类(特别是没有使用到内部普通变量的情况)。</p>
+
+<h2>理解泛型</h2>
+
+<p>java的泛型是擦除式,运行时没有泛型的概念.所以下面的代码会编译通过但执行报类型转换错误:</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">strs</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Array</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;();</span>
+<span class="n">add2List</span><span class="o">(</span><span class="n">strs</span><span class="o">);</span>
+<span class="n">String</span> <span class="n">str</span> <span class="o">=</span> <span class="n">strs</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+
+<span class="c1">//add2List的实现</span>
+<span class="kt">void</span> <span class="nf">add2List</span><span class="o">(</span><span class="n">List</span> <span class="n">lt</span><span class="o">){</span>
+    <span class="n">lt</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>通过javap -c Test.class可以看到类似下面的指令:</p>
+
+<div class="highlight"><pre><code class="java"><span class="c1">// String str = strs.get(0);</span>
+<span class="mi">7</span><span class="o">:</span> <span class="n">invokeinterface</span> <span class="err">#</span><span class="mi">31</span><span class="o">,</span> <span class="mi">2</span><span class="o">;</span> <span class="c1">//interfaceMethod java/util/List.get:(l)Ljava/lang/Object;</span>
+<span class="mi">12</span><span class="o">:</span> <span class="n">checkcast</span> <span class="err">#</span><span class="mi">37</span><span class="o">;</span> <span class="c1">//class java/lang/String</span>
+
+<span class="c1">// lt.add(1);</span>
+<span class="mi">2</span><span class="o">:</span> <span class="n">invokestatic</span> <span class="err">#</span><span class="mi">41</span><span class="o">;</span> <span class="c1">//Method java/lang/Integer.valueOf:(l)Ljava/lang/Integer;</span>
+<span class="mi">5</span><span class="o">:</span> <span class="n">invokeinterface</span> <span class="err">#</span><span class="mi">47</span><span class="o">,</span> <span class="mi">2</span><span class="o">;</span> <span class="c1">//InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z</span>
+</code></pre></div>
+
+
+<p>很明显，在checkcast的时候会出错。</p>
+
+<p>虽然说运行时不关注是否泛型，但是还是有办法可以找到一些泛型相关信息的。和泛型类型的类图如下面所示：
+<img src="/assets/images/java_types.png" alt="java泛型类型结构" /></p>
+
+<p>下面以Method为例进行描述(关于field之类的就不描述了)：</p>
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">T</span> <span class="nf">method2</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">a</span><span class="o">,</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">b</span><span class="o">,</span> <span class="n">List</span><span class="o">&lt;?&gt;</span> <span class="n">c</span><span class="o">,</span> <span class="kt">float</span><span class="o">[]</span> <span class="n">f</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span>
+</code></pre></div>
+
+
+<h3>分析入口</h3>
+
+<div class="highlight"><pre><code class="java"><span class="n">Method</span><span class="err">#</span><span class="n">getGenericParameterTypes</span><span class="o">()</span>
+<span class="n">Method</span><span class="err">#</span><span class="n">getGenericReturnType</span><span class="o">()</span>
+<span class="n">Method</span><span class="err">#</span><span class="n">getGenericExceptionTypes</span><span class="o">()</span>
+</code></pre></div>
+
+
+<p>通过上面一些方法可以得到下面的类型关系：</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">T</span> <span class="o">-&gt;</span> <span class="n">TypeVariable</span>
+<span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="o">-&gt;</span> <span class="n">ParameterizedType</span>
+<span class="n">List</span><span class="o">&lt;?&gt;</span> <span class="o">-&gt;</span> <span class="n">ParameterizedType</span>
+<span class="kt">float</span><span class="o">[]</span> <span class="o">-&gt;</span> <span class="n">GenericArrayType</span>
+<span class="n">Exception</span> <span class="o">-&gt;</span> <span class="n">Class</span>
+</code></pre></div>
+
+
+<p>ParameterizedType描述的是一种多级泛型的关系，可以继续通过getActualTypeArguments继续进行处理,可以得到</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="o">-&gt;</span> <span class="n">Class</span>
+<span class="n">List</span><span class="o">&lt;?&gt;</span> <span class="o">-&gt;</span> <span class="n">WildcardType</span>
+<span class="n">List</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="o">-&gt;</span> <span class="n">TypeVariable</span>
+</code></pre></div>
+
+
+<p>处理Type是比较麻烦的事情，每种具体类型都有自己特殊的处理方法(见图所示)，但平时这个东西很少用到。</p>
+
+<h2>New in JDK7</h2>
+
+<p>jdk7以前有4种方法调用指令:</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">invokestatic</span> <span class="o">-&gt;</span> <span class="err">静态方法调用</span>
+<span class="n">invokespecial</span> <span class="o">-&gt;</span> <span class="err">特殊方法</span><span class="o">(</span><span class="err">如构造方法</span><span class="o">)</span><span class="err">调用</span>
+<span class="n">invokevirtual</span> <span class="o">-&gt;</span> <span class="err">普通方法调用</span>
+<span class="n">invokeinterface</span> <span class="o">-&gt;</span> <span class="err">接口方法调用</span>
+</code></pre></div>
+
+
+<p>在jdk7中实现了新的规范jsr292，增加了新的字节码指令invokedynamic,通过下面的选项可以开启。</p>
+
+<div class="highlight"><pre><code class="java"><span class="nl">XX:</span><span class="o">+</span><span class="n">UnlockExperimentalVMOptions</span>
+<span class="nl">XX:</span><span class="o">+</span><span class="n">EnableInvokeDynamic</span>
+<span class="nl">XX:</span><span class="o">+</span><span class="n">EnableMethodHandles</span>
+</code></pre></div>
+
+
+<p>该指令只需要制定方法名称，只要求引用非空对象而已，但javac还没法生成这样的指令。调用方式如下:</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">invokedynamic</span> <span class="err">#</span><span class="mi">10</span><span class="o">;</span> <span class="c1">//DynamicMethod java/lang/Object.lessThan:(Ljava/lang/Object;)</span>
+</code></pre></div>
+
+
+<p>但是可以有相关的api可以模拟出这种指令调用方式，如下(看上去和普通反射调用没什么明显不同)：</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">MethodType</span> <span class="n">type</span> <span class="o">=</span> <span class="n">MethodType</span><span class="o">.</span><span class="na">methodType</span><span class="o">(</span><span class="kt">int</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="kt">int</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="kt">int</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+<span class="n">MutableCallSite</span> <span class="n">callSite</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MutableCallSite</span><span class="o">(</span><span class="n">type</span><span class="o">);</span>
+<span class="n">MethodHandle</span> <span class="n">invoker</span> <span class="o">=</span> <span class="n">callSite</span><span class="o">.</span><span class="na">dynamicInvoker</span><span class="o">();</span>
+
+<span class="n">MethodHandles</span><span class="o">.</span><span class="na">Lookup</span> <span class="n">lookup</span> <span class="o">=</span> <span class="n">MethodHandles</span><span class="o">.</span><span class="na">lookup</span><span class="o">();</span>
+<span class="n">MethodHandle</span> <span class="n">mhMax</span> <span class="o">=</span> <span class="n">lookup</span><span class="o">.</span><span class="na">findStatic</span><span class="o">(</span><span class="n">Math</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">&quot;max&quot;</span><span class="o">,</span> <span class="n">type</span><span class="o">);</span>
+
+<span class="n">callSite</span><span class="o">.</span><span class="na">setTarget</span><span class="o">(</span><span class="n">mhMax</span><span class="o">);</span>
+<span class="n">invoker</span><span class="o">.</span><span class="na">invokeWithArguments</span><span class="o">(</span><span class="mi">3</span><span class="o">,</span><span class="mi">5</span><span class="o">);</span>
+</code></pre></div>
+
+
+<p>这种调用方式有几个关键的概念:</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">method</span> <span class="n">handle</span> <span class="err">方法句柄，是</span><span class="n">callsite</span><span class="err">的目标</span>
+<span class="n">bootstrap</span> <span class="n">method</span> <span class="err">引导方法</span>
+<span class="n">CallSite</span> <span class="err">调用点</span>
+<span class="n">method</span> <span class="n">type</span> <span class="err">方法类型</span>
+</code></pre></div>
+
+
+<p>这个指令可以增强很多基于JVM的动态语言的方法调用性能，所以潜力很大，更多具体信息，可以参考下面的一些链接:
+* http://www.infoq.com/cn/news/2011/01/invokedynamic
+* http://icyfenix.iteye.com/blog/1392441
+* http://book.51cto.com/art/201205/339215.htm
+* http://www.from0to1.net/%E5%86%8D%E6%8E%A2-invokedynamic/</p>
 </div>
   
   
@@ -1724,7 +803,7 @@ udp        0      0 0.0.0.0:111                 0.0.0.0:*
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/20120818_thought-read-jolt-book.html">书评-Jolt大奖精选丛书</a></h1>
+      <h1 class="entry-title"><a href="/blog/20120903_jforum2-source-analytics.html">小毛的jforum2源码分析(旧)</a></h1>
     
     
       <p class="meta">
@@ -1740,229 +819,328 @@ udp        0      0 0.0.0.0:111                 0.0.0.0:*
   
 
 
-<time datetime="2012-08-18T00:00:00+08:00" pubdate data-updated="true">Aug 18<span>th</span>, 2012</time>
+<time datetime="2012-09-03T00:00:00+08:00" pubdate data-updated="true">Sep 3<span>rd</span>, 2012</time>
         
-         | <a href="/blog/20120818_thought-read-jolt-book.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/assets/images/jolt_book.png" alt="Jolt大奖精选丛书" /></p>
-
-<p><strong>2012-08-18@oschina.net</strong>
-<a href="http://www.oschina.net/question/262659_63418?sort=default&amp;p=3#answers">书评链接</a></p>
-
-<p><strong>这次书评活动有6本书，写书评的确花了不少时间呀！</strong></p>
-
-<h3>《编写有效用例》书评</h3>
-
-<p>刚毕业的时候，在公司就看到这本书，当时看了一下，不过不怎么懂。
-只是隐约知道有用例这么个概念，后来慢慢地接触到业务用例，测试用例等内容，才逐渐对用例有了一些理解。
-再后来，因工作需要，经常使用UML来画用例图，小人的身影更是随处可见了。直到现在，虽然用例接触有不短的时间了，
-不过用例这东西还真的没有非常系统的学习过。</p>
-
-<p>没想到过了那么多年，又重新看到这本书，倍感亲切，让我有了系统学习一下的热情。
-这本书和其他软件工程书籍不大一样，因为它专注于用例的编写。里边提供了很多写用例的原则，读完可以对用例概念有深入的认识。
-另外，和很多书籍不一样的是，书中使用的例子都是作者实际项目中抽取出来的，而且例子数量非常的多，我非常喜欢真实饱满的例子
-，因为这样才有现实指导意义。以前看过有些书，例子是简单的傻瓜化，遇到真实的场景显得苍白无力。
-这本书，实战味道比较浓烈，学到一点用一点。即使是用例方面的新手，也很容易用得上。</p>
-
-<p>另外，我注意到一点，书中强调了项目相关人员和利益模型，梳理系统用例与业务用例的边界，这些都是以前我不曾注意或不甚理解的地方。
-我非常同意一书中的一个观点：我们需要的是有用的用例，而不必是一个最好的用例。</p>
-
-<p>的确，实践总是我们的目的，学习的过程不要忘记练习一下。
-对于我来说，有了这本书，以前的实践经验更容易得到修正，以后写用例一定会更加得心应手。</p>
-
-<h3>《代码阅读》书评</h3>
-
-<p>据我所知，《代码阅读》这本书是这个领域唯一的著作。
-这本书我曾经读过两遍，我把书中的一些实践方式用于平时工作中，感觉收获很大。</p>
-
-<p>首先，作者提供的例子都是现实存在的代码，并不是玩具程序。这样才让书中的例子更具说服力，作者提供的操作手法也更有借鉴意义。
-例如我现在手头上的项目，不包括页面光java的代码就超过100w，还有数百万的c++代码，这些代码经历了很多人的摧残。
-到现在，作为一个开发人员，每天都要面对着这么多代码，在这些代码上打转，努力去修复问题，添加新特性，
-还需要每日和每周做code review，保证代码质量。阅读代码的能力显得格外重要，
-因此我特别喜欢第6章和第9章关于大项目和架构方面的内容，让我有信心对付这些大块头项目。</p>
-
-<p>另外，源代码开放活动已经成为软件业不可或缺的力量，而且现在成熟稳定的开源项目日益真多，每个人或多或少都会有所涉及。
-一方面工作上的项目经常使用了这些开源代码，有时候出现问题需要定位，另一方面，通过开源代码，可以学习新的架构，
-编程思想，优秀开发的技巧和经验，从而提高自己的能力。无论是什么样的情况，阅读开源代码是很有必要的。
-而这本书，提供了阅读代码的最佳实践，能够帮助我们更快的理解这些代码。</p>
-
-<p>当然，这本书不单单教导如何去阅读代码。我认为，书中关于编码规范，命名方式，文档方面的内容，从代码阅读的角度，
-提出了自己的看法，所以当你进行编码规范规范制定等工作的时候，有一定的指导意义。如果你想立马学习代码阅读的技巧，
-作为过来人，我觉得开头先研习一下书中第10章关于代码阅读工具的内容是个不错的开始，有工具的支持，边学习边操作，
-理解书中的代码阅读技巧也会跟容易一些，乐趣也就多一些了。</p>
-
-<h3>《持续集成：软件质量改进和风险降低之道》书评</h3>
-
-<p>真正接触持续集成是2年前来到新公司的时候，那个时候公司请了ThoughtWork公司的咨询顾问来。
-顾问给我们灌输了持续集成的概念，并使用CruiseControl帮助我们搭建了持续集成环境。
-随着时间的推移，我们这里多个项目组都加入了持续集成的环境，并搬来了大电视让整个过程可视化，
-并加了一些警示的声音，效果很是震撼呀。持续集成是个有趣的东西，
-还制定了相应的军规：红灯停，绿灯行，黄灯停一停。(和电视上显示的项目状态的颜色有关)</p>
-
-<p>正如书上说描述的，持续集成减少重复的过程，把编译，集成测试，部署等环节自动化，
-的确节省了我们的时间，并避免了人工干预的风险。另外，我们在持续集成里边加入单元测试，
-findbugs，checkstyle, cppunit等测试项，这样代码质量问题可以得到更快更好的反馈，经常因为有些问题代码被快速检测出来而感到庆幸。</p>
-
-<p>样章只有持续测试这一章节的描述，项目的可靠性必须得通过持续不断的测试来保证。
-正因为如此，我们在持续集成里边加入单元测试等功能之外，还使用自动化测试用例进行测试，
-当然因为测试用例巨大，耗时较长，我们通常是选择在晚上进行的。</p>
-
-<p>按照我们的理解，对项目有利的东西，只要能够自动化，都可以考虑加入持续集成，这将给项目带来更多的好处。</p>
-
-<h3>《代码质量》书评</h3>
-
-<p>工作了这么多年，也接触过各式各样的系统，看过千奇百怪的代码，知道代码质量的重要性对我们是多么的重要。
-每每想起那些可怕的错综复杂的代码，还有那些线上千奇百怪的问题，总会深深感到不安，实在太让人揪心了。
-所以在日常工作中，我非常强调代码质量，用各种培训去提升开发人员的技能水平，用代码评审等手段试图保证代码质量。</p>
-
-<p>现今随着硬件成本的降低，人力成本的提升，我平时考察考察代码质量多从可读性，可维护性，性能的角度出发，
-正因为如此，Diomidis Spinellis这本书的目录让我眼前一亮，它从多个维度考察代码质量，
-讨论了如何满足非功能性需求，我从未用如此全面的角度衡量代码的质量，的确充实了我的知识库，
-让我在平时工作中用更全面的眼光衡量代码的质量。</p>
-
-<p>另外，和代码阅读一样，书中的丰富的例子来源于现实代码，让作者的观点更具说服力。
-最近团队来了不少新员工，在代码质量控制方面花了不少功夫。有时候，他们并不理解代码质量的重要性，认为代码能运行就可以了。
-让新员工理解这些非功能性需求的重要性，能够在平时中注意考虑非功能性需求的，这都是非常重要而且非常迫切的需求。
-我想，借助于这本书理论与实践的结合， 继续这项工作更有信心了。</p>
-
-<h3>《面向对象分析与设计》书评</h3>
-
-<p>这是一本关于面向对象分析与设计的书籍，通常和对象打交道的书，几乎都是在写设计模式一样，
-当我看到这本书的时候，第一反应就是这样。因为我使用面向对象语言进行开发设计已经有一段时间了，
-除了设计模式方面的书籍，真的很少碰到面向对象方面让人耳目一新的著作。但在浏览了书本的目录和前言部分之后，
-我对这本书有另外一个感觉: 这是学习掌握UML的一本绝佳的书籍。正是这一点吸引我继续阅读下去。</p>
-
-<p>本身作者Grady Booch就是UML的创始人之一，书中也有大量关于UML图的内容，由他使用UML来讲述再好不过了。
-另外，UML里边类图，状态图等，本质上也离不开面向对象理论的支持。理论与实践相结合，这是很多书籍做不到的地方，
-也是我感觉使用面向对象进行分析设计经常遇到困难的痛处。所以，即使我使用面向对象进行设计开发，
-也用过UML画过各式各样的图，但书中的内容仍然吸引着我。</p>
-
-<p>这本书提供的样章相当的多，阅读花了不少时间。书中介绍了面向对象的各种概念，
-并运用了大量的例子展示了面向对象设计的经验技巧，这些都是很难描述清楚的东西，
-而且容易变得很枯燥的东西，庆幸的是，作者在这方面的文笔相当好，阅读起来非常顺畅。</p>
-
-<h3>《灾难拯救：让软件项目重回轨道 》书评</h3>
-
-<p>终于看完这本书的样章了！我不是一个项目管理人员，但我觉得了解一些项目方面的东西是有好处的。
-我面对的也是一个不是很顺利的项目，有着比较纠结的代码基，人员众多而且人员流动也比较大，线上问题也时不时的出现。
-虽然采用了一些敏捷开发的手段控制进度，但也不是特别的顺利。要命的是，这是一个需要长期维护发展的关键项目，不能随意推到重来。</p>
-
-<p>我认为这本书对于我们这种类型项目来说，还是有相当的指导意义的 。
-如前言说的，这是一本救治之书，它探讨了像我们这种随时面临失败的项目，如何去拯救，如何重回正轨。
-书中提到面临失败项目，实施拯救需要的10个步骤。很显然，有些步骤我们已经在现实中采用了，
-并且也取得了一些成果：例如确定最低目标，风险分析等内容。但能够完整描述这些步骤，
-也真的是不容易做到，有了这本书的指导，我相信实施这些步骤是具有可操作性的。</p>
-
-<p>整本书有一个顺序脉络在那里，就是步骤的描述，所以应该从头到尾的读会比较合适，因为每个步骤是有一些关联的，
-如果跳来跳去，可能不能深入理解步骤的真正意义。最后一章是整本书的总结，把前面描述的10个步骤整合在一起，
-并对时间安排，实施拯救计划进行指导。对于担心书中描述的理论是否可行的人来说，
-这章无疑是打了强心针一样，只要按照书中的建议进行操作，应该是能够验证效果的，需要的只是：行动。</p>
-
-<h2>&#8220;书评&#8221;系列文章:</h2>
-
-
-<ul>
- 
-  
-  <li><a href="/blog/20120815_thought-read-javascript-idea.html">2012-08-15 书评-JavaScript语言精髓与编程实践</a></li>
-  
- 
-  
-  <li><a href="/blog/20120815_thought-read-node-web-development.html">2012-08-15 书评-Node Web开发</a></li>
-  
- 
-  
-  <li>2012-08-18 书评-Jolt大奖精选丛书</li>
-  
-
-</ul>
-
-
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120815_thought-read-node-web-development.html">书评-Node Web开发</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-08-15T00:00:00+08:00" pubdate data-updated="true">Aug 15<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120815_thought-read-node-web-development.html#disqus_thread">Comments</a>
+         | <a href="/blog/20120903_jforum2-source-analytics.html#disqus_thread">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p><img src="/assets/images/node_web_development.jpg" alt="Node Web开发" /></p>
+  <div class="entry-content"><p>这个文章大约是08年的时候写的了，jforum是java中还算比较有名的开源论坛系统，我上一家公司拿它来做二次开发。jforum2是内部自己实现的mvc，到了jforum3的时候全部重写了，都使用开源框架来做，现在不知发展到什么情况了。所以，这里特指jforum2.</p>
 
-<p><strong>2012-05-10@oschina.net</strong>
-<a href="http://www.oschina.net/question/244461_53105?sort=default&amp;p=2#answers">书评链接</a></p>
+<h2>正文</h2>
 
-<p>这本书，其实我是看的英文版的。算是一本不错的入门书，相对于官网上那硬邦邦的api手册，
-的确是很不错了，里边有些内容有点旧了(例如npm介绍中关于require.path的说法)。
-书里边关于node的模块系统的描述是比较好的，非常清晰，是我觉得写得最好的一章，
-另外关于node的异步编程模型的介绍也比较好(例如有个关于Fibonacci数列的例子)，
-因为最重要就是理解编程模型，即使很多人熟悉客户端javascript编程，
-但是刚刚开始node的javascript编程，就会感到非常纠结。</p>
+<p>怎么才算好的源码分析呢？当然我这个肯定不算。我想大概分为几个层面吧，写写注释那算最基本的了，
+写写要点思路和难点，算是还不错拉，再难的就是跳出源码举一反三，形成自己的一套思路吧。好好努力吧。</p>
 
-<p>书里边也引用了一些现有比较出名的开源库，例如express和connect，用来构建web应用。
-关于这个，我觉得没什么必要，因为这两个库的在线帮助文档是做得非常好的。
-我更感兴趣的是书里边一些step by step的demo，可以比较清晰得看到关键的代码是如何实现的。</p>
+<p>这次针对的是jforum2.1.8,大概jforum团队已经没心情理这个版本了，都冲着jforum3去了。选择这个版本，
+主要是因为jforum在java论坛类应用中算是佼佼者了，很多人都拿这个来做二次开发，而jforum3使用的是另外一套架构了，
+而且还没完全release，所以斟酌一下，还是选择这个经典的版本。</p>
 
-<p>总体来说，这书是一本不错的入门书，内容少不是问题，
-比较现在还没有关于node的更多最佳实践的资料，而且node关注的就是高访问量，小请求，
-业务逻辑较少，快响应的特殊场景，需要关注的领域并不是很多，
-写得太多反而会埋没重点。有兴趣的同学，真的值得一看。</p>
+<p>关于jforum的介绍网上已经很多了，这里也简单抄录一段：JForum 是一个功能强大 ，易于管理的论坛。
+它的设计完全遵从MVC设计模式，能够在任何Servlet容器与EJB服务器上运行。而且可以轻松的定制与扩展JForum论坛。
+上面这段简述还是中肯的。另外，jforum是模仿phpbb写的，使用的是classic-blue风格，但不能自己选择风格，要的话只能自己修改了。
+再说几句，说jforum比较优秀是因为java开源的论坛系列精品少，而且jforum的bug也真的不少，不信试试就知道了。
+不过作为一个成型的组件，功能强大并且适合二次开发，还是应该列入考虑范围的。</p>
 
-<h2>&#8220;书评&#8221;系列文章:</h2>
+<p>不管怎样，jforum是个不错的学习范本，至少让你觉得写个山寨框架不是什么难事，
+而事实也的确是这样的。重要的一点是，不要轻易拿出来害人就是了：)这里先列举出可能一些分析点：</p>
+
+<p>● web.xml<br/>
+● 初始化流程<br/>
+● 处理请求流程(mvc)<br/>
+● 文件监控<br/>
+● 缓存实现<br/>
+● 数据库访问实现<br/>
+● 权限控制</p>
+
+<p>首先了解一个web应用，首要的就是知道处理流程。首先来看看入口web.xml，里边的内容还是挺清晰的，
+可以看到里边有个监听器ForumSessionListener，*.page的过滤器ClickstreamFilter，还有2个*.page的处理器，
+其中InstallServlet是安装相关的，JForum则是前端处理器。</p>
+
+<p>基本上<strong>整个流程</strong>就是</p>
+
+<pre><code>client request -&gt; ForumSessionListener -&gt; ClickstreamFilter -&gt; JForum -&gt; server response.
+</code></pre>
+
+<p>ForumSessionListener实现了HttpSessionListener接口，但是只是对session destory做了处理，
+在这个过程中，保存session的历史记录到DB，并清除用户信息和相关的security信息。
+ClickstreamFilter实现了Filter接口，主要的任务就交给BotChecker了，是用来检测client是不是一个robot来的。
+主要的工作还是在JForum上面，不过先来看看jforum是怎么检测robot的？</p>
+
+<p>BotChecker只有一个静态工具方法isBot，首先是检测是否请求robot.txt(这是标准的robot协议文件),
+接下去判断User－Agent头部，最后是判断remotehost。而已知的robot都是写在文件clickstream-jforum.xml
+里边的(包括agent和host)，并通过ConfigLoader加载进来的(SAX方式)。</p>
+
+<p>可以看到JForum和InstallServlet都继承了JForumBaseServlet这个HttpServlet，而JForumBaseServlet包括2个重要的方法init和startApplication。众所周知，init是servlet初始化时调用的方法，JForumBaseServlet里边的init方法的流程是：</p>
+
+<pre><code>调用父类的init(正常情况这是必须调用的)  -&gt; 配置log4j -&gt; startSystemglobals(加载全局参数配置SystemGlobals.properties -&gt; 加载数据库配置database.driver.config(如mysql就是WEB-INF/config/database/mysql/mysql.properties)  -&gt; 加载自定义配置(默认的是jforum-custom.conf)) -&gt; 配置缓存引擎 -&gt; 配置freemarker模板引擎 -&gt; 加载模块配置modulesMapping.properties -&gt; 加载url映射配置urlPattern.properties -&gt; 加载I18n配置(languages/*) -&gt; 加载页面映射配置(templatesMapping.properties) -&gt; 加载BBcode配置bb_config.xml -&gt; 结束
+</code></pre>
+
+<p>jforum实现了自己的mvc，整个mvc的脉络就是</p>
+
+<pre><code>client request -&gt; 解析url(urlPattern.properties),获取module/action/param -&gt; 通过module获取相应的module class，并通过action识别并调用相应的方法(modulesMapping.properties) -&gt; 使用dao完成业务逻辑 -&gt; 调用template进行渲染(templatesMapping.properties)
+</code></pre>
+
+<p>其实整个mvc和struts没什么两样的，具体的流程以后再提。</p>
+
+<p>JForumBaseServlet里边的startApplication方法的流程是：</p>
+
+<pre><code>加载通用sql文件sql.queries.driver(就是/database/generic/generic_queries.sql) -&gt; 加载特定sql文件(如mysql就是/database/mysql/mysql.sql) -&gt; 加载Quartz定时任务配置 -&gt; 加载登录验证器(验证方式) -&gt; 加载Dao实现方式 -&gt; 加载文件修改监听器 -&gt; 加载查询索引管理器 -&gt; 加载定时统计任务
+</code></pre>
+
+<p>jforum实现了自己的orm，当然不是hibernate那种，是类似ibatis的那种sql mapping，并提供了多套的sql文件来实现数据库无关的特性，
+整个流程也是比较清晰的:</p>
+
+<pre><code>加载数据库配置 -&gt; 加载sql mapping file -&gt; 设置DAO实现 -&gt; 通过named sql找到对应的sql(在*.sql里边对应着) -&gt; 运行出数据
+</code></pre>
+
+<p>继续重点。JForum的init流程如下：</p>
+
+<pre><code>JForumBaseServlet.init -&gt; JForumBaseServlet.startApplication -&gt; 启动数据库 -&gt; 预加载一些数据到缓存中(ForumRepository[Categories,Forums,同时在线最大人数，最后登录用户，注册用户数等等],用户等级,表情数据，屏蔽列表) -&gt; 结束
+</code></pre>
+
+<p>上面简单提到了<strong>Jforum处理请求的过程</strong>，现在在来看看这个过程，就是service方法，这次采用代码概要的方式展示：</p>
+
+<div class="highlight"><pre><code class="java"> <span class="c1">// 初始化JForumExecutionContext</span>
+<span class="n">JForumExecutionContext</span> <span class="n">ex</span> <span class="o">=</span> <span class="n">JForumExecutionContext</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+<span class="c1">// 包装request和response</span>
+<span class="n">request</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WebRequestContext</span><span class="o">(</span><span class="n">req</span><span class="o">);</span>
+<span class="n">response</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WebResponseContext</span><span class="o">(</span><span class="n">res</span><span class="o">);</span>
+<span class="c1">// 检查数据库状态</span>
+<span class="k">this</span><span class="o">.</span><span class="na">checkDatabaseStatus</span><span class="o">();</span>
+<span class="c1">// 创建JForumContext并设置到JForumExecutionContext中去</span>
+<span class="o">.......</span>
+<span class="n">JForumExecutionContext</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="n">ex</span><span class="o">);</span>
+<span class="c1">// 刷新session          </span>
+<span class="n">utils</span><span class="o">.</span><span class="na">refreshSession</span><span class="o">();</span>
+<span class="c1">// 加载用户权限        </span>
+<span class="n">SecurityRepository</span><span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="n">SessionFacade</span><span class="o">.</span><span class="na">getUserSession</span><span class="o">().</span><span class="na">getUserId</span><span class="o">());</span>
+<span class="c1">// 预加载模板需要的上下文</span>
+<span class="n">utils</span><span class="o">.</span><span class="na">prepareTemplateContext</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">forumContext</span><span class="o">);</span>
+<span class="c1">// 从request中解析module name</span>
+<span class="n">String</span> <span class="n">module</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="na">getModule</span><span class="o">();</span>
+<span class="c1">// module name  -&gt; module class</span>
+<span class="n">String</span> <span class="n">moduleClass</span> <span class="o">=</span> <span class="n">module</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">?</span> <span class="n">ModulesRepository</span><span class="o">.</span><span class="na">getModuleClass</span><span class="o">(</span><span class="n">module</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+<span class="c1">// 判断是否在ban list里边</span>
+<span class="o">......</span>
+<span class="kt">boolean</span> <span class="n">shouldBan</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">shouldBan</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getRemoteAddr</span><span class="o">());</span>
+<span class="c1">// 主角出场</span>
+<span class="n">out</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">processCommand</span><span class="o">(</span><span class="n">out</span><span class="o">,</span> <span class="n">request</span><span class="o">,</span> <span class="n">response</span><span class="o">,</span> <span class="n">encoding</span><span class="o">,</span> <span class="n">context</span><span class="o">,</span> <span class="n">moduleClass</span><span class="o">);</span>
+<span class="c1">// 扫尾工作,例如db的rollback</span>
+<span class="k">this</span><span class="o">.</span><span class="na">handleFinally</span><span class="o">(</span><span class="n">out</span><span class="o">,</span> <span class="n">forumContext</span><span class="o">,</span> <span class="n">response</span><span class="o">);</span>
+</code></pre></div>
 
 
-<ul>
- 
-  
-  <li><a href="/blog/20120815_thought-read-javascript-idea.html">2012-08-15 书评-JavaScript语言精髓与编程实践</a></li>
-  
- 
-  
-  <li>2012-08-15 书评-Node Web开发</li>
-  
- 
-  
-  <li><a href="/blog/20120818_thought-read-jolt-book.html">2012-08-18 书评-Jolt大奖精选丛书</a></li>
-  
+<p>processCommand会调用Command的process方法：</p>
 
-</ul>
+<div class="highlight"><pre><code class="java"><span class="c1">// 获取一个module实例(继承了Command)</span>
+<span class="n">Command</span> <span class="n">c</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">retrieveCommand</span><span class="o">(</span><span class="n">moduleClass</span><span class="o">);</span>
+<span class="c1">// 进入process</span>
+<span class="n">Template</span> <span class="n">template</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="na">process</span><span class="o">(</span><span class="n">request</span><span class="o">,</span> <span class="n">response</span><span class="o">,</span> <span class="n">context</span><span class="o">);</span>
+<span class="c1">// 这里开始是process方法</span>
+<span class="c1">//获取action</span>
+<span class="n">String</span> <span class="n">action</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">request</span><span class="o">.</span><span class="na">getAction</span><span class="o">();</span>
+<span class="c1">//如果不是ignore的，就调用这个action</span>
+<span class="k">if</span> <span class="o">(!</span><span class="k">this</span><span class="o">.</span><span class="na">ignoreAction</span><span class="o">)</span> <span class="o">{</span><span class="k">this</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getMethod</span><span class="o">(</span><span class="n">action</span><span class="o">,</span> <span class="n">NO_ARGS_CLASS</span><span class="o">).</span><span class="na">invoke</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">NO_ARGS_OBJECT</span><span class="o">);}</span>
+<span class="c1">//如果是转发的，就把TemplateName清空</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">JForumExecutionContext</span><span class="o">.</span><span class="na">getRedirectTo</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span><span class="k">this</span><span class="o">.</span><span class="na">setTemplateName</span><span class="o">(</span><span class="n">TemplateKeys</span><span class="o">.</span><span class="na">EMPTY</span><span class="o">);}</span>
+<span class="c1">//不是转发且attribute里边存在template，则设置为templateName</span>
+<span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getAttribute</span><span class="o">(</span><span class="s">&quot;template&quot;</span><span class="o">)</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span><span class="k">this</span><span class="o">.</span><span class="na">setTemplateName</span><span class="o">((</span><span class="n">String</span><span class="o">)</span><span class="n">request</span><span class="o">.</span><span class="na">getAttribute</span><span class="o">(</span><span class="s">&quot;template&quot;</span><span class="o">));}</span>
+<span class="c1">//是否coustomContent？例如下载，验证码子类的不需要页面的操作</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">JForumExecutionContext</span><span class="o">.</span><span class="na">isCustomContent</span><span class="o">())</span> <span class="o">{</span><span class="k">return</span> <span class="kc">null</span><span class="o">;}</span>
+<span class="c1">//返回一个template</span>
+<span class="k">return</span> <span class="n">JForumExecutionContext</span><span class="o">.</span><span class="na">templateConfig</span><span class="o">().</span><span class="na">getTemplate</span><span class="o">(</span>
+                <span class="k">new</span> <span class="nf">StringBuffer</span><span class="o">(</span><span class="n">SystemGlobals</span><span class="o">.</span><span class="na">getValue</span><span class="o">(</span><span class="n">ConfigKeys</span><span class="o">.</span><span class="na">TEMPLATE_DIR</span><span class="o">)).</span>
+                <span class="n">append</span><span class="o">(</span><span class="sc">&#39;/&#39;</span><span class="o">).</span><span class="na">append</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">templateName</span><span class="o">).</span><span class="na">toString</span><span class="o">());</span>
+        <span class="o">}</span>
+<span class="c1">// 从process出来，回到processCommand</span>
+<span class="c1">// 设置content type</span>
+<span class="n">response</span><span class="o">.</span><span class="na">setContentType</span><span class="o">(</span><span class="n">contentType</span><span class="o">);</span>
+<span class="c1">//生成页面并flush</span>
+<span class="k">if</span> <span class="o">(!</span><span class="n">JForumExecutionContext</span><span class="o">.</span><span class="na">isCustomContent</span><span class="o">())</span> <span class="o">{</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BufferedWriter</span><span class="o">(</span><span class="k">new</span> <span class="n">OutputStreamWriter</span><span class="o">(</span><span class="n">response</span><span class="o">.</span><span class="na">getOutputStream</span><span class="o">(),</span> <span class="n">encoding</span><span class="o">));</span>
+                <span class="n">template</span><span class="o">.</span><span class="na">process</span><span class="o">(</span><span class="n">JForumExecutionContext</span><span class="o">.</span><span class="na">getTemplateContext</span><span class="o">(),</span> <span class="n">out</span><span class="o">);</span>
+                <span class="n">out</span><span class="o">.</span><span class="na">flush</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+</code></pre></div>
 
 
+<p>这是一般的流程，就像上面提到的customContent，就是要自己处理了，可以参考CaptchaAction.generate().</p>
 
+<p>这样的话，如果我们要增加一些action进行<strong>二次开发</strong>的话，大体的流程就是，增加一个继承了Command的类，
+例如叫ExampleAction,定义一个方法，例如叫test()，在urlPattern.properties中定义一个映射,
+例如为example.test.1 = forum_id，再在modulesMapping.properties中定义module class的映射，
+如example = ExampleAction，最后我们在templatesMapping.properties定义个模板的映射，
+如：example.test = example_test.htm。现在假设我们的请求url是/example/test/1,再来看看test里边的一些方法：</p>
+
+<div class="highlight"><pre><code class="java"><span class="k">this</span><span class="o">.</span><span class="na">request</span><span class="o">.</span><span class="na">getIntParameter</span><span class="o">(</span><span class="s">&quot;forum_id&quot;</span><span class="o">))</span>  <span class="c1">//获取参数，得到1</span>
+<span class="k">this</span><span class="o">.</span><span class="na">context</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;obj&quot;</span><span class="o">,</span> <span class="n">obj</span><span class="o">);</span> <span class="c1">//把结果写入context，这样可以在template中获取到</span>
+<span class="k">this</span><span class="o">.</span><span class="na">setTemplateName</span><span class="o">(</span><span class="s">&quot;example.test&quot;</span><span class="o">);</span><span class="c1">//设置template的名字</span>
+</code></pre></div>
+
+
+<p>这样的简单流程应该还比较好理解吧?</p>
+
+<p>另外，还可以看出，jforum使用了自己的一套映射机制，这是通过urlPattern.properties来定义的
+(参考上面JForumBaseServlet的init流程)，这是在JForumBaseServlet的loadConfigStuff方法的第一行实现的，
+并加载到UrlPatternCollection中去，如下所示：</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">Properties</span> <span class="n">p</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Properties</span><span class="o">();</span>
+<span class="n">fis</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FileInputStream</span><span class="o">(</span><span class="n">SystemGlobals</span><span class="o">.</span><span class="na">getValue</span><span class="o">(</span><span class="n">ConfigKeys</span><span class="o">.</span><span class="na">CONFIG_DIR</span><span class="o">)</span> <span class="o">+</span> <span class="s">&quot;/urlPattern.properties&quot;</span><span class="o">);</span>
+<span class="n">p</span><span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="n">fis</span><span class="o">);</span>
+
+<span class="k">for</span> <span class="o">(</span><span class="n">Iterator</span> <span class="n">iter</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="na">entrySet</span><span class="o">().</span><span class="na">iterator</span><span class="o">();</span> <span class="n">iter</span><span class="o">.</span><span class="na">hasNext</span><span class="o">();</span> <span class="o">)</span> <span class="o">{</span>
+   <span class="n">Map</span><span class="o">.</span><span class="na">Entry</span> <span class="n">entry</span> <span class="o">=</span> <span class="o">(</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">)</span> <span class="n">iter</span><span class="o">.</span><span class="na">next</span><span class="o">();</span>
+   <span class="n">UrlPatternCollection</span><span class="o">.</span><span class="na">addPattern</span><span class="o">((</span><span class="n">String</span><span class="o">)</span><span class="n">entry</span><span class="o">.</span><span class="na">getKey</span><span class="o">(),</span> <span class="o">(</span><span class="n">String</span><span class="o">)</span><span class="n">entry</span><span class="o">.</span><span class="na">getValue</span><span class="o">());</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>可以知道这里的key和value都是String来的</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">UrlPatternCollection</span><span class="o">.</span><span class="na">patternsMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="k">new</span> <span class="n">UrlPattern</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="n">value</span><span class="o">));</span>
+</code></pre></div>
+
+
+<p>但在addPattern方法里边其实是生成一个UrlPattern作为value，如何<strong>构造一个UrlPattern</strong>可以看看代码，
+举例来说把，对于example.hello.2=a,b,这样会生成一个UrlPattern,里边的内容是name为example.hello.2,value为a,b.
+而size和vars是用a,b解析出来的，用来表示一共有多少个参数，参数名组成的数组。
+所以UrlPattern存储的就是一个url格式的定义，而放在UrlPatternCollection里边的一系列的url映射格式是在请求的url解析的时候用到的。</p>
+
+<p>现在再分析一下jforum怎么使用这个UrlPatternCollection的?按照我们不严格的思路，应该是service中处理url，
+获取.page前面的一部分,如/example/hello/2/1，用/做一下split，获取module name，action name,
+把最后的作为参数，用module,action,参数个数组成一个key(example.hello.2),通过UrlPatternCollection找到对应的UrlPattern，
+通过里边的格式对应(vars里边的参数名和url的参数值)就可以把参数添加到request的parameters里边去。
+实际的情况也差不多就这个样。在说到jforum中的service方法的时候，简单提到过request和response是经过包装的:</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">request</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WebRequestContext</span><span class="o">(</span><span class="n">req</span><span class="o">);</span>
+<span class="n">response</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WebResponseContext</span><span class="o">(</span><span class="n">res</span><span class="o">);</span>
+</code></pre></div>
+
+
+<p>WebResponseContext只是简单的delegate给HttpServletResponse(这样做的好处是全部方法都限制在ResponseContext中)，
+而WebRequestContext是继承了HttpServletRequestWrapper并实现了RequestContext接口。
+所以WebRequestContext是一个HttpRequest，但是通过RequestContext接口实现了一些特定的方法就是了，
+例如getModule/getAction，而这个解析url的过程是在构建WebRequestContext对象的过程中实现的。
+可以看看WebResponseContext的构造方法，这里就不详细说了。注意的是，所有的parameters最后都保存到query(一个私有的map)里边去的。
+还有就是上面说到的jforum的特定url映射机制，这是通过WebRequestContext的parseFriendlyURL方法实现的，
+原理就和上面提到的那样，也不详说了。</p>
+
+<p>到这里，基本上整个处理流程就差不多了。现在来说说jforum里边的文件修改监听器(JForumBaseServer的startApplication流程)，
+如果你在使用jforum的过程中，修改了某些文件如*.sql，jforum就会重新加载修改后的配置。
+我原来以为是用quartz框架来实现的，后来才知道是用jdk的TimerTask类来实现的。
+请看ConfigLoader的listenForChanges方法：</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">FileMonitor</span><span class="o">.</span><span class="na">getInstance</span><span class="o">().</span><span class="na">addFileChangeListener</span><span class="o">(</span><span class="k">new</span> <span class="n">QueriesFileListener</span><span class="o">(),</span>
+                <span class="n">SystemGlobals</span><span class="o">.</span><span class="na">getValue</span><span class="o">(</span><span class="n">ConfigKeys</span><span class="o">.</span><span class="na">SQL_QUERIES_GENERIC</span><span class="o">),</span> <span class="n">fileChangesDelay</span><span class="o">);</span>
+</code></pre></div>
+
+
+<p>这里给各个部分分一下责任，FileMonitor是大管家，负责管理所有的文件监听器；FileChangeListener是一个监听器接口，
+只有一个方法，就是fileChanged(String filename)，意思就是对某个filename的修改作出怎样的反应。
+使用的方法也很简单，就是实现一个FileChangeListener，并和监控的文件名，检查间隔作为参数传入就可以生效了。
+FileMonitor里边的实现原理就是，通过一个map(timerEntries)来保存(文件名/timertask),
+每次加入一个监听器的时候，会根据文件名先移出原来的文件监听器(缺点是只能能对一个文件添加一个监听器)，
+然后构建一个TimerTask并加入到timerEntries中去。关于TimerTask的具体用法，可以参考api。</p>
+
+<p>作为一个论坛，应用层缓存这样的东西似乎必不可少，jforum也提供了缓存配置(上面也提到一些)。
+jforum提供了数种<strong>缓存实现</strong>(JForumBaseServlet的init流程)，分别是DefaultCacheEngine(简单的内存实现),
+JBossCacheEngine，EhCacheEngine。，请看ConfigLoader的startCacheEngine方法，
+流程大概就是得到cacheEngine的实现配置(SystemGlobals.properties中配置cache.engine.implementation)，
+然后产生CacheEngine的实例，调用它的init方法进行初始化，然后找到所有的可缓存类(实现了Cacheable接口，并在SystemGlobals.properties中配置cacheable.objects)，最后把cacheEngine注入进去获得cache的能力。
+虽然jforum自己实现了许多这样的注入(除了cacheEngine，还有db，dao等等)，
+虽然达到了一定的的目的，可是怎么说还是到处充满了Singleton的实现(参考spring2.5文档3.9. 粘合代码和可怕的singleton)，
+为了寻求更好的组织方式(例如使用ioc来管理对象，使用成熟的orm来隔离数据库)和获得更多的用户群(选择更广泛使用的框架帮助)，
+大概才会萌发jforum3的想法吧。</p>
+
+<p>顺便提一下jforum的<strong>Dao实现方式</strong>(参考JForumBaseServlet的startApplication流程)，
+参考ConfigLoader的loadDaoImplementation方法，原理就是通过配置dao.driver(在特定的数据库配置里边如mysql.properties):</p>
+
+<pre><code>获取到DataAccessDriver的实现 -&gt; 初始化DataAccessDriver -&gt; 获取到所有的Dao实现。
+</code></pre>
+
+<p>可以这么理解，实现一个DataAccessDriver就获得一整套Dao的实现方式，对于dao里边的实现方法，给个范例：</p>
+
+<div class="highlight"><pre><code class="java"><span class="c1">//例行公事</span>
+<span class="n">PreparedStatement</span> <span class="n">p</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+<span class="n">ResultSet</span> <span class="n">rs</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+<span class="c1">//获得connect，并执行named sql</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">JForumExecutionContext</span><span class="o">.</span><span class="na">getConnection</span><span class="o">().</span><span class="na">prepareStatement</span><span class="o">(</span><span class="n">SystemGlobals</span><span class="o">.</span><span class="na">getSql</span><span class="o">(</span><span class="s">&quot;GroupModel.selectById&quot;</span><span class="o">));</span>
+<span class="n">p</span><span class="o">.</span><span class="na">setInt</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="n">groupId</span><span class="o">);</span>
+<span class="n">rs</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="na">executeQuery</span><span class="o">();</span>
+<span class="n">Group</span> <span class="n">g</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Group</span><span class="o">();</span>
+<span class="c1">//循环resultset进行处理</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">rs</span><span class="o">.</span><span class="na">next</span><span class="o">())</span> <span class="o">{</span><span class="n">g</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">getGroup</span><span class="o">(</span><span class="n">rs</span><span class="o">);}</span>
+</code></pre></div>
+
+
+<p>整个实现很直白，就是一个jdbc实现方式来的。对于如何获取connection，查看JForumExecutionContext的getConnection(),可以注意到这么一句：</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">c</span> <span class="o">=</span> <span class="n">DBConnection</span><span class="o">.</span><span class="na">getImplementation</span><span class="o">().</span><span class="na">getConnection</span><span class="o">();</span>
+</code></pre></div>
+
+
+<p>也是比较清晰的，另外可以知道的是，在每次请求的过程中，connection只会获取一次，
+并在第一次获取到以后放到ThreadLocal里边去,这样在每个线程中保留一份数据(正确理解TheradLocal )，
+在请求请求结束以后才释放connection(service流程中的handleFinally方法)。</p>
+
+<p>JForumExecutionContext，如字面意，就是请求执行的上下文，例如上面提到的数据库连接，
+还有ForumContext(放着和request，response相关的信息)，context(freemarker的上下文变量)，
+redirectTo(转发地址)，contentType(响应内容格式)，isCustomContent(不使用默认渲染，上面有提到)，
+enableRollback(db是否会滚)。</p>
+
+<p>jforum是可以配置权限的，可控制的权限类型放在SecurityConstants里边，
+对应的配置界面是根据permissions.xml生成的(参考GroupAction的permissions)。而每个用户的权限(PermissionControl)是通过SecurityRepository来管理的</p>
+
+<pre><code>最用形成的权限系统是role(权限)－group(用户组,可以多级)－用户这样的结构图。
+</code></pre>
+
+<p>如何判断权限?
+对于一个用户来说，为了获取用户的权限(PermissionControl)，流程是这样的(详细看SecurityRepository的load方法)：</p>
+
+<pre><code>获取用户信息 -&gt; 获取用户的所有groupid并组成一个用逗号隔开的字符串groupids  -&gt; 根据groupids获取所有的name/role_value -&gt; 组装成RoleValueCollection －&gt; 生成RoleCollection -&gt; 最后生成PermissionControl
+</code></pre>
+
+<p>判断权限是使用SecurityRepository的canAccess(int userId, String roleName, String value)方法：</p>
+
+<pre><code>根据userid获取PermissionControl-&gt; 如果value参数为空的话，就判断是否拥有该roleName(通过内部的RoleCollection对象的keys),就是是否含有该权限 -&gt; 如果value参数不为空的话，除了需要含有该权限，还要拥有相应的rolevalue(通过内部的RoleCollection对象的values)。参数中的value指数可以为论坛分类id，论坛id之类，随业务而定。
+</code></pre>
+
+<p>总体上jforum还算清晰，大部分的业务代码没有细看(那些Command类)，有兴趣可以对照着写，
+大体分为三个包(admin是管理，jforum是公共页面，install是安装页面)。</p>
+
+<p>既然说到验证，就顺便要说说jforum的<strong>sso验证机制</strong>
+官方文档:</p>
+
+<pre><code>http://www.jforum.net/doc/SSO
+http://www.jforum.net/doc/ImplementSSO
+http://www.jforum.net/doc/SSOcookies
+http://www.jforum.net/doc/SSOremote
+</code></pre>
+
+<p>有上面这些文档基本可以自己实现一个，主要就是实现net.jforum.sso接口就是了。</p>
+
+<p>在Jforum的service方法里边有段(service流程中的刷新session)：</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">ControllerUtils</span> <span class="n">utils</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ControllerUtils</span><span class="o">()</span>
+<span class="n">utils</span><span class="o">.</span><span class="na">refreshSession</span><span class="o">();</span><span class="c1">//重点</span>
+</code></pre></div>
+
+
+<p>里边提到，在没有usersession的情况下，如果配置的验证类型是sso(authentication.type)：</p>
+
+<pre><code>调用checkSSO(UserSession userSession)的方法 -&gt; 生成SSO实例(使用sso.implementation来配置) -&gt; 调用authenticateUser(RequestContext request)返回username -&gt; 假如取不到的username，就设为匿名 -&gt; 否则，如果不存在该用户(utils.userExists(username)则注册一个(utils.register(password, email)) -&gt; 假如已经存在,则让用户登录(configureUserSession(userSession, utils.getUser()))
+</code></pre>
+
+<p>当已经存在usersession的时候，并且验证方式是sso的时候，就是验证是否有效(sso.isSessionValid(userSession, request))。
+所以，整个过程和官方文档提到的流程是一样的，如果要实现自己的sso，这是实现SSO接口，
+使用authenticateUser来验证不存在usersession的情况，并返回username or null，
+而使用isSessionValid来判断一个已经存在的usersession是否有效。
+参考上面几个连接文档，实现和已有系统的sso集成，还是比较清晰明了的。</p>
 </div>
   
   
@@ -1987,7 +1165,19 @@ findbugs，checkstyle, cppunit等测试项，这样代码质量问题可以得�
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150107_charset-intro.html">关于编码与乱码问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141229_des-hack.html">常见DES实现陷阱</a>
       </li>
     
       <li class="post">
@@ -1999,31 +1189,19 @@ findbugs，checkstyle, cppunit等测试项，这样代码质量问题可以得�
       </li>
     
       <li class="post">
+        <a href="/blog/20140815_json-intro.html">json格式须知</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140814_xml-intro.html">xml格式须知</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
       </li>
     
       <li class="post">
         <a href="/blog/20140329_was-datasource.html">websphere+spring+jndi数据源配置</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140225_android-jdk7-bug.html">jdk7编译的bug记录</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140219_android-maven-problems.html">android+maven问题记录</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
       </li>
     
   </ul>

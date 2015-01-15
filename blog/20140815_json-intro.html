@@ -1,0 +1,330 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>json格式须知 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="json格式须知,项目培训用">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20140815_json-intro.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Json格式须知</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-15T00:00:00+08:00" pubdate data-updated="true">Aug 15<span>th</span>, 2014</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>着重介绍与项目使用相关的json知识。如果没有特别说明，环境是指Javascript下的json。</p>
+
+<h3>区分类型</h3>
+
+<ul>
+<li>首先需要区分json字符串和json对象，不过通常根据上下文可以区分。</li>
+<li>协议关注的是json字符串，而代码中处理的是json对象，两者通过序列化(JSON.stringify)和反序列化相互转换(JSON.parse)。</li>
+</ul>
+
+
+<h3>常见格式</h3>
+
+<ul>
+<li>主要有数组和key/value形式的object</li>
+<li>数组是有顺序的，可以不同类型，常用于顺序遍历操作。</li>
+<li>object是无顺序的，key只能是字符串，常用于快速随机查找。</li>
+<li>null是可以被序列化的，而undefined不可以(会消失)。</li>
+<li>其他的一些特殊值，如Nan，Infinity，会被序列化为null。</li>
+</ul>
+
+
+<h3>关于数组</h3>
+
+<ul>
+<li>对于数组对象，虽然支持key/value的操作，但是序列化的时候设置的值会丢失。</li>
+<li>数组序列化的长度是根据length属性来的，没有赋值的位置是null。</li>
+<li>对数组遍历不应该采用for in语句，因为通过key/value设置的值也会被输出。</li>
+</ul>
+
+
+<h3>关于Object</h3>
+
+<ul>
+<li>规范上规定key是带双引号的字符串()，但实际上很多反序列化工具能够支持数值、单引号字符串、字符串字面量(没有引号的字符串)。</li>
+<li>如果是一普通浮点数值，可以通过相应的数值作为key获取，或者通过对应的字符串来获取。如用2.2的话，可以用2.2或&#8221;2.2&#8221;。</li>
+<li>如果是一整型数值，可以用数值，但用字符串只能用整型的，如用2.0的话，可以用2.0或2或&#8221;2&#8221;,但&#8221;2.0&#8221;就不可以。</li>
+<li>如果使用字符串字面量的话，需要避免一些关键字使用。如delete</li>
+<li>key不应该重复，如果重复的话，通常结果是后面的会覆盖前面的。</li>
+<li>可以用.后面加key来取值，或者用[]这样的操作符来获取，第一种方式更推荐，但只能支持非数字开头的字符串，unicode也是可以。</li>
+<li>对object遍历可以采用for in语句。</li>
+</ul>
+
+
+<h3>协议转换</h3>
+
+<ul>
+<li>协议传输的是json字符串，但通常里边的类型都是字符串，不区分数值，因此做数值运算需要先转换。</li>
+<li>和xml一样，需要注意特殊字符如引号、回车、unicode等，尽量避免手动拼接，采用序列化工具。</li>
+<li>object类型的json序列化/序列化的时候，都不应该预期他是有顺序的，虽然很多库都有带默认顺序，应该使用数组。</li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-15T00:00:00+08:00" pubdate data-updated="true">Aug 15<span>th</span>, 2014</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/json/'>json</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20140814_xml-intro.html" title="Previous Post: xml格式须知">&laquo; xml格式须知</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20141126_org-json-and-xml.html" title="Next Post: 使用org.json库进行xml和json转换存在的问题">使用org.json库进行xml和json转换存在的问题 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150107_charset-intro.html">关于编码与乱码问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141229_des-hack.html">常见DES实现陷阱</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141225_java-common-util.html">java常见工具库培训</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141126_org-json-and-xml.html">使用org.json库进行xml和json转换存在的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140815_json-intro.html">json格式须知</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140814_xml-intro.html">xml格式须知</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140329_was-datasource.html">websphere+spring+jndi数据源配置</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20140815_json-intro.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20140815_json-intro.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

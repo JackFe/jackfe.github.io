@@ -9,9 +9,10 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="什么是codediff? 每日codediff是一项简单易用，行之有效的敏捷实践，可以保证项目进展，让项目中的新人得到学习的机会，让代码规范得到更有效贯彻。
-具体做法是，每天早上站立晨会之后，几个人围在一起，使用版本控制工具的diff功能，
-逐行浏览前一天提交的代码，提交者对修改的代码进行介绍， &hellip;">
+  <meta name="description" content="练习重点 erlang是单赋值的，就好像都经过java里边的final修饰过
+erlang没有内置的循环结构，这个和大多数语言是不一样的
+erlang是函数式语言，需要理解模式匹配编程方式
+erlang经常会遇到递归, 并且支持尾递归函数调用 练习1:数据库demo &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -72,7 +73,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/20120707_everyday-codediff-tool-with-svn-cmd.html">使用svn命令进行每日codediff</a></h1>
+      <h1 class="entry-title"><a href="/blog/20120714_hello-erlang-1.html">Hello Erlang, Part 1</a></h1>
     
     
       <p class="meta">
@@ -88,168 +89,119 @@
   
 
 
-<time datetime="2012-07-07T00:00:00+08:00" pubdate data-updated="true">Jul 7<span>th</span>, 2012</time>
+<time datetime="2012-07-14T00:00:00+08:00" pubdate data-updated="true">Jul 14<span>th</span>, 2012</time>
         
-         | <a href="/blog/20120707_everyday-codediff-tool-with-svn-cmd.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>什么是codediff?</h2>
-
-<p>每日codediff是一项简单易用，行之有效的敏捷实践，可以保证项目进展，让项目中的新人得到学习的机会，让代码规范得到更有效贯彻。
-具体做法是，每天早上站立晨会之后，几个人围在一起，使用版本控制工具的diff功能，
-逐行浏览前一天提交的代码，提交者对修改的代码进行介绍，讲讲代码是什么功能，为什么要做这样的修改。
-当然其他人可以提出异议，并且通常会记录评审意见，以便后续跟踪。</p>
-
-<p>和每周的代码评审相比，每日codediff虽然局限于每个代码片段，但时效性更强，两者互补不足，都是保证代码质量的有效手段。</p>
-
-<h2>better svn, better codediff</h2>
-
-<p>在我们的项目团队里边，一直也是使用这种方式进行处理。
-公司使用的是svn，不过由于环境的限制，svn性能并不是特别理想。
-经常把大量时间用在svn log,diff的等待过程中，整个codediff也因此需要比较多时间，有时需要1个多小时。
-长此以往，很多人对每日codediff不重视，参与度不高，对于我来说，评审问题也很不好跟踪。</p>
-
-<p>后来我想找一专门为codediff服务的工具，考察了一些开源项目，但总觉得不是特别合适我们团队的需求。
-我的要求也很简单，为svn服务，操作简单，便于跟踪，而不需要正规的评审流程。后来，我决定自己开发一个。</p>
-
-<p>我的做法也很简单: 定时从svn上取出最新提交记录，并把相关文件记录到数据库中去。
-再弄个网页展示出来，codediff和评审通过网页来进行，</p>
-
-<p>原型一出来，就在团队中试用了一段时间，效果挺好的，通常只需要10来分钟就可以了，大大提高了效率。
-现在几个同事还把这东西推广到其他项目中去，反应都还不错，让我着实感到非常有面子:)。</p>
-
-<h2>更多细节</h2>
-
-<p>后来，有些同事比较感兴趣提交记录是怎么弄出来的。
-因为很多人平时只是使用海龟来操作，命令行基本没使用过，所以不清楚也不奇怪。所以解释一下是怎么做的，也是我写这篇博客的重要原因。</p>
-
-<p>整个工程主要使用<a href="http://rubyonrails.org/">ruby on rails</a>和<a href="http://twitter.github.com/bootstrap/">twitter bootstrap</a>做页面.
-通过<a href="http://jruby.org/">jruby</a>来跑，定时任务使用<a href="https://github.com/mccxj/quartz-jruby">quartz-jruby</a>来做，提交记录通过svn命令来获取，我这里主要说说svn命令。</p>
-
-<p>当然首先需要安装svn命令行客户端，然后通过<a href="http://docs.oracle.com/javase/6/docs/api/java/lang/Runtime.html#exec(java.lang.String)">Runtime.exec()</a>来获取输出信息，解析这些信息入库即可。</p>
-
-<div class="highlight"><pre><code class="bash"><span class="c"># 获取最新版本号,使用正则/Last Changed Rev: (\d+)/得到最新版本</span>
-svn info http://hustoj.googlecode.com/svn/trunk
-<span class="c"># 获取svn log，这个解析比较麻烦，需要用正则分组</span>
-svn log -l 1 -v http://hustoj.googlecode.com/svn/trunk
-<span class="c"># 获取diff文件，对于更新(M)的文件</span>
-svn diff -c 1659 http://hustoj.googlecode.com/svn/trunk/web/admin/contest_list.php
-<span class="c"># 获取完整文件，对于增加(A)删除(D)的文件，需要直接取版本</span>
-svn cat http://hustoj.googlecode.com/svn/trunk/web/admin/contest_list.php@1655
-</code></pre></div>
-
-
-<p>不过在实际处理的时候，默认的diff取出来的上下文太少，所以我使用了外部diff工具:</p>
-
-<div class="highlight"><pre><code class="bash">svn diff -c 1659 --diff-cmd /usr/bin/diff -x <span class="s2">&quot;-U20&quot;</span> http://hustoj.googlecode.com/svn/trunk/web/admin/contest_list.php                    
-</code></pre></div>
-
-
-<p>不过通过程序执行命令获取数据时还存在一点问题:获取不到diff数据。
-为了解决这个问题，我再封装了一个shell文件来调用。</p>
-
-<div class="highlight"><pre><code class="bash"><span class="c">#!/bin/bash</span>
-svn diff -c <span class="nv">$1</span> --diff-cmd /usr/bin/diff -x <span class="s2">&quot;-U$2&quot;</span> <span class="nv">$3</span>
-</code></pre></div>
-
-
-<p>总的来说，实现的难度并不大，只是遇到了一些小问题，能够把一个想法化成现实，并且确实提高了效率，还是挺满意的。</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120706_the-cup-game.html">量杯倒水游戏</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-06T00:00:00+08:00" pubdate data-updated="true">Jul 6<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120706_the-cup-game.html#disqus_thread">Comments</a>
+         | <a href="/blog/20120714_hello-erlang-1.html#disqus_thread">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p><img src="/assets/images/the_cup_game.jpg" alt="量杯倒水" /></p>
-
-<h2>量杯倒水</h2>
-
-<p>这个问题常见于趣味题和面试题，题意大概是这样的:有两个只有最大刻度的量杯(如10毫升，3毫升)，
-并且有无限量的水。求怎么倒出x毫升的水?</p>
-
-<h2>思路与猜想</h2>
-
-<p>首先我们来操作一下，例如倒出4毫升的水,同时把大小量杯表示为a,b</p>
+  <div class="entry-content"><h3>练习重点</h3>
 
 <ol>
-<li>b装满，倒入a(a有3ml,b有0ml)</li>
-<li>b再装满，倒入a(a有6ml,b有0ml)</li>
-<li>b再装满，倒入a(a有9ml,b有0ml)</li>
-<li>b再装满，倒入a(a有10ml,b有2ml)</li>
-<li>a倒掉，b倒入a(a有2ml,b有0ml)</li>
-<li>重复2-4的动作(此时a有10ml,b有1ml)</li>
-<li>a倒掉，b倒入a(a有1ml,b有0ml)</li>
-<li>b装满，倒入a(a有4ml,b有0ml)</li>
+<li>erlang是单赋值的，就好像都经过java里边的final修饰过</li>
+<li>erlang没有内置的循环结构，这个和大多数语言是不一样的</li>
+<li>erlang是函数式语言，需要理解模式匹配编程方式</li>
+<li>erlang经常会遇到递归, 并且支持尾递归函数调用</li>
 </ol>
 
 
-<p>假如我们再继续操作的话，还可以找到7ml,这样0ml~10ml的体积都是可以测量出来的。这是不是一般规律?</p>
+<h3>练习1:数据库demo</h3>
 
-<p>虽然我们进行了许多次操作，但操作是有规律的:b总是往a倒水直到a装满，这时b会剩余一点。
-这样才能得到不同于a,b的体积。我们重复这个操作的过程，不考虑a装满的情况，
-在a中出现的水t可以用t=mb-na来表示(a>t>=0,m>=0,n>=0)。其中m可以表示为往a倒水的次数，
-n表示a装满的次数。</p>
+<p>作为学习erlang里边的模式匹配，熟悉语法。
+编写一个数据库模块db.erl，它能够存储、检索、删除元素。我们需要实现的接口有:</p>
 
-<p>首先考虑一下a,b不是互质的情况，假设他们的最大公约数为u,那么狠显然没法倒出t小于u的体积。
-这种情况可以归结为两边除去u的情况。</p>
+<div class="highlight"><pre><code class="erlang"><span class="nn">db</span><span class="p">:</span><span class="nf">new</span><span class="p">()</span>                   <span class="c">%% Db.</span>
+<span class="nn">db</span><span class="p">:</span><span class="nf">destroy</span><span class="p">(</span><span class="nv">Db</span><span class="p">)</span>             <span class="c">%% ok.</span>
+<span class="nn">db</span><span class="p">:</span><span class="nf">write</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Element</span><span class="p">,</span> <span class="nv">Db</span><span class="p">)</span> <span class="c">%% NewDb.</span>
+<span class="nn">db</span><span class="p">:</span><span class="nf">delete</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Db</span><span class="p">)</span>         <span class="c">%% NewDb.</span>
+<span class="nn">db</span><span class="p">:</span><span class="nf">read</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Db</span><span class="p">)</span>           <span class="c">%% {ok, Element} | {error, instance}.</span>
+<span class="nn">db</span><span class="p">:</span><span class="nf">match</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">Db</span><span class="p">)</span>      <span class="c">%% [Key1, ..., KeyN].</span>
+</code></pre></div>
 
-<p>现在再来考虑a,b互质的情况，我们需要考虑的是，对于t，是否都存在m,n使t=mb-na成立？</p>
 
-<h2>贝祖定理</h2>
+<h3>实现代码</h3>
 
-<p>我们从数学归纳法出发，很明显t=0的情况是满足要求的，假设t=1的要求也能够满足，
-那么有t=mb-na成立就可以推导出t+1=m1<em>b-n1</em>a+m2<em>b-n2</em>a也是符合mb-na的。</p>
+<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">db</span><span class="p">).</span>
 
-<p>如何证明存在m,n使得mb-na=1?这个倒不用自己动手，有个叫<a href="http://zh.wikipedia.org/wiki/%E8%B4%9D%E7%A5%96%E7%AD%89%E5%BC%8F">贝祖定理</a>的数学定理，可以很容易推导出这个结论。</p>
+<span class="c">%% Exported Functions</span>
+<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">new</span><span class="o">/</span><span class="mi">0</span><span class="p">,</span> <span class="n">write</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="n">read</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">match</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">delete</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">destroy</span><span class="o">/</span><span class="mi">1</span><span class="p">]).</span>
 
-<p>从wiki上看到的资料，贝祖定理可以证明a,b互质，存在xa+yb=1，其中x,y为整数
-不过好像跟我们的要求有点出入。不过没关系，很显然x,y如果没有不等于0的话，必须有个是负数，</p>
+<span class="c">%% API Functions</span>
+<span class="nf">new</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[].</span>
+<span class="nf">destroy</span><span class="p">(_)</span> <span class="o">-&gt;</span> <span class="n">ok</span><span class="p">.</span>
+<span class="nf">write</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Element</span><span class="p">,</span> <span class="nv">DB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[{</span><span class="nv">Key</span><span class="p">,</span><span class="nv">Element</span><span class="p">}|</span><span class="nv">DB</span><span class="p">].</span>
+<span class="nf">delete</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">DB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">DB</span><span class="p">,</span> <span class="p">[]).</span>
+<span class="nf">read</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">DB</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="k">case</span> <span class="nv">DB</span> <span class="k">of</span>
+        <span class="p">[{</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Element</span><span class="p">}|_]</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="n">oKey</span><span class="p">,</span> <span class="nv">Element</span><span class="p">};</span>
+        <span class="p">[_|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">read</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">);</span>
+        <span class="p">_</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="n">error</span><span class="p">,</span> <span class="n">instance</span><span class="p">}</span>
+    <span class="k">end</span><span class="p">.</span>
+<span class="nf">match</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">DB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">match_local</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">DB</span><span class="p">,</span> <span class="p">[]).</span>
 
-<p>如果x是负数，显然符合要求，如果y是负数，那么总存在一个数k(k>0)使得y+ka>0,那么
-1=xa+yb=xa+yb-kab+kab=(x-ka)a+(y+ka)b,这样也是可以符合要求的。</p>
+<span class="c">%% Local Functions</span>
+<span class="nf">match_local</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">DB</span><span class="p">,</span> <span class="nv">LIST</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="k">case</span> <span class="nv">DB</span> <span class="k">of</span>
+        <span class="p">[{</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Element</span><span class="p">}|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">match_local</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="p">[</span><span class="nv">Key</span><span class="p">|</span><span class="nv">LIST</span><span class="p">]);</span>
+        <span class="p">[_|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">match_local</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="nv">LIST</span><span class="p">);</span>
+        <span class="p">_</span> <span class="o">-&gt;</span> <span class="nv">LIST</span>
+    <span class="k">end</span><span class="p">.</span>
 
-<p>所以，按照我们的操作方式，假设a,b的最大公约数为u,就可以找到0ml,uml,2uml&#8230;aml的体积。</p>
+<span class="nf">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">DB</span><span class="p">,</span> <span class="nv">NDB</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="k">case</span> <span class="nv">DB</span> <span class="k">of</span>
+        <span class="p">[{</span><span class="nv">Key</span><span class="p">,</span> <span class="p">_}|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="nv">NDB</span><span class="p">);</span>
+        <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">NDB</span><span class="p">]);</span>
+        <span class="p">_</span> <span class="o">-&gt;</span> <span class="nv">NDB</span>
+    <span class="k">end</span><span class="p">.</span>
+</code></pre></div>
 
-<h2>再思考</h2>
 
-<p>如果有多个量杯，情况会是怎样?</p>
+<p>当然，case语句同样可以用如下代码替代：其中第三行的Key因为没有使用就换成_,
+不然会提示警告variable &#8216;Key&#8217; is unused。</p>
 
-<p>要倒出一定量的水，上述操作是否是最快的?</p>
+<div class="highlight"><pre><code class="erlang"><span class="nf">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="p">[{</span><span class="n">key</span><span class="p">,</span> <span class="p">_}|</span><span class="nv">ODB</span><span class="p">],</span> <span class="nv">NDB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="nv">NDB</span><span class="p">);</span>
+<span class="nf">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">ODB</span><span class="p">],</span> <span class="nv">NDB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">NDB</span><span class="p">]);</span>
+<span class="nf">delete_local</span><span class="p">(_,</span> <span class="p">_,</span> <span class="nv">NDB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">NDB</span><span class="p">;</span>
+</code></pre></div>
+
+
+<h3>练习2:排序算法</h3>
+
+<p>下面练习一下快速排序和归并排序，再熟悉一下模式匹配和递归的写法。</p>
+
+<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">sort</span><span class="p">).</span>
+<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">quicksort</span><span class="o">/</span><span class="mi">1</span><span class="p">,</span> <span class="n">mergesort</span><span class="o">/</span><span class="mi">1</span><span class="p">]).</span>
+
+<span class="c">%% 快速排序</span>
+<span class="nf">quicksort</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">Tail</span><span class="p">])</span> <span class="o">-&gt;</span>
+    <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="n">quicksort</span><span class="p">(</span><span class="nn">lists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">X</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">X</span> <span class="o">&lt;</span> <span class="nv">H</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Tail</span><span class="p">)),</span> 
+                  <span class="p">[</span><span class="nv">H</span><span class="p">],</span> 
+                  <span class="n">quicksort</span><span class="p">(</span><span class="nn">lists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">X</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">X</span> <span class="o">&gt;=</span> <span class="nv">H</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Tail</span><span class="p">))]);</span>
+<span class="nf">quicksort</span><span class="p">(</span><span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">L</span><span class="p">.</span>
+
+<span class="c">%% 归并排序</span>
+<span class="nf">mergesort</span><span class="p">(</span><span class="nv">A</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="k">case</span> <span class="nb">length</span><span class="p">(</span><span class="nv">A</span><span class="p">)</span> <span class="k">of</span>
+        <span class="mi">0</span> <span class="o">-&gt;</span> <span class="p">[];</span>
+        <span class="mi">1</span> <span class="o">-&gt;</span> <span class="nv">A</span><span class="p">;</span>
+        <span class="nv">LEN</span> <span class="o">-&gt;</span> <span class="nv">M</span> <span class="o">=</span> <span class="nb">length</span><span class="p">(</span><span class="nv">A</span><span class="p">)</span> <span class="ow">div</span> <span class="mi">2</span><span class="p">,</span>
+               <span class="n">merge</span><span class="p">(</span><span class="n">mergesort</span><span class="p">(</span><span class="nn">lists</span><span class="p">:</span><span class="nf">sublist</span><span class="p">(</span><span class="nv">A</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">M</span><span class="p">)),</span> 
+                     <span class="n">mergesort</span><span class="p">(</span><span class="nn">lists</span><span class="p">:</span><span class="nf">sublist</span><span class="p">(</span><span class="nv">A</span><span class="p">,</span> <span class="nv">M</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">LEN</span> <span class="o">-</span> <span class="nv">M</span><span class="p">)),</span> <span class="p">[])</span>
+    <span class="k">end</span><span class="p">.</span>
+<span class="nf">merge</span><span class="p">(</span><span class="nv">A</span><span class="p">,</span> <span class="p">[],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="nv">L</span><span class="p">,</span> <span class="nv">A</span><span class="p">]);</span>
+<span class="nf">merge</span><span class="p">([],</span> <span class="nv">B</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="nv">L</span><span class="p">,</span> <span class="nv">B</span><span class="p">]);</span>
+<span class="nf">merge</span><span class="p">([</span><span class="nv">HA</span><span class="p">|</span><span class="nv">TA</span><span class="p">],</span> <span class="p">[</span><span class="nv">HB</span><span class="p">|</span><span class="nv">TB</span><span class="p">],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> 
+    <span class="k">if</span>
+        <span class="nv">HA</span> <span class="o">&gt;</span> <span class="nv">HB</span> <span class="o">-&gt;</span> <span class="n">merge</span><span class="p">([</span><span class="nv">HA</span><span class="p">|</span><span class="nv">TA</span><span class="p">],</span> <span class="nv">TB</span><span class="p">,</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="nv">L</span><span class="p">,</span> <span class="p">[</span><span class="nv">HB</span><span class="p">]]));</span>
+        <span class="n">true</span> <span class="o">-&gt;</span> <span class="n">merge</span><span class="p">(</span><span class="nv">TA</span><span class="p">,</span> <span class="p">[</span><span class="nv">HB</span><span class="p">|</span><span class="nv">TB</span><span class="p">],</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="nv">L</span><span class="p">,</span> <span class="p">[</span><span class="nv">HA</span><span class="p">]]))</span>
+    <span class="k">end</span><span class="p">.</span>
+</code></pre></div>
+
+
+
 </div>
   
   
@@ -262,7 +214,7 @@ n表示a装满的次数。</p>
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/20120629_problem-about-jekyll-and-markdown.html">使用jekyll和markdown遇到的问题</a></h1>
+      <h1 class="entry-title"><a href="/blog/20120712_horse-riding-chessboard.html">马踏棋盘的算法思考</a></h1>
     
     
       <p class="meta">
@@ -278,52 +230,113 @@ n表示a装满的次数。</p>
   
 
 
-<time datetime="2012-06-29T00:00:00+08:00" pubdate data-updated="true">Jun 29<span>th</span>, 2012</time>
+<time datetime="2012-07-12T00:00:00+08:00" pubdate data-updated="true">Jul 12<span>th</span>, 2012</time>
         
-         | <a href="/blog/20120629_problem-about-jekyll-and-markdown.html#disqus_thread">Comments</a>
+         | <a href="/blog/20120712_horse-riding-chessboard.html#disqus_thread">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h3>不能正常生成页面</h3>
+  <div class="entry-content"><h3>马踏棋盘</h3>
 
-<p>我是使用windows来弄的，在git shell里边操作。发现有时候页面根本不生成，
-即使我把_site下面的文件全部生成，还是没动静。后来发现，需要设置一下环境的字符编码，例如export LC_ALL=zh_CN.UTF-8
-可以在启动脚本里边修改,例如修改RUBY_HOME/bin/jekyll.bat，增加</p>
+<p>将马随机放在国际象棋的8×8棋盘的某个方格中，马按走棋规则进行移动。
+要求每个方格只进入一次，走遍棋盘上全部64个方格。</p>
 
-<blockquote><p>SET LANG=zh_CN.UTF-8<br/>
-SET LC_ALL=zh_CN.UTF-8</p></blockquote>
+<h3>又是回溯?</h3>
 
-<h3>tags不能正常发布</h3>
+<p>这个做法和前面几个问题是差不多的(<a href="20120710_sudoku.html">数独(sudoku)游戏</a>)，所以这里就不做太多解释了。
+总体来说，就是可选的解空间是8个方向。回溯的代码就不多提了，需要说的是，这里简单的回溯
+效率不好，需要跑很久才出结果。我们有什么方式可以优化一下!</p>
 
-<p>tags如果列举多个的话，除了用逗号分割之外，必须在逗号之后加上空格，否则不能在github上正常发布。
-但奇怪的是，在本地却是没有问题的。</p>
+<h3>贪心是否有效?</h3>
 
-<h3><s>列表不能正常显示</s></h3>
+<p>首先，我们可以对可供选择的方向进行过滤，对于它相连的8个方向所在的点，
+在当前的局面下，假如存在两个点只有一条路可以到达，那么可以直接回溯，
+因为无论走哪个方向都不能走完整个棋盘。假如存在一个点，它只有一条路可以到达，
+那么下一步必须走这个方向。</p>
 
-<p><s>这个也比较奇怪，无论是有序列表还是无序列表，只能有部分能正常显示。
-我试了很久，发现如果列表项里边没有数字或英文字符就不能显示。</s>
-<strong>这个问题已经解决了，原来在每个列表前面需要空行</strong></p>
+<p>但是，即使我们过滤了一些路径，效率还是没有非常大的提升。我们需要考虑一种贪心的思路：
+在可选的方向中，优先选择出口最少的目标点。因为优先选择出口少的点,
+就可以让出口少的点尽量少，使得最后剩下的点有比较多的入口，这样最终达到目的的概率就会大些。</p>
 
-<h3>高亮代码有问题</h3>
+<p>虽然这个思路，我觉得不好直接证明，不过我修改了一些代码实现，的确效率得到非常大的提升。
+就我那个机器，ruby代码，不到1s，64个点的情况就全部处理完了。</p>
 
-<p>高亮代码不容易呀，需要python支持，还有安装easy_install Pygments。
-但对于某些python版本来说，这样还不行，出现Liquid error: Bad file descriptor。
-需要修改<a href="https://gist.github.com/1185645">gems\albino-1.3.3\lib\albino.rb</a></p>
+<h3>代码示例</h3>
 
-<p>另外，有时候高亮不是很合适，可以选择引用，只要每行前面至少加4个空格或1个tab就可以了。我习惯在每个引用块前后加一个空行。</p>
+<div class="highlight"><pre><code class="ruby"><span class="k">def</span> <span class="nf">init</span>
+  <span class="vi">@arr</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">7</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">end</span>
+  <span class="vi">@path</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span> 
+  <span class="vi">@ok</span> <span class="o">=</span> <span class="kp">false</span>
+  <span class="vi">@poss</span> <span class="o">=</span> <span class="o">[[-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">]]</span>
+<span class="k">end</span>
+<span class="c1"># 判断[x,y]是否在棋盘内并未走过</span>
+<span class="k">def</span> <span class="nf">valid?</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+  <span class="n">x</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">x</span><span class="o">&lt;</span><span class="mi">8</span> <span class="o">&amp;&amp;</span> <span class="n">y</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">y</span><span class="o">&lt;</span><span class="mi">8</span> <span class="o">&amp;&amp;</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">x</span><span class="o">][</span><span class="n">y</span><span class="o">]==</span><span class="mi">0</span>
+<span class="k">end</span>
 
-<h3>在段落中硬换行</h3>
+<span class="c1"># 判断当前点有哪些方向可以走</span>
+<span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span>
+  <span class="n">posz</span><span class="p">,</span> <span class="n">mustpos</span> <span class="o">=</span> <span class="p">{},</span> <span class="kp">nil</span>
+  <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="vi">@path</span><span class="o">[</span><span class="n">mark</span><span class="o">]</span>
+  <span class="vi">@poss</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">pos</span><span class="o">|</span>
+    <span class="n">axp</span><span class="p">,</span> <span class="n">bxp</span> <span class="o">=</span> <span class="n">a</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span>
+    <span class="k">if</span> <span class="n">valid?</span><span class="p">(</span><span class="n">axp</span><span class="p">,</span> <span class="n">bxp</span><span class="p">)</span>
+      <span class="n">sz</span> <span class="o">=</span> <span class="mi">0</span>
+      <span class="vi">@poss</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">ps</span><span class="o">|</span>
+        <span class="n">ap</span><span class="p">,</span> <span class="n">bp</span> <span class="o">=</span> <span class="n">axp</span><span class="o">+</span><span class="n">ps</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="p">,</span> <span class="n">bxp</span><span class="o">+</span><span class="n">ps</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span>
+        <span class="n">sz</span><span class="o">+=</span><span class="mi">1</span> <span class="k">if</span> <span class="n">valid?</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="n">bp</span><span class="p">)</span> <span class="c1"># 存在空点</span>
+      <span class="k">end</span>
+      <span class="k">if</span> <span class="n">sz</span><span class="o">&gt;</span><span class="mi">0</span>
+        <span class="n">posz</span><span class="o">[</span><span class="n">pos</span><span class="o">]</span> <span class="o">=</span> <span class="n">sz</span>
+      <span class="k">else</span>
+        <span class="n">mustpos</span><span class="o">.</span><span class="n">nil?</span> <span class="p">?</span> <span class="p">(</span><span class="n">mustpos</span> <span class="o">=</span> <span class="n">pos</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="k">return</span> <span class="o">[]</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="c1"># 对目标点的方向多寡进行排序</span>
+  <span class="n">mustpos</span><span class="o">.</span><span class="n">nil?</span> <span class="p">?</span> <span class="n">posz</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">sort</span> <span class="p">{</span><span class="o">|</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="o">|</span> <span class="n">posz</span><span class="o">[</span><span class="n">a</span><span class="o">]&lt;=&gt;</span><span class="n">posz</span><span class="o">[</span><span class="n">b</span><span class="o">]</span><span class="p">}</span> <span class="p">:</span> <span class="o">[</span><span class="n">mustpos</span><span class="o">]</span>
+<span class="k">end</span>
 
-<p>我原来以为不能硬换行，原来markdown也支持，只需要在需要换行的地方后面加至少两个空格就可以了。</p>
+<span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">mark</span><span class="o">==</span><span class="mi">63</span>
+    <span class="vi">@ok</span> <span class="o">=</span> <span class="kp">true</span>
+    <span class="k">return</span>
+  <span class="k">end</span>
+  <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="vi">@path</span><span class="o">[</span><span class="n">mark</span><span class="o">]</span>
+  <span class="n">filter</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">pos</span><span class="o">|</span>
+    <span class="n">rp</span> <span class="o">=</span> <span class="o">[</span><span class="n">a</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span>
+    <span class="vi">@path</span><span class="o">[</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="o">]</span> <span class="o">=</span> <span class="n">rp</span>
+    <span class="vi">@arr</span><span class="o">[</span><span class="n">rp</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">rp</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">walk</span><span class="p">(</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="vi">@ok</span> <span class="p">?</span> <span class="k">return</span> <span class="p">:</span> <span class="p">(</span><span class="vi">@arr</span><span class="o">[</span><span class="n">rp</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">rp</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
 
-<h3>页面生成太慢</h3>
+<span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">7</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span>
+  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">7</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">j</span><span class="o">|</span>
+    <span class="n">init</span>
+    <span class="vi">@path</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span> <span class="o">=</span> <span class="o">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">]</span>
+    <span class="vi">@arr</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">walk</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="vi">@ok</span>
+      <span class="vi">@path</span><span class="o">.</span><span class="n">each_with_index</span> <span class="k">do</span> <span class="o">|</span><span class="n">ps</span><span class="p">,</span> <span class="n">idx</span><span class="o">|</span>
+        <span class="vi">@arr</span><span class="o">[</span><span class="n">ps</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">ps</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="n">idx</span>
+      <span class="k">end</span>
+      <span class="vi">@arr</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">ar</span><span class="o">|</span> <span class="nb">p</span> <span class="n">ar</span> <span class="k">end</span>
+      <span class="nb">puts</span>
+    <span class="k">else</span>
+      <span class="s2">&quot;no solution&quot;</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
 
-<p>当你的文章越来越多的时候，页面生成的时间会变得非常夸张，jekyll没有提供参数来控制。
-为了解决这个问题，有个办法就是过滤某些没有变化的文件，因为大多数情况下，我们只是对特定的文件进行修改而已。
-摸索了很久，最后我直接拿jekyll源码开刀，见<a href="https://github.com/mccxj/jekyll/commit/44822a252e2ce1142e3293f91285e0ced3ba2fe1"><s>让include和exclude支持正则</s></a>和<a href="https://github.com/mojombo/jekyll/pull/743">add glob support to include,exclude option</a>。</p>
+
+
 </div>
   
   
@@ -336,7 +349,7 @@ SET LC_ALL=zh_CN.UTF-8</p></blockquote>
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/20120628_how-to-play-go.html">围棋中气的判断</a></h1>
+      <h1 class="entry-title"><a href="/blog/20120710_sudoku.html">数独(sudoku)游戏</a></h1>
     
     
       <p class="meta">
@@ -352,50 +365,110 @@ SET LC_ALL=zh_CN.UTF-8</p></blockquote>
   
 
 
-<time datetime="2012-06-28T00:00:00+08:00" pubdate data-updated="true">Jun 28<span>th</span>, 2012</time>
+<time datetime="2012-07-10T00:00:00+08:00" pubdate data-updated="true">Jul 10<span>th</span>, 2012</time>
         
-         | <a href="/blog/20120628_how-to-play-go.html#disqus_thread">Comments</a>
+         | <a href="/blog/20120710_sudoku.html#disqus_thread">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h2>围棋玩法</h2>
+  <div class="entry-content"><h3>数独游戏</h3>
 
-<p>围棋本身的规则是非常简单的。判断一个子能不能落在某个点是最基本的问题。<br/>
-如果不能吃掉对方但这个子周围还有气(空点)的话，是可以落子的。<br/>
-如果能吃掉对方但不是打劫这种特殊情况的话，也是可以落子的。<br/>
-我们先不考虑打劫这种情况，问题就归结为如何判断某个子是否有气，而杀子就是判断四周的子是否有气。</p>
+<p>在9×9格的大九宫格中有9个3×3格的小九宫格，并提供17个以上的数字。
+根据这些数字，利用逻辑和推理，在其它的空格上填入1到9的数字。
+每个数字在每个小九宫格内只能出现一次，每个数字在每行、每列也只能出现一次。</p>
 
-<h2>用递归来判断</h2>
+<h3>思路与数据结构</h3>
 
-<p>假设有个方法try2kill(r,c)，它可以用来判断r行c列的子是否有气，如果没气返回true，否则返回false。</p>
+<p>使用回溯法来不断尝试就可以了，可以用一个二维数组来arr[9][9]表示整个数独，其中还没有填上的用0表示。
+我们还需要有个方法来判断能否在[i,j]这个格子上填入某个值。
+同样还需要一个变量来表示是否已经找到解。另外，我使用了mark(0~80)作为每个格子的序号，
+深度搜索的时候就从0开始处理，直到mark=80的时候出现一个解。</p>
 
-<p>递归过程如下：</p>
+<h3>ruby代码示例</h3>
+
+<div class="highlight"><pre><code class="ruby"><span class="c1"># 判断能否在[i,j]上填入val</span>
+<span class="k">def</span> <span class="nf">is_ok?</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">val</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">m</span><span class="o">|</span>
+    <span class="k">return</span> <span class="kp">false</span> <span class="k">if</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">m</span><span class="o">]</span> <span class="o">==</span> <span class="n">val</span> <span class="o">&amp;&amp;</span> <span class="n">m!</span><span class="o">=</span><span class="n">j</span> <span class="c1">#判断行不重复</span>
+    <span class="k">return</span> <span class="kp">false</span> <span class="k">if</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">==</span> <span class="n">val</span> <span class="o">&amp;&amp;</span> <span class="n">m!</span><span class="o">=</span><span class="n">i</span> <span class="c1">#判断列不重复</span>
+  <span class="k">end</span>
+  <span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">i</span><span class="o">%</span><span class="mi">3</span><span class="o">.</span><span class="n">.i</span><span class="o">-</span><span class="n">i</span><span class="o">%</span><span class="mi">3</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">m</span><span class="o">|</span>
+    <span class="p">(</span><span class="n">j</span><span class="o">-</span><span class="n">j</span><span class="o">%</span><span class="mi">3</span><span class="o">.</span><span class="n">.j</span><span class="o">-</span><span class="n">j</span><span class="o">%</span><span class="mi">3</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">n</span><span class="o">|</span>
+      <span class="k">return</span> <span class="kp">false</span> <span class="k">if</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">n</span><span class="o">]</span> <span class="o">==</span> <span class="n">val</span> <span class="o">&amp;&amp;</span> <span class="n">i!</span><span class="o">=</span><span class="n">m</span> <span class="o">&amp;&amp;</span> <span class="n">j!</span><span class="o">=</span><span class="n">n</span> <span class="c1">#判断小九宫格不重复</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="kp">true</span>
+<span class="k">end</span>
+<span class="c1"># 用来输出数独</span>
+<span class="k">def</span> <span class="nf">print</span><span class="p">;</span> <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">m</span><span class="o">|</span> <span class="nb">p</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">]</span> <span class="p">};</span> <span class="k">end</span>
+
+<span class="c1"># 用来表示是否找到解</span>
+<span class="vi">@ok</span> <span class="o">=</span> <span class="kp">false</span>
+<span class="c1"># 处理序号为mark开始的格子</span>
+<span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span>
+  <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">mark</span><span class="o">/</span><span class="mi">9</span><span class="p">,</span> <span class="n">mark</span><span class="o">%</span><span class="mi">9</span>
+  <span class="n">val</span> <span class="o">=</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">n</span><span class="o">]</span>
+  <span class="c1"># 当前已经有初始值的情况</span>
+  <span class="k">if</span> <span class="n">val</span> <span class="o">!=</span> <span class="mi">0</span> 
+    <span class="n">mark</span> <span class="o">==</span> <span class="mi">80</span> <span class="o">?</span> <span class="vi">@ok</span> <span class="o">=</span> <span class="kp">true</span> <span class="p">:</span> <span class="n">walk</span><span class="p">(</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span>
+  <span class="k">end</span>
+
+  <span class="c1"># 没有初始值的情况</span>
+  <span class="p">(</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="mi">9</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">v</span><span class="o">|</span>
+    <span class="k">if</span> <span class="n">is_ok?</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+      <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">n</span><span class="o">]</span> <span class="o">=</span> <span class="n">v</span>
+      <span class="vi">@ok</span> <span class="o">=</span> <span class="kp">true</span> <span class="ow">and</span> <span class="k">return</span> <span class="k">if</span> <span class="n">mark</span><span class="o">==</span><span class="mi">80</span> <span class="c1"># 找到一个解</span>
+      <span class="n">walk</span><span class="p">(</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="c1">#填好值之后，继续深度搜索</span>
+      <span class="k">return</span> <span class="k">if</span> <span class="vi">@ok</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">n</span><span class="o">]=</span><span class="mi">0</span> <span class="c1"># 都处理完，没有找到就恢复</span>
+<span class="k">end</span>
+
+<span class="n">walk</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="vi">@ok</span> <span class="p">?</span> <span class="nb">print</span> <span class="p">:</span> <span class="p">(</span><span class="nb">p</span> <span class="s2">&quot;no solution&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+
+<h3>回溯法的基本步骤：</h3>
 
 <ol>
-<li>判断四周是否存在一个气，就是有个空格(0)，如果有返回false。</li>
-<li>否则，给当前点记录为预杀状态(x)(表示自己周围没有明显的气)</li>
-<li>再依次判断四周的点，对每个点例如左边(left)：</li>
-<li>如果左边未出边界且和当前点是同一颜色(但并非预杀状态)，则调用try2kill进行判断</li>
-<li>如果其中一个点有气(try2kill返回false)，则直接返回false</li>
-<li>如果四周都判断完，没有发现明显的气，则返回true(这样所有预杀状态的都是没气的，都会被杀掉)</li>
+<li>a定义问题的解空间</li>
+<li>a确定易于搜索的解空间结构</li>
+<li>a以深度优先搜索的策略搜索解空间，并在搜索过程中用剪枝函数避免无效搜索</li>
 </ol>
 
 
-<h2>打劫处理</h2>
+<h3>回溯法的基本结构</h3>
 
-<p>打劫有个特殊的地方就是不能立即回提，本质上是不能在对弈过程中出现同形。<br/>
-一个比较简单有效的办法就是，记录落子次序和每次的吃子数(通过上面的判断逻辑)。
-这两个记录都是很容易记录的。判断是否打劫违规就是当前手和上一手的吃子数是否都为1。
-且当前落子点对应上手的死子点，当前死子点对应上手的落子点。<br/>
-这些条件符合的话，这就是一次违规。</p>
+<p>我们考虑递归的方式(比较容易理解)，递推的以后再讨论。</p>
 
-<h2>后续</h2>
+<div class="highlight"><pre><code class="ruby"><span class="c1"># init</span>
+<span class="n">flag</span> <span class="o">=</span> <span class="kp">false</span> <span class="c1"># 标记是否找到解</span>
+<span class="n">u</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># 已知解, 并假设(x1,x2....xn)为可选的解空间</span>
 
-<p>有了这些判断逻辑，要实现整个走法已经不是问题了，有兴趣的可以试试。<br/>
-当然，围棋最复杂的地方还是人工智能领域，现阶段的电脑围棋还是比较弱的。</p>
+<span class="k">def</span> <span class="nf">backtrack</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">x1</span><span class="o">.</span><span class="n">.xn</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span>
+    <span class="k">if</span> <span class="n">is_ok?</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="c1"># 过滤无效的解</span>
+      <span class="n">u</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="c1"># 把x加入已知解u</span>
+      <span class="n">backtrack</span><span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">is_part?</span> <span class="c1"># 部分解的情况，继续处理</span>
+      <span class="n">flag</span> <span class="o">=</span> <span class="kp">true</span> <span class="ow">and</span> <span class="nb">exit</span> <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">is_full?</span> <span class="c1"># 找到解并退出</span>
+      <span class="c1"># fail的时候有可能需要对u进行恢复</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="c1"># fail的时候有可能需要对u进行恢复</span>
+<span class="k">end</span>
+
+<span class="n">backtrack</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># 从1开始搜索</span>
+<span class="n">flag</span> <span class="p">?</span> <span class="nb">p</span> <span class="n">u</span> <span class="p">:</span> <span class="s2">&quot;no solution&quot;</span>
+</code></pre></div>
+
+
+
 </div>
   
   
@@ -408,7 +481,7 @@ SET LC_ALL=zh_CN.UTF-8</p></blockquote>
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/20120628_how-to-lianliankan.html">连连看中如何判断连通</a></h1>
+      <h1 class="entry-title"><a href="/blog/20120709_stair-walk.html">简单的楼梯问题</a></h1>
     
     
       <p class="meta">
@@ -424,45 +497,105 @@ SET LC_ALL=zh_CN.UTF-8</p></blockquote>
   
 
 
-<time datetime="2012-06-28T00:00:00+08:00" pubdate data-updated="true">Jun 28<span>th</span>, 2012</time>
+<time datetime="2012-07-09T00:00:00+08:00" pubdate data-updated="true">Jul 9<span>th</span>, 2012</time>
         
-         | <a href="/blog/20120628_how-to-lianliankan.html#disqus_thread">Comments</a>
+         | <a href="/blog/20120709_stair-walk.html#disqus_thread">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h2>连连看基本玩法</h2>
+  <div class="entry-content"><h2>问题描述</h2>
 
-<p>连连看的玩法非常简单，判断两个块是否可以消除的规则是：必须是同一类型的块，可以通过至多
-三条直线相连，并且直线没有被其他的块所阻拦。</p>
+<p>有个楼梯，一个人一次可以走1级或2级，那么走上一条100级的楼梯，有多少种不同的走法?</p>
 
-<h2>数据结构表示</h2>
+<h2>找到规律</h2>
 
-<p>可以用一个二维数组来表示整个界面，不同类型的点用不同的值k来表示，那么一个点可以用k和(x, y)来表示。
-空白处的值设置为0。另外为了方便处理只在边边上可以连通的情况，可以加上边界（二维数组加上两行两列，并设置为0）。
-判断点a和b是否可以连通，如果是不同类型的点很好判断，判断a.k==b.k即可。
-那么，问题就变成判断两个点a(a.x, a.y)和b(b.x, b.y)是否可连通。</p>
-
-<h2>简单的算法</h2>
-
-<p>我用的是一种比较直观的算法，当然还有其他很多算法(在网上资料搜一下就有很多了)。</p>
-
-<p>首先为了方便理解，先不考虑两个点在同一线上的情况。那么两个点能够连上的情况只有就是横竖横或竖横竖两个情况
-先考虑两个点是否可以横竖横连接的情况，参考下面的算法步骤:</p>
+<p>先找到规律，从简单情况开始，设f(n)是n级楼梯的走法数量。那么就有:</p>
 
 <ol>
-<li>给整个边界加上一圈空点(0)（方便后面计算）。</li>
-<li>计算x轴上a，b两点左右两边的空点，这样可以算出两者公共的空点(x坐标相同)，只有通过这些空点才可能联通达到横竖横的情况。</li>
-<li>对每个公共的点，假设x坐标为c,那么就是点(c,a.y)和(c,b.y)，再判断这两个点能否联通。</li>
-<li>假设a.y小于b.y，那么就是看从(c,a.y+1)到(c,b.y-1)这些点是否都为空。</li>
-<li>如果是空(0)的，表示最初的两个点是可以联通的。</li>
+<li>n=1,肯定只有一种走法,即f(1)=1</li>
+<li>n=2,可以一级级走或者一次两级,即f(2)=2</li>
+<li>对于n>2的情况，如果第一次走1级，剩下的楼梯有f(n-1)种走法，如果走2级，剩下的楼梯有f(n-2)种走法。
+那么总的走法是f(n)=f(n-1)+f(n-2)。</li>
 </ol>
 
 
-<p>到这里，一切已经ok了。另外一种情况跟这个是一样的，
-而在一条直线上的情况只是这种判断的特殊情况而已。</p>
+<h2>斐波纳契数列</h2>
+
+<p>说白了，这是个斐波纳契数列。计算的时候简单的动态规划即可。下面是简单的ruby源码:</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span>
+<span class="mi">98</span><span class="o">.</span><span class="n">times</span> <span class="p">{</span><span class="n">b</span><span class="p">,</span><span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="o">+</span><span class="n">b</span><span class="p">,</span><span class="n">b</span><span class="p">}</span>
+<span class="nb">p</span> <span class="n">b</span> <span class="c1">#=&gt; 573147844013817084101</span>
+</code></pre></div>
+
+
+<p>看，真的是一个天文数字来的。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120709_one-line-drawing-game.html">一笔画游戏</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-09T00:00:00+08:00" pubdate data-updated="true">Jul 9<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120709_one-line-drawing-game.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>在android上看过一个一笔画的小游戏，规则很简单，要连续一笔，不能重复。
+当然，到后面比较难的时候还会限制方向，有些线路必须走多次等等。并不是觉得这有游戏做得多么的好，或者很有创意。
+我只是从程序员的角度来看问题，用程序是怎么处理的。
+我们只需要尝试所有可能的路径就可以了，这里用了回朔法，是一种优化过的穷举，</p>
+
+<p>先来考虑一下数据结构。我们给所有的点加上编号1-n，所有的连线可以用二维数组表示a[n+1][n+1]，值为0表示不可联通，
+其他表示需要经过的次数(我实现的时候是采用类似稀疏矩阵的链表表示)。<br/>
+至于给矩阵增加多一列，主要是考虑处理方便，还考虑到起始点不好确定，所以加个虚拟点，<br/>
+同时增加虚拟点到其他n个点的连接，这样我们深度遍历的时候从虚拟点开始就可以了。<br/>
+另外我们需要一个链表来存放走过的路径，还需要一个标记来表示找到路径，无需继续尝试。</p>
+
+<p>初始化的伪代码如下，</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.n</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">k</span><span class="o">|</span> <span class="n">a</span><span class="o">[</span><span class="mi">0</span><span class="o">][</span><span class="n">k</span><span class="o">]=</span><span class="mi">1</span> <span class="k">end</span> <span class="c1">#虚拟点</span>
+<span class="vi">@path</span> <span class="o">=</span> <span class="o">[]</span> <span class="c1"># 走过的路径</span>
+<span class="vi">@ok</span><span class="o">=</span><span class="kp">false</span> <span class="c1"># 标记是否完成</span>
+</code></pre></div>
+
+
+<p>接下去我们需要一个回溯算法(参考<a href="20120710_sudoku.html">数独(sudoku)游戏</a>)，代码比较简单，这里就不展示代码示例了。</p>
+
+<p>需要注意的是，找到一个可走的路径时(例如从i到j,a[i][j]>0)，深度遍历的时候需要对这个值减1，回溯的时候加1就可以了。
+而对于走过的路径path，是否需要回退呢? 其实我们关心的是把刚刚走过的路径加入路径的正确位置，
+如果选择数组的话，在回溯的时候就不可以不回退了，而对于链表，回退则是必要的。</p>
+
+<p>总体来说，这个游戏的实现是比较简单的，有兴趣的同学可以自己实现一下。</p>
 </div>
   
   
@@ -487,7 +620,19 @@ SET LC_ALL=zh_CN.UTF-8</p></blockquote>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150107_charset-intro.html">关于编码与乱码问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141229_des-hack.html">常见DES实现陷阱</a>
       </li>
     
       <li class="post">
@@ -499,31 +644,19 @@ SET LC_ALL=zh_CN.UTF-8</p></blockquote>
       </li>
     
       <li class="post">
+        <a href="/blog/20140815_json-intro.html">json格式须知</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20140814_xml-intro.html">xml格式须知</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
       </li>
     
       <li class="post">
         <a href="/blog/20140329_was-datasource.html">websphere+spring+jndi数据源配置</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140225_android-jdk7-bug.html">jdk7编译的bug记录</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140219_android-maven-problems.html">android+maven问题记录</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a>
       </li>
     
   </ul>
