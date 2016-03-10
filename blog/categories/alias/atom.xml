@@ -4,7 +4,7 @@
   <title><![CDATA[Category: alias | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/alias/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2015-01-15T22:00:26+08:00</updated>
+  <updated>2016-03-10T22:45:25+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -35,9 +35,9 @@
 #   alias /hello.html to /pages/20121010_hello.html
 #
 # Place the full path of the alias (place to redirect from) inside the
-# destination post's YAML Front Matter. One or more aliases may be given.
+# destination post&#39;s YAML Front Matter. One or more aliases may be given.
 #
-# Forked from Thomas Mango 's jekyll_alias_generator
+# Forked from Thomas Mango &#39;s jekyll_alias_generator
 # At http://github.com/tsmango/jekyll_alias_generator
 # PLugin License: MIT
 
@@ -62,7 +62,7 @@ module Jekyll
     def process_pages
       # alias /hello.html to /pages/20121010_hello.html
       @site.pages.each do |page|
-        dest = page.destination('')
+        dest = page.destination(&#39;&#39;)
         generate_aliases(dest, &quot;\/#{$1}&quot;)  if /^\/pages\/(.+)$/ =~ dest
       end
     end
@@ -82,12 +82,12 @@ module Jekyll
 
         FileUtils.mkdir_p(fs_path_to_dir)
 
-        File.open(File.join(fs_path_to_dir, alias_file), 'w') do |file|
+        File.open(File.join(fs_path_to_dir, alias_file), &#39;w&#39;) do |file|
           file.write(alias_template(destination_path))
         end
 
-        (alias_index_path.split('/').size + 1).times do |sections|
-          @site.static_files &lt;&lt; Jekyll::AliasFile.new(@site, @site.dest, alias_index_path.split('/')[0, sections].join('/'), nil)
+        (alias_index_path.split(&#39;/&#39;).size + 1).times do |sections|
+          @site.static_files &lt;&lt; Jekyll::AliasFile.new(@site, @site.dest, alias_index_path.split(&#39;/&#39;)[0, sections].join(&#39;/&#39;), nil)
         end
       end
     end
@@ -107,7 +107,7 @@ module Jekyll
   end
 
   class AliasFile &lt; StaticFile
-    require 'set'
+    require &#39;set&#39;
 
     def destination(dest)
       File.join(dest, @dir)

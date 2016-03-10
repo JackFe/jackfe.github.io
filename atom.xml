@@ -4,7 +4,7 @@
   <title><![CDATA[小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2015-01-15T22:00:26+08:00</updated>
+  <updated>2016-03-10T22:45:25+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -12,6 +12,1239 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[weblogic 11g类加载问题总结]]></title>
+    <link href="http://mccxj.github.com/blog/20151023_weblogic-11g-classloader-prefer.html"/>
+    <updated>2015-10-23T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/weblogic-11g-classloader-prefer</id>
+    <content type="html"><![CDATA[<p><strong>本人在此之前甚少接触weblogic，家里的weblogic也是第一次安装的。如果发现错误，敬请指正。</strong></p>
+
+<h2>问题描述</h2>
+
+<p>XX局点升级weblogic为11g，重新发包出错。现在记录一下处理的各种问题总结。</p>
+
+<h3>错误1: apache commons某些包的方法没有找到</h3>
+
+<p>这是最早出现的问题，会出现类似下面的错误信息。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>&lt;2015-10-14 下午05时57分30秒 CST&gt; &lt;Error&gt; &lt;HTTP&gt; &lt;BEA-101017&gt; &lt;[ServletContext@1385406679[app:XXService module:XXService path:/XXService spec-version:2.5]] Root cause of ServletException.
+</span><span class='line'>java.lang.NoSuchMethodError: org.apache.commons.io.FileUtils.copyInputStreamToFile(Ljava/io/InputStream;Ljava/io/File;)V
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>原因分析</li>
+</ul>
+
+
+<p>这是weblogic部署最常见的问题，因为weblogic会自带I一些commons-*的包，这些包的版本还比较旧。具体可以见WEBLOGIC_HOME/modules目录的jar包。</p>
+
+<ul>
+<li>此次采用的处理方式</li>
+</ul>
+
+
+<p>添加weblogic.xml并设置prefer-web-inf-classes，即优先加载web应用下的类</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+</span><span class='line'><span class="nt">&lt;weblogic-web-app&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;container-descriptor&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;prefer-web-inf-classes&gt;</span>true<span class="nt">&lt;/prefer-web-inf-classes&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/container-descriptor&gt;</span>
+</span><span class='line'><span class="nt">&lt;/weblogic-web-app&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>错误2: jsp使用jstl时出现SAXParserFactory的ClassCastException</h3>
+
+<p>这是使用prefer-web-inf-classes为true之后出现的问题，会出现类似下面的错误信息。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>The validator class: &quot;org.apache.taglibs.standard.tlv.JstlCoreTLV&quot; has failed with the following exception: &quot;java.lang.ClassCastException: weblogic.xml.jaxp.RegistrySAXParserFactory cannot be cast to javax.xml.parsers.SAXParserFactory&quot;.
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>原因分析</li>
+</ul>
+
+
+<p>这是weblogic部署很常见的问题，jstl会调用sax，sax是通过spi机制加载实现，获取是weblogic的实现，但它使用的是jdk自带的javax.xml.parsers.SAXParserFactory接口。
+刚好web应用下也带了jar包xml-apis-1.x.jar，它也有javax.xml.parsers.SAXParserFactory这个接口。根据prefer-web-inf-classes的设置，jstl代码中用的是这个接口。
+由此可知，使用classloader并不一样，无法转换。</p>
+
+<ul>
+<li>此次采用的处理方式</li>
+</ul>
+
+
+<p>删除WEB-INF/lib/xml-apis-1.x.jar后本地测试该问题恢复。</p>
+
+<h3>错误3: 出现QName的LinkageError</h3>
+
+<p>这是错误2解决后，继续解析spring时出现的问题。</p>
+
+<ul>
+<li>原因分析</li>
+</ul>
+
+
+<p>这个问题和上面的差不多，太细就不深究了。</p>
+
+<ul>
+<li>此次采用的处理方式</li>
+</ul>
+
+
+<p>这种情况下，如果使用prefer-web-inf-classes为true，则需要排除存在QName的jar包并删除，但最后没有采用(改动太大，得不偿失)。<br/>
+所以这次重新设置了prefer-web-inf-classes为false，但仍然优先加载commons，如下:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+</span><span class='line'><span class="nt">&lt;weblogic-web-app&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;container-descriptor&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;prefer-web-inf-classes&gt;</span>false<span class="nt">&lt;/prefer-web-inf-classes&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;prefer-application-packages&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;package-name&gt;</span>org.apache.commons.*<span class="nt">&lt;/package-name&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/prefer-application-packages&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/container-descriptor&gt;</span>
+</span><span class='line'><span class="nt">&lt;/weblogic-web-app&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>修改后本地测试ok，但发布到生产仍然失败。</p>
+
+<h3>错误4: MemCachedClient获取key失败(序列化问题)</h3>
+
+<p>错误3处理后，发布到生产仍然出错，报错信息如下:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>18:44:57.337 [[ACTIVE] ExecuteThread: &#39;0&#39; for queue: &#39;weblogic.kernel.Default (self-tuning)&#39;] ERROR com.danga.MemCached.MemCachedClient - ++++ exception thrown while trying to get object from cache for key: init_error_key_0098
+</span><span class='line'>18:44:57.351 [[ACTIVE] ExecuteThread: &#39;0&#39; for queue: &#39;weblogic.kernel.Default (self-tuning)&#39;] ERROR com.danga.MemCached.MemCachedClient - com.xxx.hnxx.mybatis.entity.PlaterrorCodeBean
+</span><span class='line'>java.io.IOException: com.xxx.hnxx.mybatis.entity.PlaterrorCodeBean
+</span><span class='line'>  at com.schooner.MemCached.ObjectTransCoder.decode(Unknown Source) ~[MemCached-2.6.6.jar:na]
+</span><span class='line'>  at com.schooner.MemCached.AscIIClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
+</span><span class='line'>  at com.schooner.MemCached.AscIIClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
+</span><span class='line'>  at com.schooner.MemCached.AscIIClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
+</span><span class='line'>  at com.danga.MemCached.MemCachedClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
+</span><span class='line'>  at com.xxx.hnxx.cache.mencached.MemcacheManagerClient.get(MemcacheManagerClient.java:162) [MemcacheManagerClient.class:na]
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>上面的错误信息表示获取init_error_key_0098这个可以的时候失败，实际上这个key是在应用启动的时候就塞进去的。</p>
+
+<ul>
+<li>原因分析</li>
+</ul>
+
+
+<p>这里有很多意想不到的事情，所以详细解释一下。</p>
+
+<p>首先，这个出现了IOException让人联想到是否memcached服务器连接的问题。<br/>
+实际上是因为库在实现java对象放入memcached的时候，有一个序列化/反序列化的过程(就是java自带的那个)，在反序列化的时候找不到类会出现ClassNotFoundException，然后库将错误信息(就是一个类名)取出重新包装为IOException。<br/>
+所以，这实际上是一个类找不到的问题。</p>
+
+<p>再者，这个问题一开始在家里的weblogic没法重现。后来我重新检查了生产上weblogic的启动日志才发现了一些差异。<br/>
+关键信息如下所示，生产上的weblogic在domain的lib目录也是有jar包的，而家里的是没有的。尝试修改把jar包也拷贝一份，果然重现。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>&lt;2015-10-14 下午06时44分36秒 CST&gt; &lt;Notice&gt; &lt;WebLogicServer&gt; &lt;BEA-000395&gt; &lt;Following extensions directory contents added to the end of the classpath:/weblogic/bea/user_projects/domains/PLATFORM_DOM/lib/MemCached-2.6.6.jar:/weblogic/bea/user_projects/domains/PLATFORM_DOM/lib/MyXMLSerializer-1.0.0.jar...
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>最后，这个问题就好解释多了。</p>
+
+<ol>
+<li>需要序列化/反序列化的类是在com.huawei下面的，这部分类指在web应用中存在。在system classloader是找不到的。</li>
+<li>序列化/反序列化时候，都是由web应用中的类，调用memcached库去实现的(虽然web应用中也有，但是根据prefer-web-inf-classes设置，加载的是domain中lib目录的)</li>
+<li><p>序列化只是没什么特别。但是反序列化需要加载类，很明显system classloader(memcached库的classloader)是加载不到web应用中的类的。</p></li>
+<li><p>此次采用的处理方式</p></li>
+</ol>
+
+
+<p>有好几种方式，都列举一下:</p>
+
+<ol>
+<li>删除domain中的jar包，这样就会加载到web应用中的类，让库和需要序列化的类都有web classloader加载</li>
+<li>让库也由web优先加载，如下所示</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+</span><span class='line'><span class="nt">&lt;weblogic-web-app&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;container-descriptor&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;prefer-web-inf-classes&gt;</span>false<span class="nt">&lt;/prefer-web-inf-classes&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;prefer-application-packages&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;package-name&gt;</span>org.apache.commons.*<span class="nt">&lt;/package-name&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;package-name&gt;</span>com.danga.*<span class="nt">&lt;/package-name&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;package-name&gt;</span>com.schooner.*<span class="nt">&lt;/package-name&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/prefer-application-packages&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/container-descriptor&gt;</span>
+</span><span class='line'><span class="nt">&lt;/weblogic-web-app&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>指定memcached库进行反序列化时的classloader，如下所示:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="n">ClassLoader</span> <span class="n">classLoader</span> <span class="o">=</span> <span class="n">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">().</span><span class="na">getContextClassLoader</span><span class="o">();</span>
+</span><span class='line'>    <span class="c1">// MemCachedClient实例化时，会持有SockIOPool.getInstance()单利的引用</span>
+</span><span class='line'>    <span class="n">cachedClient</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MemCachedClient</span><span class="o">((</span><span class="n">String</span><span class="o">)</span><span class="kc">null</span><span class="o">,</span> <span class="kc">true</span><span class="o">,</span> <span class="kc">false</span><span class="o">,</span> <span class="n">classLoader</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>个人推荐的优先级是2 - 3 - 1, 尽量做到容器无关，并少动全局的东西。<strong>由于目前生产上的weblogic版本已经回退，待后续上生产验证。</strong></p>
+
+<h2>weblogic的类加载器介绍</h2>
+
+<ul>
+<li>整体的类加载器层次如下(只关注war部分)，并采用标准的双亲委托加载机制</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">WebLogic</span> <span class="n">Server</span> <span class="n">System</span> <span class="nf">classloader</span> <span class="o">(</span><span class="n">classpath</span><span class="err">、</span><span class="o">&lt;</span><span class="n">domain</span><span class="o">&gt;/</span><span class="n">lib</span><span class="o">)</span>
+</span><span class='line'><span class="n">Filtering</span> <span class="nf">classloader</span> <span class="o">(</span><span class="err">空</span><span class="o">)</span>
+</span><span class='line'><span class="n">Application</span> <span class="nf">classloader</span> <span class="o">(</span><span class="n">EJB</span> <span class="n">JARs</span><span class="err">、</span><span class="n">APP</span><span class="o">-</span><span class="n">INF</span><span class="o">/</span><span class="n">lib</span><span class="err">、</span><span class="n">APP</span><span class="o">-</span><span class="n">INF</span><span class="o">/</span><span class="n">classes</span><span class="err">、</span><span class="n">Manifest</span> <span class="n">Class</span><span class="o">-</span><span class="n">Path</span> <span class="n">in</span> <span class="n">EJB</span> <span class="n">JARs</span><span class="o">)</span>
+</span><span class='line'><span class="n">Web</span> <span class="n">application</span> <span class="nf">classloader</span> <span class="o">(</span><span class="n">WAR</span><span class="err">、</span><span class="n">Manifest</span> <span class="n">Class</span><span class="o">-</span><span class="n">Path</span> <span class="n">in</span> <span class="n">WAR</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>Web application classloader可以通过weblogic.xml中的prefer-web-inf-classes优先加载war中的类，找不到才向上请求</li>
+<li>Filtering classloader并不会加载任何类，而是起到控制类加载优先级的作用。通过配置<prefer-application-packages>可以限制对于指定的类不再向上请求，也就是限制范围内加载</li>
+<li>配置prefer-application-packages/prefer-application-resources的话，prefer-web-inf-classes必须配置为false</li>
+<li>资源(resource)的加载顺序，在开启Filtering之后，顺序为App - Web - System(App、Web仍然是符合双亲委托的)</li>
+</ul>
+
+
+<h2>参考材料</h2>
+
+<ul>
+<li>http://docs.oracle.com/cd/E23943_01/web.1111/e13712/weblogic_xml.htm#WBAPP599</li>
+<li>http://docs.oracle.com/cd/E12839_01/web.1111/e13706/classloading.htm#WLPRG284</li>
+<li>http://tobato.iteye.com/blog/1845969</li>
+<li>http://tobato.iteye.com/blog/1483020</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Websphere共享库加载顺序问题]]></title>
+    <link href="http://mccxj.github.com/blog/20151011_websphere-sharelib-loading.html"/>
+    <updated>2015-10-11T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/websphere-sharelib-loading</id>
+    <content type="html"><![CDATA[<h2>问题描述</h2>
+
+<p>昨天收到有个童鞋发来的一个问题咨询，如下图所示。</p>
+
+<p><img src="http://mccxj.github.com/assets/images/2015/was-sharelib1.png" alt="问题截图" /></p>
+
+<p>提到几个疑问:</p>
+
+<ol>
+<li>配置如图所示,然后共享库和项目自身lib下都有一个“xxxx-common.jar”，如果项目用到jar包里面的一个类，将会是共享库的还是自身lib的呢？发现是用的lib里边的。</li>
+<li>现网情况也是xxlib和lib下都有那jar包，但是根据日志来看，是用共享库的。</li>
+</ol>
+
+
+<h2>我的疑惑</h2>
+
+<p>现网的配置如何，暂时没查明。不过就开发环境的配置来看，我一直认为Parent First应该会走共享库的，目前的现象和我掌握的知识不匹配。</p>
+
+<p>于是，我上网搜索了一下Websphere关于共享库的资料，主要的链接如下：</p>
+
+<ul>
+<li>http://www.ibm.com/developerworks/cn/websphere/library/techarticles/haoaili/0512/</li>
+<li>http://www-01.ibm.com/support/knowledgecenter/SSAW57_8.5.5/com.ibm.websphere.nd.doc/ae/tcws_sharedlib_nativelib.html?lang=zh</li>
+<li>https://10.132.10.69:9043/ibm/help/index.jsp?topic=/com.ibm.ws.console.environment/ucws_rsharedlib_inst.html</li>
+</ul>
+
+
+<p>通过这些链接资料的描述(不得不说，这些中文翻译很隐晦)，但的确是可以解释目前的情况的。</p>
+
+<h2>关于Websphere共享库的理解</h2>
+
+<p>首先，Websphere的共享库和tomcat的共享库差别很大，而我却一直以为是差不多的。<br/>
+tomcat的共享库是一个独立的类加载器，并且在多个Web应用中共享。好处是明显的，共享加载的类，优化内存使用。</p>
+
+<p>其次，Webshpere的共享库非常灵(fu)活(za)，有多种配置组合可以影响结果。具体如下:</p>
+
+<h4>共享库是可以选择和服务器关联或者和应用关联的</h4>
+
+<ul>
+<li>和服务器关联，参考http://www-01.ibm.com/support/knowledgecenter/SSAW57_8.5.5/com.ibm.websphere.nd.doc/ae/tcws_sharedlib_server.html?lang=zh</li>
+<li>和应用关联，参考http://www-01.ibm.com/support/knowledgecenter/SSAW57_8.5.5/com.ibm.websphere.nd.doc/ae/tcws_sharedlib_app.html?lang=zh</li>
+</ul>
+
+
+<h4>共享库是可以选择是否使用隔离的类装入器(就是独立的类加载器)</h4>
+
+<p>设置参考下图所示:</p>
+
+<p><img src="http://mccxj.github.com/assets/images/2015/was-sharelib2.png" alt="请对此共享库使用隔离的类装入器" /></p>
+
+<h4>和共享库相关的类加载策略如下:</h4>
+
+<ul>
+<li>如果选择和服务器关联，那么将忽略&#8221;请对此共享库使用隔离的类装入器&#8221;的选项，此时共享库路径将会添加到应用程序服务器(application server)类装入器加载路径上。</li>
+<li>如果选择和应用关联，并且没有设置&#8221;请对此共享库使用隔离的类装入器&#8221;,那么共享库路径将会添加到应用的类加载器加载路径上。此时共享库只有优化管理类库的作用，并不能减少重复加载类造成的内存占用。</li>
+<li>如果选择和应用关联，并且设置&#8221;请对此共享库使用隔离的类装入器&#8221;,那么共享库将作为独立的类加载器，并且各个应用之间共享这个共享库。此时共享库和tomcat的共享库类似，可以减少重复加载类造成的内存占用。</li>
+</ul>
+
+
+<p>对于第三种情况，它的类加载顺序如下：</p>
+
+<p>如果应用的类载入顺序选择“父类装入器装入的类最先”,即Parent First，那么顺序如下:</p>
+
+<ul>
+<li>检查相关联的库类装入器是否可以装入类。(共享库)</li>
+<li>检查它的父代类装入器是否可以装入类。(应用服务器及更高)</li>
+<li>检查应用程序或 WAR 模块类装入器是否可以装入类。(应用)</li>
+</ul>
+
+
+<p>如果应用的类载入顺序选择“本地类装入器装入的类最先”,即Parent Last，那么顺序如下:</p>
+
+<ul>
+<li>检查应用程序或 WAR 模块类装入器是否可以装入类。(应用)</li>
+<li>检查相关联的库类装入器是否可以装入类。(共享库)</li>
+<li>检查它的父代类装入器是否可以装入类。(应用服务器及更高)</li>
+</ul>
+
+
+<h2>现象解释</h2>
+
+<ul>
+<li>开发环境中，共享库和应用关联，并且没有设置&#8221;请对此共享库使用隔离的类装入器&#8221;，所以共享库路径将会添加到应用的类加载器加载路径上，相当于在一个类加载路径上存在同样的类，所以使用到lib中的是可能的。</li>
+<li>生产环境中配置尚未查明，如果共享库和应用关联，并且设置&#8221;请对此共享库使用隔离的类装入器&#8221;，按同样的载入顺序设置，即Parent First，那么是会加载到共享库的。</li>
+<li>如果同样是没有设置&#8221;请对此共享库使用隔离的类装入器&#8221;，那么情况如开发环境情况，使用到共享库中的也是可能的。</li>
+<li>对于同一个类加载路径上存在同样的类，具体会加载哪个是不确定的，所以上述情况都是合理的。所以应该把应用中重复的jar包移除。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[was中奇怪的生僻字乱码案例]]></title>
+    <link href="http://mccxj.github.com/blog/20150808_ibm-jdk-char-encoding-diff.html"/>
+    <updated>2015-08-08T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/ibm-jdk-char-encoding-diff</id>
+    <content type="html"><![CDATA[<h2>问题描述</h2>
+
+<p>这个今天早上提供的一个生产问题。大体是说，改资料的时候，有个客户的名字有生僻字，叫&#8221;刘&#8221;,保存之后就乱码了，变成&#8221;刘?&#8221;</p>
+
+<h2>分析过程</h2>
+
+<p>乱码需要确认数据传输过程中编码方式。</p>
+
+<ol>
+<li>数据是通过jQuery的ajax过来的，并且没有提前处理数据(只有组装了一个js对象)，所以是采用encodeURIComponent进行处理的，对于中文可以很粗糙的理解成UTF-8编码过。这一点通过抓包工具是可以确认的。</li>
+<li>到了服务端之后会通过getParameter获取参数，由于带charsetEncoding的过滤器，并且是采用UTF-8的，那么这里拿到的字符串应该也是不会乱码的。</li>
+</ol>
+
+
+<p>到了这里，代码并没有特别之处。按我的理解，只要字符集能够支持这个生僻字，就不会出现乱码。<br/>
+难道保存到数据库的时候乱码了? 目前数据库是用GBK的，我去查了一下GBK的字符表，的确是有这么个字的。</p>
+
+<p>我在本机上测了一下这个字的各种功能编码转换，都是正常的。<br/>
+难道又是IBM的坑? 后来我又在服务器上测试了各种情况的输出，发现有另外一个字&#8221;䶮&#8221;,除了字体大小有点不一样之外，几乎一模一样的。</p>
+
+<p>下面整理了一个简单的测试程序，来说明这个奇怪的问题。</p>
+
+<h2>测试结果</h2>
+
+<p>首先要说明的是，这里有2个字,一小一大,还有它们对应的unicode和utf-8编码。<br/>
+测试结果是采用secureCRT的GB18030编码显示。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>有两个字:       小        大
+</span><span class='line'>unicode        \uE863    \u4dae
+</span><span class='line'>浏览器(utf-8)   %EE%A1%A3  %E4%B6%AE
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>下面的测试代码，为了编译时不关心字符集，所以换成utf-8字节来生成字符串。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Test</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">java</span><span class="o">.</span><span class="na">io</span><span class="o">.</span><span class="na">UnsupportedEncodingException</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">new</span> <span class="nf">Test</span><span class="o">().</span><span class="na">test</span><span class="o">();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">test</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">java</span><span class="o">.</span><span class="na">io</span><span class="o">.</span><span class="na">UnsupportedEncodingException</span> <span class="o">{</span>
+</span><span class='line'>        <span class="kt">byte</span><span class="o">[]</span> <span class="n">bbs</span> <span class="o">=</span> <span class="o">{-</span><span class="mi">18</span><span class="o">,-</span><span class="mi">95</span><span class="o">,-</span><span class="mi">93</span><span class="o">,-</span><span class="mi">28</span><span class="o">,-</span><span class="mi">74</span><span class="o">,-</span><span class="mi">82</span><span class="o">};</span>
+</span><span class='line'>        <span class="n">String</span> <span class="n">x</span> <span class="o">=</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="n">bbs</span><span class="o">,</span> <span class="s">&quot;utf-8&quot;</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">String</span> <span class="n">utf8</span> <span class="o">=</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="n">x</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;utf-8&quot;</span><span class="o">),</span> <span class="s">&quot;iso-8859-1&quot;</span><span class="o">);</span>
+</span><span class='line'>        <span class="c1">//byte[] bs = utf8.getBytes(&quot;iso-8859-1&quot;);  //test case 1</span>
+</span><span class='line'>        <span class="c1">//byte[] bs = x.getBytes(&quot;GBK&quot;);  //test case 2</span>
+</span><span class='line'>        <span class="k">for</span><span class="o">(</span><span class="kt">byte</span> <span class="n">b</span> <span class="o">:</span> <span class="n">bs</span><span class="o">){</span>
+</span><span class='line'>            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">x</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>对于Test Case 1, 测试一下字符串是不是本来就乱了。测试结果显示，2个字都正常，要输出成GB18030才是可以的(secureCRT设置GB18030编码)。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>&gt;/tools/jdk1.6.0_20/bin/java -Dfile.encoding=GBK Test
+</span><span class='line'>-18
+</span><span class='line'>-95
+</span><span class='line'>-93
+</span><span class='line'>-28
+</span><span class='line'>-74
+</span><span class='line'>-82
+</span><span class='line'>䶮?
+</span><span class='line'>&gt;/opt/IBM/WebSphere/AppServer/java/bin/java -Dfile.encoding=GBK Test
+</span><span class='line'>-18
+</span><span class='line'>-95
+</span><span class='line'>-93
+</span><span class='line'>-28
+</span><span class='line'>-74
+</span><span class='line'>-82
+</span><span class='line'>?䶮
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>&gt;/opt/IBM/WebSphere/AppServer/java/bin/java -Dfile.encoding=GB18030 Test
+</span><span class='line'>-18
+</span><span class='line'>-95
+</span><span class='line'>-93
+</span><span class='line'>-28
+</span><span class='line'>-74
+</span><span class='line'>-82
+</span><span class='line'>䶮
+</span><span class='line'>&gt;/tools/jdk1.6.0_20/bin/java -Dfile.encoding=GB18030 Test
+</span><span class='line'>-18
+</span><span class='line'>-95
+</span><span class='line'>-93
+</span><span class='line'>-28
+</span><span class='line'>-74
+</span><span class='line'>-82
+</span><span class='line'>䶮
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>对于Test Case 2，主要测试一下转换成GBK字节的情况,因为这是保存到数据库的必要转换。<br/>
+测试结果显示，ibm的jdk下，第一个字会编程乱码(对应的是63)。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>&gt;/tools/jdk1.6.0_20/bin/java -Ddefault.client.encoding=GBK -Dfile.encoding=GBK Test
+</span><span class='line'>-2
+</span><span class='line'>-97
+</span><span class='line'>63
+</span><span class='line'>?
+</span><span class='line'>&gt;/opt/IBM/WebSphere/AppServer/java/bin/java -Ddefault.client.encoding=GBK -Dfile.encoding=GBK Test
+</span><span class='line'>63
+</span><span class='line'>-2
+</span><span class='line'>-97
+</span><span class='line'>?
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>现象总结</h2>
+
+<ol>
+<li>在GBK字符表中，第一个字是存在的，第二个字不存在。在GB18030中两个都存在。从显示上，也证明了GBK和GB18030并不完全兼容。</li>
+<li>IBM的jdk为找不到第一个字，但能找到第二个字。oracle的jdk刚好相反。</li>
+<li>尝试使用百度拼音输入的时候，是可以找到2个字的。如下图的第2和第6个字。</li>
+<li>客户需要的是小的字(第一个)，但使用IBM的jdk转换GBK是找不到这个字的，一定会乱码。</li>
+<li>假设从前台输入的是第二个字，IBM的jdk应该是可以正常转换并得到的&#8221;正确&#8221;的字(正确的小字)，从而保证数据库不乱码。</li>
+</ol>
+
+
+<p><img src="http://mccxj.github.com/assets/images/2015/yan.png" alt="yan" /></p>
+
+<p>规避方法，选择输入第二个字(大字，截图中的第二个字，应该看不出有什么区别)。话说回来，感觉这是ibm的jdk的bug，字符对应错了。</p>
+
+<h2>相关资料</h2>
+
+<ul>
+<li><a href="https://github.com/willonboy/ChineseToPinYin">各种字符集编码表</a></li>
+<li><a href="http://ff.163.com/newflyff/gbk-list/">GBK编码表</a></li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[初始化httpClient失败原因分析]]></title>
+    <link href="http://mccxj.github.com/blog/20150702_httpclient-init-fail.html"/>
+    <updated>2015-07-02T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/httpclient-init-fail</id>
+    <content type="html"><![CDATA[<h2>问题描述</h2>
+
+<p>最近有个程序上线，启动失败，堆栈提示使用httpClient进行网络请求，初始化失败。具体如下:</p>
+
+<p>使用httpClient进行网络请求，当使用IBM J9(JDK6实现)进行运行的时候，会有以下情况:</p>
+
+<ul>
+<li>使用32位版本，在初始化DefaultHttpClient的时候出错，详细情况如下。</li>
+<li>使用64位版本，可以正常启动。</li>
+</ul>
+
+
+<p>测试代码如下:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">TestSSL</span>
+</span><span class='line'><span class="o">{</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span>
+</span><span class='line'>  <span class="o">{</span>
+</span><span class='line'>    <span class="n">HttpClient</span> <span class="n">httpClient</span> <span class="o">=</span> <span class="k">new</span> <span class="n">DefaultHttpClient</span><span class="o">();</span>
+</span><span class='line'>    <span class="n">HttpPost</span> <span class="n">httpPost</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HttpPost</span><span class="o">(</span><span class="s">&quot;http://10.132.10.88:81/xxx/Receiver4XXX&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">httpPost</span><span class="o">.</span><span class="na">setHeader</span><span class="o">(</span><span class="s">&quot;contentType&quot;</span><span class="o">,</span> <span class="s">&quot;multipart/form-data&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">MultipartEntity</span> <span class="n">reqEntity</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MultipartEntity</span><span class="o">();</span>
+</span><span class='line'>    <span class="n">httpPost</span><span class="o">.</span><span class="na">setEntity</span><span class="o">(</span><span class="n">reqEntity</span><span class="o">);</span>
+</span><span class='line'>    <span class="k">try</span>
+</span><span class='line'>    <span class="o">{</span>
+</span><span class='line'>      <span class="n">httpClient</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="n">httpPost</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>      <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>启动命令如下:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>java -Djava.ext.dirs<span class="o">=</span>./lib/  TestSSL
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>出错堆栈如下:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">IllegalStateException</span><span class="o">:</span> <span class="n">Failure</span> <span class="n">initializing</span> <span class="k">default</span> <span class="n">SSL</span> <span class="n">context</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">conn</span><span class="o">.</span><span class="na">ssl</span><span class="o">.</span><span class="na">SSLSocketFactory</span><span class="o">.</span><span class="na">createDefaultSSLContext</span><span class="o">(</span><span class="n">SSLSocketFactory</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">211</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">conn</span><span class="o">.</span><span class="na">ssl</span><span class="o">.</span><span class="na">SSLSocketFactory</span><span class="o">.&lt;</span><span class="n">init</span><span class="o">&gt;(</span><span class="n">SSLSocketFactory</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">333</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">conn</span><span class="o">.</span><span class="na">ssl</span><span class="o">.</span><span class="na">SSLSocketFactory</span><span class="o">.</span><span class="na">getSocketFactory</span><span class="o">(</span><span class="n">SSLSocketFactory</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">165</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">impl</span><span class="o">.</span><span class="na">conn</span><span class="o">.</span><span class="na">SchemeRegistryFactory</span><span class="o">.</span><span class="na">createDefault</span><span class="o">(</span><span class="n">SchemeRegistryFactory</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">45</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">impl</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">AbstractHttpClient</span><span class="o">.</span><span class="na">createClientConnectionManager</span><span class="o">(</span><span class="n">AbstractHttpClient</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">294</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">impl</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">AbstractHttpClient</span><span class="o">.</span><span class="na">getConnectionManager</span><span class="o">(</span><span class="n">AbstractHttpClient</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">445</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">impl</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">AbstractHttpClient</span><span class="o">.</span><span class="na">createHttpContext</span><span class="o">(</span><span class="n">AbstractHttpClient</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">274</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">impl</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">AbstractHttpClient</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="n">AbstractHttpClient</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">797</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">impl</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">AbstractHttpClient</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="n">AbstractHttpClient</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">754</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">impl</span><span class="o">.</span><span class="na">client</span><span class="o">.</span><span class="na">AbstractHttpClient</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="n">AbstractHttpClient</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">732</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">TestSSL</span><span class="o">.</span><span class="na">main</span><span class="o">(</span><span class="n">TestSSL</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">21</span><span class="o">)</span>
+</span><span class='line'><span class="n">Caused</span> <span class="nl">by:</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">NullPointerException</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">harmony</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">fortress</span><span class="o">.</span><span class="na">Services</span><span class="n">$NormalServices</span><span class="o">.</span><span class="na">createDefaultProviderInstance</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">286</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">harmony</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">fortress</span><span class="o">.</span><span class="na">Services</span><span class="n">$NormalServices</span><span class="o">.</span><span class="na">loadAllProviders</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">218</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">harmony</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">fortress</span><span class="o">.</span><span class="na">Services</span><span class="n">$NormalServices</span><span class="o">.</span><span class="na">access</span><span class="n">$400</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">141</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">harmony</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">fortress</span><span class="o">.</span><span class="na">Services</span><span class="n">$NormalServices$2</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">207</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">harmony</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">fortress</span><span class="o">.</span><span class="na">Services</span><span class="n">$NormalServices$2</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">205</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">java</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">AccessController</span><span class="o">.</span><span class="na">doPrivileged</span><span class="o">(</span><span class="n">AccessController</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">202</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">harmony</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">fortress</span><span class="o">.</span><span class="na">Services</span><span class="n">$NormalServices</span><span class="o">.</span><span class="na">getProviderList</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">205</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">harmony</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">fortress</span><span class="o">.</span><span class="na">Services</span><span class="n">$NormalServices</span><span class="o">.</span><span class="na">access</span><span class="n">$1300</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">141</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">harmony</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">fortress</span><span class="o">.</span><span class="na">Services</span><span class="o">.</span><span class="na">getProvidersList</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">645</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">sun</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">jca</span><span class="o">.</span><span class="na">GetInstance</span><span class="o">.</span><span class="na">getProvidersList</span><span class="o">(</span><span class="n">GetInstance</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">79</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">sun</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">jca</span><span class="o">.</span><span class="na">GetInstance</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">GetInstance</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">232</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">javax</span><span class="o">.</span><span class="na">net</span><span class="o">.</span><span class="na">ssl</span><span class="o">.</span><span class="na">KeyManagerFactory</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">KeyManagerFactory</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">16</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">conn</span><span class="o">.</span><span class="na">ssl</span><span class="o">.</span><span class="na">SSLSocketFactory</span><span class="o">.</span><span class="na">createSSLContext</span><span class="o">(</span><span class="n">SSLSocketFactory</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">184</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">conn</span><span class="o">.</span><span class="na">ssl</span><span class="o">.</span><span class="na">SSLSocketFactory</span><span class="o">.</span><span class="na">createDefaultSSLContext</span><span class="o">(</span><span class="n">SSLSocketFactory</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">209</span><span class="o">)</span>
+</span><span class='line'>        <span class="o">...</span> <span class="mi">10</span> <span class="n">more</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>分析有点冗长，所以分了几个阶段来说明。</p>
+
+<h2>问题分析(阶段1)</h2>
+
+<p>整理一下堆栈中各部分的功能:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">harmony</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">fortress</span><span class="o">.</span><span class="na">Services</span><span class="n">$NormalServices</span><span class="o">.</span><span class="na">createDefaultProviderInstance</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">286</span><span class="o">)</span>
+</span><span class='line'>    <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">harmony</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">fortress</span><span class="o">.</span><span class="na">Services</span><span class="n">$NormalServices</span><span class="o">.</span><span class="na">loadAllProviders</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">218</span><span class="o">)</span>
+</span><span class='line'>    <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">harmony</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">fortress</span><span class="o">.</span><span class="na">Services</span><span class="n">$NormalServices</span><span class="o">.</span><span class="na">access</span><span class="n">$400</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">141</span><span class="o">)</span>
+</span><span class='line'>    <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">harmony</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">fortress</span><span class="o">.</span><span class="na">Services</span><span class="n">$NormalServices$2</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">207</span><span class="o">)</span>
+</span><span class='line'>    <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">harmony</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">fortress</span><span class="o">.</span><span class="na">Services</span><span class="n">$NormalServices$2</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">205</span><span class="o">)</span>
+</span><span class='line'>    <span class="n">at</span> <span class="n">java</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">AccessController</span><span class="o">.</span><span class="na">doPrivileged</span><span class="o">(</span><span class="n">AccessController</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">202</span><span class="o">)</span>
+</span><span class='line'>    <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">harmony</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">fortress</span><span class="o">.</span><span class="na">Services</span><span class="n">$NormalServices</span><span class="o">.</span><span class="na">getProviderList</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">205</span><span class="o">)</span>
+</span><span class='line'>    <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">harmony</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">fortress</span><span class="o">.</span><span class="na">Services</span><span class="n">$NormalServices</span><span class="o">.</span><span class="na">access</span><span class="n">$1300</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">141</span><span class="o">)</span>
+</span><span class='line'>    <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">harmony</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">fortress</span><span class="o">.</span><span class="na">Services</span><span class="o">.</span><span class="na">getProvidersList</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">645</span><span class="o">)</span>   <span class="o">--</span> <span class="err">类</span><span class="n">Services</span><span class="err">在</span><span class="n">JAVA_HOME</span><span class="o">/</span><span class="n">security</span><span class="o">.</span><span class="na">jar</span><span class="o">,</span><span class="err">尝试加载所有的密码算法提供类</span>
+</span><span class='line'>    <span class="n">at</span> <span class="n">sun</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">jca</span><span class="o">.</span><span class="na">GetInstance</span><span class="o">.</span><span class="na">getProvidersList</span><span class="o">(</span><span class="n">GetInstance</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">79</span><span class="o">)</span>
+</span><span class='line'>    <span class="n">at</span> <span class="n">sun</span><span class="o">.</span><span class="na">security</span><span class="o">.</span><span class="na">jca</span><span class="o">.</span><span class="na">GetInstance</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">GetInstance</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">232</span><span class="o">)</span>          <span class="o">--</span> <span class="err">类</span><span class="n">GetInstance</span><span class="err">在</span><span class="n">JAVA_HOME</span><span class="o">/</span><span class="n">rt</span><span class="o">.</span><span class="na">jar</span>
+</span><span class='line'>    <span class="n">at</span> <span class="n">javax</span><span class="o">.</span><span class="na">net</span><span class="o">.</span><span class="na">ssl</span><span class="o">.</span><span class="na">KeyManagerFactory</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">KeyManagerFactory</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">16</span><span class="o">)</span>   <span class="o">--</span> <span class="err">类</span><span class="n">KeyManagerFactory</span><span class="err">在</span><span class="n">JAVA_HOME</span><span class="o">/</span><span class="n">ibmjssefw</span><span class="o">.</span><span class="na">jar</span><span class="o">.</span><span class="err">这里需要获取一个算法实现，具体算法是通过</span><span class="n">java</span><span class="o">.</span><span class="na">security</span><span class="err">的</span><span class="n">ssl</span><span class="o">.</span><span class="na">KeyManagerFactory</span><span class="o">.</span><span class="na">algorithm</span><span class="err">指定</span>
+</span><span class='line'>    <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">conn</span><span class="o">.</span><span class="na">ssl</span><span class="o">.</span><span class="na">SSLSocketFactory</span><span class="o">.</span><span class="na">createSSLContext</span><span class="o">(</span><span class="n">SSLSocketFactory</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">184</span><span class="o">)</span>     <span class="o">--</span> <span class="err">基于</span><span class="n">TLS</span><span class="o">/</span><span class="n">SSL</span><span class="err">协议，需要一个</span><span class="n">KeyManagerFactory</span><span class="err">来管理密钥</span>
+</span><span class='line'>    <span class="n">at</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">http</span><span class="o">.</span><span class="na">conn</span><span class="o">.</span><span class="na">ssl</span><span class="o">.</span><span class="na">SSLSocketFactory</span><span class="o">.</span><span class="na">createDefaultSSLContext</span><span class="o">(</span><span class="n">SSLSocketFactory</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">209</span><span class="o">)</span>   <span class="o">--</span> <span class="err">默认会先注册</span><span class="n">http</span><span class="err">、</span><span class="n">https</span><span class="err">的处理类</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>问题就出现在加载密码算法提供类的过程，在java的安全体系中，这些提供类是通过JAVA_HOME/security/java.security这个配置文件指定的。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># 格式如下: security.provider.&lt;n&gt;=&lt;className&gt;, 序号代表优先级</span>
+</span><span class='line'>security.provider.1<span class="o">=</span>sun.security.provider.Sun
+</span><span class='line'>security.provider.2<span class="o">=</span>sun.security.rsa.SunRsaSign
+</span><span class='line'>security.provider.3<span class="o">=</span>com.sun.net.ssl.internal.ssl.Provider
+</span><span class='line'>security.provider.4<span class="o">=</span>com.sun.crypto.provider.SunJCE
+</span><span class='line'>security.provider.5<span class="o">=</span>sun.security.jgss.SunProvider
+</span><span class='line'>security.provider.6<span class="o">=</span>com.sun.security.sasl.Provider
+</span><span class='line'>security.provider.7<span class="o">=</span>org.jcp.xml.dsig.internal.dom.XMLDSigRI
+</span><span class='line'>security.provider.8<span class="o">=</span>sun.security.smartcardio.SunPCSC
+</span><span class='line'>security.provider.9<span class="o">=</span>sun.security.mscapi.SunMSCAPI
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>在IBM的实现中，会配合另外两个配置文件(在security.jar中的org.apache.harmony.security.fortress这个包里边): services.properties和providerClassName.properties。<br/>
+其中providerClassName.properties指定(提供者的标识, 实现类名)的对应关系。services.properties指定(算法,提供者的标识)的对应管理。</p>
+
+<p><strong>这样就可以实现&#8221;寻找DES算法&#8221;，找到“提供者的标识&#8221;, 最后找到&#8221;具体的实现类”，然后就可以调用了，整个过程对开发来说是透明的。</strong>太具体的匹配逻辑就不说了，知道这点就可以了。</p>
+
+<p>明显，加载这些类肯定用的是反射技术。不过从反编译的源码上看，IBM在具体的实现细节上有差异。</p>
+
+<p>32位的NormalServices#createDefaultProviderInstance实现</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kd">static</span> <span class="n">Provider</span> <span class="nf">createDefaultProviderInstance</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">ProviderInfo</span> <span class="n">paramProviderInfo</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">paramProviderInfo</span><span class="o">.</span><span class="na">setLoading</span><span class="o">();</span>
+</span><span class='line'>  <span class="n">String</span> <span class="n">str</span> <span class="o">=</span> <span class="n">paramProviderInfo</span><span class="o">.</span><span class="na">getProviderClassName</span><span class="o">();</span>
+</span><span class='line'>  <span class="n">Provider</span> <span class="n">localProvider</span> <span class="o">=</span> <span class="n">createProviderInstance</span><span class="o">(</span><span class="n">str</span><span class="o">,</span> <span class="n">defaultNameProviderMap</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">for</span> <span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">ProviderInfo</span> <span class="n">localProviderInfo</span> <span class="o">:</span> <span class="n">defaultOrderedProviderInfoList</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">localProviderInfo</span><span class="o">.</span><span class="na">getProviderClassName</span><span class="o">().</span><span class="na">equals</span><span class="o">(</span><span class="n">str</span><span class="o">))</span> <span class="o">{</span>
+</span><span class='line'>      <span class="n">localProviderInfo</span><span class="o">.</span><span class="na">setProviderName</span><span class="o">(</span><span class="n">localProvider</span><span class="o">.</span><span class="na">getName</span><span class="o">());</span>
+</span><span class='line'>      <span class="n">localProviderInfo</span><span class="o">.</span><span class="na">setLoaded</span><span class="o">();</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">localProvider</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>64位的NormalServices#createDefaultProviderInstance实现</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kd">static</span> <span class="n">Provider</span> <span class="nf">createDefaultProviderInstance</span><span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">ProviderInfo</span> <span class="n">paramProviderInfo</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>  <span class="kd">synchronized</span> <span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">loadingAndRefreshLock</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">paramProviderInfo</span><span class="o">.</span><span class="na">isLoaded</span><span class="o">())</span> <span class="o">{</span>
+</span><span class='line'>      <span class="k">return</span> <span class="o">(</span><span class="n">Provider</span><span class="o">)</span><span class="n">defaultNameProviderMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">paramProviderInfo</span><span class="o">.</span><span class="na">getProviderName</span><span class="o">());</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="n">paramProviderInfo</span><span class="o">.</span><span class="na">setLoading</span><span class="o">();</span>
+</span><span class='line'>    <span class="n">String</span> <span class="n">str</span> <span class="o">=</span> <span class="n">paramProviderInfo</span><span class="o">.</span><span class="na">getProviderClassName</span><span class="o">();</span>
+</span><span class='line'>    <span class="n">Provider</span> <span class="n">localProvider</span> <span class="o">=</span> <span class="n">createProviderInstance</span><span class="o">(</span><span class="n">str</span><span class="o">,</span> <span class="n">defaultNameProviderMap</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">localProvider</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>      <span class="k">for</span> <span class="o">(</span><span class="n">Services</span><span class="o">.</span><span class="na">ProviderInfo</span> <span class="n">localProviderInfo</span> <span class="o">:</span> <span class="n">defaultOrderedProviderInfoList</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">localProviderInfo</span><span class="o">.</span><span class="na">getProviderClassName</span><span class="o">().</span><span class="na">equals</span><span class="o">(</span><span class="n">str</span><span class="o">))</span> <span class="o">{</span>
+</span><span class='line'>          <span class="n">localProviderInfo</span><span class="o">.</span><span class="na">setProviderName</span><span class="o">(</span><span class="n">localProvider</span><span class="o">.</span><span class="na">getName</span><span class="o">());</span>
+</span><span class='line'>          <span class="n">localProviderInfo</span><span class="o">.</span><span class="na">setLoaded</span><span class="o">();</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>      <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">localProvider</span><span class="o">;</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>其中createProviderInstance方法是通过classpath去加载类。<strong>对于当前这个问题来说，最重要的区别在于localProvider是否有没有判空。因为一旦找不到提供类，localProvider将会为null。</strong>
+而对于目前32位的security.provider配置来说，下面两个类是放在JAVA_HOME/ext下面的:</p>
+
+<ul>
+<li>com.sun.security.sasl.Provider 在ibmsaslprovider.jar</li>
+<li>com.ibm.xml.enc.IBMXMLEncProvider 在ibmxmlencprovider.jar</li>
+</ul>
+
+
+<p><strong>所以加载到这2个类的时候，localProvider会变成null，导致后面出现空指针。而64位只是忽略不加载而已。</strong></p>
+
+<p><strong>尝试注释这两个security.provider，可以发现启动正常。</strong></p>
+
+<h2>问题分析(阶段2)</h2>
+
+<p>高大上的IBM JDK怎么会有这种问题呢? 再继续研究研究。</p>
+
+<p>大家有没有注意到启动参数中有个 -Djava.ext.dirs=./lib/， 这个变量以前解释过.</p>
+
+<p>大概就是说，设置classpath要一个个jar包都设置，实在麻烦，于是乎出现这个变量，大多数情况下的确很好很强大。<br/>
+在少数情况下，这个变量是可能有副作用的，上面提到的问题刚好就是一个例子，导致找不到提供类。</p>
+
+<p>默认情况下，这个变量是指向JAVA_HOME/ext目录的，对应java中的扩展类加载器，使用这个变量就相当于覆盖了扩展类加载的路径。</p>
+
+<p><strong>所以，有另外一种解决办法，就是把原来的扩展类路径添加上去，也是可以正常启动的。</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>java -Djava.ext.dirs<span class="o">=</span>/usr/java6/jre/lib/ext:./lib/  TestSSL
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>其实这个变量还是比较少用的，大家可以看看其他比较有名的程序，他们的启动脚本都是读取某个目录的jar包，然后拼接成classpath再启动。</strong><br/>
+<strong>直接指定目录，还有一个不好的地方就是，只要是jar格式的都会被加载(跟后缀名无关，很多人喜欢改名字进行备份的要注意了)</strong></p>
+
+<h2>问题分析(阶段3，可略过)</h2>
+
+<p>更多探讨，仅供有兴趣的童鞋参考</p>
+
+<ul>
+<li>提供类com.ibm.crypto.provider.IBMJCE也在ext目录的ibmjceprovider.jar中，为什么没有报错</li>
+</ul>
+
+
+<p>这个类很幸(悲)运(剧)的，因为有人在lib目录里边添加ibmjceprovider.jar这个包，所以它是能被加载到的。</p>
+
+<p>具体可以添加-verbose:class参数，就可以看到的确是在ibmjceprovider.jar中加载到了。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">class</span> <span class="nc">load</span><span class="o">:</span> <span class="n">java</span><span class="o">/</span><span class="n">util</span><span class="o">/</span><span class="n">jar</span><span class="o">/</span><span class="n">JarVerifier$VerifierStream</span>
+</span><span class='line'><span class="kd">class</span> <span class="nc">load</span><span class="o">:</span> <span class="n">com</span><span class="o">.</span><span class="na">ibm</span><span class="o">.</span><span class="na">crypto</span><span class="o">.</span><span class="na">provider</span><span class="o">.</span><span class="na">IBMJCE</span> <span class="nl">from:</span> <span class="nl">file:</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">hwcrm</span><span class="o">/</span><span class="n">caiqs</span><span class="o">/</span><span class="n">NGSENDWF</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">ibmjceprovider</span><span class="o">.</span><span class="na">jar</span>
+</span><span class='line'><span class="kd">class</span> <span class="nc">load</span><span class="o">:</span> <span class="n">com</span><span class="o">.</span><span class="na">ibm</span><span class="o">.</span><span class="na">crypto</span><span class="o">.</span><span class="na">provider</span><span class="o">.</span><span class="na">f</span> <span class="nl">from:</span> <span class="nl">file:</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">hwcrm</span><span class="o">/</span><span class="n">caiqs</span><span class="o">/</span><span class="n">NGSENDWF</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">ibmjceprovider</span><span class="o">.</span><span class="na">jar</span>
+</span><span class='line'><span class="kd">class</span> <span class="nc">load</span><span class="o">:</span> <span class="n">com</span><span class="o">/</span><span class="n">ibm</span><span class="o">/</span><span class="n">jsse2</span><span class="o">/</span><span class="n">IBMJSSEProvider2</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>在ext目录被加载很好理解，为什么其他ibm打头的类没在ext中也能被找到</li>
+</ul>
+
+
+<p>在jre/lib/目录下面有个jars.cfg的配置，个人认为是IBM自己的特殊处理逻辑来的(未经证实)，我稍微加了点中文注释，大家可以看看。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># j2se的api被拆开很多个包进行开发，默认的rt.jar是会加载的(可以发现没有常见的集合类，sql类等)，欠缺的部分使用Harmony引入(不知大家有没有对印象，曾经的jdk开源实现)</span>
+</span><span class='line'><span class="c"># add Harmony jars </span>
+</span><span class='line'>annotation.jar
+</span><span class='line'>beans.jar
+</span><span class='line'>java.util.jar
+</span><span class='line'>jndi.jar
+</span><span class='line'>logging.jar
+</span><span class='line'>security.jar
+</span><span class='line'>sql.jar
+</span><span class='line'>
+</span><span class='line'><span class="c"># ORB，就是用于COBRA的开发api</span>
+</span><span class='line'><span class="c"># jars for the IBM ORB</span>
+</span><span class='line'><span class="c"># these must precede rt.jar unless we know that </span>
+</span><span class='line'><span class="c"># the Sun ORB API has been removed from rt.jar </span>
+</span><span class='line'>ibmorb.jar
+</span><span class='line'>ibmorbapi.jar
+</span><span class='line'>ibmcfw.jar
+</span><span class='line'>
+</span><span class='line'><span class="c"># 大家可以发现很多ibm打头的包，这些就是提供类了，看下面的注释，可以发现这些类都是在启动的时候加载的，这样就可以被加载到了。</span>
+</span><span class='line'><span class="c"># List of bootclasspath jars, ordered, relative to jre/lib/</span>
+</span><span class='line'>rt.jar
+</span><span class='line'>charsets.jar
+</span><span class='line'>resources.jar
+</span><span class='line'>ibmpkcs.jar
+</span><span class='line'>ibmcertpathfw.jar
+</span><span class='line'>ibmjgssfw.jar
+</span><span class='line'>ibmjssefw.jar
+</span><span class='line'>ibmsaslfw.jar
+</span><span class='line'>ibmjcefw.jar
+</span><span class='line'>ibmjgssprovider.jar
+</span><span class='line'>ibmjsseprovider2.jar
+</span><span class='line'>ibmcertpathprovider.jar
+</span><span class='line'>ibmxmlcrypto.jar
+</span><span class='line'>management-agent.jar
+</span><span class='line'>xml.jar
+</span><span class='line'>jlm.jar
+</span><span class='line'>javascript.jar
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>一定是httpclient引起的么? 会影响其他库或代码么?</li>
+</ul>
+
+
+<p>从IBM的实现上看，只要使用到security.provider，都会出错。
+例如只是简单的使用内置的DES算法实现，就像下面那样，同样也是会出错的。有兴趣可以试试。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">Cipher</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="s">&quot;DES&quot;</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>但是，对于其他JDK实现，例如oracle JDK，不一定有问题(测试一下，发现的确也是没问题的)。因为jdk api是标准规范，当具体的实现并没有做要求。</p>
+
+<h2>问题总结</h2>
+
+<ul>
+<li>IBM JDK对security.provider的处理有所不同，对于找不到的提供类，可能报错也可能不报错。目前只是一个特例，不代表在其他版本或其他JDK中存在。</li>
+<li>正常情况下(除非添加自己的实现或修改配置)，security.provider都是能够被加载到的。</li>
+<li>使用-Djava.ext.dirs会修改扩展类加载路径，可能导致某些提供类找不到。</li>
+<li><p>有以下方式可以修复，仅供参考:</p></li>
+<li><p>对httpclient进行定制，跳过https注册或自定义实现，如目前的规避代码。缺点在于仅仅是规避，对其他库可能不适用。</p></li>
+<li>通过classpath代替java.ext.dirs变量，这是标准的启动方式。缺点在于脚本要重写。</li>
+<li>在java.ext.dirs添加原来的ext目录，是一个方便又能解决问题的手段。缺点在于需要修改脚本, 并可能由于备份文件被加载而造成混乱。</li>
+<li>通过修改java.security配置文件，屏蔽没法使用的提供类。不推荐，影响全局。</li>
+<li>把ext中相关的jar包拷贝到lib目录中。目前有个jar包是这样的，不过不推荐，在不理解系统加载机制的情况下，很容易造成混乱。</li>
+<li>给IBM提意见，修改一下实现方式。说说而已，别想了。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Android-Universal-Image-Loader源码快扫]]></title>
+    <link href="http://mccxj.github.com/blog/20150624_Android-Universal-Image-Loader-source-view.html"/>
+    <updated>2015-06-24T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/Android-Universal-Image-Loader-source-view</id>
+    <content type="html"><![CDATA[<h2>ImageLoaderConfiguration/ImageLoaderConfiguration.Builder学习</h2>
+
+<p>构造复杂对象的方式: Builder模式,用来创建ImageLoaderConfiguration对象,适用于链式写法。</p>
+
+<p>常见结构如下：<strong>关键点: 私有构造(拷贝而非应用，避免build复写)、内部类(影响局部化,内聚好)、返回this(支持链式)</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">class</span> <span class="nc">A</span> <span class="o">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="nf">A</span><span class="o">(</span><span class="n">Builder</span> <span class="n">builder</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="c1">// create A with builder&#39;s copy</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Builder</span><span class="o">{</span>
+</span><span class='line'>     <span class="n">Builder</span> <span class="nf">buildStep1</span><span class="o">(){</span>
+</span><span class='line'>        <span class="c1">//...</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+</span><span class='line'>     <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>     <span class="n">Builder</span> <span class="nf">buildStep2</span><span class="o">(){</span>
+</span><span class='line'>        <span class="c1">//...</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+</span><span class='line'>     <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>     <span class="n">A</span> <span class="nf">build</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">new</span> <span class="nf">A</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+</span><span class='line'>     <span class="o">}</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>ImageLoaderConfiguration支持的特性</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">--</span> <span class="err">源码没什么养分，关注特性是如何表现在内部结构上。</span>
+</span><span class='line'><span class="o">--</span> <span class="err">类层次的结构，能体会就体会，不体会就拉到。层次是渐进实现的，不能体会也没什么。</span>
+</span><span class='line'><span class="o">--</span> <span class="err">如果有机会的话，可以在实践项目中调试进去学学。</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>如果想学习相关特性是怎么实现的，可以根据配置的去反推实现代码(搜索或调用关系):</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="err">基本特性（可配置）</span><span class="o">:</span>
+</span><span class='line'>  <span class="err">基本控制</span><span class="o">:</span>
+</span><span class='line'>    <span class="err">线程池大小</span> <span class="o">--</span> <span class="err">不能太多</span>
+</span><span class='line'>    <span class="err">线程优先级</span> <span class="o">--</span> <span class="err">略低</span>
+</span><span class='line'>    <span class="err">请求任务排队</span>  <span class="o">--</span> <span class="err">默认</span><span class="n">FIFO</span>
+</span><span class='line'>    <span class="err">是否开启调试日志</span> <span class="o">--</span> <span class="n">DEBUG</span> <span class="n">log</span>
+</span><span class='line'>  <span class="err">多级缓存特性</span><span class="o">:</span>
+</span><span class='line'>    <span class="err">内存缓存大小</span>
+</span><span class='line'>    <span class="err">硬盘缓存大小，文件数量限制，文件名生成规则</span>
+</span><span class='line'>    <span class="o">--</span> <span class="err">关联硬盘图片处理器</span><span class="n">BitmapProcessor</span>
+</span><span class='line'>  <span class="err">图片专用</span><span class="o">:</span>
+</span><span class='line'>    <span class="err">缓存图最大宽高</span> <span class="o">---</span> <span class="err">用于约束图片大小</span>
+</span><span class='line'>    <span class="err">显示图的约束</span>
+</span><span class='line'>    <span class="o">--</span> <span class="err">关联下载器</span><span class="n">ImageDownloader</span><span class="o">(</span><span class="err">还通过</span><span class="n">networkDeniedDownloader</span><span class="o">/</span><span class="n">slowNetworkDownloader</span><span class="err">区分不同情况，这不就是</span><span class="n">Null</span> <span class="n">Object</span><span class="err">模式么</span><span class="o">?)</span>
+</span><span class='line'>    <span class="o">--</span> <span class="err">关联解码器</span><span class="n">ImageDecoder</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>关于ImageLoader如何解决错乱问题</h2>
+
+<p>ImageLoader就是一个singleton实现，配合init+ImageLoaderConfiguration进行初始化，没什么说的。很常见的设计实现。</p>
+
+<p>大多是helper method 关注displayImage/loadImage最终实现即可。这也是常见做法，便于使用。</p>
+
+<p>问题: url &#8211; 关联的view，问题在于url请求是异步的，而view可能被重复利用。<br/>
+这里用的ImageAware，看他们的实现类，有个ViewAware，就是一个view的包装，我想说的是WeakReference在android中很常用呀。 &#8211; 这句是废话</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="err">使用</span><span class="n">ImageAware</span><span class="err">占位</span>
+</span><span class='line'>  <span class="err">图片宽高</span>
+</span><span class='line'>  <span class="err">实际的</span><span class="n">View</span> <span class="o">--</span><span class="err">可重用</span>
+</span><span class='line'>  <span class="n">id</span> <span class="o">--</span> <span class="err">尼玛，这是解决问题的关键</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>见DisplayBitmapTask有个isViewWasReused倒出重点，从它的实现就可以判断完整的算法拉。</p>
+
+<p>内部结构 cacheKeysForImageAwares map&lt;ImageAware.id, memorycachekey(由URI + 宽高生成)></p>
+
+<p>不过ViewAware的id是用view的hashcode来指定的， NonViewAware的id是用url来指定的。<br/>
+so， listview的时候，使用loadImage是可以避免错乱的，而用displayImage就呵呵拉。<br/>
+判断方式如下：根据id可以找到目前的url和当前的url比较即可。知道是不是被复用了。</p>
+
+<p>相对于原理上的image#setTag(url)然后比较的方式，更加透明，侵入性少。</p>
+
+<h2>再看看ImageLoaderEngine在任务管理、线程方面的处理</h2>
+
+<p>原以为这货应该比较好处理，图样图森破呀，毕竟它支持多种状态(暂停，恢复，关闭等)</p>
+
+<p>先说一下几个AtomicBoolean的变量，主要就是判断状态的boolean拉，当然这货是线程安全的，其实用boolean也行，毕竟也是原子的(注意可见性问题即可)</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kd">final</span> <span class="n">AtomicBoolean</span> <span class="n">paused</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AtomicBoolean</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span><span class='line'><span class="kd">private</span> <span class="kd">final</span> <span class="n">AtomicBoolean</span> <span class="n">networkDenied</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AtomicBoolean</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span><span class='line'><span class="kd">private</span> <span class="kd">final</span> <span class="n">AtomicBoolean</span> <span class="n">slowNetwork</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AtomicBoolean</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span><span class="err">`</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>另外，还有3个线程执行器，简单看看用途。至于为什么要这么多个，哥认为是这样的：</p>
+
+<ul>
+<li>在loader中走进displayImage之后，它重要检查一下内存中有木有(耗时小，无需线程)。</li>
+<li>如果没有才会扔给engine，engine首先检查一下硬盘上有木有(有io，所以走taskDistributor)。</li>
+<li>如果硬盘上有，走taskExecutorForCachedImages(同理有io)</li>
+<li>还是没有，走其他(maybe网络io)</li>
+<li>在请求较多，兼顾命中、不命中的情况，它选择了采用多级的Executor</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="n">Executor</span> <span class="n">taskExecutor</span><span class="o">;</span> <span class="o">--</span> <span class="err">木有在</span><span class="n">disk</span><span class="err">的情况，一般走网络</span>
+</span><span class='line'><span class="kd">private</span> <span class="n">Executor</span> <span class="n">taskExecutorForCachedImages</span><span class="o">;</span> <span class="o">--</span> <span class="err">在</span><span class="n">disk</span><span class="err">的情况</span>
+</span><span class='line'><span class="kd">private</span> <span class="n">Executor</span> <span class="n">taskDistributor</span><span class="o">;</span>  <span class="o">--</span> <span class="err">根据情况分发给上面</span><span class="mi">2</span><span class="err">个</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>还有2个map，第一个就是用来保存id和图片url的对应关系(简单是这么理解)<br/>
+另外是用来控制不同view但有相同uri的并发请求。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kd">final</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">cacheKeysForImageAwares</span> <span class="o">=</span> <span class="n">Collections</span>
+</span><span class='line'>      <span class="o">.</span><span class="na">synchronizedMap</span><span class="o">(</span><span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;());</span>
+</span><span class='line'><span class="kd">private</span> <span class="kd">final</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">ReentrantLock</span><span class="o">&gt;</span> <span class="n">uriLocks</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WeakHashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">ReentrantLock</span><span class="o">&gt;();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>不熟悉ReentrantLock的童鞋可参考 https://www.ibm.com/developerworks/cn/java/j-jtp10264/</p>
+
+<p>LoadAndDisplayImageTask通过控制相同的uri持有同一个锁，这样执行的时候，后面的就会等待。<br/>
+具体可以参考LoadAndDisplayImageTask的实现，不过用ReentrantLock需要特别注意写法，避免死锁。<br/>
+不过我认为getLockForUri并没有同步，还是有存在相同url获取到不同lock的可能，不过这不影响功能，而且受限于并发大小也很难出现。</p>
+
+<h2>关于url的中文</h2>
+
+<p>网上有看到一些人说中文图片名会出错，可能是很久之前的版本吧。我这里要说的是，我认为这是个简单的问题，即使改源码也很容易处理。<br/>
+不过即使源码有相关处理，通常也不会关注的，不过今天刚好有人问我一个中文路径的问题，所以我就关注了一下它怎么实现的。</p>
+
+<p>首先看BaseImageDownloader是如何请求中文图片的。由于http只是支持ascii的url编码，所以必须要编码的，通常用utf-8,虽然这个没规定。貌似我们的基线没有考虑这个问题，应该是没有掉过坑。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">protected</span> <span class="n">HttpURLConnection</span> <span class="nf">createConnection</span><span class="o">(</span><span class="n">String</span> <span class="n">url</span><span class="o">,</span> <span class="n">Object</span> <span class="n">extra</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">String</span> <span class="n">encodedUrl</span> <span class="o">=</span> <span class="n">Uri</span><span class="o">.</span><span class="na">encode</span><span class="o">(</span><span class="n">url</span><span class="o">,</span> <span class="n">ALLOWED_URI_CHARS</span><span class="o">);</span>
+</span><span class='line'>  <span class="n">HttpURLConnection</span> <span class="n">conn</span> <span class="o">=</span> <span class="o">(</span><span class="n">HttpURLConnection</span><span class="o">)</span> <span class="k">new</span> <span class="n">URL</span><span class="o">(</span><span class="n">encodedUrl</span><span class="o">).</span><span class="na">openConnection</span><span class="o">();</span>
+</span><span class='line'>  <span class="n">conn</span><span class="o">.</span><span class="na">setConnectTimeout</span><span class="o">(</span><span class="n">connectTimeout</span><span class="o">);</span>
+</span><span class='line'>  <span class="n">conn</span><span class="o">.</span><span class="na">setReadTimeout</span><span class="o">(</span><span class="n">readTimeout</span><span class="o">);</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">conn</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>另外，还有一个容易出现中文问题的就是保存到硬盘的情况(android貌似不是什么大问题，如果是做server开发的话，就得特别注意)<br/>
+带的实现有HashCodeFileNameGenerator(默认)和Md5FileNameGenerator，这2种处理都不会产生中文问题。<br/>
+不过我建议还是用Md5FileNameGenerator，hashcode做唯一性并不是很靠谱，如果是大量的固定文件名长度的图片，还是很容易冲突的。</p>
+
+<h2>小结</h2>
+
+<p>源码何其多，带着问题学习效果更好。挑几个疑惑看看别人怎么处理就是收获。  <br/>
+从类的层次着手是很困难的，特别是大型源码。了解上层架构，学示例，然后调调源码或许更好。
+大多数情况，相对于细节，应该更关注关键数据的结构、如何组织数据的结构来解决问题。<br/>
+如果自己设计，应该考虑的重要问题有: 如何使用? 用怎样的结构表示数据和状态? <br/>
+XX设计模式不要硬套，从过程式演变出来更加自然(经验性的除外)。推荐重构与模式。<br/>
+大而全的源码解读没有什么用，带问题分析的更有价值。<br/>
+学好基础，模仿起来也不容易掉坑。</p>
+
+<p>&#8211; 以上纯属肉眼分辨，并无调试过，不做正确性验证，仅供参考。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[java字符编码问题]]></title>
@@ -1847,275 +3080,6 @@ Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类
 </pre></td><td class='code'><pre><code class='bash'><span class='line'>adb forward tcp:11333 tcp:11233 <span class="o">&amp;&amp;</span> nc -v 127.0.0.1 | /cygdriver/d/Wireshark/Wireshark.exe -k -S -i -
 </span></code></pre></td></tr></table></div></figure>
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[由于MANIFEST.MF不规范导致程序无法启动的问题]]></title>
-    <link href="http://mccxj.github.com/blog/20131226_manifest.html"/>
-    <updated>2013-12-26T00:00:00+08:00</updated>
-    <id>http://mccxj.github.com/blog/manifest</id>
-    <content type="html"><![CDATA[<p>昨晚发现某个jar程序启动不了，包类没找到。
-这个是由于我增加了一个新的jar包，并且依赖于xwork.jar。
-所以在build.xml里边增加这个jar包。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'>  <span class="nt">&lt;fatjar.build</span> <span class="na">output=</span><span class="s">&quot;ibossproc.jar&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>  ...
-</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/jsse.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/cipher14.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/xwork-2.0.4.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
-</span><span class='line'><span class="nt">&lt;/fatjar.build&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>不过还是出错，出错信息挺诡异的(用星号对某些信息进行屏蔽)：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">mccxj</span><span class="nd">@XXX</span><span class="o">:/</span><span class="n">work</span><span class="o">/</span><span class="n">procs</span><span class="o">/</span><span class="n">log</span><span class="o">&gt;</span> <span class="n">cat</span> <span class="o">*</span>
-</span><span class='line'><span class="err">线程</span> <span class="s">&quot;main&quot;</span> <span class="err">中发生异常</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">NoClassDefFoundError</span><span class="o">:</span> <span class="n">com</span><span class="o">.*.*.*.*</span><span class="n">Entry</span>
-</span><span class='line'><span class="n">Caused</span> <span class="nl">by:</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">ClassNotFoundException</span><span class="o">:</span> <span class="n">com</span><span class="o">.*.*.*.*</span><span class="n">Entry</span>
-</span><span class='line'>        <span class="n">at</span> <span class="n">java</span><span class="o">.</span><span class="na">net</span><span class="o">.</span><span class="na">URLClassLoader</span><span class="o">.</span><span class="na">findClass</span><span class="o">(</span><span class="n">URLClassLoader</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">421</span><span class="o">)</span>
-</span><span class='line'>        <span class="n">at</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">ClassLoader</span><span class="o">.</span><span class="na">loadClass</span><span class="o">(</span><span class="n">ClassLoader</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">652</span><span class="o">)</span>
-</span><span class='line'>        <span class="n">at</span> <span class="n">sun</span><span class="o">.</span><span class="na">misc</span><span class="o">.</span><span class="na">Launcher</span><span class="n">$AppClassLoader</span><span class="o">.</span><span class="na">loadClass</span><span class="o">(</span><span class="n">Launcher</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">346</span><span class="o">)</span>
-</span><span class='line'>        <span class="n">at</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">ClassLoader</span><span class="o">.</span><span class="na">loadClass</span><span class="o">(</span><span class="n">ClassLoader</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">618</span><span class="o">)</span>
-</span><span class='line'><span class="n">Could</span> <span class="n">not</span> <span class="n">find</span> <span class="n">the</span> <span class="n">main</span> <span class="nl">class:</span> <span class="n">com</span><span class="o">.*.*.*.*</span><span class="n">Entry</span><span class="o">.</span>  <span class="n">Program</span> <span class="n">will</span> <span class="n">exit</span><span class="o">.</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>这个类是程序里边的代码，应该是存在的。把jar解压了，也的确看到jar包里边有这个类。</p>
-
-<p>于是把以前能跑的jar拿来进行对比，发现META-INF/MANIFEST.MF稍稍有点不同，新的在最后多了2个空行。
-简单调整了一下打包脚本（用的一个fatjar.jar的工具）,最后两行进行调整顺序，发现就可以了。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'>  <span class="nt">&lt;fatjar.build</span> <span class="na">output=</span><span class="s">&quot;xx.jar&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>  ...
-</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/jsse.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/xwork-2.0.4.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/cipher14.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
-</span><span class='line'><span class="nt">&lt;/fatjar.build&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>一开始感觉是fatjar.jar的bug，不过回过头来看，其实是cipher14.jar这个包的问题。<br/>
-因为这个包的META-INF/MANIFEST.MF的最后一样是个问号，根据<a href="http://docs.oracle.com/javase/7/docs/technotes/guides/jar/jar.html#JAR%20Manifest">规范文档</a>,
-这个是不规范的。如：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">Manifest</span><span class="o">-</span><span class="nl">Version:</span> <span class="mf">1.0</span>
-</span><span class='line'>
-</span><span class='line'><span class="o">?</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>而fatjar会把所有的MANIFEST.MF进行合并，但是奇怪的地方就在这里了。如果问号是在最后一样，能够正常启动。 <br/>
-如果问号后面还有内容，就启动不了。所以调整顺序之后，能够正常启动。<br/>
-后来，我把cipher14.jar的MANIFEST.MF中的问号去掉，不需要调整顺序也是可以正常的。</p>
-
-<p>这个包应该是第三方厂商提供的，又踩地雷了。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[连接池泄露定位案例]]></title>
-    <link href="http://mccxj.github.com/blog/20131126_connection-leak.html"/>
-    <updated>2013-11-26T00:00:00+08:00</updated>
-    <id>http://mccxj.github.com/blog/connection-leak</id>
-    <content type="html"><![CDATA[<p>前阵子，其他项目组里边有个某项目频繁出现获取不到连接的问题，基本上每一天都出现一次。</p>
-
-<p>打出来的javacore里面，有大量的线程等待获取连接。并且现场反映，从数据库那边监控到大量的空闲连接没有释放。</p>
-
-<p>事实上，这个系统会用到两个数据源，其中有个是正常的。有意思的是，这几个月都没有新版本上载。</p>
-
-<p>走读了java里边的连接获取释放逻辑，虽然获取和关闭的调用到处都是(没封装好)，但最后还是调用一些静态方法来完成的，并且都在finally块中进行了处理，感觉不会存在泄露的问题。</p>
-
-<p>尝试看看能不能重现，运气还不错，在开发环境模拟生产的业务场景(业务功能不多，但逻辑处理流程比较长)进行了压力测试，也的确出现了这种情况。</p>
-
-<p>既然能够重现问题，定位就方便许多了。我知道有Btrace这类神器可以帮助定位，但我没有使用过(下次再尝试一下)。我是通过修改代码来定位的，基本原理就是在获取连接时记录堆栈信息，在关闭时清除，这样出问题的时候就可以找到哪些地方有问题。其实用工具也是类似的做法。</p>
-
-<p>大体上是这样的:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">// 用来存储堆栈信息</span>
-</span><span class='line'><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">Connection</span><span class="o">,</span> <span class="n">Exception</span><span class="o">&gt;</span> <span class="n">conns</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ConcurrentHashMap</span><span class="o">&lt;</span><span class="n">Connection</span><span class="o">,</span> <span class="n">Exception</span><span class="o">&gt;();</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">// 当获取链接的时候</span>
-</span><span class='line'><span class="kd">public</span> <span class="n">Connection</span> <span class="nf">getConnection</span><span class="o">(){</span>
-</span><span class='line'>  <span class="n">Connection</span> <span class="n">conn</span> <span class="o">=</span> <span class="n">dataSource</span><span class="o">.</span><span class="na">getConnection</span><span class="o">();</span>
-</span><span class='line'>  <span class="n">conns</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">conn</span><span class="o">,</span> <span class="k">new</span> <span class="n">Exception</span><span class="o">());</span>
-</span><span class='line'>  <span class="k">return</span> <span class="n">conn</span><span class="o">;</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">// 当释放链接的时候</span>
-</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">releaseConnection</span><span class="o">(</span><span class="n">Connection</span> <span class="n">conn</span><span class="o">){</span>
-</span><span class='line'>  <span class="n">conns</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">conn</span><span class="o">);</span>
-</span><span class='line'>  <span class="n">dataSource</span><span class="o">.</span><span class="na">close</span><span class="o">(</span><span class="n">conn</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>修改后重新压力测试后，打开记录的堆栈一看，居然是在jsp里边获取的，真是顿时无语。</p>
-
-<p>后来，虽然听说这个问题是其他原因引起的，导致非正常情况下走到这段逻辑，但这个地雷还是以前埋进去的，也怨不了别人。</p>
-
-<p>其实，关于资源释放的逻辑封装，可以参考spring的jdbc封装(回调的方式)，又或许用ThreadLocal、拦截器等方式在整个应用上进行处理。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[周日笔记本系统安装记事]]></title>
-    <link href="http://mccxj.github.com/blog/20131120_notebook-system-install.html"/>
-    <updated>2013-11-20T00:00:00+08:00</updated>
-    <id>http://mccxj.github.com/blog/notebook-system-install</id>
-    <content type="html"><![CDATA[<p>上周在京东商城买了一个HP的笔记本，没有带系统，本来以为装个系统不麻烦，没想到整了一天才装好。</p>
-
-<p>事情是这样的，网上推荐使用USB安装，可是我手头上只有一个2G的USB，心想装个xp凑合使用着。我使用了老毛桃的装机工具，
-发现无论是使用ghost还是原版安装，都没法成功，重启之后到了xp启动界面就蓝屏了。</p>
-
-<p>尝试了好几次之后，并且测试chkdsk /f 后无效，我还是上网查找一下。<strong>错误码是0X0000007B</strong>，网上说这个是和硬盘有关,是设置问题或者病毒造成的硬盘引导分区错误。
-如果是在用原版系统盘安装系统的时候出这个问题，那说明机器配置还是比较新的，作为老的系统盘，不认这么新的硬盘接口，所以得进BIOS把硬盘模式改成IDE兼容模式。</p>
-
-<p>我这机器是新的，硬盘也重新格式化并分区了，应该不是什么病毒的问题。那应该是硬盘接口的问题，不过我发现BIOS里边没有硬盘的设置项目，上网搜索发现的确是没有这个设置的。</p>
-
-<p>看来xp是没希望了，只好换win7系统，win7的iso有2G多，只能分两次拷贝到笔记本硬盘上，再安装系统。果然，这次就很顺利了，整整折腾了一天。看来，装机也是技术活呀。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[谈任务分解与评估]]></title>
-    <link href="http://mccxj.github.com/blog/20131108_mission-estimate.html"/>
-    <updated>2013-11-08T00:00:00+08:00</updated>
-    <id>http://mccxj.github.com/blog/mission-estimate</id>
-    <content type="html"><![CDATA[<p>平时工作，做需求的时候，总有有时间限制，俗称工作量评估，通常用x天或者x个单位点数来表示。在现实中，评估都是很随意的，实际结果经常有很大出入。
-在这里不评论，这种做法有多科学。只是单个任务工作量越大，越需要细分，直到有足够的清晰度，这样才能评估得比较靠谱。这里我们用一个例子来解释一下。</p>
-
-<p>我最近想做一个andriod上的死活题app，至少第一期的目标是这样的。我们先来做一下分解，看看需要那些工具，需要做什么工作。</p>
-
-<p>总体来说，用android，优先考虑使用java开发。这需要java的编程经验和一些android的经验。我认为，这个不是难点，还是比较有信心的。</p>
-
-<p>既然是围棋的死活题，需要了解死活题的存储格式，这是一种基于文本的格式，用树型分支的形式。
-这个程序需要能够识别这种格式，这要求我们需要实现一个解释器，不过我考虑使用现成的词法分析器来实现，例如javacc，当然如果不懂这个，还得去学习一下。</p>
-
-<p>另外，这是一个围棋游戏，肯定需要实现游戏规则，最重要的就是落子，吃子的判断。这个是最重要的算法部分。</p>
-
-<p>还有就是，由于涉及棋盘显示，可能需要实现自定义控件或者绘图功能。如果不熟悉，也是要多花些时间的。</p>
-
-<p>还有一些不那么明显的细节部分，举例如下:</p>
-
-<p>死活题通常只用了棋盘的一小部分，手机屏幕又小，如何只是集中显示部分？<br/>
-另外，在显示所有死活题列表的时候，能不能显示预览图？</p>
-
-<p>举例子，是想说明，一些看似简单的任务，其实并没有那么简单。除了仔细分解任务，还有个常用的手法就是原型，把认为最难的部分先做一下，看看心里有没有底。</p>
-
-<p>当然，所有的任务都跟你的熟悉程度有关，经常做一件事情就是这样(日常的工作就是这样)。但这些工作经验，在切换到非舒适区的时候，并不能减少心里的担忧。对于做技术的人来说，需要做的事，往往是要敢于打破技术舒适区。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[小心jsch的sftp连接泄露]]></title>
-    <link href="http://mccxj.github.com/blog/20131106_jsch-session-connect.html"/>
-    <updated>2013-11-06T00:00:00+08:00</updated>
-    <id>http://mccxj.github.com/blog/jsch-session-connect</id>
-    <content type="html"><![CDATA[<p>今天早上和一个同事处理一个现网问题，从javacore里边可以看到大量的Connect Thread，如下所示：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">Connect</span> <span class="n">thread</span> <span class="mf">192.168</span><span class="o">.</span><span class="mf">1.100</span> <span class="n">session</span><span class="err">&quot;</span> <span class="n">prio</span><span class="o">=</span><span class="mi">6</span> <span class="n">tid</span><span class="o">=</span><span class="mh">0x042d3400</span> <span class="n">nid</span><span class="o">=</span><span class="mh">0x1458</span> <span class="n">runnable</span> <span class="o">[</span><span class="mh">0x04e4f000</span><span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>堆栈信息如下:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">...</span>
-</span><span class='line'><span class="n">com</span><span class="o">.</span><span class="na">jcraft</span><span class="o">.</span><span class="na">jsch</span><span class="o">.</span><span class="na">Session</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">Session</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">1193</span><span class="o">)</span>
-</span><span class='line'><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Thread</span><span class="o">.</span><span class="na">run</span><span class="o">(</span><span class="n">Thread</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">619</span><span class="o">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>怀疑是资源泄露了，jsch是一个sftp的工具库。检查jsch的使用代码，可以看到代码是有进行关闭的，如下所示：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">JSch</span> <span class="n">jsch</span> <span class="o">=</span> <span class="k">new</span> <span class="n">JSch</span><span class="o">();</span>
-</span><span class='line'><span class="n">Session</span> <span class="n">session</span> <span class="o">=</span> <span class="n">jsch</span><span class="o">.</span><span class="na">getSession</span><span class="o">(</span><span class="s">&quot;caixiaojian&quot;</span><span class="o">,</span> <span class="s">&quot;192.168.1.100&quot;</span><span class="o">,</span> <span class="mi">22</span><span class="o">);</span>
-</span><span class='line'><span class="n">session</span><span class="o">.</span><span class="na">setPassword</span><span class="o">(</span><span class="s">&quot;******&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="n">session</span><span class="o">.</span><span class="na">setConfig</span><span class="o">(</span><span class="s">&quot;StrictHostKeyChecking&quot;</span><span class="o">,</span> <span class="s">&quot;no&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="n">session</span><span class="o">.</span><span class="na">connect</span><span class="o">();</span>
-</span><span class='line'><span class="n">Channel</span> <span class="n">channel</span> <span class="o">=</span> <span class="n">session</span><span class="o">.</span><span class="na">openChannel</span><span class="o">(</span><span class="s">&quot;sftp&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="n">channel</span><span class="o">.</span><span class="na">connect</span><span class="o">();</span>
-</span><span class='line'><span class="n">ChannelSftp</span> <span class="n">c</span> <span class="o">=</span> <span class="o">(</span><span class="n">ChannelSftp</span><span class="o">)</span> <span class="n">channel</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="n">channel</span><span class="o">.</span><span class="na">connect</span><span class="o">();</span>
-</span><span class='line'><span class="c1">//...</span>
-</span><span class='line'><span class="n">channel</span><span class="o">.</span><span class="na">disconnect</span><span class="o">();</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>不过从官方的<a href="http://www.jcraft.com/jsch/examples/Sftp.java.html">例子</a>上看到，最需要关闭的是session对象而不是channel对象。
-于是写了一个简单的测试Demo，把上面的代码跑5次，看看能不能重现:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#jstack -l 3621 | grep Connect</span>
-</span><span class='line'>Connect thread 192.168.1.100 session<span class="s2">&quot; prio=6 tid=0x042d3400 nid=0x1458 runnable [0x04e4f000]</span>
-</span><span class='line'><span class="s2">Connect thread 192.168.1.100 session&quot;</span> <span class="nv">prio</span><span class="o">=</span>6 <span class="nv">tid</span><span class="o">=</span>0x042d0400 <span class="nv">nid</span><span class="o">=</span>0x16c8 runnable <span class="o">[</span>0x04def000<span class="o">]</span>
-</span><span class='line'>Connect thread 192.168.1.100 session<span class="s2">&quot; prio=6 tid=0x041b4000 nid=0xd38 runnable [0x04d8f000]</span>
-</span><span class='line'><span class="s2">Connect thread 192.168.1.100 session&quot;</span> <span class="nv">prio</span><span class="o">=</span>6 <span class="nv">tid</span><span class="o">=</span>0x041b2000 <span class="nv">nid</span><span class="o">=</span>0x166c runnable <span class="o">[</span>0x04bcf000<span class="o">]</span>
-</span><span class='line'>Connect thread 192.168.1.100 session<span class="err">&quot;</span> <span class="nv">prio</span><span class="o">=</span>6 <span class="nv">tid</span><span class="o">=</span>0x041b1000 <span class="nv">nid</span><span class="o">=</span>0x450 runnable <span class="o">[</span>0x04b2f000<span class="o">]</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>果然出现了，试着在最后调用一下session.disconnect(),重试一下果然不存在了上述线程了。</p>
 ]]></content>
   </entry>
   

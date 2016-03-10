@@ -1,0 +1,530 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>weblogic 11g类加载问题总结 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="weblogic 11g类加载问题总结">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20151023_weblogic-11g-classloader-prefer.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Weblogic 11g类加载问题总结</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-10-23T00:00:00+08:00" pubdate data-updated="true">Oct 23<span>rd</span>, 2015</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p><strong>本人在此之前甚少接触weblogic，家里的weblogic也是第一次安装的。如果发现错误，敬请指正。</strong></p>
+
+<h2>问题描述</h2>
+
+<p>XX局点升级weblogic为11g，重新发包出错。现在记录一下处理的各种问题总结。</p>
+
+<h3>错误1: apache commons某些包的方法没有找到</h3>
+
+<p>这是最早出现的问题，会出现类似下面的错误信息。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>&lt;2015-10-14 下午05时57分30秒 CST&gt; &lt;Error&gt; &lt;HTTP&gt; &lt;BEA-101017&gt; &lt;[ServletContext@1385406679[app:XXService module:XXService path:/XXService spec-version:2.5]] Root cause of ServletException.
+</span><span class='line'>java.lang.NoSuchMethodError: org.apache.commons.io.FileUtils.copyInputStreamToFile(Ljava/io/InputStream;Ljava/io/File;)V
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>原因分析</li>
+</ul>
+
+
+<p>这是weblogic部署最常见的问题，因为weblogic会自带I一些commons-*的包，这些包的版本还比较旧。具体可以见WEBLOGIC_HOME/modules目录的jar包。</p>
+
+<ul>
+<li>此次采用的处理方式</li>
+</ul>
+
+
+<p>添加weblogic.xml并设置prefer-web-inf-classes，即优先加载web应用下的类</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+</span><span class='line'><span class="nt">&lt;weblogic-web-app&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;container-descriptor&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;prefer-web-inf-classes&gt;</span>true<span class="nt">&lt;/prefer-web-inf-classes&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/container-descriptor&gt;</span>
+</span><span class='line'><span class="nt">&lt;/weblogic-web-app&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>错误2: jsp使用jstl时出现SAXParserFactory的ClassCastException</h3>
+
+<p>这是使用prefer-web-inf-classes为true之后出现的问题，会出现类似下面的错误信息。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>The validator class: &quot;org.apache.taglibs.standard.tlv.JstlCoreTLV&quot; has failed with the following exception: &quot;java.lang.ClassCastException: weblogic.xml.jaxp.RegistrySAXParserFactory cannot be cast to javax.xml.parsers.SAXParserFactory&quot;.
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>原因分析</li>
+</ul>
+
+
+<p>这是weblogic部署很常见的问题，jstl会调用sax，sax是通过spi机制加载实现，获取是weblogic的实现，但它使用的是jdk自带的javax.xml.parsers.SAXParserFactory接口。
+刚好web应用下也带了jar包xml-apis-1.x.jar，它也有javax.xml.parsers.SAXParserFactory这个接口。根据prefer-web-inf-classes的设置，jstl代码中用的是这个接口。
+由此可知，使用classloader并不一样，无法转换。</p>
+
+<ul>
+<li>此次采用的处理方式</li>
+</ul>
+
+
+<p>删除WEB-INF/lib/xml-apis-1.x.jar后本地测试该问题恢复。</p>
+
+<h3>错误3: 出现QName的LinkageError</h3>
+
+<p>这是错误2解决后，继续解析spring时出现的问题。</p>
+
+<ul>
+<li>原因分析</li>
+</ul>
+
+
+<p>这个问题和上面的差不多，太细就不深究了。</p>
+
+<ul>
+<li>此次采用的处理方式</li>
+</ul>
+
+
+<p>这种情况下，如果使用prefer-web-inf-classes为true，则需要排除存在QName的jar包并删除，但最后没有采用(改动太大，得不偿失)。<br/>
+所以这次重新设置了prefer-web-inf-classes为false，但仍然优先加载commons，如下:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+</span><span class='line'><span class="nt">&lt;weblogic-web-app&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;container-descriptor&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;prefer-web-inf-classes&gt;</span>false<span class="nt">&lt;/prefer-web-inf-classes&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;prefer-application-packages&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;package-name&gt;</span>org.apache.commons.*<span class="nt">&lt;/package-name&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/prefer-application-packages&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/container-descriptor&gt;</span>
+</span><span class='line'><span class="nt">&lt;/weblogic-web-app&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>修改后本地测试ok，但发布到生产仍然失败。</p>
+
+<h3>错误4: MemCachedClient获取key失败(序列化问题)</h3>
+
+<p>错误3处理后，发布到生产仍然出错，报错信息如下:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>18:44:57.337 [[ACTIVE] ExecuteThread: &#39;0&#39; for queue: &#39;weblogic.kernel.Default (self-tuning)&#39;] ERROR com.danga.MemCached.MemCachedClient - ++++ exception thrown while trying to get object from cache for key: init_error_key_0098
+</span><span class='line'>18:44:57.351 [[ACTIVE] ExecuteThread: &#39;0&#39; for queue: &#39;weblogic.kernel.Default (self-tuning)&#39;] ERROR com.danga.MemCached.MemCachedClient - com.xxx.hnxx.mybatis.entity.PlaterrorCodeBean
+</span><span class='line'>java.io.IOException: com.xxx.hnxx.mybatis.entity.PlaterrorCodeBean
+</span><span class='line'>  at com.schooner.MemCached.ObjectTransCoder.decode(Unknown Source) ~[MemCached-2.6.6.jar:na]
+</span><span class='line'>  at com.schooner.MemCached.AscIIClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
+</span><span class='line'>  at com.schooner.MemCached.AscIIClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
+</span><span class='line'>  at com.schooner.MemCached.AscIIClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
+</span><span class='line'>  at com.danga.MemCached.MemCachedClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
+</span><span class='line'>  at com.xxx.hnxx.cache.mencached.MemcacheManagerClient.get(MemcacheManagerClient.java:162) [MemcacheManagerClient.class:na]
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>上面的错误信息表示获取init_error_key_0098这个可以的时候失败，实际上这个key是在应用启动的时候就塞进去的。</p>
+
+<ul>
+<li>原因分析</li>
+</ul>
+
+
+<p>这里有很多意想不到的事情，所以详细解释一下。</p>
+
+<p>首先，这个出现了IOException让人联想到是否memcached服务器连接的问题。<br/>
+实际上是因为库在实现java对象放入memcached的时候，有一个序列化/反序列化的过程(就是java自带的那个)，在反序列化的时候找不到类会出现ClassNotFoundException，然后库将错误信息(就是一个类名)取出重新包装为IOException。<br/>
+所以，这实际上是一个类找不到的问题。</p>
+
+<p>再者，这个问题一开始在家里的weblogic没法重现。后来我重新检查了生产上weblogic的启动日志才发现了一些差异。<br/>
+关键信息如下所示，生产上的weblogic在domain的lib目录也是有jar包的，而家里的是没有的。尝试修改把jar包也拷贝一份，果然重现。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>&lt;2015-10-14 下午06时44分36秒 CST&gt; &lt;Notice&gt; &lt;WebLogicServer&gt; &lt;BEA-000395&gt; &lt;Following extensions directory contents added to the end of the classpath:/weblogic/bea/user_projects/domains/PLATFORM_DOM/lib/MemCached-2.6.6.jar:/weblogic/bea/user_projects/domains/PLATFORM_DOM/lib/MyXMLSerializer-1.0.0.jar...
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>最后，这个问题就好解释多了。</p>
+
+<ol>
+<li>需要序列化/反序列化的类是在com.huawei下面的，这部分类指在web应用中存在。在system classloader是找不到的。</li>
+<li>序列化/反序列化时候，都是由web应用中的类，调用memcached库去实现的(虽然web应用中也有，但是根据prefer-web-inf-classes设置，加载的是domain中lib目录的)</li>
+<li><p>序列化只是没什么特别。但是反序列化需要加载类，很明显system classloader(memcached库的classloader)是加载不到web应用中的类的。</p></li>
+<li><p>此次采用的处理方式</p></li>
+</ol>
+
+
+<p>有好几种方式，都列举一下:</p>
+
+<ol>
+<li>删除domain中的jar包，这样就会加载到web应用中的类，让库和需要序列化的类都有web classloader加载</li>
+<li>让库也由web优先加载，如下所示</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+</span><span class='line'><span class="nt">&lt;weblogic-web-app&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;container-descriptor&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;prefer-web-inf-classes&gt;</span>false<span class="nt">&lt;/prefer-web-inf-classes&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;prefer-application-packages&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;package-name&gt;</span>org.apache.commons.*<span class="nt">&lt;/package-name&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;package-name&gt;</span>com.danga.*<span class="nt">&lt;/package-name&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;package-name&gt;</span>com.schooner.*<span class="nt">&lt;/package-name&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/prefer-application-packages&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/container-descriptor&gt;</span>
+</span><span class='line'><span class="nt">&lt;/weblogic-web-app&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>指定memcached库进行反序列化时的classloader，如下所示:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="n">ClassLoader</span> <span class="n">classLoader</span> <span class="o">=</span> <span class="n">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">().</span><span class="na">getContextClassLoader</span><span class="o">();</span>
+</span><span class='line'>    <span class="c1">// MemCachedClient实例化时，会持有SockIOPool.getInstance()单利的引用</span>
+</span><span class='line'>    <span class="n">cachedClient</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MemCachedClient</span><span class="o">((</span><span class="n">String</span><span class="o">)</span><span class="kc">null</span><span class="o">,</span> <span class="kc">true</span><span class="o">,</span> <span class="kc">false</span><span class="o">,</span> <span class="n">classLoader</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>个人推荐的优先级是2 - 3 - 1, 尽量做到容器无关，并少动全局的东西。<strong>由于目前生产上的weblogic版本已经回退，待后续上生产验证。</strong></p>
+
+<h2>weblogic的类加载器介绍</h2>
+
+<ul>
+<li>整体的类加载器层次如下(只关注war部分)，并采用标准的双亲委托加载机制</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">WebLogic</span> <span class="n">Server</span> <span class="n">System</span> <span class="nf">classloader</span> <span class="o">(</span><span class="n">classpath</span><span class="err">、</span><span class="o">&lt;</span><span class="n">domain</span><span class="o">&gt;/</span><span class="n">lib</span><span class="o">)</span>
+</span><span class='line'><span class="n">Filtering</span> <span class="nf">classloader</span> <span class="o">(</span><span class="err">空</span><span class="o">)</span>
+</span><span class='line'><span class="n">Application</span> <span class="nf">classloader</span> <span class="o">(</span><span class="n">EJB</span> <span class="n">JARs</span><span class="err">、</span><span class="n">APP</span><span class="o">-</span><span class="n">INF</span><span class="o">/</span><span class="n">lib</span><span class="err">、</span><span class="n">APP</span><span class="o">-</span><span class="n">INF</span><span class="o">/</span><span class="n">classes</span><span class="err">、</span><span class="n">Manifest</span> <span class="n">Class</span><span class="o">-</span><span class="n">Path</span> <span class="n">in</span> <span class="n">EJB</span> <span class="n">JARs</span><span class="o">)</span>
+</span><span class='line'><span class="n">Web</span> <span class="n">application</span> <span class="nf">classloader</span> <span class="o">(</span><span class="n">WAR</span><span class="err">、</span><span class="n">Manifest</span> <span class="n">Class</span><span class="o">-</span><span class="n">Path</span> <span class="n">in</span> <span class="n">WAR</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>Web application classloader可以通过weblogic.xml中的prefer-web-inf-classes优先加载war中的类，找不到才向上请求</li>
+<li>Filtering classloader并不会加载任何类，而是起到控制类加载优先级的作用。通过配置<prefer-application-packages>可以限制对于指定的类不再向上请求，也就是限制范围内加载</li>
+<li>配置prefer-application-packages/prefer-application-resources的话，prefer-web-inf-classes必须配置为false</li>
+<li>资源(resource)的加载顺序，在开启Filtering之后，顺序为App - Web - System(App、Web仍然是符合双亲委托的)</li>
+</ul>
+
+
+<h2>参考材料</h2>
+
+<ul>
+<li>http://docs.oracle.com/cd/E23943_01/web.1111/e13712/weblogic_xml.htm#WBAPP599</li>
+<li>http://docs.oracle.com/cd/E12839_01/web.1111/e13706/classloading.htm#WLPRG284</li>
+<li>http://tobato.iteye.com/blog/1845969</li>
+<li>http://tobato.iteye.com/blog/1483020</li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-10-23T00:00:00+08:00" pubdate data-updated="true">Oct 23<span>rd</span>, 2015</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/weblogic/'>weblogic</a>, <a class='category' href='/blog/categories/lei-jia-zai/'>类加载</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20151011_websphere-sharelib-loading.html" title="Previous Post: Websphere共享库加载顺序问题">&laquo; Websphere共享库加载顺序问题</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150107_charset-intro.html">关于编码与乱码问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141229_des-hack.html">常见DES实现陷阱</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141225_java-common-util.html">java常见工具库培训</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20151023_weblogic-11g-classloader-prefer.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20151023_weblogic-11g-classloader-prefer.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

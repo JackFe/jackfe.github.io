@@ -2,462 +2,484 @@
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
         <loc>http://mccxj.github.com/blog/20120622_new-blog-in-github.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120625_ant-on-wood-stick.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120628_how-to-lianliankan.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120628_how-to-play-go.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120629_problem-about-jekyll-and-markdown.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120706_the-cup-game.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120707_everyday-codediff-tool-with-svn-cmd.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120709_one-line-drawing-game.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120709_stair-walk.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120710_sudoku.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120712_horse-riding-chessboard.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120714_hello-erlang-1.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120715_hello-erlang-2.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120718_hello-erlang-3.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120721_hello-erlang-4.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120721_improve-bitter-code.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120724_improve-bitter-code-1.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120724_improve-bitter-code-2.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120728_improve-bitter-code-3.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120729_improve-bitter-code-4.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120729_improve-bitter-code-5.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120731_improve-bitter-code-6.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120804_improve-bitter-code-7.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120807_improve-bitter-code-8.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120814_naming-style.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120815_improve-bitter-code-9.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120815_thought-read-javascript-idea.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120815_thought-read-node-web-development.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120818_thought-read-jolt-book.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120819_reverse-svn-diff-file.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120902_linux-config-introduction.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120902_new-to-linux-command.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20120903_jforum2-source-analytics.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121017_reflection-in-java.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121111_javacore.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121120_how-to-share.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121120_oracle-explain-plan.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121130_findbugs.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121130_ibatis-more-config.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121130_jstl.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121130_maven-quickstart.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121202_avtivemq-and-rule-engine.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121202_framework-improve-base-library.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121202_framework-improve-exception-handle.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121202_framework-improve-layer.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121202_linux-study.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121202_sinatra.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121208_graph-report.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121208_gst-upgrade.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121208_servlet-study-log.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121208_unzip-big-file.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121215_hello-coffeescript.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20121225_arrange.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130101_2012.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130102_nodejs-best-practices.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130103_how-to-wunderlist.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130113_to-be-times-friend.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130120_github-across-gfw.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130120_how-to-blog.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130121_async-javascript.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130127_gist-tag-blog.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130127_jekyll-alias-generator.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130127_jekyll-plugin-with-git-branch.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130206_mini-maven.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130304_restful.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130306_duplicate-code.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130315_java-performance.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130324_mind-map-with-hand.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130327_these-days-algorithms.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130328_cycle-menu.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130517_reading-share-java-puzzle.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130519_rss-reading.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130530_introduce-to-rest.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130531_introduce-to-fiddler.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130602_introduce-to-trove.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130615_java-string-constant-pool.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130630_object-balance-pool.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130806_was-connection-close-fail.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130807_dom-operation-is-not-sync.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130809_java-hell-date.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130809_java-hell-parameter.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130809_java-hell-split.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130809_java-hell-string-append.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130821_java-hell-stream-close.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130821_soduku-generate.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130901_junit-parameterized.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130908_redis-introduction.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130921_books.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20130930_des.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20131025_how-to-excel.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20131029_youdao-note.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20131103_word-contact.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20131106_jsch-session-connect.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20131108_mission-estimate.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20131120_notebook-system-install.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20131126_connection-leak.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20131226_manifest.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20131227_android-tcpdump-netcat-addon.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20131227_classloader-test.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20131228_classloader-answer.html</loc>
-        <lastmod>2014-04-10T22:16:18+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20140219_android-maven-problems.html</loc>
-        <lastmod>2014-04-11T22:59:13+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20140225_android-jdk7-bug.html</loc>
-        <lastmod>2014-04-11T22:50:30+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20140329_was-datasource.html</loc>
-        <lastmod>2014-04-11T22:51:56+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20140410_books-to-be-read.html</loc>
-        <lastmod>2014-04-24T22:14:01+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20140814_xml-intro.html</loc>
-        <lastmod>2015-01-15T21:09:17+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20140815_json-intro.html</loc>
-        <lastmod>2015-01-15T21:10:22+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20141126_org-json-and-xml.html</loc>
-        <lastmod>2015-01-13T21:19:17+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20141225_java-common-util.html</loc>
-        <lastmod>2015-01-13T21:17:07+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20141229_des-hack.html</loc>
-        <lastmod>2015-01-15T21:13:05+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20150107_charset-intro.html</loc>
-        <lastmod>2015-01-15T21:59:45+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20150108_net-sf-json-problem.html</loc>
-        <lastmod>2015-01-13T21:18:55+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/20150114_java-charset-problem.html</loc>
-        <lastmod>2015-01-15T21:16:47+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://mccxj.github.com/blog/20150624_Android-Universal-Image-Loader-source-view.html
+        </loc>
+        <lastmod>2016-03-10T21:33:09+08:00</lastmod>
+    </url>
+    <url>
+        <loc>http://mccxj.github.com/blog/20150702_httpclient-init-fail.html</loc>
+        <lastmod>2016-03-10T21:50:32+08:00</lastmod>
+    </url>
+    <url>
+        <loc>http://mccxj.github.com/blog/20150808_ibm-jdk-char-encoding-diff.html</loc>
+        <lastmod>2016-03-10T21:59:14+08:00</lastmod>
+    </url>
+    <url>
+        <loc>http://mccxj.github.com/blog/20151011_websphere-sharelib-loading.html</loc>
+        <lastmod>2016-03-10T22:10:23+08:00</lastmod>
+    </url>
+    <url>
+        <loc>http://mccxj.github.com/blog/20151023_weblogic-11g-classloader-prefer.html</loc>
+        <lastmod>2016-03-10T22:08:15+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/blog/archives/</loc>
-        <lastmod>2015-01-15T21:59:45+08:00</lastmod>
+        <lastmod>2016-03-10T22:10:23+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/</loc>
-        <lastmod>2015-01-15T21:59:45+08:00</lastmod>
+        <lastmod>2016-03-10T22:10:23+08:00</lastmod>
     </url>
     <url>
         <loc>http://mccxj.github.com/robots.txt</loc>
-        <lastmod>2014-04-10T22:16:19+08:00</lastmod>
+        <lastmod>2016-03-08T22:26:55+08:00</lastmod>
     </url>
 </urlset>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: gist_tag.rb | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/gist-tag-dot-rb/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2015-01-15T22:00:26+08:00</updated>
+  <updated>2016-03-10T22:45:25+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -26,10 +26,10 @@ github page可以直接嵌入gist，并且能显示高亮。
 看看下面gist_tag.rb这个插件的效果:</p>
 
 <p><div><script src='https://gist.github.com/4648237.js?file=gist_tag.rb'></script>
-<noscript><pre><code>require 'cgi'
-require 'digest/md5'
-require 'net/https'
-require 'uri'
+<noscript><pre><code>require &#39;cgi&#39;
+require &#39;digest/md5&#39;
+require &#39;net/https&#39;
+require &#39;uri&#39;
 
 module Jekyll
   class GistTag &lt; Liquid::Tag
@@ -66,7 +66,7 @@ module Jekyll
 
     def add_code_tags(code)
       # Add nested &lt;code&gt; tags to code blocks
-      code = code.sub(/&lt;pre&gt;/,'&lt;pre&gt;&lt;code class=&quot;#{@lang}&quot;&gt;')
+      code = code.sub(/&lt;pre&gt;/,&#39;&lt;pre&gt;&lt;code class=&quot;#{@lang}&quot;&gt;&#39;)
       code = code.sub(/&lt;\/pre&gt;/,&quot;&lt;/code&gt;&lt;/pre&gt;&quot;)
     end
 
@@ -74,7 +74,7 @@ module Jekyll
       #The div is required because RDiscount blows ass
       &lt;&lt;-HTML
 &lt;div&gt;
-  &lt;pre&gt;&lt;code class='#{@lang}'&gt;#{h(code).strip}&lt;/code&gt;&lt;/pre&gt;
+  &lt;pre&gt;&lt;code class=&#39;#{@lang}&#39;&gt;#{h(code).strip}&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
       HTML
     end
@@ -102,8 +102,8 @@ module Jekyll
 
     def get_cache_file_for(gist, file)
       bad_chars = /[^a-zA-Z0-9\-_.]/
-      gist      = gist.gsub bad_chars, ''
-      file      = file.gsub bad_chars, ''
+      gist      = gist.gsub bad_chars, &#39;&#39;
+      file      = file.gsub bad_chars, &#39;&#39;
       md5       = Digest::MD5.hexdigest &quot;#{gist}-#{file}&quot;
       File.join @cache_folder, &quot;#{gist}-#{file}-#{md5}.cache&quot;
     end
@@ -130,8 +130,8 @@ module Jekyll
   end
 end
 
-Liquid::Template.register_tag('gist', Jekyll::GistTag)
-Liquid::Template.register_tag('gistnocache', Jekyll::GistTagNoCache)</code></pre></noscript></div>
+Liquid::Template.register_tag(&#39;gist&#39;, Jekyll::GistTag)
+Liquid::Template.register_tag(&#39;gistnocache&#39;, Jekyll::GistTagNoCache)</code></pre></noscript></div>
 </p>
 ]]></content>
   </entry>

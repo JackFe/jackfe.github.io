@@ -9,10 +9,7 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="练习重点 erlang是单赋值的，就好像都经过java里边的final修饰过
-erlang没有内置的循环结构，这个和大多数语言是不一样的
-erlang是函数式语言，需要理解模式匹配编程方式
-erlang经常会遇到递归, 并且支持尾递归函数调用 练习1:数据库demo &hellip;">
+  <meta name="description" content="备注: 示例中的代码并不是真实代码的完全拷贝 群里的讨论 前两天在开发群里边，有同事讨论一个api: 增加一个取特定序列值的方法。并给出了以下的原型代码： public Object getSeqValue(String seqname, String maindb){ if(&quot;1& &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -73,7 +70,7 @@ erlang经常会遇到递归, 并且支持尾递归函数调用 练习1:数据库
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/20120714_hello-erlang-1.html">Hello Erlang, Part 1</a></h1>
+      <h1 class="entry-title"><a href="/blog/20120724_improve-bitter-code-1.html">Improve Bitter Code: 迷惑的boolean参数</a></h1>
     
     
       <p class="meta">
@@ -89,9 +86,604 @@ erlang经常会遇到递归, 并且支持尾递归函数调用 练习1:数据库
   
 
 
-<time datetime="2012-07-14T00:00:00+08:00" pubdate data-updated="true">Jul 14<span>th</span>, 2012</time>
+<time datetime="2012-07-24T00:00:00+08:00" pubdate data-updated="true">Jul 24<span>th</span>, 2012</time>
         
-         | <a href="/blog/20120714_hello-erlang-1.html#disqus_thread">Comments</a>
+         | <a href="/blog/20120724_improve-bitter-code-1.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>群里的讨论</h3>
+
+<p>前两天在开发群里边，有同事讨论一个api: 增加一个取特定序列值的方法。并给出了以下的原型代码：</p>
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Object</span> <span class="nf">getSeqValue</span><span class="o">(</span><span class="n">String</span> <span class="n">seqname</span><span class="o">,</span> <span class="n">String</span> <span class="n">maindb</span><span class="o">){</span>
+    <span class="k">if</span><span class="o">(</span><span class="s">&quot;1&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">maindb</span><span class="o">)){</span>
+        <span class="n">DbRunContext</span><span class="o">.</span><span class="na">setRegion</span><span class="o">(</span><span class="n">DbRunContext</span><span class="o">.</span><span class="na">MAINDB</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="c1">// more codes</span>
+    <span class="k">return</span> <span class="n">XXDao</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>其中maindb是因为项目支持多数据库的缘故，传入参数maindb来判断是否走主库还是地市库。
+我不知道这个&#8221;1&#8221;是怎么来的，我随口冒出一句：能不能不传递maindb,谁知道要传递什么呢?</p>
+
+<p>于是很快冒出&#8221;改进&#8221;方案，换成一个布尔值，代码变成这样:</p>
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Object</span> <span class="nf">getSeqValue</span><span class="o">(</span><span class="n">String</span> <span class="n">seqname</span><span class="o">,</span> <span class="kt">boolean</span> <span class="n">isMaindb</span><span class="o">){</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">isMaindb</span><span class="o">){</span>
+        <span class="n">DbRunContext</span><span class="o">.</span><span class="na">setRegion</span><span class="o">(</span><span class="n">DbRunContext</span><span class="o">.</span><span class="na">MAINDB</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="c1">// more codes</span>
+    <span class="k">return</span> <span class="n">XXDao</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>很显然这不是一个好的解决办法，我从使用者的角度来说，举了下面的例子:</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+<span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+</code></pre></div>
+
+
+<p>单单看上面的调用方式，谁能很清楚的说明分别是什么意思?</p>
+
+<p>很明显，这相当的困难。所以我建议对方法进行重命名，例如</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">getSeqValueFromMaindb</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
+<span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
+</code></pre></div>
+
+
+<p>当然，可以考虑把原来的方法换成私有的，这样避免代码重复而不会对调用者造成困惑。</p>
+
+<h3>迷惑人的参数随处可见</h3>
+
+<p>在我们的代码里边，类似这样的参数困惑随处可见，除了这种布尔值，还有&#8221;1&#8221;和&#8221;0&#8221;
+这种魔法数字，字符串，因为调用太频繁了，很多人不愿意给他取个好听的名字。</p>
+
+<p>例如区分调用后台逻辑是否起事务，用得太多了，加上老代码就这么用，所以很多同事
+没有意识加个IS_TRANSACTION这类的静态变量。看，代码就变成下面的样子：</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">cmd</span><span class="o">,</span> <span class="n">subcmd</span><span class="o">,</span> <span class="s">&quot;1&quot;</span><span class="o">);</span>
+<span class="n">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">cmd</span><span class="o">,</span> <span class="n">subcmd</span><span class="o">,</span> <span class="s">&quot;0&quot;</span><span class="o">);</span>
+</code></pre></div>
+
+
+<p>参数这东西，对看代码的人来说没什么特别的帮助，参数越多越迷惑。
+当两个方法调用就差一个布尔值不一样的时候，那是相当痛苦的。
+所以最好还是从方法名上进行区分，保持代码的可读性。对于接口方法，公用方法，更是应该如此。</p>
+
+<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
+
+
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li>2012-07-24 improve bitter code: 迷惑的boolean参数</li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120721_improve-bitter-code.html">Improve Bitter Code</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-21T00:00:00+08:00" pubdate data-updated="true">Jul 21<span>st</span>, 2012</time>
+        
+         | <a href="/blog/20120721_improve-bitter-code.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>想法</h3>
+
+<p>周五的时候去了趟图书馆，回来的时候已经2点了，又是组织参加每周的代码评审了。
+这项活动已经参加了很多次了，但还是经常会遇到相同的问题，即使每天codediff，
+也很难避免问题一次次的重复出现。代码基还是不可避免的膨胀，需求变化还是那么的频繁，
+人员流动还是那么快，新人还是有那么多不成熟的编码风格。</p>
+
+<p>在这个开发团队里边，也没少唠叨编码规范，codediff也是经常再做，代码评审还是有弄，
+但最终的效果，体现在代码上，还远远没有那么乐观。我认为这有好些原因：一方面是历史原因，
+代码基庞大，复杂，每天对着这些代码，连好代码是怎样的都没有见过，还能真的无师自通?
+另外一方面是各种质量改进活动参与度都不是很高，毕竟目标是完成需求，时间久了热情一点点磨灭，
+对这个就更不重视了。</p>
+
+<p>相信很多人看过郑大的代码之丑，里边很多素材就出自我所在的项目组，所以这种代码我也看见不少了，
+正因为如此，我觉得我也能写一些相关的内容。在下班坐地铁回来的时候，
+我列了一些相关主题，更确信了还是有很多内容可以做文章的。大多数题材来自
+项目的代码，自己的想法思路则是来源于平时的实践，工作经历，还有开源代码和各种相关的书籍。</p>
+
+<h3>计划</h3>
+
+<p>整个系列围绕bitter code来说，毕竟维护现有代码是非常重要的工作。这么个系列名称灵感来源于
+代码之丑系列和一本叫bitter java的书籍。虽然我觉得代码之丑的名称不是很好，但内容形式会和
+这个系列类似，只是会多加一些上下文和背景。文章内容仍然以代码为主线，写出我对代码的改进意见，
+至于发布周期，大约是一个星期争取不少于两篇!!</p>
+
+<p>期待吧!!!</p>
+
+<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
+
+
+<ul>
+ 
+  
+  <li>2012-07-21 improve bitter code</li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120721_hello-erlang-4.html">Hello Erlang, Part 4</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-21T00:00:00+08:00" pubdate data-updated="true">Jul 21<span>st</span>, 2012</time>
+        
+         | <a href="/blog/20120721_hello-erlang-4.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>练习重点</h3>
+
+<p>列表解析和高阶函数是erlang的基本用法之一，熟练掌握还是很有必要的。
+作为一个阶段的学习总结，按照书上的一个练习题，尝试实现列表模块中的一些方法。</p>
+
+<h3>后续学习计划</h3>
+
+<p>再找时间总结一下位匹配用法，然后就开始客户端服务器编程模型，
+网络和分布式方面的内容。</p>
+
+<p>相关内容虽然都看过一下，但是没有敲过代码，感觉心里没底。还是那个硬道理：纸上得来终觉浅呀。</p>
+
+<h3>简单的测试用例</h3>
+
+<p>作为另外一个章节的内容，单元测试。我顺便实践一下erlang的单元测试框架eunit，
+里边使用了宏来作为assert语句(使用eclipse插件可以有很好的提示)，
+总的来说，xunit的基本风格都差不多，注意import eunit的包，方法名采用_test结束。
+执行的时候调用模块的test方法就可以了。我简单写了一些测试用例:</p>
+
+<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">myliststest</span><span class="p">).</span>
+<span class="p">-</span><span class="ni">include_lib</span><span class="p">(</span><span class="s">&quot;eunit/include/eunit.hrl&quot;</span><span class="p">).</span>
+<span class="p">-</span><span class="ni">import_all</span><span class="p">(</span><span class="n">mylists</span><span class="p">).</span>
+
+<span class="c">%% EUnit TestCase</span>
+
+<span class="c">%% all/2</span>
+<span class="nf">all_empty_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assert</span><span class="p">(</span><span class="nn">mylists</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">end</span><span class="p">,</span> <span class="p">[])).</span>
+<span class="nf">all_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertNot</span><span class="p">(</span><span class="nn">mylists</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">10</span><span class="p">])).</span>
+
+<span class="c">%% any/2</span>
+<span class="nf">any_empty_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertNot</span><span class="p">(</span><span class="nn">mylists</span><span class="p">:</span><span class="nf">any</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">end</span><span class="p">,</span> <span class="p">[])).</span>
+<span class="nf">any_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assert</span><span class="p">(</span><span class="nn">mylists</span><span class="p">:</span><span class="nf">any</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">10</span><span class="p">])).</span>
+
+<span class="c">%% append/1</span>
+<span class="nf">append_1_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">append</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]])).</span>
+
+<span class="c">%% append/2</span>
+<span class="nf">append_2_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">(</span><span class="s">&quot;abcdef&quot;</span><span class="p">,</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">append</span><span class="p">(</span><span class="s">&quot;abc&quot;</span><span class="p">,</span> <span class="s">&quot;def&quot;</span><span class="p">)).</span>
+
+<span class="c">%% delete/2</span>
+<span class="nf">delete_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">delete</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])).</span>
+
+<span class="c">%% dropwhile/2</span>
+<span class="nf">dropwhile_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">dropwhile</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])).</span>
+
+<span class="c">%% duplicate/2</span>
+<span class="nf">duplicate_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">duplicate</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">x</span><span class="p">)).</span>
+
+<span class="c">%% filter/2</span>
+<span class="nf">filter_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])).</span>
+
+<span class="c">%% reverse/1</span>
+<span class="nf">reverse_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">reverse</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])).</span>
+
+<span class="c">%% min/1</span>
+<span class="nf">min_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">min</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">])).</span>
+
+<span class="c">%% zip/2</span>
+<span class="nf">zip_2_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([{</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">},{</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">}],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">zip</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])).</span>
+
+<span class="c">%% zip/3</span>
+<span class="nf">zip_3_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([{</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">},{</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">7</span><span class="p">}],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">zip3</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">])).</span>
+
+<span class="c">%% zipwith/3</span>
+<span class="nf">zipwith_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">9</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">zipwith</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span> <span class="nv">Y</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">X</span><span class="o">+</span><span class="nv">Y</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">])).</span>
+
+<span class="c">%% zipwith/4</span>
+<span class="nf">zipwith3_test</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([[</span><span class="n">a</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="n">b</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="n">c</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="mi">3</span><span class="p">]],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">zipwith3</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span> <span class="nv">Y</span><span class="p">,</span> <span class="nv">Z</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">,</span><span class="nv">Z</span><span class="p">]</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">],</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])).</span>
+</code></pre></div>
+
+
+<h3>示例代码</h3>
+
+<p>根据上面的测试用例，我写了实现代码，如下所示。注意的时候，我偷懒使用了export_all,
+但是min/2好像默认有一个已经被引入了，所以需要去除这个模块。就export_all本身来说，
+也不是推荐方式，还是应该严格区分public api和local api。</p>
+
+<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">mylists</span><span class="p">).</span>
+<span class="p">-</span><span class="ni">compile</span><span class="p">(</span><span class="n">export_all</span><span class="p">).</span>
+<span class="p">-</span><span class="ni">compile</span><span class="p">({</span><span class="n">no_auto_import</span><span class="p">,[</span><span class="n">min</span><span class="o">/</span><span class="mi">2</span><span class="p">]}).</span>
+
+<span class="c">%% all/2</span>
+<span class="nf">all</span><span class="p">(_</span><span class="nv">P</span><span class="p">,</span> <span class="p">[])</span> <span class="o">-&gt;</span> 
+  <span class="n">true</span><span class="p">;</span>
+<span class="nf">all</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">])</span> <span class="o">-&gt;</span>
+  <span class="k">case</span> <span class="nv">P</span><span class="p">(</span><span class="nv">H</span><span class="p">)</span> <span class="k">of</span>
+    <span class="n">true</span> <span class="o">-&gt;</span> <span class="n">all</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">T</span><span class="p">);</span>
+    <span class="n">false</span> <span class="o">-&gt;</span> <span class="n">false</span>
+  <span class="k">end</span><span class="p">.</span>
+
+<span class="c">%% any/2</span>
+<span class="nf">any</span><span class="p">(_</span><span class="nv">P</span><span class="p">,</span> <span class="p">[])</span> <span class="o">-&gt;</span>
+  <span class="n">false</span><span class="p">;</span>
+<span class="nf">any</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">])</span> <span class="o">-&gt;</span>
+  <span class="k">case</span> <span class="nv">P</span><span class="p">(</span><span class="nv">H</span><span class="p">)</span> <span class="k">of</span>
+    <span class="n">true</span> <span class="o">-&gt;</span> <span class="n">true</span><span class="p">;</span>
+    <span class="n">false</span> <span class="o">-&gt;</span> <span class="n">any</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">T</span><span class="p">)</span>
+  <span class="k">end</span><span class="p">.</span>
+
+<span class="c">%% append/1</span>
+<span class="nf">append</span><span class="p">(</span><span class="nv">LL</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">[</span><span class="nv">X</span> <span class="p">||</span> <span class="nv">L</span> <span class="o">&lt;-</span> <span class="nv">LL</span><span class="p">,</span> <span class="nv">X</span> <span class="o">&lt;-</span> <span class="nv">L</span><span class="p">].</span>
+
+<span class="c">%% append/2</span>
+<span class="nf">append</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">LA</span> <span class="o">++</span> <span class="nv">LB</span><span class="p">.</span>
+
+<span class="c">%% delete/2</span>
+<span class="nf">delete</span><span class="p">(</span><span class="nv">E</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">[</span><span class="nv">X</span> <span class="p">||</span> <span class="nv">X</span> <span class="o">&lt;-</span> <span class="nv">L</span><span class="p">,</span> <span class="nv">E</span> <span class="o">/=</span> <span class="nv">X</span><span class="p">].</span>
+
+<span class="c">%% dropwhile/2</span>
+<span class="nf">dropwhile</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">[</span><span class="nv">X</span> <span class="p">||</span> <span class="nv">X</span> <span class="o">&lt;-</span> <span class="nv">L</span><span class="p">,</span> <span class="ow">not</span> <span class="nv">P</span><span class="p">(</span><span class="nv">X</span><span class="p">)].</span>
+
+<span class="c">%% duplicate/2</span>
+<span class="nf">duplicate</span><span class="p">(</span><span class="nv">N</span><span class="p">,</span> <span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="n">duplicate</span><span class="p">(</span><span class="nv">N</span><span class="p">,</span> <span class="nv">E</span><span class="p">,</span> <span class="p">[]).</span>
+<span class="nf">duplicate</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">_</span><span class="nv">E</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">L</span><span class="p">;</span>
+<span class="nf">duplicate</span><span class="p">(</span><span class="nv">N</span><span class="p">,</span> <span class="nv">E</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="k">when</span> <span class="nv">N</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">-&gt;</span>
+  <span class="n">duplicate</span><span class="p">(</span><span class="nv">N</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nv">E</span><span class="p">,</span> <span class="p">[</span><span class="nv">E</span><span class="p">|</span><span class="nv">L</span><span class="p">]).</span>
+
+<span class="c">%% filter/2</span>
+<span class="nf">filter</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">[</span><span class="nv">X</span> <span class="p">||</span> <span class="nv">X</span> <span class="o">&lt;-</span> <span class="nv">L</span><span class="p">,</span> <span class="nv">P</span><span class="p">(</span><span class="nv">X</span><span class="p">)].</span>
+
+<span class="c">%% reverse/1</span>
+<span class="nf">reverse</span><span class="p">(</span><span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="n">reverse</span><span class="p">(</span><span class="nv">L</span><span class="p">,</span> <span class="p">[]).</span>
+<span class="nf">reverse</span><span class="p">([],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">L</span><span class="p">;</span>
+<span class="nf">reverse</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="n">reverse</span><span class="p">(</span><span class="nv">T</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">L</span><span class="p">]).</span>
+
+<span class="c">%% min/1</span>
+<span class="nf">min</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">])</span> <span class="o">-&gt;</span>
+  <span class="n">min</span><span class="p">(</span><span class="nv">T</span><span class="p">,</span> <span class="nv">H</span><span class="p">).</span>
+<span class="nf">min</span><span class="p">([],</span> <span class="nv">M</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">M</span><span class="p">;</span>
+<span class="nf">min</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">],</span> <span class="nv">M</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="k">if</span>
+    <span class="nv">H</span> <span class="o">&lt;</span> <span class="nv">M</span> <span class="o">-&gt;</span> <span class="n">min</span><span class="p">(</span><span class="nv">T</span><span class="p">,</span> <span class="nv">H</span><span class="p">);</span>
+    <span class="n">true</span> <span class="o">-&gt;</span> <span class="n">min</span><span class="p">(</span><span class="nv">T</span><span class="p">,</span> <span class="nv">M</span><span class="p">)</span>
+  <span class="k">end</span><span class="p">.</span>
+
+<span class="c">%% zip/2</span>
+<span class="nf">zip</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="n">reverse</span><span class="p">(</span><span class="n">zip</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="p">[])).</span>
+<span class="nf">zip</span><span class="p">([],</span> <span class="p">_</span><span class="nv">LB</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">L</span><span class="p">;</span>
+<span class="nf">zip</span><span class="p">(_</span><span class="nv">LA</span><span class="p">,</span> <span class="p">[],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">L</span><span class="p">;</span>
+<span class="nf">zip</span><span class="p">([</span><span class="nv">HA</span><span class="p">|</span><span class="nv">TA</span><span class="p">],</span> <span class="p">[</span><span class="nv">HB</span><span class="p">|</span><span class="nv">TB</span><span class="p">],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="n">zip</span><span class="p">(</span><span class="nv">TA</span><span class="p">,</span> <span class="nv">TB</span><span class="p">,</span> <span class="p">[{</span><span class="nv">HA</span><span class="p">,</span><span class="nv">HB</span><span class="p">}|</span><span class="nv">L</span><span class="p">]).</span>
+
+<span class="c">%% zip/3</span>
+<span class="nf">zip3</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="nv">LC</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="n">reverse</span><span class="p">(</span><span class="n">zip3</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="nv">LC</span><span class="p">,</span> <span class="p">[])).</span>
+<span class="nf">zip3</span><span class="p">([],</span> <span class="p">_</span><span class="nv">LB</span><span class="p">,</span> <span class="p">_</span><span class="nv">LC</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">L</span><span class="p">;</span>
+<span class="nf">zip3</span><span class="p">(_</span><span class="nv">LA</span><span class="p">,</span> <span class="p">[],</span> <span class="p">_</span><span class="nv">LC</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">L</span><span class="p">;</span>
+<span class="nf">zip3</span><span class="p">(_</span><span class="nv">LA</span><span class="p">,</span> <span class="p">_</span><span class="nv">LB</span><span class="p">,</span> <span class="p">[],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">L</span><span class="p">;</span>
+<span class="nf">zip3</span><span class="p">([</span><span class="nv">HA</span><span class="p">|</span><span class="nv">TA</span><span class="p">],</span> <span class="p">[</span><span class="nv">HB</span><span class="p">|</span><span class="nv">TB</span><span class="p">],</span> <span class="p">[</span><span class="nv">HC</span><span class="p">|</span><span class="nv">TC</span><span class="p">],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="n">zip3</span><span class="p">(</span><span class="nv">TA</span><span class="p">,</span> <span class="nv">TB</span><span class="p">,</span> <span class="nv">TC</span><span class="p">,</span> <span class="p">[{</span><span class="nv">HA</span><span class="p">,</span><span class="nv">HB</span><span class="p">,</span><span class="nv">HC</span><span class="p">}|</span><span class="nv">L</span><span class="p">]).</span>
+
+<span class="c">%% zipwith/3</span>
+<span class="nf">zipwith</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">[</span><span class="nv">P</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">)</span> <span class="p">||</span> <span class="p">{</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">}</span> <span class="o">&lt;-</span> <span class="n">zip</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">)].</span>
+
+<span class="c">%% zipwith/4</span>
+<span class="nf">zipwith3</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="nv">LC</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">[</span><span class="nv">P</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">,</span><span class="nv">Z</span><span class="p">)</span> <span class="p">||</span> <span class="p">{</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">,</span><span class="nv">Z</span><span class="p">}</span> <span class="o">&lt;-</span> <span class="n">zip3</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="nv">LC</span><span class="p">)].</span>
+</code></pre></div>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120718_hello-erlang-3.html">Hello Erlang, Part 3</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-18T00:00:00+08:00" pubdate data-updated="true">Jul 18<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120718_hello-erlang-3.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>练习重点</h3>
+
+<p>并发编程是erlang的重要话题，所以这次先来热身，熟悉一下erlang中进程的基本用法。</p>
+
+<h3>练习1:进程环</h3>
+
+<p>编写一个程序，它生成N个进程并相连形成一个环，一旦启动，这些进程会环绕发送M个消息。
+然后当收到消息的时候正常终止。调用ring:start(M, N, Message)来启动环。</p>
+
+<h3>思路及编程示例</h3>
+
+<p>首先，为了形成环状，就是让最后一个进程能够给第一个进程发送消息，
+调用spawn生成进程的时候，需要把第一个pid一直传递到最后一个。所以需要有个start的方法，
+但需要多加个第一个进程id的参数，关注参数N=1作为临界点。</p>
+
+<p>还有，需要等待消息，然后给下一个进程发送消息，之后继续等待消息，直到M=0。
+所以需要一个等待消息的方法，同时需要关注参数M=0作为临界点。</p>
+
+<p>最后，整个环，所有的进程一开始都在等待，需要有个消息来启动环，
+可以在第一个进程启动下一个进程之前，往自身邮箱里边发送一条消息，
+这样第一个进程进入等待消息的时候，就能接收到消息，从而启动环。</p>
+
+<p>我的代码示例如下：</p>
+
+<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">ring</span><span class="p">).</span>
+
+<span class="c">%% Exported Functions</span>
+<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">start</span><span class="o">/</span><span class="mi">3</span><span class="p">]).</span>
+<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">start</span><span class="o">/</span><span class="mi">4</span><span class="p">]).</span>
+
+<span class="c">%% API Functions</span>
+<span class="nf">start</span><span class="p">(</span><span class="nv">M</span><span class="p">,</span> <span class="nv">N</span><span class="p">,</span> <span class="nv">Message</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="n">self</span><span class="p">()</span> <span class="o">!</span> <span class="p">{</span><span class="n">self</span><span class="p">(),</span> <span class="n">start</span><span class="p">},</span>
+  <span class="n">start</span><span class="p">(</span><span class="nv">M</span><span class="p">,</span> <span class="nv">N</span><span class="p">,</span> <span class="nv">Message</span><span class="p">,</span> <span class="n">self</span><span class="p">()).</span>
+
+<span class="nf">start</span><span class="p">(</span><span class="nv">M</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">Message</span><span class="p">,</span> <span class="nv">Rid</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="n">waitmessage</span><span class="p">(</span><span class="nv">M</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">Message</span><span class="p">,</span> <span class="nv">Rid</span><span class="p">);</span>
+
+<span class="nf">start</span><span class="p">(</span><span class="nv">M</span><span class="p">,</span> <span class="nv">N</span><span class="p">,</span> <span class="nv">Message</span><span class="p">,</span> <span class="nv">Rid</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">Pid</span> <span class="o">=</span> <span class="nb">spawn</span><span class="p">(</span><span class="n">ring</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="p">[</span><span class="nv">M</span><span class="p">,</span> <span class="nv">N</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nv">Message</span><span class="p">,</span> <span class="nv">Rid</span><span class="p">]),</span>
+  <span class="n">waitmessage</span><span class="p">(</span><span class="nv">M</span><span class="p">,</span> <span class="nv">N</span><span class="p">,</span> <span class="nv">Message</span><span class="p">,</span> <span class="nv">Pid</span><span class="p">).</span>
+
+<span class="nf">waitmessage</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">_</span><span class="nv">N</span><span class="p">,</span> <span class="p">_</span><span class="nv">Message</span><span class="p">,</span> <span class="p">_</span><span class="nv">Pid</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="k">receive</span>
+    <span class="p">{</span><span class="nv">Pd</span><span class="p">,</span> <span class="nv">Msg</span><span class="p">}</span> <span class="o">-&gt;</span>
+      <span class="nn">io</span><span class="p">:</span><span class="nf">format</span><span class="p">(</span><span class="s">&quot;pid </span><span class="si">~p</span><span class="s"> receive message </span><span class="si">~p</span><span class="s"> from </span><span class="si">~p~n</span><span class="s">&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">self</span><span class="p">(),</span> <span class="nv">Msg</span><span class="p">,</span> <span class="nv">Pd</span><span class="p">])</span>
+      <span class="n">ok</span>
+  <span class="k">end</span><span class="p">;</span>
+
+<span class="nf">waitmessage</span><span class="p">(</span><span class="nv">M</span><span class="p">,</span> <span class="nv">N</span><span class="p">,</span> <span class="nv">Message</span><span class="p">,</span> <span class="nv">Pid</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="k">receive</span>
+    <span class="p">{</span><span class="nv">Pd</span><span class="p">,</span> <span class="nv">Msg</span><span class="p">}</span> <span class="o">-&gt;</span>
+      <span class="nn">io</span><span class="p">:</span><span class="nf">format</span><span class="p">(</span><span class="s">&quot;pid </span><span class="si">~p</span><span class="s"> receive message </span><span class="si">~p</span><span class="s"> from </span><span class="si">~p~n</span><span class="s">&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">self</span><span class="p">(),</span> <span class="nv">Msg</span><span class="p">,</span> <span class="nv">Pd</span><span class="p">]),</span>
+      <span class="nv">Pid</span> <span class="o">!</span> <span class="p">{</span><span class="n">self</span><span class="p">(),</span> <span class="nv">Message</span><span class="p">},</span>
+      <span class="n">waitmessage</span><span class="p">(</span><span class="nv">M</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nv">N</span><span class="p">,</span> <span class="nv">Message</span><span class="p">,</span> <span class="nv">Pid</span><span class="p">)</span>
+  <span class="k">end</span><span class="p">.</span>
+</code></pre></div>
+
+
+<p>通过简单的测试，如果去掉io:format的话，效率会提高不少。IO操作消耗的时间还是不可小视呀。
+另外，测试大数量进程的时候，内存也用得比较厉害，毕竟这个练习更像是一个同步操作。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120715_hello-erlang-2.html">Hello Erlang, Part 2</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-15T00:00:00+08:00" pubdate data-updated="true">Jul 15<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120715_hello-erlang-2.html#disqus_thread">Comments</a>
         
       </p>
     
@@ -101,501 +693,139 @@ erlang经常会遇到递归, 并且支持尾递归函数调用 练习1:数据库
   <div class="entry-content"><h3>练习重点</h3>
 
 <ol>
-<li>erlang是单赋值的，就好像都经过java里边的final修饰过</li>
-<li>erlang没有内置的循环结构，这个和大多数语言是不一样的</li>
-<li>erlang是函数式语言，需要理解模式匹配编程方式</li>
-<li>erlang经常会遇到递归, 并且支持尾递归函数调用</li>
+<li>依然是熟悉erlang匹配模式的编程方式，对于用习惯了判断，循环操作的人来说，这个变化很大</li>
+<li>熟悉erlang列表操作</li>
+<li>为后面学习高阶函数fun，还有更多高级数据类型打好基础</li>
 </ol>
 
 
-<h3>练习1:数据库demo</h3>
+<h3>练习1:压缩有序列表</h3>
 
-<p>作为学习erlang里边的模式匹配，熟悉语法。
-编写一个数据库模块db.erl，它能够存储、检索、删除元素。我们需要实现的接口有:</p>
+<p>类似搜索里边的倒排索引，需要对词对应的文档列表进行存放。
+在这里，我们将一个有序列表转换成另外一种形式，如</p>
 
-<div class="highlight"><pre><code class="erlang"><span class="nn">db</span><span class="p">:</span><span class="nf">new</span><span class="p">()</span>                   <span class="c">%% Db.</span>
-<span class="nn">db</span><span class="p">:</span><span class="nf">destroy</span><span class="p">(</span><span class="nv">Db</span><span class="p">)</span>             <span class="c">%% ok.</span>
-<span class="nn">db</span><span class="p">:</span><span class="nf">write</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Element</span><span class="p">,</span> <span class="nv">Db</span><span class="p">)</span> <span class="c">%% NewDb.</span>
-<span class="nn">db</span><span class="p">:</span><span class="nf">delete</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Db</span><span class="p">)</span>         <span class="c">%% NewDb.</span>
-<span class="nn">db</span><span class="p">:</span><span class="nf">read</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Db</span><span class="p">)</span>           <span class="c">%% {ok, Element} | {error, instance}.</span>
-<span class="nn">db</span><span class="p">:</span><span class="nf">match</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">Db</span><span class="p">)</span>      <span class="c">%% [Key1, ..., KeyN].</span>
+<div class="highlight"><pre><code class="erlang"><span class="c">%% 原始形式</span>
+<span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">98</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">101</span><span class="p">,</span><span class="mi">102</span><span class="p">,</span><span class="mi">102</span><span class="p">].</span>
+<span class="c">%% 最终形式</span>
+<span class="p">[{</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">},{</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">},{</span><span class="mi">98</span><span class="p">,</span><span class="mi">98</span><span class="p">},{</span><span class="mi">100</span><span class="p">,</span><span class="mi">102</span><span class="p">}].</span>
 </code></pre></div>
 
 
-<h3>实现代码</h3>
+<h3>示例代码</h3>
 
-<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">db</span><span class="p">).</span>
+<div class="highlight"><pre><code class="erlang"><span class="nf">multi</span><span class="p">(</span><span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">reverse</span><span class="p">(</span><span class="n">multi_local</span><span class="p">(</span><span class="nv">L</span><span class="p">,</span> <span class="p">[])).</span>
+<span class="nf">multi_local</span><span class="p">([],</span> <span class="nv">R</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">R</span><span class="p">;</span>
+<span class="nf">multi_local</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">L</span><span class="p">],</span> <span class="nv">R</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="p">{</span><span class="nv">LL</span><span class="p">,</span> <span class="nv">E</span><span class="p">}</span> <span class="o">=</span> <span class="n">multi_r</span><span class="p">(</span><span class="nv">L</span><span class="p">,</span> <span class="nv">H</span><span class="p">),</span>
+    <span class="n">multi_local</span><span class="p">(</span><span class="nv">LL</span><span class="p">,</span> <span class="p">[{</span><span class="nv">H</span><span class="p">,</span> <span class="nv">E</span><span class="p">}|</span><span class="nv">R</span><span class="p">]).</span>
+
+<span class="c">%% 获取L里边里边和H同属一组的最后一个数,同时返回剩余的列表</span>
+<span class="c">%% 如果L以H开头，表示出现重复数</span>
+<span class="c">%% 如果L以H+1开头，表示出现序列数</span>
+<span class="nf">multi_r</span><span class="p">(</span><span class="nv">L</span><span class="p">,</span> <span class="nv">H</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="nv">N</span> <span class="o">=</span> <span class="nv">H</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="k">case</span> <span class="nv">L</span> <span class="k">of</span>
+        <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">LL</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">multi_r</span><span class="p">(</span><span class="nv">LL</span><span class="p">,</span> <span class="nv">H</span><span class="p">);</span>
+        <span class="p">[</span><span class="nv">N</span><span class="p">|</span><span class="nv">LL</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">multi_r</span><span class="p">(</span><span class="nv">LL</span><span class="p">,</span> <span class="nv">N</span><span class="p">);</span>
+        <span class="p">[]</span> <span class="o">-&gt;</span> <span class="p">{[],</span> <span class="nv">H</span><span class="p">};</span>
+        <span class="p">_</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="nv">L</span><span class="p">,</span> <span class="nv">H</span><span class="p">}</span>
+    <span class="k">end</span><span class="p">.</span>
+</code></pre></div>
+
+
+<h3>效率问题</h3>
+
+<p>这里和上次不一样的是，这里没有使用lists:append方法，而是在最后使用了reverse.</p>
+
+<div class="highlight"><pre><code class="erlang"><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">++</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">].</span>
+<span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]).</span>
+<span class="nn">lists</span><span class="p">:</span><span class="nf">reverse</span><span class="p">([</span><span class="mi">3</span><span class="p">|[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]).</span>
+</code></pre></div>
+
+
+<p>上面三种方式得到的结果是一样的。前面两种，每增加一个元素，都会遍历左边的列表，所以在递归里边处理的话，
+效率并不好。把元素添加到表头，在递归完成后进行反转，效果就会好些。</p>
+
+<h3>练习2:马踏棋盘</h3>
+
+<p>作为一个阶段的学习总结，对<a href="20120712_horse-riding-chessboard.html">马踏棋盘的算法思考</a>用erlang实现。</p>
+
+<p>代码比较悲剧，我选择了array，用了一些fun函数，从这么个例子就可以看出，自己还没掌握好erlang惯用法。
+感觉数据结构没有选好，并且用了命令语言的一些编程思路，有些东西或许可以用列表解析来弄，
+等再掌握多一些东西，再回头来体会一把!</p>
+
+<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">horse</span><span class="p">).</span>
 
 <span class="c">%% Exported Functions</span>
-<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">new</span><span class="o">/</span><span class="mi">0</span><span class="p">,</span> <span class="n">write</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="n">read</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">match</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">delete</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">destroy</span><span class="o">/</span><span class="mi">1</span><span class="p">]).</span>
+<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">walkboard</span><span class="o">/</span><span class="mi">0</span><span class="p">]).</span>
 
 <span class="c">%% API Functions</span>
-<span class="nf">new</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[].</span>
-<span class="nf">destroy</span><span class="p">(_)</span> <span class="o">-&gt;</span> <span class="n">ok</span><span class="p">.</span>
-<span class="nf">write</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Element</span><span class="p">,</span> <span class="nv">DB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[{</span><span class="nv">Key</span><span class="p">,</span><span class="nv">Element</span><span class="p">}|</span><span class="nv">DB</span><span class="p">].</span>
-<span class="nf">delete</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">DB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">DB</span><span class="p">,</span> <span class="p">[]).</span>
-<span class="nf">read</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">DB</span><span class="p">)</span> <span class="o">-&gt;</span>
-    <span class="k">case</span> <span class="nv">DB</span> <span class="k">of</span>
-        <span class="p">[{</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Element</span><span class="p">}|_]</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="n">oKey</span><span class="p">,</span> <span class="nv">Element</span><span class="p">};</span>
-        <span class="p">[_|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">read</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">);</span>
-        <span class="p">_</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="n">error</span><span class="p">,</span> <span class="n">instance</span><span class="p">}</span>
-    <span class="k">end</span><span class="p">.</span>
-<span class="nf">match</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">DB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">match_local</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">DB</span><span class="p">,</span> <span class="p">[]).</span>
+<span class="nf">walkboard</span><span class="p">()</span> <span class="o">-&gt;</span> 
+  <span class="c">%% lists:foreach(fun(I) -&gt; lists:foreach(fun(J) -&gt; walkboard({I, J}) end, lists:seq(0,7)) end, lists:seq(0,7)).</span>
+  <span class="n">walkboard</span><span class="p">({</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">}).</span>
 
+<span class="nf">walkboard</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">})</span> <span class="o">-&gt;</span>
+  <span class="p">{</span><span class="nv">ARR</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">}</span> <span class="o">=</span> <span class="n">init</span><span class="p">(),</span>
+  <span class="k">catch</span> <span class="n">walk</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">setvalue</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span> <span class="nv">J</span><span class="p">},</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">),</span> <span class="nn">array</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">{</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">PATH</span><span class="p">),</span> <span class="nv">POSS</span><span class="p">).</span>
+
+<span class="nf">walk</span><span class="p">(</span><span class="mi">63</span><span class="p">,</span> <span class="p">_,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="p">_)</span> <span class="o">-&gt;</span> <span class="n">throw</span><span class="p">(</span><span class="nv">PATH</span><span class="p">);</span>
+<span class="nf">walk</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">{</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">JP</span><span class="p">}</span> <span class="o">=</span> <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">),</span>
+  <span class="nv">WC</span> <span class="o">=</span> <span class="k">fun</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">,_})</span> <span class="o">-&gt;</span> 
+         <span class="n">walk</span><span class="p">(</span><span class="nv">MARK</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">setvalue</span><span class="p">({</span><span class="nv">I</span><span class="o">+</span><span class="nv">IP</span><span class="p">,</span><span class="nv">J</span><span class="o">+</span><span class="nv">JP</span><span class="p">},</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">),</span> <span class="nn">array</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="nv">MARK</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="nv">I</span><span class="o">+</span><span class="nv">IP</span><span class="p">,</span><span class="nv">J</span><span class="o">+</span><span class="nv">JP</span><span class="p">},</span> <span class="nv">PATH</span><span class="p">),</span> <span class="nv">POSS</span><span class="p">)</span>
+       <span class="k">end</span><span class="p">,</span>
+  <span class="nn">lists</span><span class="p">:</span><span class="nf">foreach</span><span class="p">(</span><span class="nv">WC</span><span class="p">,</span> <span class="n">filter</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)).</span>
+
+<span class="c">%%</span>
 <span class="c">%% Local Functions</span>
-<span class="nf">match_local</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">DB</span><span class="p">,</span> <span class="nv">LIST</span><span class="p">)</span> <span class="o">-&gt;</span>
-    <span class="k">case</span> <span class="nv">DB</span> <span class="k">of</span>
-        <span class="p">[{</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Element</span><span class="p">}|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">match_local</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="p">[</span><span class="nv">Key</span><span class="p">|</span><span class="nv">LIST</span><span class="p">]);</span>
-        <span class="p">[_|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">match_local</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="nv">LIST</span><span class="p">);</span>
-        <span class="p">_</span> <span class="o">-&gt;</span> <span class="nv">LIST</span>
-    <span class="k">end</span><span class="p">.</span>
+<span class="c">%%</span>
+<span class="nf">init</span><span class="p">()</span> <span class="o">-&gt;</span>
+  <span class="nv">ARR</span> <span class="o">=</span> <span class="nn">array</span><span class="p">:</span><span class="nf">new</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="p">{</span><span class="n">default</span><span class="p">,</span><span class="nn">array</span><span class="p">:</span><span class="nf">new</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="p">{</span><span class="n">default</span><span class="p">,</span><span class="mi">0</span><span class="p">})}),</span>
+  <span class="nv">PATH</span> <span class="o">=</span> <span class="nn">array</span><span class="p">:</span><span class="nf">new</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
+  <span class="nv">POSS</span> <span class="o">=</span> <span class="p">[{</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">}],</span>
+  <span class="p">{</span><span class="nv">ARR</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">}.</span>
 
-<span class="nf">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">DB</span><span class="p">,</span> <span class="nv">NDB</span><span class="p">)</span> <span class="o">-&gt;</span>
-    <span class="k">case</span> <span class="nv">DB</span> <span class="k">of</span>
-        <span class="p">[{</span><span class="nv">Key</span><span class="p">,</span> <span class="p">_}|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="nv">NDB</span><span class="p">);</span>
-        <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">NDB</span><span class="p">]);</span>
-        <span class="p">_</span> <span class="o">-&gt;</span> <span class="nv">NDB</span>
-    <span class="k">end</span><span class="p">.</span>
-</code></pre></div>
+<span class="nf">filter</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="p">{</span><span class="nv">I</span><span class="p">,</span> <span class="nv">J</span><span class="p">}</span> <span class="o">=</span> <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">),</span>
+  <span class="nv">Fun1</span> <span class="o">=</span> <span class="k">fun</span><span class="p">({</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">JP</span><span class="p">})</span> <span class="o">-&gt;</span>
+           <span class="p">{</span><span class="nv">IXP</span><span class="p">,</span> <span class="nv">JXP</span><span class="p">}</span> <span class="o">=</span> <span class="p">{</span><span class="nv">I</span><span class="o">+</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">J</span><span class="o">+</span><span class="nv">JP</span><span class="p">},</span>
+           <span class="k">case</span> <span class="n">valid</span><span class="p">({</span><span class="nv">IXP</span><span class="p">,</span> <span class="nv">JXP</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="k">of</span>
+             <span class="n">false</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">JP</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">};</span>
+             <span class="n">true</span> <span class="o">-&gt;</span> 
+             <span class="c">%% 计算空点数</span>
+             <span class="nv">CAL</span> <span class="o">=</span> <span class="k">fun</span><span class="p">({</span><span class="nv">IP2</span><span class="p">,</span> <span class="nv">JP2</span><span class="p">},</span> <span class="nv">Sum</span><span class="p">)</span> <span class="o">-&gt;</span> 
+                     <span class="k">case</span> <span class="n">valid</span><span class="p">({</span><span class="nv">IXP</span><span class="o">+</span><span class="nv">IP2</span><span class="p">,</span> <span class="nv">JXP</span><span class="o">+</span><span class="nv">JP2</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="k">of</span>
+                       <span class="n">true</span> <span class="o">-&gt;</span> <span class="mi">1</span> <span class="o">+</span> <span class="nv">Sum</span><span class="p">;</span>
+                       <span class="n">false</span> <span class="o">-&gt;</span> <span class="nv">Sum</span>
+                     <span class="k">end</span>
+                   <span class="k">end</span><span class="p">,</span>
+                   <span class="p">{</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">JP</span><span class="p">,</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">foldl</span><span class="p">(</span><span class="nv">CAL</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">)}</span>
+           <span class="k">end</span>
+         <span class="k">end</span><span class="p">,</span>
+  <span class="c">%% 最后进行排序</span>
+  <span class="nv">T</span> <span class="o">=</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">map</span><span class="p">(</span><span class="nv">Fun1</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">),</span>
+  <span class="nv">S</span> <span class="o">=</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">({_,</span> <span class="p">_,</span> <span class="nv">Z</span><span class="p">})</span> <span class="o">-&gt;</span> <span class="nv">Z</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">end</span><span class="p">,</span> <span class="nv">T</span><span class="p">),</span>
+  <span class="nv">LEN</span> <span class="o">=</span> <span class="nb">length</span><span class="p">(</span><span class="nv">S</span><span class="p">),</span>
+  <span class="k">if</span>
+    <span class="nv">LEN</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">-&gt;</span> <span class="p">[];</span>
+    <span class="nv">LEN</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">-&gt;</span> <span class="nv">S</span><span class="p">;</span>
+    <span class="n">true</span> <span class="o">-&gt;</span> <span class="nv">SS</span> <span class="o">=</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">({_,</span> <span class="p">_,</span> <span class="nv">Z</span><span class="p">})</span> <span class="o">-&gt;</span> <span class="nv">Z</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">end</span><span class="p">,</span> <span class="nv">T</span><span class="p">),</span>
+        <span class="nn">lists</span><span class="p">:</span><span class="nf">sort</span><span class="p">(</span><span class="k">fun</span><span class="p">({_,</span> <span class="p">_,</span> <span class="nv">Z1</span><span class="p">},</span> <span class="p">{_,</span> <span class="p">_,</span> <span class="nv">Z2</span><span class="p">})</span> <span class="o">-&gt;</span> <span class="nv">Z1</span> <span class="o">&lt;</span> <span class="nv">Z2</span> <span class="k">end</span><span class="p">,</span> <span class="nv">SS</span><span class="p">)</span>
+  <span class="k">end</span><span class="p">.</span>
+  
 
+<span class="nf">valid</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nv">I</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">andalso</span> <span class="nv">I</span><span class="o">&lt;</span><span class="mi">8</span> <span class="ow">andalso</span> <span class="nv">J</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="ow">andalso</span> <span class="nv">J</span><span class="o">&lt;</span><span class="mi">8</span> <span class="ow">andalso</span> <span class="n">getvalue</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">.</span>
 
-<p>当然，case语句同样可以用如下代码替代：其中第三行的Key因为没有使用就换成_,
-不然会提示警告variable &#8216;Key&#8217; is unused。</p>
+<span class="nf">getvalue</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">J</span><span class="p">,</span> <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">I</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)).</span>
 
-<div class="highlight"><pre><code class="erlang"><span class="nf">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="p">[{</span><span class="n">key</span><span class="p">,</span> <span class="p">_}|</span><span class="nv">ODB</span><span class="p">],</span> <span class="nv">NDB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="nv">NDB</span><span class="p">);</span>
-<span class="nf">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">ODB</span><span class="p">],</span> <span class="nv">NDB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">NDB</span><span class="p">]);</span>
-<span class="nf">delete_local</span><span class="p">(_,</span> <span class="p">_,</span> <span class="nv">NDB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">NDB</span><span class="p">;</span>
-</code></pre></div>
-
-
-<h3>练习2:排序算法</h3>
-
-<p>下面练习一下快速排序和归并排序，再熟悉一下模式匹配和递归的写法。</p>
-
-<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">sort</span><span class="p">).</span>
-<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">quicksort</span><span class="o">/</span><span class="mi">1</span><span class="p">,</span> <span class="n">mergesort</span><span class="o">/</span><span class="mi">1</span><span class="p">]).</span>
-
-<span class="c">%% 快速排序</span>
-<span class="nf">quicksort</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">Tail</span><span class="p">])</span> <span class="o">-&gt;</span>
-    <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="n">quicksort</span><span class="p">(</span><span class="nn">lists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">X</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">X</span> <span class="o">&lt;</span> <span class="nv">H</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Tail</span><span class="p">)),</span> 
-                  <span class="p">[</span><span class="nv">H</span><span class="p">],</span> 
-                  <span class="n">quicksort</span><span class="p">(</span><span class="nn">lists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">X</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">X</span> <span class="o">&gt;=</span> <span class="nv">H</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Tail</span><span class="p">))]);</span>
-<span class="nf">quicksort</span><span class="p">(</span><span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">L</span><span class="p">.</span>
-
-<span class="c">%% 归并排序</span>
-<span class="nf">mergesort</span><span class="p">(</span><span class="nv">A</span><span class="p">)</span> <span class="o">-&gt;</span>
-    <span class="k">case</span> <span class="nb">length</span><span class="p">(</span><span class="nv">A</span><span class="p">)</span> <span class="k">of</span>
-        <span class="mi">0</span> <span class="o">-&gt;</span> <span class="p">[];</span>
-        <span class="mi">1</span> <span class="o">-&gt;</span> <span class="nv">A</span><span class="p">;</span>
-        <span class="nv">LEN</span> <span class="o">-&gt;</span> <span class="nv">M</span> <span class="o">=</span> <span class="nb">length</span><span class="p">(</span><span class="nv">A</span><span class="p">)</span> <span class="ow">div</span> <span class="mi">2</span><span class="p">,</span>
-               <span class="n">merge</span><span class="p">(</span><span class="n">mergesort</span><span class="p">(</span><span class="nn">lists</span><span class="p">:</span><span class="nf">sublist</span><span class="p">(</span><span class="nv">A</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">M</span><span class="p">)),</span> 
-                     <span class="n">mergesort</span><span class="p">(</span><span class="nn">lists</span><span class="p">:</span><span class="nf">sublist</span><span class="p">(</span><span class="nv">A</span><span class="p">,</span> <span class="nv">M</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">LEN</span> <span class="o">-</span> <span class="nv">M</span><span class="p">)),</span> <span class="p">[])</span>
-    <span class="k">end</span><span class="p">.</span>
-<span class="nf">merge</span><span class="p">(</span><span class="nv">A</span><span class="p">,</span> <span class="p">[],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="nv">L</span><span class="p">,</span> <span class="nv">A</span><span class="p">]);</span>
-<span class="nf">merge</span><span class="p">([],</span> <span class="nv">B</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="nv">L</span><span class="p">,</span> <span class="nv">B</span><span class="p">]);</span>
-<span class="nf">merge</span><span class="p">([</span><span class="nv">HA</span><span class="p">|</span><span class="nv">TA</span><span class="p">],</span> <span class="p">[</span><span class="nv">HB</span><span class="p">|</span><span class="nv">TB</span><span class="p">],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> 
-    <span class="k">if</span>
-        <span class="nv">HA</span> <span class="o">&gt;</span> <span class="nv">HB</span> <span class="o">-&gt;</span> <span class="n">merge</span><span class="p">([</span><span class="nv">HA</span><span class="p">|</span><span class="nv">TA</span><span class="p">],</span> <span class="nv">TB</span><span class="p">,</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="nv">L</span><span class="p">,</span> <span class="p">[</span><span class="nv">HB</span><span class="p">]]));</span>
-        <span class="n">true</span> <span class="o">-&gt;</span> <span class="n">merge</span><span class="p">(</span><span class="nv">TA</span><span class="p">,</span> <span class="p">[</span><span class="nv">HB</span><span class="p">|</span><span class="nv">TB</span><span class="p">],</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="nv">L</span><span class="p">,</span> <span class="p">[</span><span class="nv">HA</span><span class="p">]]))</span>
-    <span class="k">end</span><span class="p">.</span>
+<span class="nf">setvalue</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">VAL</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">-&gt;</span>
+  <span class="nn">array</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="nv">I</span><span class="p">,</span> <span class="nn">array</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="nv">J</span><span class="p">,</span> <span class="nv">VAL</span><span class="p">,</span> <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">I</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)),</span> <span class="nv">ARR</span><span class="p">).</span>
 </code></pre></div>
 
 
 
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120712_horse-riding-chessboard.html">马踏棋盘的算法思考</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-12T00:00:00+08:00" pubdate data-updated="true">Jul 12<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120712_horse-riding-chessboard.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>马踏棋盘</h3>
-
-<p>将马随机放在国际象棋的8×8棋盘的某个方格中，马按走棋规则进行移动。
-要求每个方格只进入一次，走遍棋盘上全部64个方格。</p>
-
-<h3>又是回溯?</h3>
-
-<p>这个做法和前面几个问题是差不多的(<a href="20120710_sudoku.html">数独(sudoku)游戏</a>)，所以这里就不做太多解释了。
-总体来说，就是可选的解空间是8个方向。回溯的代码就不多提了，需要说的是，这里简单的回溯
-效率不好，需要跑很久才出结果。我们有什么方式可以优化一下!</p>
-
-<h3>贪心是否有效?</h3>
-
-<p>首先，我们可以对可供选择的方向进行过滤，对于它相连的8个方向所在的点，
-在当前的局面下，假如存在两个点只有一条路可以到达，那么可以直接回溯，
-因为无论走哪个方向都不能走完整个棋盘。假如存在一个点，它只有一条路可以到达，
-那么下一步必须走这个方向。</p>
-
-<p>但是，即使我们过滤了一些路径，效率还是没有非常大的提升。我们需要考虑一种贪心的思路：
-在可选的方向中，优先选择出口最少的目标点。因为优先选择出口少的点,
-就可以让出口少的点尽量少，使得最后剩下的点有比较多的入口，这样最终达到目的的概率就会大些。</p>
-
-<p>虽然这个思路，我觉得不好直接证明，不过我修改了一些代码实现，的确效率得到非常大的提升。
-就我那个机器，ruby代码，不到1s，64个点的情况就全部处理完了。</p>
-
-<h3>代码示例</h3>
-
-<div class="highlight"><pre><code class="ruby"><span class="k">def</span> <span class="nf">init</span>
-  <span class="vi">@arr</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
-  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">7</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">end</span>
-  <span class="vi">@path</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span> 
-  <span class="vi">@ok</span> <span class="o">=</span> <span class="kp">false</span>
-  <span class="vi">@poss</span> <span class="o">=</span> <span class="o">[[-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">]]</span>
-<span class="k">end</span>
-<span class="c1"># 判断[x,y]是否在棋盘内并未走过</span>
-<span class="k">def</span> <span class="nf">valid?</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
-  <span class="n">x</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">x</span><span class="o">&lt;</span><span class="mi">8</span> <span class="o">&amp;&amp;</span> <span class="n">y</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">y</span><span class="o">&lt;</span><span class="mi">8</span> <span class="o">&amp;&amp;</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">x</span><span class="o">][</span><span class="n">y</span><span class="o">]==</span><span class="mi">0</span>
-<span class="k">end</span>
-
-<span class="c1"># 判断当前点有哪些方向可以走</span>
-<span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span>
-  <span class="n">posz</span><span class="p">,</span> <span class="n">mustpos</span> <span class="o">=</span> <span class="p">{},</span> <span class="kp">nil</span>
-  <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="vi">@path</span><span class="o">[</span><span class="n">mark</span><span class="o">]</span>
-  <span class="vi">@poss</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">pos</span><span class="o">|</span>
-    <span class="n">axp</span><span class="p">,</span> <span class="n">bxp</span> <span class="o">=</span> <span class="n">a</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span>
-    <span class="k">if</span> <span class="n">valid?</span><span class="p">(</span><span class="n">axp</span><span class="p">,</span> <span class="n">bxp</span><span class="p">)</span>
-      <span class="n">sz</span> <span class="o">=</span> <span class="mi">0</span>
-      <span class="vi">@poss</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">ps</span><span class="o">|</span>
-        <span class="n">ap</span><span class="p">,</span> <span class="n">bp</span> <span class="o">=</span> <span class="n">axp</span><span class="o">+</span><span class="n">ps</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="p">,</span> <span class="n">bxp</span><span class="o">+</span><span class="n">ps</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span>
-        <span class="n">sz</span><span class="o">+=</span><span class="mi">1</span> <span class="k">if</span> <span class="n">valid?</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="n">bp</span><span class="p">)</span> <span class="c1"># 存在空点</span>
-      <span class="k">end</span>
-      <span class="k">if</span> <span class="n">sz</span><span class="o">&gt;</span><span class="mi">0</span>
-        <span class="n">posz</span><span class="o">[</span><span class="n">pos</span><span class="o">]</span> <span class="o">=</span> <span class="n">sz</span>
-      <span class="k">else</span>
-        <span class="n">mustpos</span><span class="o">.</span><span class="n">nil?</span> <span class="p">?</span> <span class="p">(</span><span class="n">mustpos</span> <span class="o">=</span> <span class="n">pos</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="k">return</span> <span class="o">[]</span><span class="p">)</span>
-      <span class="k">end</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-  <span class="c1"># 对目标点的方向多寡进行排序</span>
-  <span class="n">mustpos</span><span class="o">.</span><span class="n">nil?</span> <span class="p">?</span> <span class="n">posz</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">sort</span> <span class="p">{</span><span class="o">|</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="o">|</span> <span class="n">posz</span><span class="o">[</span><span class="n">a</span><span class="o">]&lt;=&gt;</span><span class="n">posz</span><span class="o">[</span><span class="n">b</span><span class="o">]</span><span class="p">}</span> <span class="p">:</span> <span class="o">[</span><span class="n">mustpos</span><span class="o">]</span>
-<span class="k">end</span>
-
-<span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span>
-  <span class="k">if</span> <span class="n">mark</span><span class="o">==</span><span class="mi">63</span>
-    <span class="vi">@ok</span> <span class="o">=</span> <span class="kp">true</span>
-    <span class="k">return</span>
-  <span class="k">end</span>
-  <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="vi">@path</span><span class="o">[</span><span class="n">mark</span><span class="o">]</span>
-  <span class="n">filter</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">pos</span><span class="o">|</span>
-    <span class="n">rp</span> <span class="o">=</span> <span class="o">[</span><span class="n">a</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span>
-    <span class="vi">@path</span><span class="o">[</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="o">]</span> <span class="o">=</span> <span class="n">rp</span>
-    <span class="vi">@arr</span><span class="o">[</span><span class="n">rp</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">rp</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">walk</span><span class="p">(</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-    <span class="vi">@ok</span> <span class="p">?</span> <span class="k">return</span> <span class="p">:</span> <span class="p">(</span><span class="vi">@arr</span><span class="o">[</span><span class="n">rp</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">rp</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-
-<span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">7</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span>
-  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">7</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">j</span><span class="o">|</span>
-    <span class="n">init</span>
-    <span class="vi">@path</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span> <span class="o">=</span> <span class="o">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">]</span>
-    <span class="vi">@arr</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">walk</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">if</span> <span class="vi">@ok</span>
-      <span class="vi">@path</span><span class="o">.</span><span class="n">each_with_index</span> <span class="k">do</span> <span class="o">|</span><span class="n">ps</span><span class="p">,</span> <span class="n">idx</span><span class="o">|</span>
-        <span class="vi">@arr</span><span class="o">[</span><span class="n">ps</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">ps</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="n">idx</span>
-      <span class="k">end</span>
-      <span class="vi">@arr</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">ar</span><span class="o">|</span> <span class="nb">p</span> <span class="n">ar</span> <span class="k">end</span>
-      <span class="nb">puts</span>
-    <span class="k">else</span>
-      <span class="s2">&quot;no solution&quot;</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre></div>
-
-
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120710_sudoku.html">数独(sudoku)游戏</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-10T00:00:00+08:00" pubdate data-updated="true">Jul 10<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120710_sudoku.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>数独游戏</h3>
-
-<p>在9×9格的大九宫格中有9个3×3格的小九宫格，并提供17个以上的数字。
-根据这些数字，利用逻辑和推理，在其它的空格上填入1到9的数字。
-每个数字在每个小九宫格内只能出现一次，每个数字在每行、每列也只能出现一次。</p>
-
-<h3>思路与数据结构</h3>
-
-<p>使用回溯法来不断尝试就可以了，可以用一个二维数组来arr[9][9]表示整个数独，其中还没有填上的用0表示。
-我们还需要有个方法来判断能否在[i,j]这个格子上填入某个值。
-同样还需要一个变量来表示是否已经找到解。另外，我使用了mark(0~80)作为每个格子的序号，
-深度搜索的时候就从0开始处理，直到mark=80的时候出现一个解。</p>
-
-<h3>ruby代码示例</h3>
-
-<div class="highlight"><pre><code class="ruby"><span class="c1"># 判断能否在[i,j]上填入val</span>
-<span class="k">def</span> <span class="nf">is_ok?</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">val</span><span class="p">)</span>
-  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">m</span><span class="o">|</span>
-    <span class="k">return</span> <span class="kp">false</span> <span class="k">if</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">m</span><span class="o">]</span> <span class="o">==</span> <span class="n">val</span> <span class="o">&amp;&amp;</span> <span class="n">m!</span><span class="o">=</span><span class="n">j</span> <span class="c1">#判断行不重复</span>
-    <span class="k">return</span> <span class="kp">false</span> <span class="k">if</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">==</span> <span class="n">val</span> <span class="o">&amp;&amp;</span> <span class="n">m!</span><span class="o">=</span><span class="n">i</span> <span class="c1">#判断列不重复</span>
-  <span class="k">end</span>
-  <span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">i</span><span class="o">%</span><span class="mi">3</span><span class="o">.</span><span class="n">.i</span><span class="o">-</span><span class="n">i</span><span class="o">%</span><span class="mi">3</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">m</span><span class="o">|</span>
-    <span class="p">(</span><span class="n">j</span><span class="o">-</span><span class="n">j</span><span class="o">%</span><span class="mi">3</span><span class="o">.</span><span class="n">.j</span><span class="o">-</span><span class="n">j</span><span class="o">%</span><span class="mi">3</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">n</span><span class="o">|</span>
-      <span class="k">return</span> <span class="kp">false</span> <span class="k">if</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">n</span><span class="o">]</span> <span class="o">==</span> <span class="n">val</span> <span class="o">&amp;&amp;</span> <span class="n">i!</span><span class="o">=</span><span class="n">m</span> <span class="o">&amp;&amp;</span> <span class="n">j!</span><span class="o">=</span><span class="n">n</span> <span class="c1">#判断小九宫格不重复</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-  <span class="kp">true</span>
-<span class="k">end</span>
-<span class="c1"># 用来输出数独</span>
-<span class="k">def</span> <span class="nf">print</span><span class="p">;</span> <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">m</span><span class="o">|</span> <span class="nb">p</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">]</span> <span class="p">};</span> <span class="k">end</span>
-
-<span class="c1"># 用来表示是否找到解</span>
-<span class="vi">@ok</span> <span class="o">=</span> <span class="kp">false</span>
-<span class="c1"># 处理序号为mark开始的格子</span>
-<span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span>
-  <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">mark</span><span class="o">/</span><span class="mi">9</span><span class="p">,</span> <span class="n">mark</span><span class="o">%</span><span class="mi">9</span>
-  <span class="n">val</span> <span class="o">=</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">n</span><span class="o">]</span>
-  <span class="c1"># 当前已经有初始值的情况</span>
-  <span class="k">if</span> <span class="n">val</span> <span class="o">!=</span> <span class="mi">0</span> 
-    <span class="n">mark</span> <span class="o">==</span> <span class="mi">80</span> <span class="o">?</span> <span class="vi">@ok</span> <span class="o">=</span> <span class="kp">true</span> <span class="p">:</span> <span class="n">walk</span><span class="p">(</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span>
-  <span class="k">end</span>
-
-  <span class="c1"># 没有初始值的情况</span>
-  <span class="p">(</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="mi">9</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">v</span><span class="o">|</span>
-    <span class="k">if</span> <span class="n">is_ok?</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
-      <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">n</span><span class="o">]</span> <span class="o">=</span> <span class="n">v</span>
-      <span class="vi">@ok</span> <span class="o">=</span> <span class="kp">true</span> <span class="ow">and</span> <span class="k">return</span> <span class="k">if</span> <span class="n">mark</span><span class="o">==</span><span class="mi">80</span> <span class="c1"># 找到一个解</span>
-      <span class="n">walk</span><span class="p">(</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="c1">#填好值之后，继续深度搜索</span>
-      <span class="k">return</span> <span class="k">if</span> <span class="vi">@ok</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-  <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">n</span><span class="o">]=</span><span class="mi">0</span> <span class="c1"># 都处理完，没有找到就恢复</span>
-<span class="k">end</span>
-
-<span class="n">walk</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="vi">@ok</span> <span class="p">?</span> <span class="nb">print</span> <span class="p">:</span> <span class="p">(</span><span class="nb">p</span> <span class="s2">&quot;no solution&quot;</span><span class="p">)</span>
-</code></pre></div>
-
-
-<h3>回溯法的基本步骤：</h3>
-
-<ol>
-<li>a定义问题的解空间</li>
-<li>a确定易于搜索的解空间结构</li>
-<li>a以深度优先搜索的策略搜索解空间，并在搜索过程中用剪枝函数避免无效搜索</li>
-</ol>
-
-
-<h3>回溯法的基本结构</h3>
-
-<p>我们考虑递归的方式(比较容易理解)，递推的以后再讨论。</p>
-
-<div class="highlight"><pre><code class="ruby"><span class="c1"># init</span>
-<span class="n">flag</span> <span class="o">=</span> <span class="kp">false</span> <span class="c1"># 标记是否找到解</span>
-<span class="n">u</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># 已知解, 并假设(x1,x2....xn)为可选的解空间</span>
-
-<span class="k">def</span> <span class="nf">backtrack</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-  <span class="p">(</span><span class="n">x1</span><span class="o">.</span><span class="n">.xn</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span>
-    <span class="k">if</span> <span class="n">is_ok?</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="c1"># 过滤无效的解</span>
-      <span class="n">u</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="c1"># 把x加入已知解u</span>
-      <span class="n">backtrack</span><span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">is_part?</span> <span class="c1"># 部分解的情况，继续处理</span>
-      <span class="n">flag</span> <span class="o">=</span> <span class="kp">true</span> <span class="ow">and</span> <span class="nb">exit</span> <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">is_full?</span> <span class="c1"># 找到解并退出</span>
-      <span class="c1"># fail的时候有可能需要对u进行恢复</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-  <span class="c1"># fail的时候有可能需要对u进行恢复</span>
-<span class="k">end</span>
-
-<span class="n">backtrack</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># 从1开始搜索</span>
-<span class="n">flag</span> <span class="p">?</span> <span class="nb">p</span> <span class="n">u</span> <span class="p">:</span> <span class="s2">&quot;no solution&quot;</span>
-</code></pre></div>
-
-
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120709_stair-walk.html">简单的楼梯问题</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-09T00:00:00+08:00" pubdate data-updated="true">Jul 9<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120709_stair-walk.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>问题描述</h2>
-
-<p>有个楼梯，一个人一次可以走1级或2级，那么走上一条100级的楼梯，有多少种不同的走法?</p>
-
-<h2>找到规律</h2>
-
-<p>先找到规律，从简单情况开始，设f(n)是n级楼梯的走法数量。那么就有:</p>
-
-<ol>
-<li>n=1,肯定只有一种走法,即f(1)=1</li>
-<li>n=2,可以一级级走或者一次两级,即f(2)=2</li>
-<li>对于n>2的情况，如果第一次走1级，剩下的楼梯有f(n-1)种走法，如果走2级，剩下的楼梯有f(n-2)种走法。
-那么总的走法是f(n)=f(n-1)+f(n-2)。</li>
-</ol>
-
-
-<h2>斐波纳契数列</h2>
-
-<p>说白了，这是个斐波纳契数列。计算的时候简单的动态规划即可。下面是简单的ruby源码:</p>
-
-<div class="highlight"><pre><code class="ruby"><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span>
-<span class="mi">98</span><span class="o">.</span><span class="n">times</span> <span class="p">{</span><span class="n">b</span><span class="p">,</span><span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="o">+</span><span class="n">b</span><span class="p">,</span><span class="n">b</span><span class="p">}</span>
-<span class="nb">p</span> <span class="n">b</span> <span class="c1">#=&gt; 573147844013817084101</span>
-</code></pre></div>
-
-
-<p>看，真的是一个天文数字来的。</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120709_one-line-drawing-game.html">一笔画游戏</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-09T00:00:00+08:00" pubdate data-updated="true">Jul 9<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120709_one-line-drawing-game.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>在android上看过一个一笔画的小游戏，规则很简单，要连续一笔，不能重复。
-当然，到后面比较难的时候还会限制方向，有些线路必须走多次等等。并不是觉得这有游戏做得多么的好，或者很有创意。
-我只是从程序员的角度来看问题，用程序是怎么处理的。
-我们只需要尝试所有可能的路径就可以了，这里用了回朔法，是一种优化过的穷举，</p>
-
-<p>先来考虑一下数据结构。我们给所有的点加上编号1-n，所有的连线可以用二维数组表示a[n+1][n+1]，值为0表示不可联通，
-其他表示需要经过的次数(我实现的时候是采用类似稀疏矩阵的链表表示)。<br/>
-至于给矩阵增加多一列，主要是考虑处理方便，还考虑到起始点不好确定，所以加个虚拟点，<br/>
-同时增加虚拟点到其他n个点的连接，这样我们深度遍历的时候从虚拟点开始就可以了。<br/>
-另外我们需要一个链表来存放走过的路径，还需要一个标记来表示找到路径，无需继续尝试。</p>
-
-<p>初始化的伪代码如下，</p>
-
-<div class="highlight"><pre><code class="ruby"><span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.n</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">k</span><span class="o">|</span> <span class="n">a</span><span class="o">[</span><span class="mi">0</span><span class="o">][</span><span class="n">k</span><span class="o">]=</span><span class="mi">1</span> <span class="k">end</span> <span class="c1">#虚拟点</span>
-<span class="vi">@path</span> <span class="o">=</span> <span class="o">[]</span> <span class="c1"># 走过的路径</span>
-<span class="vi">@ok</span><span class="o">=</span><span class="kp">false</span> <span class="c1"># 标记是否完成</span>
-</code></pre></div>
-
-
-<p>接下去我们需要一个回溯算法(参考<a href="20120710_sudoku.html">数独(sudoku)游戏</a>)，代码比较简单，这里就不展示代码示例了。</p>
-
-<p>需要注意的是，找到一个可走的路径时(例如从i到j,a[i][j]>0)，深度遍历的时候需要对这个值减1，回溯的时候加1就可以了。
-而对于走过的路径path，是否需要回退呢? 其实我们关心的是把刚刚走过的路径加入路径的正确位置，
-如果选择数组的话，在回溯的时候就不可以不回退了，而对于链表，回退则是必要的。</p>
-
-<p>总体来说，这个游戏的实现是比较简单的，有兴趣的同学可以自己实现一下。</p>
 </div>
   
   
@@ -620,6 +850,26 @@ erlang经常会遇到递归, 并且支持尾递归函数调用 练习1:数据库
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
       </li>
     
@@ -637,26 +887,6 @@ erlang经常会遇到递归, 并且支持尾递归函数调用 练习1:数据库
     
       <li class="post">
         <a href="/blog/20141225_java-common-util.html">java常见工具库培训</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20141126_org-json-and-xml.html">使用org.json库进行xml和json转换存在的问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140815_json-intro.html">json格式须知</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140814_xml-intro.html">xml格式须知</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140329_was-datasource.html">websphere+spring+jndi数据源配置</a>
       </li>
     
   </ul>
@@ -702,7 +932,7 @@ erlang经常会遇到递归, 并且支持尾递归函数调用 练习1:数据库
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2015 - 蔡晓建 -
+  Copyright &copy; 2016 - 蔡晓建 -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 

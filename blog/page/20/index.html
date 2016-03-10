@@ -9,7 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="备注: 示例中的代码并不是真实代码的完全拷贝 群里的讨论 前两天在开发群里边，有同事讨论一个api: 增加一个取特定序列值的方法。并给出了以下的原型代码： public Object getSeqValue(String seqname, String maindb){ if(&quot;1& &hellip;">
+  <meta name="description" content="备注: 示例中的代码并不是真实代码的完全拷贝 道高一尺，魔高一丈 魔鬼数字在项目中大量出现，是代码可读性维护性变差的重要推手。
+为了控制事态恶化，项目中加入findbugs，checkstyle等静态检查工具，试图让人自觉修复魔鬼数字这类头疼的问题。 最近在review N项目的代码时， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -70,7 +71,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/20120724_improve-bitter-code-1.html">Improve Bitter Code: 迷惑的boolean参数</a></h1>
+      <h1 class="entry-title"><a href="/blog/20120731_improve-bitter-code-6.html">Improve Bitter Code: 对付魔鬼数字</a></h1>
     
     
       <p class="meta">
@@ -86,9 +87,9 @@
   
 
 
-<time datetime="2012-07-24T00:00:00+08:00" pubdate data-updated="true">Jul 24<span>th</span>, 2012</time>
+<time datetime="2012-07-31T00:00:00+08:00" pubdate data-updated="true">Jul 31<span>st</span>, 2012</time>
         
-         | <a href="/blog/20120724_improve-bitter-code-1.html#disqus_thread">Comments</a>
+         | <a href="/blog/20120731_improve-bitter-code-6.html#disqus_thread">Comments</a>
         
       </p>
     
@@ -97,69 +98,76 @@
 
   <div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
 
-<h3>群里的讨论</h3>
+<h3>道高一尺，魔高一丈</h3>
 
-<p>前两天在开发群里边，有同事讨论一个api: 增加一个取特定序列值的方法。并给出了以下的原型代码：</p>
+<p>魔鬼数字在项目中大量出现，是代码可读性维护性变差的重要推手。
+为了控制事态恶化，项目中加入findbugs，checkstyle等静态检查工具，试图让人自觉修复魔鬼数字这类头疼的问题。</p>
 
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Object</span> <span class="nf">getSeqValue</span><span class="o">(</span><span class="n">String</span> <span class="n">seqname</span><span class="o">,</span> <span class="n">String</span> <span class="n">maindb</span><span class="o">){</span>
-    <span class="k">if</span><span class="o">(</span><span class="s">&quot;1&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">maindb</span><span class="o">)){</span>
-        <span class="n">DbRunContext</span><span class="o">.</span><span class="na">setRegion</span><span class="o">(</span><span class="n">DbRunContext</span><span class="o">.</span><span class="na">MAINDB</span><span class="o">);</span>
-    <span class="o">}</span>
-    <span class="c1">// more codes</span>
-    <span class="k">return</span> <span class="n">XXDao</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
+<p>最近在review N项目的代码时，发现有新童鞋对修复checkstyle的问题热情高涨，有些修改的确是有益的，
+但是对魔鬼数字的修改就显得不是正路了。大家先看看：</p>
+
+<div class="highlight"><pre><code class="java"><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_2</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
+<span class="kd">private</span> <span class="n">Static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_80</span> <span class="o">=</span> <span class="mi">80</span><span class="o">;</span>
+<span class="kd">private</span> <span class="n">Static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_1000</span> <span class="o">=</span> <span class="mi">1000</span><span class="o">;</span>
+<span class="kd">private</span> <span class="n">Static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_60000</span> <span class="o">=</span> <span class="mi">60000</span><span class="o">;</span>
+</code></pre></div>
+
+
+<p>这种情况以前也出现过，那个时候刚推广checkstyle，结果有人定义了NumberUtil类，里边就有ONE, TWO&#8230;等变量，
+一直延伸到好几十。这让我非常纠结，劝说了很多次，结果这个类最终还是扎下根来了。我对此深恶痛绝。</p>
+
+<p>今天再次看到这种方式，真是道高一尺魔高一丈呀。我又要发牢骚了。</p>
+
+<h3>认清工具的本质</h3>
+
+<p>这种做法完全就是为了对付checkstyle，而不是对付那对问题代码。工具本来是想提醒程序员，避免写出难以维护的代码。
+结果我们更聪明，把代码藏起来，眼不见为净。这样其实是把数字和变量名直接关联起来了，
+你能想象一个叫INT_2的变量值确是1么? 如果在不同含义的逻辑里边使用这样一个魔鬼变量，
+一旦值发生变化，就会顺带把不应该修改的地方也改动了。</p>
+
+<p>如果我们真的是为了提高自己的编码水平，提高项目的代码质量，就应该认真的对待这些魔鬼数字。
+对于魔鬼数字，应该有一个良好的命名，对于经常出现的，还应该找个合适的地方加以管理。接下来以上面的例子继续分析。</p>
+
+<h3>解决魔鬼数字</h3>
+
+<p>要解决魔鬼数字，首先是认清魔鬼数字代表的意义，给它起一个合适的名字。</p>
+
+<p>查看源代码，可以发现，做了下面的代码调整：</p>
+
+<ol>
+<li>2是某个值在列表中的位置索引，换成XXX_IDX</li>
+<li>80是http的默认端口，换成DEFAULT_HTTP_PROT</li>
+<li>1000是用来把秒换成毫秒的，可以用MILLISECONDS_PER_SECOND</li>
+<li>60000是默认超时时间来的，换成DEFAULT_TIMEOUT</li>
+</ol>
+
+
+<p>同样，经常会看到魔鬼字符串，&#8221;0&#8221;,&#8221;1&#8221;这样的值出现代码里边，也应该
+把给他们起一个好的名字，例如作为执行结果，有SUCCESS、FAILED等。</p>
+
+<h3>更进一步</h3>
+
+<p>需要考虑的还有常量定义的地方，另外考虑使用方法封装来处理魔鬼数字的逻辑。
+这样可以隐藏一些细节，把作用域限制在很小的地方。
+例如下面经常出现的魔鬼字符串，就可以考虑把整个判断逻辑封装到user类里边去，
+而不只是简单的定义出ACTIVE这样一个常量。</p>
+
+<div class="highlight"><pre><code class="java"><span class="c1">// 原有的代码</span>
+<span class="k">if</span><span class="o">(</span><span class="s">&quot;1&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">user</span><span class="o">.</span><span class="na">getStatus</span><span class="o">())){</span>
+    <span class="c1">// ...</span>
+<span class="o">}</span>
+
+<span class="c1">// 改造后,&quot;1&quot;作为user的常量使用于isActive方法</span>
+<span class="k">if</span><span class="o">(</span><span class="n">user</span><span class="o">.</span><span class="na">isActive</span><span class="o">()){</span>
+    <span class="c1">// ...</span>
 <span class="o">}</span>
 </code></pre></div>
 
 
-<p>其中maindb是因为项目支持多数据库的缘故，传入参数maindb来判断是否走主库还是地市库。
-我不知道这个&#8221;1&#8221;是怎么来的，我随口冒出一句：能不能不传递maindb,谁知道要传递什么呢?</p>
+<p>不过话说回来，解决魔鬼数字、字符串之类等&#8217;小枝小节&#8217;，花费的精力不小。
+但不要忽视这些细节，这样可以让自己不断提高对代码的认识，也便于其他人维护你的代码。</p>
 
-<p>于是很快冒出&#8221;改进&#8221;方案，换成一个布尔值，代码变成这样:</p>
-
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Object</span> <span class="nf">getSeqValue</span><span class="o">(</span><span class="n">String</span> <span class="n">seqname</span><span class="o">,</span> <span class="kt">boolean</span> <span class="n">isMaindb</span><span class="o">){</span>
-    <span class="k">if</span><span class="o">(</span><span class="n">isMaindb</span><span class="o">){</span>
-        <span class="n">DbRunContext</span><span class="o">.</span><span class="na">setRegion</span><span class="o">(</span><span class="n">DbRunContext</span><span class="o">.</span><span class="na">MAINDB</span><span class="o">);</span>
-    <span class="o">}</span>
-    <span class="c1">// more codes</span>
-    <span class="k">return</span> <span class="n">XXDao</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
-<span class="o">}</span>
-</code></pre></div>
-
-
-<p>很显然这不是一个好的解决办法，我从使用者的角度来说，举了下面的例子:</p>
-
-<div class="highlight"><pre><code class="java"><span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
-<span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
-</code></pre></div>
-
-
-<p>单单看上面的调用方式，谁能很清楚的说明分别是什么意思?</p>
-
-<p>很明显，这相当的困难。所以我建议对方法进行重命名，例如</p>
-
-<div class="highlight"><pre><code class="java"><span class="n">getSeqValueFromMaindb</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
-<span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
-</code></pre></div>
-
-
-<p>当然，可以考虑把原来的方法换成私有的，这样避免代码重复而不会对调用者造成困惑。</p>
-
-<h3>迷惑人的参数随处可见</h3>
-
-<p>在我们的代码里边，类似这样的参数困惑随处可见，除了这种布尔值，还有&#8221;1&#8221;和&#8221;0&#8221;
-这种魔法数字，字符串，因为调用太频繁了，很多人不愿意给他取个好听的名字。</p>
-
-<p>例如区分调用后台逻辑是否起事务，用得太多了，加上老代码就这么用，所以很多同事
-没有意识加个IS_TRANSACTION这类的静态变量。看，代码就变成下面的样子：</p>
-
-<div class="highlight"><pre><code class="java"><span class="n">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">cmd</span><span class="o">,</span> <span class="n">subcmd</span><span class="o">,</span> <span class="s">&quot;1&quot;</span><span class="o">);</span>
-<span class="n">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">cmd</span><span class="o">,</span> <span class="n">subcmd</span><span class="o">,</span> <span class="s">&quot;0&quot;</span><span class="o">);</span>
-</code></pre></div>
-
-
-<p>参数这东西，对看代码的人来说没什么特别的帮助，参数越多越迷惑。
-当两个方法调用就差一个布尔值不一样的时候，那是相当痛苦的。
-所以最好还是从方法名上进行区分，保持代码的可读性。对于接口方法，公用方法，更是应该如此。</p>
+<p>对付魔鬼数字，还是不要走捷径的好！</p>
 
 <h2>&#8220;improve bitter code&#8221;系列文章:</h2>
 
@@ -168,119 +176,6 @@
  
   
   <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
-  
- 
-  
-  <li>2012-07-24 improve bitter code: 迷惑的boolean参数</li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
-  
- 
-  
-  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
-  
- 
-  
-  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
-  
- 
-  
-  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
-  
-
-</ul>
-
-
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120721_improve-bitter-code.html">Improve Bitter Code</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-21T00:00:00+08:00" pubdate data-updated="true">Jul 21<span>st</span>, 2012</time>
-        
-         | <a href="/blog/20120721_improve-bitter-code.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>想法</h3>
-
-<p>周五的时候去了趟图书馆，回来的时候已经2点了，又是组织参加每周的代码评审了。
-这项活动已经参加了很多次了，但还是经常会遇到相同的问题，即使每天codediff，
-也很难避免问题一次次的重复出现。代码基还是不可避免的膨胀，需求变化还是那么的频繁，
-人员流动还是那么快，新人还是有那么多不成熟的编码风格。</p>
-
-<p>在这个开发团队里边，也没少唠叨编码规范，codediff也是经常再做，代码评审还是有弄，
-但最终的效果，体现在代码上，还远远没有那么乐观。我认为这有好些原因：一方面是历史原因，
-代码基庞大，复杂，每天对着这些代码，连好代码是怎样的都没有见过，还能真的无师自通?
-另外一方面是各种质量改进活动参与度都不是很高，毕竟目标是完成需求，时间久了热情一点点磨灭，
-对这个就更不重视了。</p>
-
-<p>相信很多人看过郑大的代码之丑，里边很多素材就出自我所在的项目组，所以这种代码我也看见不少了，
-正因为如此，我觉得我也能写一些相关的内容。在下班坐地铁回来的时候，
-我列了一些相关主题，更确信了还是有很多内容可以做文章的。大多数题材来自
-项目的代码，自己的想法思路则是来源于平时的实践，工作经历，还有开源代码和各种相关的书籍。</p>
-
-<h3>计划</h3>
-
-<p>整个系列围绕bitter code来说，毕竟维护现有代码是非常重要的工作。这么个系列名称灵感来源于
-代码之丑系列和一本叫bitter java的书籍。虽然我觉得代码之丑的名称不是很好，但内容形式会和
-这个系列类似，只是会多加一些上下文和背景。文章内容仍然以代码为主线，写出我对代码的改进意见，
-至于发布周期，大约是一个星期争取不少于两篇!!</p>
-
-<p>期待吧!!!</p>
-
-<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
-
-
-<ul>
- 
-  
-  <li>2012-07-21 improve bitter code</li>
   
  
   
@@ -304,6 +199,187 @@
   
  
   
+  <li>2012-07-31 improve bitter code: 对付魔鬼数字</li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120729_improve-bitter-code-5.html">Improve Bitter Code: 拘泥于单出口方法</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-29T00:00:00+08:00" pubdate data-updated="true">Jul 29<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120729_improve-bitter-code-5.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>究竟是哪个日期</h3>
+
+<p>前阵子代码评审的时候发现一段代码，逻辑是用于查找一个最大日期，代码逻辑大约是这样的：
+如果没有相关的日期记录，则返回当前日期，否则，当日期值为空时，是业务限制异常，并且配置的
+相关日期小于当前日期的话，还是应该选择当前日期。代码如下：</p>
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">String</span> <span class="nf">getPrivMaxDate</span><span class="o">(){</span>
+    <span class="n">String</span> <span class="n">currDate</span> <span class="o">=</span> <span class="n">DateUtil</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="k">new</span> <span class="n">Date</span><span class="o">());</span>
+    <span class="n">String</span> <span class="n">maxDate</span> <span class="o">=</span> <span class="n">currDate</span><span class="o">;</span>
+    
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">privMaxDates</span> <span class="o">=</span> <span class="o">...;</span> <span class="c1">//load data from database</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">Objects</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">privMaxDates</span><span class="o">)){</span>
+        <span class="n">maxDate</span> <span class="o">=</span> <span class="n">privMaxDates</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(</span><span class="n">maxDate</span><span class="o">)){</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">BusinessException</span><span class="o">(</span><span class="s">&quot;...&quot;</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">maxDate</span><span class="o">.</span><span class="na">compareTo</span><span class="o">(</span><span class="n">currDate</span><span class="o">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="o">)</span>
+            <span class="n">maxDate</span> <span class="o">=</span> <span class="n">currDate</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">maxDate</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>大家应该被我的描述搞晕，我也觉得说得很乱。从代码看，maxDate有好几处地方可以修改，有时候是当前日期，有时候是配置的日期，的确比较乱。
+接下来我们尝试对代码进行一些简单的修改，看看效果。</p>
+
+<h3>移动代码，快速逃离</h3>
+
+<p>接下来，我们要做一些小的调整:</p>
+
+<ol>
+<li>反转条件，让小逻辑先行，如Objects.isNotEmpty(privMaxDates)的判断</li>
+<li>避免修改变量，让代码简单化，如直接使用currDate</li>
+<li>throw本身属于返回值的一种，所以在它之后的代码可以简化，例如代码中的else if</li>
+</ol>
+
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">String</span> <span class="nf">getPrivMaxDate</span><span class="o">(){</span>
+    <span class="n">String</span> <span class="n">currDate</span> <span class="o">=</span> <span class="n">DateUtil</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="k">new</span> <span class="n">Date</span><span class="o">());</span>
+    
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">privMaxDates</span> <span class="o">=</span> <span class="o">...;</span> <span class="c1">//load data from database</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">Objects</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(</span><span class="n">privMaxDates</span><span class="o">)){</span>
+        <span class="k">return</span> <span class="n">currDate</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="n">String</span> <span class="n">maxDate</span> <span class="o">=</span> <span class="n">privMaxDates</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(</span><span class="n">maxDate</span><span class="o">)){</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">BusinessException</span><span class="o">(</span><span class="s">&quot;...&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="k">if</span><span class="o">(</span><span class="n">maxDate</span><span class="o">.</span><span class="na">compareTo</span><span class="o">(</span><span class="n">currDate</span><span class="o">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="o">)</span>
+        <span class="k">return</span> <span class="n">currDate</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">maxDate</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>经过改造，由于maxDate只赋值一次，代码变得好理解了。</p>
+
+<h3>灵活的结构调整</h3>
+
+<p>借助eclipse提供的重构功能，可以对代码进行调整。对于我们常见的if语句，可以ctrl+1就有很多神奇的提示。
+例如if反转，添加else，切换成三元表达式等手法。</p>
+
+<h5>对于if语句里边有很大块的代码，可以考虑使用反转，让另外一个分支先处理。</h5>
+
+<p>例如上面的例子。另外，对有些只有if没有else的代码块，在操作手法上可以先用ctrl+1添加else，再进行反转操作。</p>
+
+<h5>对于很小的if-else语句，可以考虑转换成三元表达式。如下面代码示例</h5>
+
+<div class="highlight"><pre><code class="java"><span class="n">String</span> <span class="n">forward</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+<span class="k">if</span><span class="o">(</span><span class="n">success</span><span class="o">){</span>
+    <span class="n">forward</span> <span class="o">=</span> <span class="s">&quot;success&quot;</span><span class="o">;</span>
+<span class="o">}</span>
+<span class="k">else</span><span class="o">{</span>
+    <span class="n">forward</span> <span class="o">=</span> <span class="s">&quot;fail&quot;</span><span class="o">;</span>
+<span class="o">}</span>
+
+<span class="c1">// or this way</span>
+<span class="n">String</span> <span class="n">forward</span> <span class="o">=</span> <span class="n">success</span> <span class="o">?</span> <span class="s">&quot;success&quot;</span> <span class="o">:</span> <span class="s">&quot;fail&quot;</span><span class="o">;</span>
+</code></pre></div>
+
+
+<h5>对于存在多次赋值的情况，如果发现已经是最终的返回值，在调整时可以使用return，理清逻辑。</h5>
+
+<p>例如上面的例子。同时，经过分解也便于对复杂的代码进行封装抽取更小的方法。</p>
+
+<p>后话：单赋值还有其他一些好处，例如便于调试定位，
+在eralng中所有的变量都是单赋值的，没接触过是很难想象是怎样的一种场景。有兴趣可以去了解一下。</p>
+
+<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
+
+
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
+  
+ 
+  
+  <li>2012-07-29 improve bitter code: 拘泥于单出口方法</li>
+  
+ 
+  
   <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
   
  
@@ -335,7 +411,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/20120721_hello-erlang-4.html">Hello Erlang, Part 4</a></h1>
+      <h1 class="entry-title"><a href="/blog/20120729_improve-bitter-code-4.html">Improve Bitter Code: &#8216;不可避免&#8217;的重复</a></h1>
     
     
       <p class="meta">
@@ -351,207 +427,147 @@
   
 
 
-<time datetime="2012-07-21T00:00:00+08:00" pubdate data-updated="true">Jul 21<span>st</span>, 2012</time>
+<time datetime="2012-07-29T00:00:00+08:00" pubdate data-updated="true">Jul 29<span>th</span>, 2012</time>
         
-         | <a href="/blog/20120721_hello-erlang-4.html#disqus_thread">Comments</a>
+         | <a href="/blog/20120729_improve-bitter-code-4.html#disqus_thread">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h3>练习重点</h3>
+  <div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
 
-<p>列表解析和高阶函数是erlang的基本用法之一，熟练掌握还是很有必要的。
-作为一个阶段的学习总结，按照书上的一个练习题，尝试实现列表模块中的一些方法。</p>
+<h3>一段分批处理的逻辑</h3>
 
-<h3>后续学习计划</h3>
+<p>周六做code diff的时候发现B项目一段颇长的处理逻辑(40行左右)。处理流程是这样的，
+从页面上取到一批数据之后，用这批数据封装参数进行后台调用(远程调用)。为了避免数据调用超时，
+对这批数据进行分批多次调用。代码如下所示(现实的代码比这个要复杂些，并且没有使用subList方法)：</p>
 
-<p>再找时间总结一下位匹配用法，然后就开始客户端服务器编程模型，
-网络和分布式方面的内容。</p>
+<div class="highlight"><pre><code class="java"><span class="n">List</span> <span class="n">batchdatas</span> <span class="o">=</span> <span class="o">...;</span>
+<span class="kt">int</span> <span class="n">batchsize</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span> <span class="c1">// load from parameter</span>
 
-<p>相关内容虽然都看过一下，但是没有敲过代码，感觉心里没底。还是那个硬道理：纸上得来终觉浅呀。</p>
+<span class="kt">int</span> <span class="n">datasize</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+<span class="k">if</span><span class="o">(</span><span class="n">datasize</span> <span class="o">&gt;</span> <span class="n">batchsize</span><span class="o">){</span>
+    <span class="kt">int</span> <span class="n">batch</span> <span class="o">=</span> <span class="n">datasize</span> <span class="o">/</span> <span class="n">batchsize</span><span class="o">;</span>
+    <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">batch</span><span class="o">;</span><span class="n">i</span><span class="o">++){</span>
+        <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+        <span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">batchsize</span><span class="o">*</span><span class="n">i</span><span class="o">,</span> <span class="n">batchsize</span><span class="o">*(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">));</span>
+        <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
+        <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
 
-<h3>简单的测试用例</h3>
-
-<p>作为另外一个章节的内容，单元测试。我顺便实践一下erlang的单元测试框架eunit，
-里边使用了宏来作为assert语句(使用eclipse插件可以有很好的提示)，
-总的来说，xunit的基本风格都差不多，注意import eunit的包，方法名采用_test结束。
-执行的时候调用模块的test方法就可以了。我简单写了一些测试用例:</p>
-
-<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">myliststest</span><span class="p">).</span>
-<span class="p">-</span><span class="ni">include_lib</span><span class="p">(</span><span class="s">&quot;eunit/include/eunit.hrl&quot;</span><span class="p">).</span>
-<span class="p">-</span><span class="ni">import_all</span><span class="p">(</span><span class="n">mylists</span><span class="p">).</span>
-
-<span class="c">%% EUnit TestCase</span>
-
-<span class="c">%% all/2</span>
-<span class="nf">all_empty_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assert</span><span class="p">(</span><span class="nn">mylists</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">end</span><span class="p">,</span> <span class="p">[])).</span>
-<span class="nf">all_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertNot</span><span class="p">(</span><span class="nn">mylists</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">10</span><span class="p">])).</span>
-
-<span class="c">%% any/2</span>
-<span class="nf">any_empty_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertNot</span><span class="p">(</span><span class="nn">mylists</span><span class="p">:</span><span class="nf">any</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">end</span><span class="p">,</span> <span class="p">[])).</span>
-<span class="nf">any_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assert</span><span class="p">(</span><span class="nn">mylists</span><span class="p">:</span><span class="nf">any</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">10</span><span class="p">])).</span>
-
-<span class="c">%% append/1</span>
-<span class="nf">append_1_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">append</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]])).</span>
-
-<span class="c">%% append/2</span>
-<span class="nf">append_2_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">(</span><span class="s">&quot;abcdef&quot;</span><span class="p">,</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">append</span><span class="p">(</span><span class="s">&quot;abc&quot;</span><span class="p">,</span> <span class="s">&quot;def&quot;</span><span class="p">)).</span>
-
-<span class="c">%% delete/2</span>
-<span class="nf">delete_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">delete</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])).</span>
-
-<span class="c">%% dropwhile/2</span>
-<span class="nf">dropwhile_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">dropwhile</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])).</span>
-
-<span class="c">%% duplicate/2</span>
-<span class="nf">duplicate_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">duplicate</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">x</span><span class="p">)).</span>
-
-<span class="c">%% filter/2</span>
-<span class="nf">filter_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])).</span>
-
-<span class="c">%% reverse/1</span>
-<span class="nf">reverse_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">reverse</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])).</span>
-
-<span class="c">%% min/1</span>
-<span class="nf">min_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">min</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">])).</span>
-
-<span class="c">%% zip/2</span>
-<span class="nf">zip_2_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([{</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">},{</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">}],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">zip</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])).</span>
-
-<span class="c">%% zip/3</span>
-<span class="nf">zip_3_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([{</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">},{</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">7</span><span class="p">}],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">zip3</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">])).</span>
-
-<span class="c">%% zipwith/3</span>
-<span class="nf">zipwith_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">9</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">zipwith</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span> <span class="nv">Y</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">X</span><span class="o">+</span><span class="nv">Y</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">])).</span>
-
-<span class="c">%% zipwith/4</span>
-<span class="nf">zipwith3_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([[</span><span class="n">a</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="n">b</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="n">c</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="mi">3</span><span class="p">]],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">zipwith3</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span> <span class="nv">Y</span><span class="p">,</span> <span class="nv">Z</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">,</span><span class="nv">Z</span><span class="p">]</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">],</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])).</span>
+    <span class="kt">int</span> <span class="n">left</span> <span class="o">=</span> <span class="n">datasize</span> <span class="o">%</span> <span class="n">batchsize</span><span class="o">;</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">left</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">){</span>
+        <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+        <span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">batchsize</span><span class="o">*</span><span class="n">batch</span><span class="o">,</span> <span class="n">datasize</span><span class="o">);</span>
+        <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
+        <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="k">else</span> <span class="o">{</span>
+    <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+    <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdatas</span><span class="o">));</span>
+    <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+<span class="o">}</span>
 </code></pre></div>
 
 
-<h3>示例代码</h3>
+<p>从代码的实现看，思路还是比较清晰的。如果不足一次，就一次提交。否则计算出一共要分多少次，
+然后逐次处理提交，最后还要判断是否还有剩余的，如果有就再处理一次。</p>
 
-<p>根据上面的测试用例，我写了实现代码，如下所示。注意的时候，我偷懒使用了export_all,
-但是min/2好像默认有一个已经被引入了，所以需要去除这个模块。就export_all本身来说，
-也不是推荐方式，还是应该严格区分public api和local api。</p>
+<p>代码显现出来的问题也比较明显，就是远程调用的逻辑出现了重复。</p>
 
-<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">mylists</span><span class="p">).</span>
-<span class="p">-</span><span class="ni">compile</span><span class="p">(</span><span class="n">export_all</span><span class="p">).</span>
-<span class="p">-</span><span class="ni">compile</span><span class="p">({</span><span class="n">no_auto_import</span><span class="p">,[</span><span class="n">min</span><span class="o">/</span><span class="mi">2</span><span class="p">]}).</span>
+<h3>算法小调整，避免重复</h3>
 
-<span class="c">%% all/2</span>
-<span class="nf">all</span><span class="p">(_</span><span class="nv">P</span><span class="p">,</span> <span class="p">[])</span> <span class="o">-&gt;</span> 
-  <span class="n">true</span><span class="p">;</span>
-<span class="nf">all</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">])</span> <span class="o">-&gt;</span>
-  <span class="k">case</span> <span class="nv">P</span><span class="p">(</span><span class="nv">H</span><span class="p">)</span> <span class="k">of</span>
-    <span class="n">true</span> <span class="o">-&gt;</span> <span class="n">all</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">T</span><span class="p">);</span>
-    <span class="n">false</span> <span class="o">-&gt;</span> <span class="n">false</span>
-  <span class="k">end</span><span class="p">.</span>
+<p>有没什么办法可以避免重复? 或许有些童鞋第一反应是给这几句代码抽取成小方法。
+不过这里有更好的办法，首先细想一下就会发现不足一次的判断(datasize > batchsize)不是必要的，
+如果计算批次而是计算每次的起始点和结束点，上面两个分支也可以合并一下。调整后代码如下：</p>
 
-<span class="c">%% any/2</span>
-<span class="nf">any</span><span class="p">(_</span><span class="nv">P</span><span class="p">,</span> <span class="p">[])</span> <span class="o">-&gt;</span>
-  <span class="n">false</span><span class="p">;</span>
-<span class="nf">any</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">])</span> <span class="o">-&gt;</span>
-  <span class="k">case</span> <span class="nv">P</span><span class="p">(</span><span class="nv">H</span><span class="p">)</span> <span class="k">of</span>
-    <span class="n">true</span> <span class="o">-&gt;</span> <span class="n">true</span><span class="p">;</span>
-    <span class="n">false</span> <span class="o">-&gt;</span> <span class="n">any</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">T</span><span class="p">)</span>
-  <span class="k">end</span><span class="p">.</span>
+<div class="highlight"><pre><code class="java"><span class="n">List</span> <span class="n">batchdatas</span> <span class="o">=</span> <span class="o">...;</span>
+<span class="kt">int</span> <span class="n">batchsize</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span> <span class="c1">// load from parameter</span>
 
-<span class="c">%% append/1</span>
-<span class="nf">append</span><span class="p">(</span><span class="nv">LL</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="p">[</span><span class="nv">X</span> <span class="p">||</span> <span class="nv">L</span> <span class="o">&lt;-</span> <span class="nv">LL</span><span class="p">,</span> <span class="nv">X</span> <span class="o">&lt;-</span> <span class="nv">L</span><span class="p">].</span>
+<span class="kt">int</span> <span class="n">datasize</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+<span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">startidx</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">startidx</span><span class="o">&lt;</span><span class="n">datasize</span><span class="o">;</span><span class="n">startidx</span><span class="o">+=</span><span class="n">batchsize</span><span class="o">){</span>
+    <span class="kt">int</span> <span class="n">endidx</span> <span class="o">=</span> <span class="o">(</span><span class="n">startidx</span><span class="o">+</span><span class="n">batchsize</span><span class="o">)</span> <span class="o">&gt;</span> <span class="n">datasize</span> <span class="o">?</span> <span class="n">datasize</span> <span class="o">:</span> <span class="o">(</span><span class="n">startidx</span><span class="o">+</span><span class="n">batchsize</span><span class="o">);</span>
 
-<span class="c">%% append/2</span>
-<span class="nf">append</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">LA</span> <span class="o">++</span> <span class="nv">LB</span><span class="p">.</span>
-
-<span class="c">%% delete/2</span>
-<span class="nf">delete</span><span class="p">(</span><span class="nv">E</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="p">[</span><span class="nv">X</span> <span class="p">||</span> <span class="nv">X</span> <span class="o">&lt;-</span> <span class="nv">L</span><span class="p">,</span> <span class="nv">E</span> <span class="o">/=</span> <span class="nv">X</span><span class="p">].</span>
-
-<span class="c">%% dropwhile/2</span>
-<span class="nf">dropwhile</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="p">[</span><span class="nv">X</span> <span class="p">||</span> <span class="nv">X</span> <span class="o">&lt;-</span> <span class="nv">L</span><span class="p">,</span> <span class="ow">not</span> <span class="nv">P</span><span class="p">(</span><span class="nv">X</span><span class="p">)].</span>
-
-<span class="c">%% duplicate/2</span>
-<span class="nf">duplicate</span><span class="p">(</span><span class="nv">N</span><span class="p">,</span> <span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="n">duplicate</span><span class="p">(</span><span class="nv">N</span><span class="p">,</span> <span class="nv">E</span><span class="p">,</span> <span class="p">[]).</span>
-<span class="nf">duplicate</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">_</span><span class="nv">E</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">L</span><span class="p">;</span>
-<span class="nf">duplicate</span><span class="p">(</span><span class="nv">N</span><span class="p">,</span> <span class="nv">E</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="k">when</span> <span class="nv">N</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">-&gt;</span>
-  <span class="n">duplicate</span><span class="p">(</span><span class="nv">N</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nv">E</span><span class="p">,</span> <span class="p">[</span><span class="nv">E</span><span class="p">|</span><span class="nv">L</span><span class="p">]).</span>
-
-<span class="c">%% filter/2</span>
-<span class="nf">filter</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="p">[</span><span class="nv">X</span> <span class="p">||</span> <span class="nv">X</span> <span class="o">&lt;-</span> <span class="nv">L</span><span class="p">,</span> <span class="nv">P</span><span class="p">(</span><span class="nv">X</span><span class="p">)].</span>
-
-<span class="c">%% reverse/1</span>
-<span class="nf">reverse</span><span class="p">(</span><span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="n">reverse</span><span class="p">(</span><span class="nv">L</span><span class="p">,</span> <span class="p">[]).</span>
-<span class="nf">reverse</span><span class="p">([],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">L</span><span class="p">;</span>
-<span class="nf">reverse</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="n">reverse</span><span class="p">(</span><span class="nv">T</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">L</span><span class="p">]).</span>
-
-<span class="c">%% min/1</span>
-<span class="nf">min</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">])</span> <span class="o">-&gt;</span>
-  <span class="n">min</span><span class="p">(</span><span class="nv">T</span><span class="p">,</span> <span class="nv">H</span><span class="p">).</span>
-<span class="nf">min</span><span class="p">([],</span> <span class="nv">M</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">M</span><span class="p">;</span>
-<span class="nf">min</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">],</span> <span class="nv">M</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="k">if</span>
-    <span class="nv">H</span> <span class="o">&lt;</span> <span class="nv">M</span> <span class="o">-&gt;</span> <span class="n">min</span><span class="p">(</span><span class="nv">T</span><span class="p">,</span> <span class="nv">H</span><span class="p">);</span>
-    <span class="n">true</span> <span class="o">-&gt;</span> <span class="n">min</span><span class="p">(</span><span class="nv">T</span><span class="p">,</span> <span class="nv">M</span><span class="p">)</span>
-  <span class="k">end</span><span class="p">.</span>
-
-<span class="c">%% zip/2</span>
-<span class="nf">zip</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="n">reverse</span><span class="p">(</span><span class="n">zip</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="p">[])).</span>
-<span class="nf">zip</span><span class="p">([],</span> <span class="p">_</span><span class="nv">LB</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">L</span><span class="p">;</span>
-<span class="nf">zip</span><span class="p">(_</span><span class="nv">LA</span><span class="p">,</span> <span class="p">[],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">L</span><span class="p">;</span>
-<span class="nf">zip</span><span class="p">([</span><span class="nv">HA</span><span class="p">|</span><span class="nv">TA</span><span class="p">],</span> <span class="p">[</span><span class="nv">HB</span><span class="p">|</span><span class="nv">TB</span><span class="p">],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="n">zip</span><span class="p">(</span><span class="nv">TA</span><span class="p">,</span> <span class="nv">TB</span><span class="p">,</span> <span class="p">[{</span><span class="nv">HA</span><span class="p">,</span><span class="nv">HB</span><span class="p">}|</span><span class="nv">L</span><span class="p">]).</span>
-
-<span class="c">%% zip/3</span>
-<span class="nf">zip3</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="nv">LC</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="n">reverse</span><span class="p">(</span><span class="n">zip3</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="nv">LC</span><span class="p">,</span> <span class="p">[])).</span>
-<span class="nf">zip3</span><span class="p">([],</span> <span class="p">_</span><span class="nv">LB</span><span class="p">,</span> <span class="p">_</span><span class="nv">LC</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">L</span><span class="p">;</span>
-<span class="nf">zip3</span><span class="p">(_</span><span class="nv">LA</span><span class="p">,</span> <span class="p">[],</span> <span class="p">_</span><span class="nv">LC</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">L</span><span class="p">;</span>
-<span class="nf">zip3</span><span class="p">(_</span><span class="nv">LA</span><span class="p">,</span> <span class="p">_</span><span class="nv">LB</span><span class="p">,</span> <span class="p">[],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">L</span><span class="p">;</span>
-<span class="nf">zip3</span><span class="p">([</span><span class="nv">HA</span><span class="p">|</span><span class="nv">TA</span><span class="p">],</span> <span class="p">[</span><span class="nv">HB</span><span class="p">|</span><span class="nv">TB</span><span class="p">],</span> <span class="p">[</span><span class="nv">HC</span><span class="p">|</span><span class="nv">TC</span><span class="p">],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="n">zip3</span><span class="p">(</span><span class="nv">TA</span><span class="p">,</span> <span class="nv">TB</span><span class="p">,</span> <span class="nv">TC</span><span class="p">,</span> <span class="p">[{</span><span class="nv">HA</span><span class="p">,</span><span class="nv">HB</span><span class="p">,</span><span class="nv">HC</span><span class="p">}|</span><span class="nv">L</span><span class="p">]).</span>
-
-<span class="c">%% zipwith/3</span>
-<span class="nf">zipwith</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="p">[</span><span class="nv">P</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">)</span> <span class="p">||</span> <span class="p">{</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">}</span> <span class="o">&lt;-</span> <span class="n">zip</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">)].</span>
-
-<span class="c">%% zipwith/4</span>
-<span class="nf">zipwith3</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="nv">LC</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="p">[</span><span class="nv">P</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">,</span><span class="nv">Z</span><span class="p">)</span> <span class="p">||</span> <span class="p">{</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">,</span><span class="nv">Z</span><span class="p">}</span> <span class="o">&lt;-</span> <span class="n">zip3</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="nv">LC</span><span class="p">)].</span>
+    <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+    <span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">startidx</span><span class="o">,</span> <span class="n">endidx</span><span class="o">);</span>
+    <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
+    <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+<span class="o">}</span>
 </code></pre></div>
+
+
+<p>其中计算endidx使用了一个三元表达式，使用三元表达式用来替代一些简单的if-else语句是个实用的小技巧。
+代码量缩小为原来的三分之一，代码少了，维护量也轻松了。</p>
+
+<p>类似这样的代码也并不少见，例如计算总页数的分页逻辑有下面的写法</p>
+
+<div class="highlight"><pre><code class="java"><span class="c1">// 常用做法</span>
+<span class="kt">int</span> <span class="n">totalpage</span> <span class="o">=</span> <span class="n">totalsize</span> <span class="o">/</span> <span class="n">pagesize</span><span class="o">;</span>
+<span class="k">if</span><span class="o">(</span><span class="n">totalsize</span> <span class="o">%</span> <span class="n">pagesize</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">){</span>
+    <span class="n">totalpage</span><span class="o">++;</span>
+<span class="o">}</span>
+
+<span class="c1">// 另外一种写法</span>
+<span class="kt">int</span> <span class="n">totalpage</span> <span class="o">=</span> <span class="o">(</span><span class="n">totalsize</span> <span class="o">+</span> <span class="n">pagesize</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">/</span> <span class="n">pagesize</span><span class="o">;</span>
+</code></pre></div>
+
+
+<h3>基本功很重要</h3>
+
+<p>java是一门比较古板的语言，大多数情况下，写出来的代码也是大同小异的。
+同时，java相关框架又特别的多，很容易拣了芝麻丢了西瓜。
+以来面试的童鞋为例，连基本算法的时间复杂度都没弄清楚的人不在少数，所以
+在项目代码中，经常看到化简为繁的代码，现在也很习惯了。</p>
+
+<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
+
+
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li>2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
 
 
 
@@ -567,7 +583,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/20120718_hello-erlang-3.html">Hello Erlang, Part 3</a></h1>
+      <h1 class="entry-title"><a href="/blog/20120728_improve-bitter-code-3.html">Improve Bitter Code: 看不懂的正则表达式</a></h1>
     
     
       <p class="meta">
@@ -583,246 +599,319 @@
   
 
 
-<time datetime="2012-07-18T00:00:00+08:00" pubdate data-updated="true">Jul 18<span>th</span>, 2012</time>
+<time datetime="2012-07-28T00:00:00+08:00" pubdate data-updated="true">Jul 28<span>th</span>, 2012</time>
         
-         | <a href="/blog/20120718_hello-erlang-3.html#disqus_thread">Comments</a>
+         | <a href="/blog/20120728_improve-bitter-code-3.html#disqus_thread">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h3>练习重点</h3>
+  <div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
 
-<p>并发编程是erlang的重要话题，所以这次先来热身，熟悉一下erlang中进程的基本用法。</p>
+<h3>偶然的发现</h3>
 
-<h3>练习1:进程环</h3>
+<p>今天好奇浏览了一下N项目的代码变更历史，发现有人提交了一段关于校验文件格式的代码。
+其中包括一段校验日期格式的java代码。代码是这样的：</p>
 
-<p>编写一个程序，它生成N个进程并相连形成一个环，一旦启动，这些进程会环绕发送M个消息。
-然后当收到消息的时候正常终止。调用ring:start(M, N, Message)来启动环。</p>
-
-<h3>思路及编程示例</h3>
-
-<p>首先，为了形成环状，就是让最后一个进程能够给第一个进程发送消息，
-调用spawn生成进程的时候，需要把第一个pid一直传递到最后一个。所以需要有个start的方法，
-但需要多加个第一个进程id的参数，关注参数N=1作为临界点。</p>
-
-<p>还有，需要等待消息，然后给下一个进程发送消息，之后继续等待消息，直到M=0。
-所以需要一个等待消息的方法，同时需要关注参数M=0作为临界点。</p>
-
-<p>最后，整个环，所有的进程一开始都在等待，需要有个消息来启动环，
-可以在第一个进程启动下一个进程之前，往自身邮箱里边发送一条消息，
-这样第一个进程进入等待消息的时候，就能接收到消息，从而启动环。</p>
-
-<p>我的代码示例如下：</p>
-
-<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">ring</span><span class="p">).</span>
-
-<span class="c">%% Exported Functions</span>
-<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">start</span><span class="o">/</span><span class="mi">3</span><span class="p">]).</span>
-<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">start</span><span class="o">/</span><span class="mi">4</span><span class="p">]).</span>
-
-<span class="c">%% API Functions</span>
-<span class="nf">start</span><span class="p">(</span><span class="nv">M</span><span class="p">,</span> <span class="nv">N</span><span class="p">,</span> <span class="nv">Message</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="n">self</span><span class="p">()</span> <span class="o">!</span> <span class="p">{</span><span class="n">self</span><span class="p">(),</span> <span class="n">start</span><span class="p">},</span>
-  <span class="n">start</span><span class="p">(</span><span class="nv">M</span><span class="p">,</span> <span class="nv">N</span><span class="p">,</span> <span class="nv">Message</span><span class="p">,</span> <span class="n">self</span><span class="p">()).</span>
-
-<span class="nf">start</span><span class="p">(</span><span class="nv">M</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">Message</span><span class="p">,</span> <span class="nv">Rid</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="n">waitmessage</span><span class="p">(</span><span class="nv">M</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">Message</span><span class="p">,</span> <span class="nv">Rid</span><span class="p">);</span>
-
-<span class="nf">start</span><span class="p">(</span><span class="nv">M</span><span class="p">,</span> <span class="nv">N</span><span class="p">,</span> <span class="nv">Message</span><span class="p">,</span> <span class="nv">Rid</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">Pid</span> <span class="o">=</span> <span class="nb">spawn</span><span class="p">(</span><span class="n">ring</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="p">[</span><span class="nv">M</span><span class="p">,</span> <span class="nv">N</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nv">Message</span><span class="p">,</span> <span class="nv">Rid</span><span class="p">]),</span>
-  <span class="n">waitmessage</span><span class="p">(</span><span class="nv">M</span><span class="p">,</span> <span class="nv">N</span><span class="p">,</span> <span class="nv">Message</span><span class="p">,</span> <span class="nv">Pid</span><span class="p">).</span>
-
-<span class="nf">waitmessage</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">_</span><span class="nv">N</span><span class="p">,</span> <span class="p">_</span><span class="nv">Message</span><span class="p">,</span> <span class="p">_</span><span class="nv">Pid</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="k">receive</span>
-    <span class="p">{</span><span class="nv">Pd</span><span class="p">,</span> <span class="nv">Msg</span><span class="p">}</span> <span class="o">-&gt;</span>
-      <span class="nn">io</span><span class="p">:</span><span class="nf">format</span><span class="p">(</span><span class="s">&quot;pid </span><span class="si">~p</span><span class="s"> receive message </span><span class="si">~p</span><span class="s"> from </span><span class="si">~p~n</span><span class="s">&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">self</span><span class="p">(),</span> <span class="nv">Msg</span><span class="p">,</span> <span class="nv">Pd</span><span class="p">])</span>
-      <span class="n">ok</span>
-  <span class="k">end</span><span class="p">;</span>
-
-<span class="nf">waitmessage</span><span class="p">(</span><span class="nv">M</span><span class="p">,</span> <span class="nv">N</span><span class="p">,</span> <span class="nv">Message</span><span class="p">,</span> <span class="nv">Pid</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="k">receive</span>
-    <span class="p">{</span><span class="nv">Pd</span><span class="p">,</span> <span class="nv">Msg</span><span class="p">}</span> <span class="o">-&gt;</span>
-      <span class="nn">io</span><span class="p">:</span><span class="nf">format</span><span class="p">(</span><span class="s">&quot;pid </span><span class="si">~p</span><span class="s"> receive message </span><span class="si">~p</span><span class="s"> from </span><span class="si">~p~n</span><span class="s">&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">self</span><span class="p">(),</span> <span class="nv">Msg</span><span class="p">,</span> <span class="nv">Pd</span><span class="p">]),</span>
-      <span class="nv">Pid</span> <span class="o">!</span> <span class="p">{</span><span class="n">self</span><span class="p">(),</span> <span class="nv">Message</span><span class="p">},</span>
-      <span class="n">waitmessage</span><span class="p">(</span><span class="nv">M</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nv">N</span><span class="p">,</span> <span class="nv">Message</span><span class="p">,</span> <span class="nv">Pid</span><span class="p">)</span>
-  <span class="k">end</span><span class="p">.</span>
+<div class="highlight"><pre><code class="java"><span class="n">String</span> <span class="n">validDateStr</span> <span class="o">=</span> <span class="c1">// read from file lines</span>
+<span class="n">String</span> <span class="n">regex</span> <span class="o">=</span> <span class="s">&quot;(([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})(((0[13578]|1[02])(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)(0[1-9]|[12][0-9]|30))|(02(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))0229)&quot;</span><span class="o">;</span>
+<span class="k">if</span><span class="o">(</span><span class="n">validDateStr</span><span class="o">.</span><span class="na">matches</span><span class="o">(</span><span class="n">regex</span><span class="o">)){</span>
+    <span class="c1">// do something</span>
+<span class="o">}</span>
 </code></pre></div>
 
 
-<p>通过简单的测试，如果去掉io:format的话，效率会提高不少。IO操作消耗的时间还是不可小视呀。
-另外，测试大数量进程的时候，内存也用得比较厉害，毕竟这个练习更像是一个同步操作。</p>
-</div>
-  
-  
+<p>看到这个正则表达式，我立马纠结了，这个正则表达式不知是什么意思。
+虽然前几天写代码的同事来问过怎么写校验日期的正则，我当时比较忙，叫他找找有没有现成的。
+这次看到这个正则，还是被雷了一把。</p>
+
+<p>于是我问了一下，原来这个正则是校验日期格式，不过加了闰年的判断，所以变得相当复杂。
+我晚上还去搜了一下，大概是出自<a href="http://www.cnblogs.com/mgod/archive/2007/04/26/728628.html">这里</a>的吧！不同的是文中判断的是YYYY-MM-DD的格式，而同事的代码
+是判断YYYYMMDD的格式，显得更为难懂。</p>
+
+<h3>保持代码的可读性、可维护性</h3>
+
+<p>对于这种拿来的复杂代码，的确很cool，不过即使今天你看懂了，别人不一定看得懂，也难保过些日子自己也看不懂了。</p>
+
+<p>所以通常需要一些保持代码可读性、可维护性的手段：
+1. 加多几段注释,或者把来源url标注一下，就像有人喜欢标注那个需求一样。
+2. 把正则弄成常量，并把验证方法封装起来，只需调用method就可以了。
+3. 选择另外一种比较清晰的实现方式, another way, 或许有惊喜。</p>
+
+<p>应该说，这几种情况都应该考虑一下，例如对于上面的例子来说，要使用这么复杂的正则，加上一些简单的注释
+是相当有必要的，至少要说明你是想验证什么样的格式。更进一步，封装到方法里边去，例如</p>
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">isStrictYYYYMMDD</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">){</span>
+    <span class="k">return</span> <span class="n">datestr</span><span class="o">.</span><span class="na">matches</span><span class="o">(</span><span class="n">STRICT_YYYYMMDD_REGEX</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
 
 
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120715_hello-erlang-2.html">Hello Erlang, Part 2</a></h1>
-    
-    
-      <p class="meta">
-        
+<p>不过这里有个缺点，只能校验一种日期格式，因为日期格式不像邮箱地址，它的形式多样，这样处理能得到的收益并不是很高。
+如果我们可以传递校验日期的格式就更好了。</p>
+
+<h3>换个实现方式</h3>
+
+<p>换个思路，如果不使用正则表达式会怎样，例如<a href="http://docs.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html">SimpleDateFormat</a>就提供了严格验证的格式，示例代码如下：</p>
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">isStrictYYYYMMDD</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">){</span>
+    <span class="n">SimpleDateFormat</span> <span class="n">format</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SimpleDateFormat</span><span class="o">(</span><span class="s">&quot;yyyyMMdd&quot;</span><span class="o">);</span>  
+    <span class="c1">//设置为严格验证模式</span>
+    <span class="n">format</span><span class="o">.</span><span class="na">setLenient</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+    <span class="k">try</span><span class="o">{</span>
+        <span class="n">format</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="n">str</span><span class="o">);</span>
+        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ParseException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// ignore exeeption</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div>
 
 
+<p>如果没有设置为严格验证模式的话，20090230这种日期就会变成20090302。</p>
+
+<p>相对于上面正则的方式来说，代码是多了几行，但是因为格式可以变，灵活性有所提高，代码也容易理解了。
+另外一方面，由于SimpleDateFormat非线程安全，必须每次都定义一个，在多次处理的情况下显得有些多余。
+当然有个折中的方法就是由客户端代码构造format作为传输传递，这样做还有个好处就是，验证日期格式的方法完全就是通用的。</p>
+
+<p>例如，我们可以提供下面的api和调用方式:</p>
+
+<div class="highlight"><pre><code class="java"><span class="c1">//client</span>
+<span class="n">SimpleDateFormat</span> <span class="n">format</span> <span class="o">=</span> <span class="c1">// 由客户端代码构建format</span>
+<span class="kt">boolean</span> <span class="n">isDate</span> <span class="o">=</span> <span class="n">DateUtil</span><span class="o">.</span><span class="na">isDateFormat</span><span class="o">(</span><span class="n">datestr</span><span class="o">,</span> <span class="n">format</span><span class="o">);</span>
+
+<span class="c1">//DateUtil api</span>
+<span class="kt">boolean</span> <span class="nf">isDateFormat</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">,</span> <span class="n">SimpleDateFormat</span> <span class="n">format</span><span class="o">);</span>
+<span class="kt">boolean</span> <span class="nf">isDateFormat</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">,</span> <span class="n">String</span> <span class="n">formatstr</span><span class="o">);</span><span class="c1">//单次调用</span>
+<span class="kt">boolean</span> <span class="nf">isStrictDateFormat</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">,</span> <span class="n">String</span> <span class="n">formatstr</span><span class="o">);</span><span class="c1">//单次使用,用于严格处理</span>
+</code></pre></div>
 
 
+<p>在不改变接口的情况下，最初的代码可以调整成以下形式</p>
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">isStrictYYYYMMDD</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">){</span>
+    <span class="k">return</span> <span class="nf">isStrictDateFormat</span><span class="o">(</span><span class="n">datestr</span><span class="o">,</span> <span class="n">DateUtil</span><span class="o">.</span><span class="na">YYYYMMDD</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
 
 
-
-
-  
-
-
-<time datetime="2012-07-15T00:00:00+08:00" pubdate data-updated="true">Jul 15<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120715_hello-erlang-2.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>练习重点</h3>
+<h3>总结</h3>
 
 <ol>
-<li>依然是熟悉erlang匹配模式的编程方式，对于用习惯了判断，循环操作的人来说，这个变化很大</li>
-<li>熟悉erlang列表操作</li>
-<li>为后面学习高阶函数fun，还有更多高级数据类型打好基础</li>
+<li>隐藏某些复杂的细节是必要的，提供的接口要simple, clear。</li>
+<li>封装有助于焦距局部代码，即使要更换实现方式，也更加easy。</li>
+<li>可以提供通用可定制接口和常用特殊化接口,方便client调用。</li>
+<li><a href="http://commons.apache.org/lang/api-2.5/org/apache/commons/lang/time/DateUtils.html">commons-lang</a>和<a href="http://joda-time.sourceforge.net/">joda-time</a>开源库提供了非常成熟的解决方案。</li>
 </ol>
 
 
-<h3>练习1:压缩有序列表</h3>
-
-<p>类似搜索里边的倒排索引，需要对词对应的文档列表进行存放。
-在这里，我们将一个有序列表转换成另外一种形式，如</p>
-
-<div class="highlight"><pre><code class="erlang"><span class="c">%% 原始形式</span>
-<span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">98</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">101</span><span class="p">,</span><span class="mi">102</span><span class="p">,</span><span class="mi">102</span><span class="p">].</span>
-<span class="c">%% 最终形式</span>
-<span class="p">[{</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">},{</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">},{</span><span class="mi">98</span><span class="p">,</span><span class="mi">98</span><span class="p">},{</span><span class="mi">100</span><span class="p">,</span><span class="mi">102</span><span class="p">}].</span>
-</code></pre></div>
+<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
 
 
-<h3>示例代码</h3>
-
-<div class="highlight"><pre><code class="erlang"><span class="nf">multi</span><span class="p">(</span><span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">reverse</span><span class="p">(</span><span class="n">multi_local</span><span class="p">(</span><span class="nv">L</span><span class="p">,</span> <span class="p">[])).</span>
-<span class="nf">multi_local</span><span class="p">([],</span> <span class="nv">R</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">R</span><span class="p">;</span>
-<span class="nf">multi_local</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">L</span><span class="p">],</span> <span class="nv">R</span><span class="p">)</span> <span class="o">-&gt;</span>
-    <span class="p">{</span><span class="nv">LL</span><span class="p">,</span> <span class="nv">E</span><span class="p">}</span> <span class="o">=</span> <span class="n">multi_r</span><span class="p">(</span><span class="nv">L</span><span class="p">,</span> <span class="nv">H</span><span class="p">),</span>
-    <span class="n">multi_local</span><span class="p">(</span><span class="nv">LL</span><span class="p">,</span> <span class="p">[{</span><span class="nv">H</span><span class="p">,</span> <span class="nv">E</span><span class="p">}|</span><span class="nv">R</span><span class="p">]).</span>
-
-<span class="c">%% 获取L里边里边和H同属一组的最后一个数,同时返回剩余的列表</span>
-<span class="c">%% 如果L以H开头，表示出现重复数</span>
-<span class="c">%% 如果L以H+1开头，表示出现序列数</span>
-<span class="nf">multi_r</span><span class="p">(</span><span class="nv">L</span><span class="p">,</span> <span class="nv">H</span><span class="p">)</span> <span class="o">-&gt;</span>
-    <span class="nv">N</span> <span class="o">=</span> <span class="nv">H</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-    <span class="k">case</span> <span class="nv">L</span> <span class="k">of</span>
-        <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">LL</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">multi_r</span><span class="p">(</span><span class="nv">LL</span><span class="p">,</span> <span class="nv">H</span><span class="p">);</span>
-        <span class="p">[</span><span class="nv">N</span><span class="p">|</span><span class="nv">LL</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">multi_r</span><span class="p">(</span><span class="nv">LL</span><span class="p">,</span> <span class="nv">N</span><span class="p">);</span>
-        <span class="p">[]</span> <span class="o">-&gt;</span> <span class="p">{[],</span> <span class="nv">H</span><span class="p">};</span>
-        <span class="p">_</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="nv">L</span><span class="p">,</span> <span class="nv">H</span><span class="p">}</span>
-    <span class="k">end</span><span class="p">.</span>
-</code></pre></div>
-
-
-<h3>效率问题</h3>
-
-<p>这里和上次不一样的是，这里没有使用lists:append方法，而是在最后使用了reverse.</p>
-
-<div class="highlight"><pre><code class="erlang"><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">++</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">].</span>
-<span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]).</span>
-<span class="nn">lists</span><span class="p">:</span><span class="nf">reverse</span><span class="p">([</span><span class="mi">3</span><span class="p">|[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]).</span>
-</code></pre></div>
-
-
-<p>上面三种方式得到的结果是一样的。前面两种，每增加一个元素，都会遍历左边的列表，所以在递归里边处理的话，
-效率并不好。把元素添加到表头，在递归完成后进行反转，效果就会好些。</p>
-
-<h3>练习2:马踏棋盘</h3>
-
-<p>作为一个阶段的学习总结，对<a href="20120712_horse-riding-chessboard.html">马踏棋盘的算法思考</a>用erlang实现。</p>
-
-<p>代码比较悲剧，我选择了array，用了一些fun函数，从这么个例子就可以看出，自己还没掌握好erlang惯用法。
-感觉数据结构没有选好，并且用了命令语言的一些编程思路，有些东西或许可以用列表解析来弄，
-等再掌握多一些东西，再回头来体会一把!</p>
-
-<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">horse</span><span class="p">).</span>
-
-<span class="c">%% Exported Functions</span>
-<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">walkboard</span><span class="o">/</span><span class="mi">0</span><span class="p">]).</span>
-
-<span class="c">%% API Functions</span>
-<span class="nf">walkboard</span><span class="p">()</span> <span class="o">-&gt;</span> 
-  <span class="c">%% lists:foreach(fun(I) -&gt; lists:foreach(fun(J) -&gt; walkboard({I, J}) end, lists:seq(0,7)) end, lists:seq(0,7)).</span>
-  <span class="n">walkboard</span><span class="p">({</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">}).</span>
-
-<span class="nf">walkboard</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">})</span> <span class="o">-&gt;</span>
-  <span class="p">{</span><span class="nv">ARR</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">}</span> <span class="o">=</span> <span class="n">init</span><span class="p">(),</span>
-  <span class="k">catch</span> <span class="n">walk</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">setvalue</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span> <span class="nv">J</span><span class="p">},</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">),</span> <span class="nn">array</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">{</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">PATH</span><span class="p">),</span> <span class="nv">POSS</span><span class="p">).</span>
-
-<span class="nf">walk</span><span class="p">(</span><span class="mi">63</span><span class="p">,</span> <span class="p">_,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="p">_)</span> <span class="o">-&gt;</span> <span class="n">throw</span><span class="p">(</span><span class="nv">PATH</span><span class="p">);</span>
-<span class="nf">walk</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="p">{</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">JP</span><span class="p">}</span> <span class="o">=</span> <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">),</span>
-  <span class="nv">WC</span> <span class="o">=</span> <span class="k">fun</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">,_})</span> <span class="o">-&gt;</span> 
-         <span class="n">walk</span><span class="p">(</span><span class="nv">MARK</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">setvalue</span><span class="p">({</span><span class="nv">I</span><span class="o">+</span><span class="nv">IP</span><span class="p">,</span><span class="nv">J</span><span class="o">+</span><span class="nv">JP</span><span class="p">},</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">),</span> <span class="nn">array</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="nv">MARK</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="nv">I</span><span class="o">+</span><span class="nv">IP</span><span class="p">,</span><span class="nv">J</span><span class="o">+</span><span class="nv">JP</span><span class="p">},</span> <span class="nv">PATH</span><span class="p">),</span> <span class="nv">POSS</span><span class="p">)</span>
-       <span class="k">end</span><span class="p">,</span>
-  <span class="nn">lists</span><span class="p">:</span><span class="nf">foreach</span><span class="p">(</span><span class="nv">WC</span><span class="p">,</span> <span class="n">filter</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)).</span>
-
-<span class="c">%%</span>
-<span class="c">%% Local Functions</span>
-<span class="c">%%</span>
-<span class="nf">init</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="nv">ARR</span> <span class="o">=</span> <span class="nn">array</span><span class="p">:</span><span class="nf">new</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="p">{</span><span class="n">default</span><span class="p">,</span><span class="nn">array</span><span class="p">:</span><span class="nf">new</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="p">{</span><span class="n">default</span><span class="p">,</span><span class="mi">0</span><span class="p">})}),</span>
-  <span class="nv">PATH</span> <span class="o">=</span> <span class="nn">array</span><span class="p">:</span><span class="nf">new</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
-  <span class="nv">POSS</span> <span class="o">=</span> <span class="p">[{</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="p">}],</span>
-  <span class="p">{</span><span class="nv">ARR</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">}.</span>
-
-<span class="nf">filter</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="p">{</span><span class="nv">I</span><span class="p">,</span> <span class="nv">J</span><span class="p">}</span> <span class="o">=</span> <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">MARK</span><span class="p">,</span> <span class="nv">PATH</span><span class="p">),</span>
-  <span class="nv">Fun1</span> <span class="o">=</span> <span class="k">fun</span><span class="p">({</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">JP</span><span class="p">})</span> <span class="o">-&gt;</span>
-           <span class="p">{</span><span class="nv">IXP</span><span class="p">,</span> <span class="nv">JXP</span><span class="p">}</span> <span class="o">=</span> <span class="p">{</span><span class="nv">I</span><span class="o">+</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">J</span><span class="o">+</span><span class="nv">JP</span><span class="p">},</span>
-           <span class="k">case</span> <span class="n">valid</span><span class="p">({</span><span class="nv">IXP</span><span class="p">,</span> <span class="nv">JXP</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="k">of</span>
-             <span class="n">false</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">JP</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">};</span>
-             <span class="n">true</span> <span class="o">-&gt;</span> 
-             <span class="c">%% 计算空点数</span>
-             <span class="nv">CAL</span> <span class="o">=</span> <span class="k">fun</span><span class="p">({</span><span class="nv">IP2</span><span class="p">,</span> <span class="nv">JP2</span><span class="p">},</span> <span class="nv">Sum</span><span class="p">)</span> <span class="o">-&gt;</span> 
-                     <span class="k">case</span> <span class="n">valid</span><span class="p">({</span><span class="nv">IXP</span><span class="o">+</span><span class="nv">IP2</span><span class="p">,</span> <span class="nv">JXP</span><span class="o">+</span><span class="nv">JP2</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="k">of</span>
-                       <span class="n">true</span> <span class="o">-&gt;</span> <span class="mi">1</span> <span class="o">+</span> <span class="nv">Sum</span><span class="p">;</span>
-                       <span class="n">false</span> <span class="o">-&gt;</span> <span class="nv">Sum</span>
-                     <span class="k">end</span>
-                   <span class="k">end</span><span class="p">,</span>
-                   <span class="p">{</span><span class="nv">IP</span><span class="p">,</span> <span class="nv">JP</span><span class="p">,</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">foldl</span><span class="p">(</span><span class="nv">CAL</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">)}</span>
-           <span class="k">end</span>
-         <span class="k">end</span><span class="p">,</span>
-  <span class="c">%% 最后进行排序</span>
-  <span class="nv">T</span> <span class="o">=</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">map</span><span class="p">(</span><span class="nv">Fun1</span><span class="p">,</span> <span class="nv">POSS</span><span class="p">),</span>
-  <span class="nv">S</span> <span class="o">=</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">({_,</span> <span class="p">_,</span> <span class="nv">Z</span><span class="p">})</span> <span class="o">-&gt;</span> <span class="nv">Z</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">end</span><span class="p">,</span> <span class="nv">T</span><span class="p">),</span>
-  <span class="nv">LEN</span> <span class="o">=</span> <span class="nb">length</span><span class="p">(</span><span class="nv">S</span><span class="p">),</span>
-  <span class="k">if</span>
-    <span class="nv">LEN</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">-&gt;</span> <span class="p">[];</span>
-    <span class="nv">LEN</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">-&gt;</span> <span class="nv">S</span><span class="p">;</span>
-    <span class="n">true</span> <span class="o">-&gt;</span> <span class="nv">SS</span> <span class="o">=</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">({_,</span> <span class="p">_,</span> <span class="nv">Z</span><span class="p">})</span> <span class="o">-&gt;</span> <span class="nv">Z</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">end</span><span class="p">,</span> <span class="nv">T</span><span class="p">),</span>
-        <span class="nn">lists</span><span class="p">:</span><span class="nf">sort</span><span class="p">(</span><span class="k">fun</span><span class="p">({_,</span> <span class="p">_,</span> <span class="nv">Z1</span><span class="p">},</span> <span class="p">{_,</span> <span class="p">_,</span> <span class="nv">Z2</span><span class="p">})</span> <span class="o">-&gt;</span> <span class="nv">Z1</span> <span class="o">&lt;</span> <span class="nv">Z2</span> <span class="k">end</span><span class="p">,</span> <span class="nv">SS</span><span class="p">)</span>
-  <span class="k">end</span><span class="p">.</span>
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li>2012-07-28 improve bitter code: 看不懂的正则表达式</li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
   
 
-<span class="nf">valid</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">I</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">andalso</span> <span class="nv">I</span><span class="o">&lt;</span><span class="mi">8</span> <span class="ow">andalso</span> <span class="nv">J</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="ow">andalso</span> <span class="nv">J</span><span class="o">&lt;</span><span class="mi">8</span> <span class="ow">andalso</span> <span class="n">getvalue</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">.</span>
+</ul>
 
-<span class="nf">getvalue</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">J</span><span class="p">,</span> <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">I</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)).</span>
 
-<span class="nf">setvalue</span><span class="p">({</span><span class="nv">I</span><span class="p">,</span><span class="nv">J</span><span class="p">},</span> <span class="nv">VAL</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nn">array</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="nv">I</span><span class="p">,</span> <span class="nn">array</span><span class="p">:</span><span class="nf">set</span><span class="p">(</span><span class="nv">J</span><span class="p">,</span> <span class="nv">VAL</span><span class="p">,</span> <span class="nn">array</span><span class="p">:</span><span class="nb">get</span><span class="p">(</span><span class="nv">I</span><span class="p">,</span> <span class="nv">ARR</span><span class="p">)),</span> <span class="nv">ARR</span><span class="p">).</span>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120724_improve-bitter-code-2.html">Improve Bitter Code: 更友好的链式写法</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-24T00:00:00+08:00" pubdate data-updated="true">Jul 24<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120724_improve-bitter-code-2.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>无意出现的链式代码</h3>
+
+<p>还是前几天的事情，群里边有同事提到一个账单相关的需求，其中涉及到组装打印用数据。
+有个新同事在Service里边写了一段这样的代码：</p>
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">XXService</span> <span class="nf">fillItem</span><span class="o">(</span><span class="n">String</span> <span class="n">content</span><span class="o">,</span> <span class="n">String</span> <span class="n">tag</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// some codes</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">printitems</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">Item</span><span class="o">(</span><span class="n">tag</span><span class="o">,</span> <span class="n">content</span><span class="o">));</span>
+    <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+<span class="o">}</span>
 </code></pre></div>
+
+
+<p>有同学不是特别理解为什么要这么写，甚至发出return this是什么对象的疑问。</p>
+
+<p>这段代码原来是这么写的:</p>
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kt">void</span> <span class="nf">fillItem</span><span class="o">(</span><span class="n">String</span> <span class="n">content</span><span class="o">,</span> <span class="n">String</span> <span class="n">tag</span><span class="o">,</span> <span class="n">List</span> <span class="n">printitems</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// some codes</span>
+    <span class="n">printitems</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">Item</span><span class="o">(</span><span class="n">tag</span><span class="o">,</span> <span class="n">content</span><span class="o">));</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>有同学奇怪，为什么再提交一次printitems就会重新加一遍，认为第一段代码的问题出现在return this上面。
+这样要说明一下，我们使用的是struts1，所以如果Service实例作为action的实例变量，那也是只有一个对象来的。
+所以每次刷新一次重复加一遍就没什么奇怪的了。</p>
+
+<p>回头来看那段新写的代码，出发点是好的。毕竟采用这种方式可以使用链式写法（如下所示），代码有时候会变得很sexy。</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">XXService</span><span class="o">.</span><span class="na">fillItem</span><span class="o">(</span><span class="s">&quot;a&quot;</span><span class="o">,</span> <span class="s">&quot;A&quot;</span><span class="o">).</span><span class="na">fillItem</span><span class="o">(</span><span class="s">&quot;b&quot;</span><span class="o">,</span> <span class="s">&quot;B&quot;</span><span class="o">);</span>
+</code></pre></div>
+
+
+<p>这段代码的问题不在于是否采用链式写法，而是对这种单例，变量生命周期了解不足造成的。
+链式写法在代码中很少会使用到，但在设计api，也是可以考虑的。设计的好，可以有效提高代码的编写效率和api的友好型。
+例如，我就对java collection api里边的add方法深恶痛绝,就是不能连续add，要add多少个就要写多少行，还真的挺烦的。</p>
+
+<h3>采用链式写法的代码</h3>
+
+<p>在很多有名的开源框架中，链式写法也不是很少见，下面举几个例子:</p>
+
+<p>很常见的有jquery</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#name&quot;</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;readonly&quot;</span><span class="p">,</span> <span class="kc">true</span><span class="p">).</span><span class="nx">val</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">);</span>
+</code></pre></div>
+
+
+<p>还有mock框架mockito</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">when</span><span class="o">(</span><span class="n">mockedList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">)).</span><span class="na">thenReturn</span><span class="o">(</span><span class="s">&quot;first&quot;</span><span class="o">);</span>
+<span class="n">when</span><span class="o">(</span><span class="n">mockedList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">1</span><span class="o">)).</span><span class="na">thenThrow</span><span class="o">(</span><span class="k">new</span> <span class="n">RuntimeException</span><span class="o">());</span>
+</code></pre></div>
+
+
+<p>再看看rails的写法</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="no">Post</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s1">&#39;id &gt; 10&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">order</span><span class="p">(</span><span class="s1">&#39;id desc&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">only</span><span class="p">(</span><span class="ss">:order</span><span class="p">,</span> <span class="ss">:where</span><span class="p">)</span>
+<span class="no">Client</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">offset</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+</code></pre></div>
+
+
+<h3>我的看法</h3>
+
+<p>那么，如果你想采用链式写法，有什么地方需要注意呢?
+1. 先写一下客户端代码，看调用方式合理么，符合sexy api么?
+2. 采用链式操作的interface相关性比较强，经常一起出现。
+3. 参数parameter一般较少，因为参数多了，代码很容易变得模糊不清。
+4. 链式操作要么容错强(像jquery)，要么就得直接抛出异常，对返回值不关心。</p>
+
+<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
+
+
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li>2012-07-24 improve bitter code: 更友好的链式写法</li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
 
 
 
@@ -850,6 +939,26 @@
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
       </li>
     
@@ -867,26 +976,6 @@
     
       <li class="post">
         <a href="/blog/20141225_java-common-util.html">java常见工具库培训</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20141126_org-json-and-xml.html">使用org.json库进行xml和json转换存在的问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140815_json-intro.html">json格式须知</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140814_xml-intro.html">xml格式须知</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140329_was-datasource.html">websphere+spring+jndi数据源配置</a>
       </li>
     
   </ul>
@@ -932,7 +1021,7 @@
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2015 - 蔡晓建 -
+  Copyright &copy; 2016 - 蔡晓建 -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 

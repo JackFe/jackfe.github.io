@@ -100,10 +100,10 @@ github page可以直接嵌入gist，并且能显示高亮。
 看看下面gist_tag.rb这个插件的效果:</p>
 
 <div><script src='https://gist.github.com/4648237.js?file=gist_tag.rb'></script>
-<noscript><pre><code>require 'cgi'
-require 'digest/md5'
-require 'net/https'
-require 'uri'
+<noscript><pre><code>require &#39;cgi&#39;
+require &#39;digest/md5&#39;
+require &#39;net/https&#39;
+require &#39;uri&#39;
 
 module Jekyll
   class GistTag &lt; Liquid::Tag
@@ -140,7 +140,7 @@ module Jekyll
 
     def add_code_tags(code)
       # Add nested &lt;code&gt; tags to code blocks
-      code = code.sub(/&lt;pre&gt;/,'&lt;pre&gt;&lt;code class=&quot;#{@lang}&quot;&gt;')
+      code = code.sub(/&lt;pre&gt;/,&#39;&lt;pre&gt;&lt;code class=&quot;#{@lang}&quot;&gt;&#39;)
       code = code.sub(/&lt;\/pre&gt;/,&quot;&lt;/code&gt;&lt;/pre&gt;&quot;)
     end
 
@@ -148,7 +148,7 @@ module Jekyll
       #The div is required because RDiscount blows ass
       &lt;&lt;-HTML
 &lt;div&gt;
-  &lt;pre&gt;&lt;code class='#{@lang}'&gt;#{h(code).strip}&lt;/code&gt;&lt;/pre&gt;
+  &lt;pre&gt;&lt;code class=&#39;#{@lang}&#39;&gt;#{h(code).strip}&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
       HTML
     end
@@ -176,8 +176,8 @@ module Jekyll
 
     def get_cache_file_for(gist, file)
       bad_chars = /[^a-zA-Z0-9\-_.]/
-      gist      = gist.gsub bad_chars, ''
-      file      = file.gsub bad_chars, ''
+      gist      = gist.gsub bad_chars, &#39;&#39;
+      file      = file.gsub bad_chars, &#39;&#39;
       md5       = Digest::MD5.hexdigest &quot;#{gist}-#{file}&quot;
       File.join @cache_folder, &quot;#{gist}-#{file}-#{md5}.cache&quot;
     end
@@ -204,8 +204,8 @@ module Jekyll
   end
 end
 
-Liquid::Template.register_tag('gist', Jekyll::GistTag)
-Liquid::Template.register_tag('gistnocache', Jekyll::GistTagNoCache)</code></pre></noscript></div>
+Liquid::Template.register_tag(&#39;gist&#39;, Jekyll::GistTag)
+Liquid::Template.register_tag(&#39;gistnocache&#39;, Jekyll::GistTagNoCache)</code></pre></noscript></div>
 
 
 
@@ -276,6 +276,26 @@ Liquid::Template.register_tag('gistnocache', Jekyll::GistTagNoCache)</code></pre
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
       </li>
     
@@ -293,26 +313,6 @@ Liquid::Template.register_tag('gistnocache', Jekyll::GistTagNoCache)</code></pre
     
       <li class="post">
         <a href="/blog/20141225_java-common-util.html">java常见工具库培训</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20141126_org-json-and-xml.html">使用org.json库进行xml和json转换存在的问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140815_json-intro.html">json格式须知</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140814_xml-intro.html">xml格式须知</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140329_was-datasource.html">websphere+spring+jndi数据源配置</a>
       </li>
     
   </ul>
@@ -359,7 +359,7 @@ Liquid::Template.register_tag('gistnocache', Jekyll::GistTagNoCache)</code></pre
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2015 - 蔡晓建 -
+  Copyright &copy; 2016 - 蔡晓建 -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 

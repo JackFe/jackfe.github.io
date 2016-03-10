@@ -1,0 +1,498 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Android-Universal-Image-Loader源码快扫 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="阅读android universal imager loader源码">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20150624_Android-Universal-Image-Loader-source-view.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Android-Universal-Image-Loader源码快扫</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-06-24T00:00:00+08:00" pubdate data-updated="true">Jun 24<span>th</span>, 2015</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h2>ImageLoaderConfiguration/ImageLoaderConfiguration.Builder学习</h2>
+
+<p>构造复杂对象的方式: Builder模式,用来创建ImageLoaderConfiguration对象,适用于链式写法。</p>
+
+<p>常见结构如下：<strong>关键点: 私有构造(拷贝而非应用，避免build复写)、内部类(影响局部化,内聚好)、返回this(支持链式)</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">class</span> <span class="nc">A</span> <span class="o">{</span>
+</span><span class='line'>  <span class="kd">private</span> <span class="nf">A</span><span class="o">(</span><span class="n">Builder</span> <span class="n">builder</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="c1">// create A with builder&#39;s copy</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nc">Builder</span><span class="o">{</span>
+</span><span class='line'>     <span class="n">Builder</span> <span class="nf">buildStep1</span><span class="o">(){</span>
+</span><span class='line'>        <span class="c1">//...</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+</span><span class='line'>     <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>     <span class="n">Builder</span> <span class="nf">buildStep2</span><span class="o">(){</span>
+</span><span class='line'>        <span class="c1">//...</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+</span><span class='line'>     <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>     <span class="n">A</span> <span class="nf">build</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="k">new</span> <span class="nf">A</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+</span><span class='line'>     <span class="o">}</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>ImageLoaderConfiguration支持的特性</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">--</span> <span class="err">源码没什么养分，关注特性是如何表现在内部结构上。</span>
+</span><span class='line'><span class="o">--</span> <span class="err">类层次的结构，能体会就体会，不体会就拉到。层次是渐进实现的，不能体会也没什么。</span>
+</span><span class='line'><span class="o">--</span> <span class="err">如果有机会的话，可以在实践项目中调试进去学学。</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>如果想学习相关特性是怎么实现的，可以根据配置的去反推实现代码(搜索或调用关系):</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="err">基本特性（可配置）</span><span class="o">:</span>
+</span><span class='line'>  <span class="err">基本控制</span><span class="o">:</span>
+</span><span class='line'>    <span class="err">线程池大小</span> <span class="o">--</span> <span class="err">不能太多</span>
+</span><span class='line'>    <span class="err">线程优先级</span> <span class="o">--</span> <span class="err">略低</span>
+</span><span class='line'>    <span class="err">请求任务排队</span>  <span class="o">--</span> <span class="err">默认</span><span class="n">FIFO</span>
+</span><span class='line'>    <span class="err">是否开启调试日志</span> <span class="o">--</span> <span class="n">DEBUG</span> <span class="n">log</span>
+</span><span class='line'>  <span class="err">多级缓存特性</span><span class="o">:</span>
+</span><span class='line'>    <span class="err">内存缓存大小</span>
+</span><span class='line'>    <span class="err">硬盘缓存大小，文件数量限制，文件名生成规则</span>
+</span><span class='line'>    <span class="o">--</span> <span class="err">关联硬盘图片处理器</span><span class="n">BitmapProcessor</span>
+</span><span class='line'>  <span class="err">图片专用</span><span class="o">:</span>
+</span><span class='line'>    <span class="err">缓存图最大宽高</span> <span class="o">---</span> <span class="err">用于约束图片大小</span>
+</span><span class='line'>    <span class="err">显示图的约束</span>
+</span><span class='line'>    <span class="o">--</span> <span class="err">关联下载器</span><span class="n">ImageDownloader</span><span class="o">(</span><span class="err">还通过</span><span class="n">networkDeniedDownloader</span><span class="o">/</span><span class="n">slowNetworkDownloader</span><span class="err">区分不同情况，这不就是</span><span class="n">Null</span> <span class="n">Object</span><span class="err">模式么</span><span class="o">?)</span>
+</span><span class='line'>    <span class="o">--</span> <span class="err">关联解码器</span><span class="n">ImageDecoder</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>关于ImageLoader如何解决错乱问题</h2>
+
+<p>ImageLoader就是一个singleton实现，配合init+ImageLoaderConfiguration进行初始化，没什么说的。很常见的设计实现。</p>
+
+<p>大多是helper method 关注displayImage/loadImage最终实现即可。这也是常见做法，便于使用。</p>
+
+<p>问题: url &#8211; 关联的view，问题在于url请求是异步的，而view可能被重复利用。<br/>
+这里用的ImageAware，看他们的实现类，有个ViewAware，就是一个view的包装，我想说的是WeakReference在android中很常用呀。 &#8211; 这句是废话</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="err">使用</span><span class="n">ImageAware</span><span class="err">占位</span>
+</span><span class='line'>  <span class="err">图片宽高</span>
+</span><span class='line'>  <span class="err">实际的</span><span class="n">View</span> <span class="o">--</span><span class="err">可重用</span>
+</span><span class='line'>  <span class="n">id</span> <span class="o">--</span> <span class="err">尼玛，这是解决问题的关键</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>见DisplayBitmapTask有个isViewWasReused倒出重点，从它的实现就可以判断完整的算法拉。</p>
+
+<p>内部结构 cacheKeysForImageAwares map&lt;ImageAware.id, memorycachekey(由URI + 宽高生成)></p>
+
+<p>不过ViewAware的id是用view的hashcode来指定的， NonViewAware的id是用url来指定的。<br/>
+so， listview的时候，使用loadImage是可以避免错乱的，而用displayImage就呵呵拉。<br/>
+判断方式如下：根据id可以找到目前的url和当前的url比较即可。知道是不是被复用了。</p>
+
+<p>相对于原理上的image#setTag(url)然后比较的方式，更加透明，侵入性少。</p>
+
+<h2>再看看ImageLoaderEngine在任务管理、线程方面的处理</h2>
+
+<p>原以为这货应该比较好处理，图样图森破呀，毕竟它支持多种状态(暂停，恢复，关闭等)</p>
+
+<p>先说一下几个AtomicBoolean的变量，主要就是判断状态的boolean拉，当然这货是线程安全的，其实用boolean也行，毕竟也是原子的(注意可见性问题即可)</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kd">final</span> <span class="n">AtomicBoolean</span> <span class="n">paused</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AtomicBoolean</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span><span class='line'><span class="kd">private</span> <span class="kd">final</span> <span class="n">AtomicBoolean</span> <span class="n">networkDenied</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AtomicBoolean</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span><span class='line'><span class="kd">private</span> <span class="kd">final</span> <span class="n">AtomicBoolean</span> <span class="n">slowNetwork</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AtomicBoolean</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span><span class="err">`</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>另外，还有3个线程执行器，简单看看用途。至于为什么要这么多个，哥认为是这样的：</p>
+
+<ul>
+<li>在loader中走进displayImage之后，它重要检查一下内存中有木有(耗时小，无需线程)。</li>
+<li>如果没有才会扔给engine，engine首先检查一下硬盘上有木有(有io，所以走taskDistributor)。</li>
+<li>如果硬盘上有，走taskExecutorForCachedImages(同理有io)</li>
+<li>还是没有，走其他(maybe网络io)</li>
+<li>在请求较多，兼顾命中、不命中的情况，它选择了采用多级的Executor</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="n">Executor</span> <span class="n">taskExecutor</span><span class="o">;</span> <span class="o">--</span> <span class="err">木有在</span><span class="n">disk</span><span class="err">的情况，一般走网络</span>
+</span><span class='line'><span class="kd">private</span> <span class="n">Executor</span> <span class="n">taskExecutorForCachedImages</span><span class="o">;</span> <span class="o">--</span> <span class="err">在</span><span class="n">disk</span><span class="err">的情况</span>
+</span><span class='line'><span class="kd">private</span> <span class="n">Executor</span> <span class="n">taskDistributor</span><span class="o">;</span>  <span class="o">--</span> <span class="err">根据情况分发给上面</span><span class="mi">2</span><span class="err">个</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>还有2个map，第一个就是用来保存id和图片url的对应关系(简单是这么理解)<br/>
+另外是用来控制不同view但有相同uri的并发请求。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kd">final</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">cacheKeysForImageAwares</span> <span class="o">=</span> <span class="n">Collections</span>
+</span><span class='line'>      <span class="o">.</span><span class="na">synchronizedMap</span><span class="o">(</span><span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;());</span>
+</span><span class='line'><span class="kd">private</span> <span class="kd">final</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">ReentrantLock</span><span class="o">&gt;</span> <span class="n">uriLocks</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WeakHashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">ReentrantLock</span><span class="o">&gt;();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>不熟悉ReentrantLock的童鞋可参考 https://www.ibm.com/developerworks/cn/java/j-jtp10264/</p>
+
+<p>LoadAndDisplayImageTask通过控制相同的uri持有同一个锁，这样执行的时候，后面的就会等待。<br/>
+具体可以参考LoadAndDisplayImageTask的实现，不过用ReentrantLock需要特别注意写法，避免死锁。<br/>
+不过我认为getLockForUri并没有同步，还是有存在相同url获取到不同lock的可能，不过这不影响功能，而且受限于并发大小也很难出现。</p>
+
+<h2>关于url的中文</h2>
+
+<p>网上有看到一些人说中文图片名会出错，可能是很久之前的版本吧。我这里要说的是，我认为这是个简单的问题，即使改源码也很容易处理。<br/>
+不过即使源码有相关处理，通常也不会关注的，不过今天刚好有人问我一个中文路径的问题，所以我就关注了一下它怎么实现的。</p>
+
+<p>首先看BaseImageDownloader是如何请求中文图片的。由于http只是支持ascii的url编码，所以必须要编码的，通常用utf-8,虽然这个没规定。貌似我们的基线没有考虑这个问题，应该是没有掉过坑。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">protected</span> <span class="n">HttpURLConnection</span> <span class="nf">createConnection</span><span class="o">(</span><span class="n">String</span> <span class="n">url</span><span class="o">,</span> <span class="n">Object</span> <span class="n">extra</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">IOException</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">String</span> <span class="n">encodedUrl</span> <span class="o">=</span> <span class="n">Uri</span><span class="o">.</span><span class="na">encode</span><span class="o">(</span><span class="n">url</span><span class="o">,</span> <span class="n">ALLOWED_URI_CHARS</span><span class="o">);</span>
+</span><span class='line'>  <span class="n">HttpURLConnection</span> <span class="n">conn</span> <span class="o">=</span> <span class="o">(</span><span class="n">HttpURLConnection</span><span class="o">)</span> <span class="k">new</span> <span class="n">URL</span><span class="o">(</span><span class="n">encodedUrl</span><span class="o">).</span><span class="na">openConnection</span><span class="o">();</span>
+</span><span class='line'>  <span class="n">conn</span><span class="o">.</span><span class="na">setConnectTimeout</span><span class="o">(</span><span class="n">connectTimeout</span><span class="o">);</span>
+</span><span class='line'>  <span class="n">conn</span><span class="o">.</span><span class="na">setReadTimeout</span><span class="o">(</span><span class="n">readTimeout</span><span class="o">);</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">conn</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>另外，还有一个容易出现中文问题的就是保存到硬盘的情况(android貌似不是什么大问题，如果是做server开发的话，就得特别注意)<br/>
+带的实现有HashCodeFileNameGenerator(默认)和Md5FileNameGenerator，这2种处理都不会产生中文问题。<br/>
+不过我建议还是用Md5FileNameGenerator，hashcode做唯一性并不是很靠谱，如果是大量的固定文件名长度的图片，还是很容易冲突的。</p>
+
+<h2>小结</h2>
+
+<p>源码何其多，带着问题学习效果更好。挑几个疑惑看看别人怎么处理就是收获。  <br/>
+从类的层次着手是很困难的，特别是大型源码。了解上层架构，学示例，然后调调源码或许更好。
+大多数情况，相对于细节，应该更关注关键数据的结构、如何组织数据的结构来解决问题。<br/>
+如果自己设计，应该考虑的重要问题有: 如何使用? 用怎样的结构表示数据和状态? <br/>
+XX设计模式不要硬套，从过程式演变出来更加自然(经验性的除外)。推荐重构与模式。<br/>
+大而全的源码解读没有什么用，带问题分析的更有价值。<br/>
+学好基础，模仿起来也不容易掉坑。</p>
+
+<p>&#8211; 以上纯属肉眼分辨，并无调试过，不做正确性验证，仅供参考。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-06-24T00:00:00+08:00" pubdate data-updated="true">Jun 24<span>th</span>, 2015</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/android/'>android</a>, <a class='category' href='/blog/categories/universal/'>universal</a>, <a class='category' href='/blog/categories/yuan-ma/'>源码</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20150114_java-charset-problem.html" title="Previous Post: java字符编码问题">&laquo; java字符编码问题</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20150702_httpclient-init-fail.html" title="Next Post: 初始化httpClient失败原因分析">初始化httpClient失败原因分析 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150107_charset-intro.html">关于编码与乱码问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141229_des-hack.html">常见DES实现陷阱</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20141225_java-common-util.html">java常见工具库培训</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20150624_Android-Universal-Image-Loader-source-view.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20150624_Android-Universal-Image-Loader-source-view.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

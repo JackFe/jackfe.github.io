@@ -109,9 +109,9 @@
 #   alias /hello.html to /pages/20121010_hello.html
 #
 # Place the full path of the alias (place to redirect from) inside the
-# destination post's YAML Front Matter. One or more aliases may be given.
+# destination post&#39;s YAML Front Matter. One or more aliases may be given.
 #
-# Forked from Thomas Mango 's jekyll_alias_generator
+# Forked from Thomas Mango &#39;s jekyll_alias_generator
 # At http://github.com/tsmango/jekyll_alias_generator
 # PLugin License: MIT
 
@@ -136,7 +136,7 @@ module Jekyll
     def process_pages
       # alias /hello.html to /pages/20121010_hello.html
       @site.pages.each do |page|
-        dest = page.destination('')
+        dest = page.destination(&#39;&#39;)
         generate_aliases(dest, &quot;\/#{$1}&quot;)  if /^\/pages\/(.+)$/ =~ dest
       end
     end
@@ -156,12 +156,12 @@ module Jekyll
 
         FileUtils.mkdir_p(fs_path_to_dir)
 
-        File.open(File.join(fs_path_to_dir, alias_file), 'w') do |file|
+        File.open(File.join(fs_path_to_dir, alias_file), &#39;w&#39;) do |file|
           file.write(alias_template(destination_path))
         end
 
-        (alias_index_path.split('/').size + 1).times do |sections|
-          @site.static_files &lt;&lt; Jekyll::AliasFile.new(@site, @site.dest, alias_index_path.split('/')[0, sections].join('/'), nil)
+        (alias_index_path.split(&#39;/&#39;).size + 1).times do |sections|
+          @site.static_files &lt;&lt; Jekyll::AliasFile.new(@site, @site.dest, alias_index_path.split(&#39;/&#39;)[0, sections].join(&#39;/&#39;), nil)
         end
       end
     end
@@ -181,7 +181,7 @@ module Jekyll
   end
 
   class AliasFile &lt; StaticFile
-    require 'set'
+    require &#39;set&#39;
 
     def destination(dest)
       File.join(dest, @dir)
@@ -266,6 +266,26 @@ end</code></pre></noscript></div>
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
       </li>
     
@@ -283,26 +303,6 @@ end</code></pre></noscript></div>
     
       <li class="post">
         <a href="/blog/20141225_java-common-util.html">java常见工具库培训</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20141126_org-json-and-xml.html">使用org.json库进行xml和json转换存在的问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140815_json-intro.html">json格式须知</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140814_xml-intro.html">xml格式须知</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20140329_was-datasource.html">websphere+spring+jndi数据源配置</a>
       </li>
     
   </ul>
@@ -349,7 +349,7 @@ end</code></pre></noscript></div>
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2015 - 蔡晓建 -
+  Copyright &copy; 2016 - 蔡晓建 -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 

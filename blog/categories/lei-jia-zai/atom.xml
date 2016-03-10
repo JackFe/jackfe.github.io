@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 类加载 | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/lei-jia-zai/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2016-03-10T22:45:25+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[weblogic 11g类加载问题总结]]></title>
+    <link href="http://mccxj.github.com/blog/20151023_weblogic-11g-classloader-prefer.html"/>
+    <updated>2015-10-23T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/weblogic-11g-classloader-prefer</id>
+    <content type="html"><![CDATA[<p><strong>本人在此之前甚少接触weblogic，家里的weblogic也是第一次安装的。如果发现错误，敬请指正。</strong></p>
+
+<h2>问题描述</h2>
+
+<p>XX局点升级weblogic为11g，重新发包出错。现在记录一下处理的各种问题总结。</p>
+
+<h3>错误1: apache commons某些包的方法没有找到</h3>
+
+<p>这是最早出现的问题，会出现类似下面的错误信息。
+<code>text
+&lt;2015-10-14 下午05时57分30秒 CST&gt; &lt;Error&gt; &lt;HTTP&gt; &lt;BEA-101017&gt; &lt;[ServletContext@1385406679[app:XXService module:XXService path:/XXService spec-version:2.5]] Root cause of ServletException.
+java.lang.NoSuchMethodError: org.apache.commons.io.FileUtils.copyInputStreamToFile(Ljava/io/InputStream;Ljava/io/File;)V
+</code></p>
+
+<ul>
+<li>原因分析</li>
+</ul>
+
+
+<p>这是weblogic部署最常见的问题，因为weblogic会自带I一些commons-*的包，这些包的版本还比较旧。具体可以见WEBLOGIC_HOME/modules目录的jar包。</p>
+
+<ul>
+<li>此次采用的处理方式</li>
+</ul>
+
+
+<p>添加weblogic.xml并设置prefer-web-inf-classes，即优先加载web应用下的类</p>
+
+<p>```xml
+&lt;?xml version="1.0" encoding="UTF-8"?>
+<weblogic-web-app></p>
+
+<pre><code>&lt;container-descriptor&gt;
+    &lt;prefer-web-inf-classes&gt;true&lt;/prefer-web-inf-classes&gt;
+&lt;/container-descriptor&gt;
+</code></pre>
+
+<p></weblogic-web-app>
+```</p>
+
+<h3>错误2: jsp使用jstl时出现SAXParserFactory的ClassCastException</h3>
+
+<p>这是使用prefer-web-inf-classes为true之后出现的问题，会出现类似下面的错误信息。
+<code>text
+The validator class: "org.apache.taglibs.standard.tlv.JstlCoreTLV" has failed with the following exception: "java.lang.ClassCastException: weblogic.xml.jaxp.RegistrySAXParserFactory cannot be cast to javax.xml.parsers.SAXParserFactory".
+</code></p>
+
+<ul>
+<li>原因分析</li>
+</ul>
+
+
+<p>这是weblogic部署很常见的问题，jstl会调用sax，sax是通过spi机制加载实现，获取是weblogic的实现，但它使用的是jdk自带的javax.xml.parsers.SAXParserFactory接口。
+刚好web应用下也带了jar包xml-apis-1.x.jar，它也有javax.xml.parsers.SAXParserFactory这个接口。根据prefer-web-inf-classes的设置，jstl代码中用的是这个接口。
+由此可知，使用classloader并不一样，无法转换。</p>
+
+<ul>
+<li>此次采用的处理方式</li>
+</ul>
+
+
+<p>删除WEB-INF/lib/xml-apis-1.x.jar后本地测试该问题恢复。</p>
+
+<h3>错误3: 出现QName的LinkageError</h3>
+
+<p>这是错误2解决后，继续解析spring时出现的问题。</p>
+
+<ul>
+<li>原因分析</li>
+</ul>
+
+
+<p>这个问题和上面的差不多，太细就不深究了。</p>
+
+<ul>
+<li>此次采用的处理方式</li>
+</ul>
+
+
+<p>这种情况下，如果使用prefer-web-inf-classes为true，则需要排除存在QName的jar包并删除，但最后没有采用(改动太大，得不偿失)。<br/>
+所以这次重新设置了prefer-web-inf-classes为false，但仍然优先加载commons，如下:</p>
+
+<p>```xml
+&lt;?xml version="1.0" encoding="UTF-8"?>
+<weblogic-web-app></p>
+
+<pre><code>&lt;container-descriptor&gt;
+    &lt;prefer-web-inf-classes&gt;false&lt;/prefer-web-inf-classes&gt;
+&lt;prefer-application-packages&gt;  
+    &lt;package-name&gt;org.apache.commons.*&lt;/package-name&gt;
+&lt;/prefer-application-packages&gt; 
+&lt;/container-descriptor&gt;
+</code></pre>
+
+<p></weblogic-web-app>
+```</p>
+
+<p>修改后本地测试ok，但发布到生产仍然失败。</p>
+
+<h3>错误4: MemCachedClient获取key失败(序列化问题)</h3>
+
+<p>错误3处理后，发布到生产仍然出错，报错信息如下:</p>
+
+<p>```text
+18:44:57.337 [[ACTIVE] ExecuteThread: '0' for queue: 'weblogic.kernel.Default (self-tuning)'] ERROR com.danga.MemCached.MemCachedClient - ++++ exception thrown while trying to get object from cache for key: init_error_key_0098
+18:44:57.351 [[ACTIVE] ExecuteThread: '0' for queue: 'weblogic.kernel.Default (self-tuning)'] ERROR com.danga.MemCached.MemCachedClient - com.xxx.hnxx.mybatis.entity.PlaterrorCodeBean
+java.io.IOException: com.xxx.hnxx.mybatis.entity.PlaterrorCodeBean</p>
+
+<pre><code>at com.schooner.MemCached.ObjectTransCoder.decode(Unknown Source) ~[MemCached-2.6.6.jar:na]
+at com.schooner.MemCached.AscIIClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
+at com.schooner.MemCached.AscIIClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
+at com.schooner.MemCached.AscIIClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
+at com.danga.MemCached.MemCachedClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
+at com.xxx.hnxx.cache.mencached.MemcacheManagerClient.get(MemcacheManagerClient.java:162) [MemcacheManagerClient.class:na]
+</code></pre>
+
+<p>```</p>
+
+<p>上面的错误信息表示获取init_error_key_0098这个可以的时候失败，实际上这个key是在应用启动的时候就塞进去的。</p>
+
+<ul>
+<li>原因分析</li>
+</ul>
+
+
+<p>这里有很多意想不到的事情，所以详细解释一下。</p>
+
+<p>首先，这个出现了IOException让人联想到是否memcached服务器连接的问题。<br/>
+实际上是因为库在实现java对象放入memcached的时候，有一个序列化/反序列化的过程(就是java自带的那个)，在反序列化的时候找不到类会出现ClassNotFoundException，然后库将错误信息(就是一个类名)取出重新包装为IOException。<br/>
+所以，这实际上是一个类找不到的问题。</p>
+
+<p>再者，这个问题一开始在家里的weblogic没法重现。后来我重新检查了生产上weblogic的启动日志才发现了一些差异。<br/>
+关键信息如下所示，生产上的weblogic在domain的lib目录也是有jar包的，而家里的是没有的。尝试修改把jar包也拷贝一份，果然重现。</p>
+
+<p><code>text
+&lt;2015-10-14 下午06时44分36秒 CST&gt; &lt;Notice&gt; &lt;WebLogicServer&gt; &lt;BEA-000395&gt; &lt;Following extensions directory contents added to the end of the classpath:/weblogic/bea/user_projects/domains/PLATFORM_DOM/lib/MemCached-2.6.6.jar:/weblogic/bea/user_projects/domains/PLATFORM_DOM/lib/MyXMLSerializer-1.0.0.jar...
+</code></p>
+
+<p>最后，这个问题就好解释多了。</p>
+
+<ol>
+<li>需要序列化/反序列化的类是在com.huawei下面的，这部分类指在web应用中存在。在system classloader是找不到的。</li>
+<li>序列化/反序列化时候，都是由web应用中的类，调用memcached库去实现的(虽然web应用中也有，但是根据prefer-web-inf-classes设置，加载的是domain中lib目录的)</li>
+<li><p>序列化只是没什么特别。但是反序列化需要加载类，很明显system classloader(memcached库的classloader)是加载不到web应用中的类的。</p></li>
+<li><p>此次采用的处理方式</p></li>
+</ol>
+
+
+<p>有好几种方式，都列举一下:</p>
+
+<ol>
+<li>删除domain中的jar包，这样就会加载到web应用中的类，让库和需要序列化的类都有web classloader加载</li>
+<li>让库也由web优先加载，如下所示
+```xml
+&lt;?xml version="1.0" encoding="UTF-8"?>
+<weblogic-web-app>
+ <container-descriptor>
+
+<pre><code> &lt;prefer-web-inf-classes&gt;false&lt;/prefer-web-inf-classes&gt;
+</code></pre>
+
+ <prefer-application-packages>
+
+<pre><code> &lt;package-name&gt;org.apache.commons.*&lt;/package-name&gt;
+ &lt;package-name&gt;com.danga.*&lt;/package-name&gt;
+ &lt;package-name&gt;com.schooner.*&lt;/package-name&gt;
+</code></pre>
+
+<p> </prefer-application-packages>
+ </container-descriptor>
+</weblogic-web-app>
+```</p></li>
+<li>指定memcached库进行反序列化时的classloader，如下所示:
+```java
+
+<pre><code> ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+ // MemCachedClient实例化时，会持有SockIOPool.getInstance()单利的引用
+ cachedClient = new MemCachedClient((String)null, true, false, classLoader, null);
+</code></pre>
+
+<p>```</p></li>
+</ol>
+
+
+<p>个人推荐的优先级是2 - 3 - 1, 尽量做到容器无关，并少动全局的东西。<strong>由于目前生产上的weblogic版本已经回退，待后续上生产验证。</strong></p>
+
+<h2>weblogic的类加载器介绍</h2>
+
+<ul>
+<li>整体的类加载器层次如下(只关注war部分)，并采用标准的双亲委托加载机制
+<code>
+WebLogic Server System classloader (classpath、&lt;domain&gt;/lib)
+Filtering classloader (空)
+Application classloader (EJB JARs、APP-INF/lib、APP-INF/classes、Manifest Class-Path in EJB JARs)
+Web application classloader (WAR、Manifest Class-Path in WAR)
+</code></li>
+<li>Web application classloader可以通过weblogic.xml中的prefer-web-inf-classes优先加载war中的类，找不到才向上请求</li>
+<li>Filtering classloader并不会加载任何类，而是起到控制类加载优先级的作用。通过配置<prefer-application-packages>可以限制对于指定的类不再向上请求，也就是限制范围内加载</li>
+<li>配置prefer-application-packages/prefer-application-resources的话，prefer-web-inf-classes必须配置为false</li>
+<li>资源(resource)的加载顺序，在开启Filtering之后，顺序为App - Web - System(App、Web仍然是符合双亲委托的)</li>
+</ul>
+
+
+<h2>参考材料</h2>
+
+<ul>
+<li>http://docs.oracle.com/cd/E23943_01/web.1111/e13712/weblogic_xml.htm#WBAPP599</li>
+<li>http://docs.oracle.com/cd/E12839_01/web.1111/e13706/classloading.htm#WLPRG284</li>
+<li>http://tobato.iteye.com/blog/1845969</li>
+<li>http://tobato.iteye.com/blog/1483020</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Websphere共享库加载顺序问题]]></title>
+    <link href="http://mccxj.github.com/blog/20151011_websphere-sharelib-loading.html"/>
+    <updated>2015-10-11T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/websphere-sharelib-loading</id>
+    <content type="html"><![CDATA[<h2>问题描述</h2>
+
+<p>昨天收到有个童鞋发来的一个问题咨询，如下图所示。</p>
+
+<p><img src="/assets/images/2015/was-sharelib1.png" alt="问题截图" /></p>
+
+<p>提到几个疑问:</p>
+
+<ol>
+<li>配置如图所示,然后共享库和项目自身lib下都有一个“xxxx-common.jar”，如果项目用到jar包里面的一个类，将会是共享库的还是自身lib的呢？发现是用的lib里边的。</li>
+<li>现网情况也是xxlib和lib下都有那jar包，但是根据日志来看，是用共享库的。</li>
+</ol>
+
+
+<h2>我的疑惑</h2>
+
+<p>现网的配置如何，暂时没查明。不过就开发环境的配置来看，我一直认为Parent First应该会走共享库的，目前的现象和我掌握的知识不匹配。</p>
+
+<p>于是，我上网搜索了一下Websphere关于共享库的资料，主要的链接如下：</p>
+
+<ul>
+<li>http://www.ibm.com/developerworks/cn/websphere/library/techarticles/haoaili/0512/</li>
+<li>http://www-01.ibm.com/support/knowledgecenter/SSAW57_8.5.5/com.ibm.websphere.nd.doc/ae/tcws_sharedlib_nativelib.html?lang=zh</li>
+<li>https://10.132.10.69:9043/ibm/help/index.jsp?topic=/com.ibm.ws.console.environment/ucws_rsharedlib_inst.html</li>
+</ul>
+
+
+<p>通过这些链接资料的描述(不得不说，这些中文翻译很隐晦)，但的确是可以解释目前的情况的。</p>
+
+<h2>关于Websphere共享库的理解</h2>
+
+<p>首先，Websphere的共享库和tomcat的共享库差别很大，而我却一直以为是差不多的。<br/>
+tomcat的共享库是一个独立的类加载器，并且在多个Web应用中共享。好处是明显的，共享加载的类，优化内存使用。</p>
+
+<p>其次，Webshpere的共享库非常灵(fu)活(za)，有多种配置组合可以影响结果。具体如下:</p>
+
+<h4>共享库是可以选择和服务器关联或者和应用关联的</h4>
+
+<ul>
+<li>和服务器关联，参考http://www-01.ibm.com/support/knowledgecenter/SSAW57_8.5.5/com.ibm.websphere.nd.doc/ae/tcws_sharedlib_server.html?lang=zh</li>
+<li>和应用关联，参考http://www-01.ibm.com/support/knowledgecenter/SSAW57_8.5.5/com.ibm.websphere.nd.doc/ae/tcws_sharedlib_app.html?lang=zh</li>
+</ul>
+
+
+<h4>共享库是可以选择是否使用隔离的类装入器(就是独立的类加载器)</h4>
+
+<p>设置参考下图所示:</p>
+
+<p><img src="/assets/images/2015/was-sharelib2.png" alt="请对此共享库使用隔离的类装入器" /></p>
+
+<h4>和共享库相关的类加载策略如下:</h4>
+
+<ul>
+<li>如果选择和服务器关联，那么将忽略"请对此共享库使用隔离的类装入器"的选项，此时共享库路径将会添加到应用程序服务器(application server)类装入器加载路径上。</li>
+<li>如果选择和应用关联，并且没有设置"请对此共享库使用隔离的类装入器",那么共享库路径将会添加到应用的类加载器加载路径上。此时共享库只有优化管理类库的作用，并不能减少重复加载类造成的内存占用。</li>
+<li>如果选择和应用关联，并且设置"请对此共享库使用隔离的类装入器",那么共享库将作为独立的类加载器，并且各个应用之间共享这个共享库。此时共享库和tomcat的共享库类似，可以减少重复加载类造成的内存占用。</li>
+</ul>
+
+
+<p>对于第三种情况，它的类加载顺序如下：</p>
+
+<p>如果应用的类载入顺序选择“父类装入器装入的类最先”,即Parent First，那么顺序如下:</p>
+
+<ul>
+<li>检查相关联的库类装入器是否可以装入类。(共享库)</li>
+<li>检查它的父代类装入器是否可以装入类。(应用服务器及更高)</li>
+<li>检查应用程序或 WAR 模块类装入器是否可以装入类。(应用)</li>
+</ul>
+
+
+<p>如果应用的类载入顺序选择“本地类装入器装入的类最先”,即Parent Last，那么顺序如下:</p>
+
+<ul>
+<li>检查应用程序或 WAR 模块类装入器是否可以装入类。(应用)</li>
+<li>检查相关联的库类装入器是否可以装入类。(共享库)</li>
+<li>检查它的父代类装入器是否可以装入类。(应用服务器及更高)</li>
+</ul>
+
+
+<h2>现象解释</h2>
+
+<ul>
+<li>开发环境中，共享库和应用关联，并且没有设置"请对此共享库使用隔离的类装入器"，所以共享库路径将会添加到应用的类加载器加载路径上，相当于在一个类加载路径上存在同样的类，所以使用到lib中的是可能的。</li>
+<li>生产环境中配置尚未查明，如果共享库和应用关联，并且设置"请对此共享库使用隔离的类装入器"，按同样的载入顺序设置，即Parent First，那么是会加载到共享库的。</li>
+<li>如果同样是没有设置"请对此共享库使用隔离的类装入器"，那么情况如开发环境情况，使用到共享库中的也是可能的。</li>
+<li>对于同一个类加载路径上存在同样的类，具体会加载哪个是不确定的，所以上述情况都是合理的。所以应该把应用中重复的jar包移除。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+</feed>
