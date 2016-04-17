@@ -10,7 +10,7 @@ categories: ["ssl", "svnkit", "handshake_failure"]
 
 昨天svn报文转发xx程序突然出现连不上svn的情况，报错信息如下:
 
-```txt
+```text
 org.tmatesoft.svn.core.SVNException: svn: E175002: Connection has been shutdown: javax.net.ssl.SSLHandshakeException: Received fatal alert: handshake_failure
 svn: E175002: OPTIONS request failed on '/XXXX'
 	at org.tmatesoft.svn.core.internal.wc.SVNErrorManager.error(SVNErrorManager.java:106)
@@ -47,7 +47,7 @@ Caused by: javax.net.ssl.SSLException: Connection has been shutdown: javax.net.s
 
 通过设置vm参数javax.net.debug=all开启网络相关的全部调试信息，可以看到:
 
-```txt
+```text
 *** ClientHello, SSLv3
 RandomCookie:  GMT: 1460716796 bytes = { 214, 15, 157, 159, 83, 144, 248, 115, 164, 210, 12, 247, 143, 96, 117, 244, 202, 251, 111, 187, 109, 171, 81, 216, 101, 89, 33, 240 }
 Session ID:  {}
