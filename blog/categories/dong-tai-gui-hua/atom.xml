@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 动态规划 | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/dong-tai-gui-hua/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-03-10T22:45:25+08:00</updated>
+  <updated>2016-04-17T09:25:26+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -37,10 +37,11 @@
 <h2>斐波纳契数列</h2>
 
 <p>说白了，这是个斐波纳契数列。计算的时候简单的动态规划即可。下面是简单的ruby源码:
-<div class="highlight"><pre><code class="ruby"><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span>
-<span class="mi">98</span><span class="o">.</span><span class="n">times</span> <span class="p">{</span><span class="n">b</span><span class="p">,</span><span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="o">+</span><span class="n">b</span><span class="p">,</span><span class="n">b</span><span class="p">}</span>
-<span class="nb">p</span> <span class="n">b</span> <span class="c1">#=&gt; 573147844013817084101</span>
-</code></pre></div>
+{% highlight ruby %}
+a,b=1,2
+98.times {b,a=a+b,b}
+p b #=> 573147844013817084101
+{% endhighlight %}
 看，真的是一个天文数字来的。</p>
 ]]></content>
   </entry>

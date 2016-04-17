@@ -4,7 +4,7 @@
   <title><![CDATA[Category: servlet | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/servlet/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-03-10T22:45:25+08:00</updated>
+  <updated>2016-04-17T09:25:26+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -74,10 +74,11 @@ servlet初始化的时候会调用init方法，容器负责把ServletConfig作�
 <p>过滤器，在web.xml经常看到元素，它就是实现Filter的一些类而已。。可以注意到Filter接口跟Servlet有些像，
 在初始化的时候，容器传递一个FilterConfig对象作为init方法的参数，而在销毁的时候会调用destroy方法。当有请求过来的时候，容器会拦截符合要求的请求（根据请求路径），
 并调用doFilter方法，可以注意到除了平时看到的request和response参数，还有个FilterChain参数。这个对象是由容器负责维护，可以看做是这次请求需要经过的filter链。一般来说
-<div class="highlight"><pre><code class="bash">before_filter :dosoming with request and response
-chain.doFilter<span class="o">(</span>request,response<span class="o">)</span>;//进入其他Filter
+{% highlight bash %}
+before_filter :dosoming with request and response
+chain.doFilter(request,response);//进入其他Filter
 after_filter :dosoming with request and response
-</code></pre></div>
+{% endhighlight %}
 上面前后两部分不一定都会存在，大家有机会看看例子就知道了。filter的作用范围很大，一般用来做验证权限，记录日志，响应内容压缩，内容加密，特殊参数过滤，转换编码格式等等</p>
 
 <h4>Cookie,HttpSession</h4>

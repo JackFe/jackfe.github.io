@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 语言 | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/yu-yan/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-03-10T22:45:25+08:00</updated>
+  <updated>2016-04-17T09:25:26+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -35,29 +35,31 @@
 <p>前几天维护那边需要我提供一个xml文件，它提供了一组txt数据:每半个小时的登陆及操作统计。
 我需要生成一个xml，我不熟悉excel操作(花了几分钟尝试了一下)，所以我选择使用脚本来生成。
 脚本只花了一分钟,比我预想得还要顺利。
-<div class="highlight"><pre><code class="ruby"><span class="nb">open</span><span class="p">(</span><span class="s1">&#39;a.xml&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span>
-  <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;a.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">ff</span><span class="o">|&lt;</span><span class="sr">/p&gt;</span>
+{% highlight ruby %}
+open('a.xml', 'w') do |f|
+  open('a.txt', 'r') do |ff|</p>
 
-<span class="sr">&lt;pre&gt;&lt;code&gt;ff.readlines.each_with_index do |l, i|</span>
-<span class="sr">  dl, cz = l.split(&#39; &#39;)</span>
-<span class="sr">  f &amp;lt;&amp;lt; &quot;&amp;lt;data&amp;gt;&amp;lt;seq&amp;gt;</span><span class="si">#{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="sr">&amp;lt;/se</span><span class="n">q</span><span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span><span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="n">czvalue</span><span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span><span class="c1">#{cz}&amp;lt;/czvalue&amp;gt;&amp;lt;dlvalue&amp;gt;#{dl}&amp;lt;/dlvalue&amp;gt;&amp;lt;/data&amp;gt;&quot;</span>
-<span class="k">end</span>
-<span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>ff.readlines.each_with_index do |l, i|
+  dl, cz = l.split(' ')
+  f &lt;&lt; "&lt;data&gt;&lt;seq&gt;#{i+1}&lt;/seq&gt;&lt;czvalue&gt;#{cz}&lt;/czvalue&gt;&lt;dlvalue&gt;#{dl}&lt;/dlvalue&gt;&lt;/data&gt;"
+end
+</code></pre>
 
-<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre></div>
+<p>  end
+end
+{% endhighlight %}
 对于这种一次性的文本处理，java真是太繁琐了，没有任何优势可言。</p>
 
 <h5>定位数据问题</h5>
 
 <p>曾经有次上版本之后发现一个菜单树不能使用。通过代码定位应该是菜单出现循环依赖了(菜单在表中是父子关系的)。
 同事也把生产的数据拿过来了。数据格式类似下面的，第一列是菜单id，第二列是父菜单id，还有其他的数据列。
-<div class="highlight"><pre><code class="java"><span class="n">ITEM1</span> <span class="n">ITEM2</span> <span class="n">OTHERS</span><span class="o">...</span>
-<span class="n">ITEM2</span> <span class="n">ITEM3</span> <span class="n">OTHERS</span><span class="o">...</span>
-<span class="n">ITEM4</span> <span class="n">ITEM2</span> <span class="n">OTHERS</span><span class="o">...</span>
-<span class="n">ITEM5</span> <span class="n">ITEM3</span> <span class="n">OTHERS</span><span class="o">...</span>
-</code></pre></div>
+{% highlight java %}
+ITEM1 ITEM2 OTHERS...
+ITEM2 ITEM3 OTHERS...
+ITEM4 ITEM2 OTHERS...
+ITEM5 ITEM3 OTHERS...
+{% endhighlight %}
 问题已经变成：父子是否出现循环。当时我用了几分钟写了一段脚本来找到出现循环的菜单项，最后发现是其他项目组增加的菜单有问题。</p>
 
 <h5>传数据的偷懒方法</h5>
@@ -83,18 +85,19 @@
 
 <p>windows的bat很烂，shell等有比较多限制，所以我又选择了脚本语言。
 使用perl,ruby等脚本来做管理脚本并不少见，我这里选择一个好几年前写的脚本作为例子：
-<div class="highlight"><pre><code class="ruby"><span class="n">cmd</span> <span class="o">=</span> <span class="no">Proc</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">shell</span><span class="o">|</span>
-  <span class="n">shell</span><span class="o">.</span><span class="n">cd</span><span class="p">(</span><span class="s2">&quot;/opt/xxx&quot;</span><span class="p">)</span>
-  <span class="nb">print</span> <span class="s2">&quot;current directory:&quot;</span><span class="p">,</span><span class="n">shell</span><span class="o">.</span><span class="n">pwd</span><span class="o">.</span><span class="n">stdout</span>
-  <span class="nb">print</span> <span class="n">shell</span><span class="o">.</span><span class="n">sh</span><span class="p">(</span><span class="s2">&quot;/opt/getupdate.sh&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">stdout</span>
-  <span class="n">shell</span><span class="o">.</span><span class="n">exit</span>
-<span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+{% highlight ruby %}
+cmd = Proc.new do |shell|
+  shell.cd("/opt/xxx")
+  print "current directory:",shell.pwd.stdout
+  print shell.sh("/opt/getupdate.sh").stdout
+  shell.exit
+end</p>
 
-<span class="sr">&lt;p&gt;Net::SSH.start(&#39;192.168.1.32&#39;, :username =&gt; &#39;root&#39;, :password=&gt;&#39;psword&#39;) do |session|</span>
-<span class="sr">  shell = session.shell.sync</span>
-<span class="sr">  cmd.call(shell)</span>
-<span class="sr">end</span>
-</code></pre></div></p>
+<p>Net::SSH.start('192.168.1.32', :username => 'root', :password=>'psword') do |session|
+  shell = session.shell.sync
+  cmd.call(shell)
+end
+{% endhighlight %}</p>
 
 <p>上面的例子比较简单，现实的例子是本地打包，通过ftp上传，解压发布，重启服务器，每个步骤都带交互功能。
 脚本语言和普通shell相比，具有完整语言和跨平台的优势，用来做系统管理是一个不错的选择。</p>
@@ -109,57 +112,8 @@
 
 <p><strong><em>M</em></strong>：这实际上是Pragmatic Programmers提出的建议，是他们出版的书中的一条建议，我本人很赞同。我认为应该有意地学习一些新的语言，特别是那些和你所熟知的语言的运作方式相差甚远的语言，所以不要在相似的语言上浪费时间。如果你是一位Java程序员，那么C#对于你来说就太过熟悉了，你需要学习一些很不同的语言，比如说Lisp，或者Clojure；如果你是一位Lisp程序员，你也不需要学Clojure，因为那就是另一种Lisp而已。总之你应该尝试一些很不同的语言。</p>
 
-<p>
-
-
-<h2>"improve bitter code"系列文章:</h2>
-<ul>
- 
-  
-  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
-  
- 
-  
-  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
-  
- 
-  
-  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
-  
- 
-  
-  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
-  
-
-</ul>
-
-
-
-</p>
+<p>{% assign series_list = "improve bitter code" %}
+{% include series_list.html %}</p>
 ]]></content>
   </entry>
   

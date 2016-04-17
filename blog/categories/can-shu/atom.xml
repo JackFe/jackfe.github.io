@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 参数 | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/can-shu/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-03-10T22:45:25+08:00</updated>
+  <updated>2016-04-17T09:25:26+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -24,35 +24,38 @@
 
 <p>还是前几天的事情，群里边有同事提到一个账单相关的需求，其中涉及到组装打印用数据。
 有个新同事在Service里边写了一段这样的代码：
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">XXService</span> <span class="nf">fillItem</span><span class="o">(</span><span class="n">String</span> <span class="n">content</span><span class="o">,</span> <span class="n">String</span> <span class="n">tag</span><span class="o">)</span> <span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+public XXService fillItem(String content, String tag) {</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">// some codes</span>
-<span class="k">this</span><span class="o">.</span><span class="na">printitems</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">Item</span><span class="o">(</span><span class="n">tag</span><span class="o">,</span> <span class="n">content</span><span class="o">));</span>
-<span class="k">return</span> <span class="k">this</span><span class="o">;</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>// some codes
+this.printitems.add(new Item(tag, content));
+return this;
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</code></pre></div></p>
+<p>}
+{% endhighlight %}</p>
 
 <p>有同学不是特别理解为什么要这么写，甚至发出return this是什么对象的疑问。</p>
 
 <p>这段代码原来是这么写的:
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kt">void</span> <span class="nf">fillItem</span><span class="o">(</span><span class="n">String</span> <span class="n">content</span><span class="o">,</span> <span class="n">String</span> <span class="n">tag</span><span class="o">,</span> <span class="n">List</span> <span class="n">printitems</span><span class="o">)</span> <span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+public void fillItem(String content, String tag, List printitems) {</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">// some codes</span>
-<span class="n">printitems</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">Item</span><span class="o">(</span><span class="n">tag</span><span class="o">,</span> <span class="n">content</span><span class="o">));</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>// some codes
+printitems.add(new Item(tag, content));
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</code></pre></div></p>
+<p>}
+{% endhighlight %}</p>
 
 <p>有同学奇怪，为什么再提交一次printitems就会重新加一遍，认为第一段代码的问题出现在return this上面。
 这样要说明一下，我们使用的是struts1，所以如果Service实例作为action的实例变量，那也是只有一个对象来的。
 所以每次刷新一次重复加一遍就没什么奇怪的了。</p>
 
 <p>回头来看那段新写的代码，出发点是好的。毕竟采用这种方式可以使用链式写法（如下所示），代码有时候会变得很sexy。
-<div class="highlight"><pre><code class="java"><span class="n">XXService</span><span class="o">.</span><span class="na">fillItem</span><span class="o">(</span><span class="s">&quot;a&quot;</span><span class="o">,</span> <span class="s">&quot;A&quot;</span><span class="o">).</span><span class="na">fillItem</span><span class="o">(</span><span class="s">&quot;b&quot;</span><span class="o">,</span> <span class="s">&quot;B&quot;</span><span class="o">);</span>
-</code></pre></div>
+{% highlight java %}
+XXService.fillItem("a", "A").fillItem("b", "B");
+{% endhighlight %}
 这段代码的问题不在于是否采用链式写法，而是对这种单例，变量生命周期了解不足造成的。
 链式写法在代码中很少会使用到，但在设计api，也是可以考虑的。设计的好，可以有效提高代码的编写效率和api的友好型。
 例如，我就对java collection api里边的add方法深恶痛绝,就是不能连续add，要add多少个就要写多少行，还真的挺烦的。</p>
@@ -62,18 +65,21 @@
 <p>在很多有名的开源框架中，链式写法也不是很少见，下面举几个例子:</p>
 
 <p>很常见的有jquery
-<div class="highlight"><pre><code class="javascript"><span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#name&quot;</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="s2">&quot;readonly&quot;</span><span class="p">,</span> <span class="kc">true</span><span class="p">).</span><span class="nx">val</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">);</span>
-</code></pre></div></p>
+{% highlight javascript %}
+$("#name").attr("readonly", true).val("test");
+{% endhighlight %}</p>
 
 <p>还有mock框架mockito
-<div class="highlight"><pre><code class="java"><span class="n">when</span><span class="o">(</span><span class="n">mockedList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">)).</span><span class="na">thenReturn</span><span class="o">(</span><span class="s">&quot;first&quot;</span><span class="o">);</span>
-<span class="n">when</span><span class="o">(</span><span class="n">mockedList</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">1</span><span class="o">)).</span><span class="na">thenThrow</span><span class="o">(</span><span class="k">new</span> <span class="n">RuntimeException</span><span class="o">());</span>
-</code></pre></div></p>
+{% highlight java %}
+when(mockedList.get(0)).thenReturn("first");
+when(mockedList.get(1)).thenThrow(new RuntimeException());
+{% endhighlight %}</p>
 
 <p>再看看rails的写法
-<div class="highlight"><pre><code class="ruby"><span class="no">Post</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="s1">&#39;id &gt; 10&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">order</span><span class="p">(</span><span class="s1">&#39;id desc&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">only</span><span class="p">(</span><span class="ss">:order</span><span class="p">,</span> <span class="ss">:where</span><span class="p">)</span>
-<span class="no">Client</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">offset</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
-</code></pre></div></p>
+{% highlight ruby %}
+Post.where('id > 10').limit(20).order('id desc').only(:order, :where)
+Client.limit(5).offset(30)
+{% endhighlight %}</p>
 
 <h3>我的看法</h3>
 
@@ -83,57 +89,8 @@
 3. 参数parameter一般较少，因为参数多了，代码很容易变得模糊不清。
 4. 链式操作要么容错强(像jquery)，要么就得直接抛出异常，对返回值不关心。</p>
 
-<p>
-
-
-<h2>"improve bitter code"系列文章:</h2>
-<ul>
- 
-  
-  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
-  
- 
-  
-  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
-  
- 
-  
-  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
-  
- 
-  
-  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
-  
-
-</ul>
-
-
-
-</p>
+<p>{% assign series_list = "improve bitter code" %}
+{% include series_list.html %}</p>
 ]]></content>
   </entry>
   
@@ -147,44 +104,48 @@
 <h3>群里的讨论</h3>
 
 <p>前两天在开发群里边，有同事讨论一个api: 增加一个取特定序列值的方法。并给出了以下的原型代码：
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Object</span> <span class="nf">getSeqValue</span><span class="o">(</span><span class="n">String</span> <span class="n">seqname</span><span class="o">,</span> <span class="n">String</span> <span class="n">maindb</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+public Object getSeqValue(String seqname, String maindb){</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">if</span><span class="o">(</span><span class="s">&quot;1&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">maindb</span><span class="o">)){</span>
-    <span class="n">DbRunContext</span><span class="o">.</span><span class="na">setRegion</span><span class="o">(</span><span class="n">DbRunContext</span><span class="o">.</span><span class="na">MAINDB</span><span class="o">);</span>
-<span class="o">}</span>
-<span class="c1">// more codes</span>
-<span class="k">return</span> <span class="n">XXDao</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>if("1".equals(maindb)){
+    DbRunContext.setRegion(DbRunContext.MAINDB);
+}
+// more codes
+return XXDao.queryForObject(seqname);
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</code></pre></div></p>
+<p>}
+{% endhighlight %}</p>
 
 <p>其中maindb是因为项目支持多数据库的缘故，传入参数maindb来判断是否走主库还是地市库。
 我不知道这个"1"是怎么来的，我随口冒出一句：能不能不传递maindb,谁知道要传递什么呢?</p>
 
 <p>于是很快冒出"改进"方案，换成一个布尔值，代码变成这样:
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Object</span> <span class="nf">getSeqValue</span><span class="o">(</span><span class="n">String</span> <span class="n">seqname</span><span class="o">,</span> <span class="kt">boolean</span> <span class="n">isMaindb</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+public Object getSeqValue(String seqname, boolean isMaindb){</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">if</span><span class="o">(</span><span class="n">isMaindb</span><span class="o">){</span>
-    <span class="n">DbRunContext</span><span class="o">.</span><span class="na">setRegion</span><span class="o">(</span><span class="n">DbRunContext</span><span class="o">.</span><span class="na">MAINDB</span><span class="o">);</span>
-<span class="o">}</span>
-<span class="c1">// more codes</span>
-<span class="k">return</span> <span class="n">XXDao</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>if(isMaindb){
+    DbRunContext.setRegion(DbRunContext.MAINDB);
+}
+// more codes
+return XXDao.queryForObject(seqname);
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</code></pre></div></p>
+<p>}
+{% endhighlight %}</p>
 
 <p>很显然这不是一个好的解决办法，我从使用者的角度来说，举了下面的例子:
-<div class="highlight"><pre><code class="java"><span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
-<span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
-</code></pre></div>
+{% highlight java %}
+getSeqValue(seqname, true);
+getSeqValue(seqname, false);
+{% endhighlight %}
 单单看上面的调用方式，谁能很清楚的说明分别是什么意思?</p>
 
 <p>很明显，这相当的困难。所以我建议对方法进行重命名，例如
-<div class="highlight"><pre><code class="java"><span class="n">getSeqValueFromMaindb</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
-<span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
-</code></pre></div>
+{% highlight java %}
+getSeqValueFromMaindb(seqname);
+getSeqValue(seqname);
+{% endhighlight %}
 当然，可以考虑把原来的方法换成私有的，这样避免代码重复而不会对调用者造成困惑。</p>
 
 <h3>迷惑人的参数随处可见</h3>
@@ -194,65 +155,17 @@
 
 <p>例如区分调用后台逻辑是否起事务，用得太多了，加上老代码就这么用，所以很多同事
 没有意识加个IS_TRANSACTION这类的静态变量。看，代码就变成下面的样子：
-<div class="highlight"><pre><code class="java"><span class="n">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">cmd</span><span class="o">,</span> <span class="n">subcmd</span><span class="o">,</span> <span class="s">&quot;1&quot;</span><span class="o">);</span>
-<span class="n">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">cmd</span><span class="o">,</span> <span class="n">subcmd</span><span class="o">,</span> <span class="s">&quot;0&quot;</span><span class="o">);</span>
-</code></pre></div></p>
+{% highlight java %}
+commonInvoke(operator, cmd, subcmd, "1");
+commonInvoke(operator, cmd, subcmd, "0");
+{% endhighlight %}</p>
 
 <p>参数这东西，对看代码的人来说没什么特别的帮助，参数越多越迷惑。
 当两个方法调用就差一个布尔值不一样的时候，那是相当痛苦的。
 所以最好还是从方法名上进行区分，保持代码的可读性。对于接口方法，公用方法，更是应该如此。</p>
 
-<p>
-
-
-<h2>"improve bitter code"系列文章:</h2>
-<ul>
- 
-  
-  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
-  
- 
-  
-  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
-  
- 
-  
-  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
-  
- 
-  
-  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
-  
-
-</ul>
-
-
-
-</p>
+<p>{% assign series_list = "improve bitter code" %}
+{% include series_list.html %}</p>
 ]]></content>
   </entry>
   

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: jolt | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/jolt/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-03-10T22:45:25+08:00</updated>
+  <updated>2016-04-17T09:25:26+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -132,29 +132,8 @@ findbugs，checkstyle, cppunit等测试项，这样代码质量问题可以得�
 并对时间安排，实施拯救计划进行指导。对于担心书中描述的理论是否可行的人来说，
 这章无疑是打了强心针一样，只要按照书中的建议进行操作，应该是能够验证效果的，需要的只是：行动。</p>
 
-<p>
-
-
-<h2>"书评"系列文章:</h2>
-<ul>
- 
-  
-  <li><a href="/blog/20120815_thought-read-javascript-idea.html">2012-08-15 书评-JavaScript语言精髓与编程实践</a></li>
-  
- 
-  
-  <li><a href="/blog/20120815_thought-read-node-web-development.html">2012-08-15 书评-Node Web开发</a></li>
-  
- 
-  
-  <li><a href="/blog/20120818_thought-read-jolt-book.html">2012-08-18 书评-Jolt大奖精选丛书</a></li>
-  
-
-</ul>
-
-
-
-</p>
+<p>{% assign series_list = "书评" %}
+{% include series_list.html %}</p>
 ]]></content>
   </entry>
   

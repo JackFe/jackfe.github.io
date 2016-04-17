@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 贪心法 | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/tan-xin-fa/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-03-10T22:45:25+08:00</updated>
+  <updated>2016-04-17T09:25:26+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -45,89 +45,90 @@
 
 <h3>代码示例</h3>
 
-<p><div class="highlight"><pre><code class="ruby"><span class="k">def</span> <span class="nf">init</span>
-  <span class="vi">@arr</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
-  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">7</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">end</span>
-  <span class="vi">@path</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>
-  <span class="vi">@ok</span> <span class="o">=</span> <span class="kp">false</span>
-  <span class="vi">@poss</span> <span class="o">=</span> <span class="o">[[-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">]]</span>
-<span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+<p>{% highlight ruby %}
+def init
+  @arr = Array.new(8)
+  (0..7).each do |i| @arr[i] = Array.new(8, 0) end
+  @path = Array.new(64)
+  @ok = false
+  @poss = [[-2, 1], [2, 1], [1, 2], [-1, 2], [2, -1], [-2, -1], [-1, -2], [1, -2]]
+end</p>
 
-<span class="sr">&lt;h1&gt;判断[x,y]是否在棋盘内并未走过&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+<h1>判断[x,y]是否在棋盘内并未走过</h1>
 
-<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">valid?</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
-  <span class="n">x</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span> <span class="n">x</span><span class="o">&lt;</span><span class="mi">8</span> <span class="o">&amp;&amp;</span> <span class="n">y</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span> <span class="n">y</span><span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="mi">8</span> <span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">x</span><span class="o">][</span><span class="n">y</span><span class="o">]==</span><span class="mi">0</span>
-<span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+<p>def valid?(x,y)
+  x>=0 &amp;&amp; x<8 && y>=0 &amp;&amp; y&lt;8 &amp;&amp; @arr[x][y]==0
+end</p>
 
-<span class="sr">&lt;h1&gt;判断当前点有哪些方向可以走&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+<h1>判断当前点有哪些方向可以走</h1>
 
-<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span>
-  <span class="n">posz</span><span class="p">,</span> <span class="n">mustpos</span> <span class="o">=</span> <span class="p">{},</span> <span class="kp">nil</span>
-  <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="vi">@path</span><span class="o">[</span><span class="n">mark</span><span class="o">]</span>
-  <span class="vi">@poss</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">pos</span><span class="o">|&lt;</span><span class="sr">/p&gt;</span>
+<p>def filter(mark)
+  posz, mustpos = {}, nil
+  a, b = @path[mark]
+  @poss.each do |pos|</p>
 
-<span class="sr">&lt;pre&gt;&lt;code&gt;axp, bxp = a+pos[0], b+pos[1]</span>
-<span class="sr">if valid?(axp, bxp)</span>
-<span class="sr">  sz = 0</span>
-<span class="sr">  @poss.each do |ps|</span>
-<span class="sr">    ap, bp = axp+ps[0], bxp+ps[1]</span>
-<span class="sr">    sz+=1 if valid?(ap, bp) # 存在空点</span>
-<span class="sr">  end</span>
-<span class="sr">  if sz&amp;gt;0</span>
-<span class="sr">    posz[pos] = sz</span>
-<span class="sr">  else</span>
-<span class="sr">    mustpos.nil? ? (mustpos = pos) : (return [])</span>
-<span class="sr">  end</span>
-<span class="sr">end</span>
-<span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+<pre><code>axp, bxp = a+pos[0], b+pos[1]
+if valid?(axp, bxp)
+  sz = 0
+  @poss.each do |ps|
+    ap, bp = axp+ps[0], bxp+ps[1]
+    sz+=1 if valid?(ap, bp) # 存在空点
+  end
+  if sz&gt;0
+    posz[pos] = sz
+  else
+    mustpos.nil? ? (mustpos = pos) : (return [])
+  end
+end
+</code></pre>
 
-<span class="sr">&lt;p&gt;  end</span>
-<span class="sr">  # 对目标点的方向多寡进行排序</span>
-<span class="sr">  mustpos.nil? ? posz.keys.sort {|a,b| posz[a]&amp;lt;=&gt;posz[b]} : [mustpos]</span>
-<span class="sr">end&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
+<p>  end
+  # 对目标点的方向多寡进行排序
+  mustpos.nil? ? posz.keys.sort {|a,b| posz[a]&lt;=>posz[b]} : [mustpos]
+end</p>
 
-<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span>
-  <span class="k">if</span> <span class="n">mark</span><span class="o">==</span><span class="mi">63</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+<p>def walk(mark)
+  if mark==63</p>
 
-<span class="sr">&lt;pre&gt;&lt;code&gt;@ok = true</span>
-<span class="sr">return</span>
-<span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
+<pre><code>@ok = true
+return
+</code></pre>
 
-<span class="sr">&lt;p&gt;  end</span>
-<span class="sr">  a, b = @path[mark]</span>
-<span class="sr">  filter(mark).each do |pos|&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
+<p>  end
+  a, b = @path[mark]
+  filter(mark).each do |pos|</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">rp</span> <span class="o">=</span> <span class="o">[</span><span class="n">a</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span>
-<span class="vi">@path</span><span class="o">[</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="o">]</span> <span class="o">=</span> <span class="n">rp</span>
-<span class="vi">@arr</span><span class="o">[</span><span class="n">rp</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">rp</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">walk</span><span class="p">(</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-<span class="vi">@ok</span> <span class="p">?</span> <span class="k">return</span> <span class="p">:</span> <span class="p">(</span><span class="vi">@arr</span><span class="o">[</span><span class="n">rp</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">rp</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
-<span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>rp = [a+pos[0], b+pos[1]]
+@path[mark+1] = rp
+@arr[rp[0]][rp[1]] = 1
+walk(mark+1)
+@ok ? return : (@arr[rp[0]][rp[1]] = 0)
+</code></pre>
 
-<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">end</span>
-<span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
+<p>  end
+end</p>
 
-<span class="sr">&lt;p&gt;(0..7).each do |i|</span>
-<span class="sr">  (0..7).each do |j|&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
+<p>(0..7).each do |i|
+  (0..7).each do |j|</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">init</span>
-<span class="vi">@path</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span> <span class="o">=</span> <span class="o">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">]</span>
-<span class="vi">@arr</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">walk</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="k">if</span> <span class="vi">@ok</span>
-  <span class="vi">@path</span><span class="o">.</span><span class="n">each_with_index</span> <span class="k">do</span> <span class="o">|</span><span class="n">ps</span><span class="p">,</span> <span class="n">idx</span><span class="o">|</span>
-    <span class="vi">@arr</span><span class="o">[</span><span class="n">ps</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">ps</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="n">idx</span>
-  <span class="k">end</span>
-  <span class="vi">@arr</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">ar</span><span class="o">|</span> <span class="nb">p</span> <span class="n">ar</span> <span class="k">end</span>
-  <span class="nb">puts</span>
-<span class="k">else</span>
-  <span class="s2">&quot;no solution&quot;</span>
-<span class="k">end</span>
-<span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>init
+@path[0] = [i,j]
+@arr[i][j] = 1
+walk(0)
+if @ok
+  @path.each_with_index do |ps, idx|
+    @arr[ps[0]][ps[1]] = idx
+  end
+  @arr.each do |ar| p ar end
+  puts
+else
+  "no solution"
+end
+</code></pre>
 
-<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre></div></p>
+<p>  end
+end
+{% endhighlight %}</p>
 ]]></content>
   </entry>
   

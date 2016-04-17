@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 设计模式 | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/she-ji-mo-shi/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-03-10T22:45:25+08:00</updated>
+  <updated>2016-04-17T09:25:26+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -26,20 +26,21 @@
 我们经常会担心各种各样的空值，例如null不行，换成空字符串，集合为空或取不到值，怎么办？
 字符串都是空格，要不要trim一下？
 往一个很深的属性中取值，判空的逻辑太多了？
-<div class="highlight"><pre><code class="java"><span class="k">if</span><span class="o">(</span><span class="n">Objects</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">subs</span><span class="o">)){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+if(Objects.isNotEmpty(subs)){</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">List</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">Attr</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">subsAttrs</span> <span class="o">=</span> <span class="n">subs</span><span class="o">.</span><span class="na">getAttrs</span><span class="o">();</span>
-<span class="k">if</span><span class="o">(</span><span class="n">Objects</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">subsAttrs</span><span class="o">)){</span>
-    <span class="k">for</span><span class="o">(</span><span class="n">Attr</span> <span class="n">attr</span> <span class="o">:</span> <span class="n">subsAttrs</span><span class="o">){</span>
-        <span class="k">if</span><span class="o">(</span><span class="n">attr</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">){</span>
-            <span class="c1">//do something with attr</span>
-        <span class="o">}</span>
-    <span class="o">}</span>
-<span class="o">}</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>List&lt;Attr&gt; subsAttrs = subs.getAttrs();
+if(Objects.isNotEmpty(subsAttrs)){
+    for(Attr attr : subsAttrs){
+        if(attr != null){
+            //do something with attr
+        }
+    }
+}
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</code></pre></div>
+<p>}
+{% endhighlight %}
 诸如此类的情况每天都会出现，的确是很麻烦的。
 更多材料可以查看一下<a href="http://code.google.com/p/guava-libraries/wiki/UsingAndAvoidingNullExplained">Google Guava关于避免null的描述</a></p>
 
@@ -52,27 +53,29 @@
 
 <h5>方式1</h5>
 
-<p><div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Map</span> <span class="nf">queryWokrfResult</span><span class="o">(</span><span class="n">String</span> <span class="n">recnum</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>{% highlight java %}
+public Map queryWokrfResult(String recnum){</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">Assert</span><span class="o">.</span><span class="na">isNotNull</span><span class="o">(</span><span class="n">recnum</span><span class="o">,</span>  <span class="s">&quot;业务流水号不能为空!&quot;</span><span class="o">);</span>
-<span class="c1">// query with recnum</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>Assert.isNotNull(recnum,  "业务流水号不能为空!");
+// query with recnum
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</code></pre></div></p>
+<p>}
+{% endhighlight %}</p>
 
 <h5>方式2</h5>
 
-<p><div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Map</span> <span class="nf">queryWokrfResult</span><span class="o">(</span><span class="n">String</span> <span class="n">recnum</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>{% highlight java %}
+public Map queryWokrfResult(String recnum){</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(</span><span class="n">recnum</span><span class="o">)){</span>
-    <span class="k">throw</span> <span class="k">new</span> <span class="nf">ReceptionException</span><span class="o">(</span><span class="s">&quot;业务流水号不能为空!&quot;</span><span class="o">);</span>
-<span class="o">}</span>
-<span class="c1">// query with recnum</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>if(StringUtils.isEmpty(recnum)){
+    throw new ReceptionException("业务流水号不能为空!");
+}
+// query with recnum
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</code></pre></div></p>
+<p>}
+{% endhighlight %}</p>
 
 <p>我是这么看待的，方式1表示你可以传空，但我会做检测，不会让你得逞。相当于防御性编程。
 方式2，你就不应该传空，你的参数不符合接口规范。
@@ -87,46 +90,49 @@
 还可以根据具体应用在底层框架上处理，在提高容错性的同时，让代码更优雅。</p>
 
 <p>在项目的老代码中，我们会看到这样的判空处理。
-<div class="highlight"><pre><code class="java"><span class="c1">// example 1</span>
-<span class="n">MapVo</span> <span class="n">vo</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MapVo</span><span class="o">();</span>
-<span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">name</span><span class="o">)){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+// example 1
+MapVo vo = new MapVo();
+if(StringUtils.isNotEmpty(name)){</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">vo</span><span class="o">.</span><span class="na">setAttribute</span><span class="o">(</span><span class="s">&quot;name&quot;</span><span class="o">,</span> <span class="n">name</span><span class="o">);</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>vo.setAttribute("name", name);
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-<span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">subsid</span><span class="o">)){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>}
+if(StringUtils.isNotEmpty(subsid)){</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">vo</span><span class="o">.</span><span class="na">setAttribute</span><span class="o">(</span><span class="s">&quot;subsid&quot;</span><span class="o">,</span> <span class="n">subsid</span><span class="o">);</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>vo.setAttribute("subsid", subsid);
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-<span class="c1">// ... other conditions&lt;/p&gt;</span>
+<p>}
+// ... other conditions</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">DBUtils</span><span class="o">.</span><span class="na">queryByVo</span><span class="o">(</span><span class="s">&quot;queryXXX&quot;</span><span class="o">,</span> <span class="n">vo</span><span class="o">);</span>
-</code></pre></div></p>
+<p>DBUtils.queryByVo("queryXXX", vo);
+{% endhighlight %}</p>
 
 <p>为什么这么写，是因为框架的sql生成配置只提供了null的配置方式，而不支持常见的空字符串，无内容的字符串等常见模式。
 为此，通过增加特性，像ibatis那样支持isEmpty模式的配置，就可以省略大量显式判断。
 修改后的代码如下：
-<div class="highlight"><pre><code class="java"><span class="c1">// example 2</span>
-<span class="n">MapVo</span> <span class="n">vo</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MapVo</span><span class="o">();</span>
-<span class="n">vo</span><span class="o">.</span><span class="na">setAttribute</span><span class="o">(</span><span class="s">&quot;name&quot;</span><span class="o">,</span> <span class="n">name</span><span class="o">);</span>
-<span class="n">vo</span><span class="o">.</span><span class="na">setAttribute</span><span class="o">(</span><span class="s">&quot;subsid&quot;</span><span class="o">,</span> <span class="n">subsid</span><span class="o">);</span>
-<span class="c1">// ... other conditions&lt;/p&gt;</span>
+{% highlight java %}
+// example 2
+MapVo vo = new MapVo();
+vo.setAttribute("name", name);
+vo.setAttribute("subsid", subsid);
+// ... other conditions</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">DBUtils</span><span class="o">.</span><span class="na">queryByVo</span><span class="o">(</span><span class="s">&quot;queryXXX&quot;</span><span class="o">,</span> <span class="n">vo</span><span class="o">);</span>
-</code></pre></div></p>
+<p>DBUtils.queryByVo("queryXXX", vo);
+{% endhighlight %}</p>
 
 <p>再看，例如老页面jsp里边这样的逻辑也很多(嵌入java代码)
-<div class="highlight"><pre><code class="java"><span class="o">&amp;</span><span class="n">lt</span><span class="o">;%</span> <span class="n">Subscriber</span> <span class="n">subs</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="na">getAttribute</span><span class="o">(</span><span class="s">&quot;subscriber&quot;</span><span class="o">);</span> <span class="o">%&gt;</span>
-<span class="o">&amp;</span><span class="n">lt</span><span class="o">;%</span> <span class="k">if</span><span class="o">(</span><span class="n">subs</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+&lt;% Subscriber subs = request.getAttribute("subscriber"); %>
+&lt;% if(subs != null) {</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span> <span class="n">out</span><span class="o">.</span><span class="na">print</span><span class="o">(</span><span class="s">&quot;&amp;lt;span&amp;gt;&quot;</span> <span class="o">+</span> <span class="n">subs</span><span class="o">.</span><span class="na">getServnumber</span><span class="o">()</span> <span class="o">+</span> <span class="s">&quot;&amp;lt;/span&amp;gt;&quot;</span><span class="o">);</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code> out.print("&lt;span&gt;" + subs.getServnumber() + "&lt;/span&gt;");
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;&amp;</span><span class="n">lt</span><span class="o">;%</span> <span class="o">}</span> <span class="o">%&gt;</span>
-</code></pre></div>
+<p>&lt;% } %>
+{% endhighlight %}
 对于这种代码有很好的方式，如el表达式，又或者velocity等模板解决方案，都具有很好的容错性。</p>
 
 <p>再来看看其他语言框架的解决模式，如javascript框架jquery，对错误保护就很好，对不存在的东西，提供了默认行为: 视而不见。
@@ -138,22 +144,24 @@
 通过这种模式，把异常处理逻辑封装起来，对于客户端代码来说，调用方式和正常情况是一样的。</p>
 
 <p>例如，对于数据查询接口返回空的列表而不是null，使用一些空集合对象。
-<div class="highlight"><pre><code class="java"><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">emptyList</span><span class="o">()</span>
-<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">emptyMap</span><span class="o">()</span>
-<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">emptySet</span><span class="o">()</span>
-</code></pre></div>
+{% highlight java %}
+java.util.Collections#emptyList()
+java.util.Collections#emptyMap()
+java.util.Collections#emptySet()
+{% endhighlight %}
 对于返回列表的接口，使用空列表对象，很多判空的逻辑就没有必要存在了。
 又例如，返回不可修改或线程安全的特殊列表，也可以看成是这种模式的变化
-<div class="highlight"><pre><code class="java"><span class="n">Arrays</span><span class="err">#</span><span class="n">asList</span><span class="o">()&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+Arrays#asList()</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">unmodifiableList</span><span class="o">()</span>
-<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">unmodifiableMap</span><span class="o">()</span>
-<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">unmodifiableSet</span><span class="o">()&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>java.util.Collections#unmodifiableList()
+java.util.Collections#unmodifiableMap()
+java.util.Collections#unmodifiableSet()</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">synchronizedList</span><span class="o">()</span>
-<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">synchronizedMap</span><span class="o">()</span>
-<span class="n">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">Collections</span><span class="err">#</span><span class="n">synchronizedSet</span><span class="o">()</span>
-</code></pre></div></p>
+<p>java.util.Collections#synchronizedList()
+java.util.Collections#synchronizedMap()
+java.util.Collections#synchronizedSet()
+{% endhighlight %}</p>
 
 <h3>总结</h3>
 
@@ -161,57 +169,8 @@
 
 <p><strong>在框架层面进行统一封装，可以专注于业务逻辑。</strong></p>
 
-<p>
-
-
-<h2>"improve bitter code"系列文章:</h2>
-<ul>
- 
-  
-  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
-  
- 
-  
-  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
-  
- 
-  
-  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
-  
- 
-  
-  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
-  
-
-</ul>
-
-
-
-</p>
+<p>{% assign series_list = "improve bitter code" %}
+{% include series_list.html %}</p>
 ]]></content>
   </entry>
   

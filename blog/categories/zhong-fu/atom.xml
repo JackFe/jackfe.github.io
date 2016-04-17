@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 重复 | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/zhong-fu/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-03-10T22:45:25+08:00</updated>
+  <updated>2016-04-17T09:25:26+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -27,11 +27,12 @@
 
 <p>最近在review N项目的代码时，发现有新童鞋对修复checkstyle的问题热情高涨，有些修改的确是有益的，
 但是对魔鬼数字的修改就显得不是正路了。大家先看看：
-<div class="highlight"><pre><code class="java"><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_2</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
-<span class="kd">private</span> <span class="n">Static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_80</span> <span class="o">=</span> <span class="mi">80</span><span class="o">;</span>
-<span class="kd">private</span> <span class="n">Static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_1000</span> <span class="o">=</span> <span class="mi">1000</span><span class="o">;</span>
-<span class="kd">private</span> <span class="n">Static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_60000</span> <span class="o">=</span> <span class="mi">60000</span><span class="o">;</span>
-</code></pre></div></p>
+{% highlight java %}
+private static final int INT_2 = 2;
+private Static final int INT_80 = 80;
+private Static final int INT_1000 = 1000;
+private Static final int INT_60000 = 60000;
+{% endhighlight %}</p>
 
 <p>这种情况以前也出现过，那个时候刚推广checkstyle，结果有人定义了NumberUtil类，里边就有ONE, TWO...等变量，
 一直延伸到好几十。这让我非常纠结，劝说了很多次，结果这个类最终还是扎下根来了。我对此深恶痛绝。</p>
@@ -71,79 +72,31 @@
 这样可以隐藏一些细节，把作用域限制在很小的地方。
 例如下面经常出现的魔鬼字符串，就可以考虑把整个判断逻辑封装到user类里边去，
 而不只是简单的定义出ACTIVE这样一个常量。
-<div class="highlight"><pre><code class="java"><span class="c1">// 原有的代码</span>
-<span class="k">if</span><span class="o">(</span><span class="s">&quot;1&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">user</span><span class="o">.</span><span class="na">getStatus</span><span class="o">())){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+// 原有的代码
+if("1".equals(user.getStatus())){</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">// ...</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>// ...
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>}</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">// 改造后,&quot;1&quot;作为user的常量使用于isActive方法</span>
-<span class="k">if</span><span class="o">(</span><span class="n">user</span><span class="o">.</span><span class="na">isActive</span><span class="o">()){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>// 改造后,"1"作为user的常量使用于isActive方法
+if(user.isActive()){</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">// ...</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>// ...
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</code></pre></div></p>
+<p>}
+{% endhighlight %}</p>
 
 <p>不过话说回来，解决魔鬼数字、字符串之类等'小枝小节'，花费的精力不小。
 但不要忽视这些细节，这样可以让自己不断提高对代码的认识，也便于其他人维护你的代码。</p>
 
 <p>对付魔鬼数字，还是不要走捷径的好！</p>
 
-<p>
-
-
-<h2>"improve bitter code"系列文章:</h2>
-<ul>
- 
-  
-  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
-  
- 
-  
-  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
-  
- 
-  
-  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
-  
- 
-  
-  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
-  
-
-</ul>
-
-
-
-</p>
+<p>{% assign series_list = "improve bitter code" %}
+{% include series_list.html %}</p>
 ]]></content>
   </entry>
   
@@ -159,39 +112,40 @@
 <p>周六做code diff的时候发现B项目一段颇长的处理逻辑(40行左右)。处理流程是这样的，
 从页面上取到一批数据之后，用这批数据封装参数进行后台调用(远程调用)。为了避免数据调用超时，
 对这批数据进行分批多次调用。代码如下所示(现实的代码比这个要复杂些，并且没有使用subList方法)：
-<div class="highlight"><pre><code class="java"><span class="n">List</span> <span class="n">batchdatas</span> <span class="o">=</span> <span class="o">...;</span>
-<span class="kt">int</span> <span class="n">batchsize</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span> <span class="c1">// load from parameter&lt;/p&gt;</span>
+{% highlight java %}
+List batchdatas = ...;
+int batchsize = 10; // load from parameter</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="kt">int</span> <span class="n">datasize</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
-<span class="k">if</span><span class="o">(</span><span class="n">datasize</span> <span class="o">&gt;</span> <span class="n">batchsize</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>int datasize = batchdatas.size();
+if(datasize > batchsize){</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kt">int</span> <span class="n">batch</span> <span class="o">=</span> <span class="n">datasize</span> <span class="o">/</span> <span class="n">batchsize</span><span class="o">;</span>
-<span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">i</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">batch</span><span class="o">;</span><span class="n">i</span><span class="o">++){</span>
-    <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
-    <span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">batchsize</span><span class="o">*</span><span class="n">i</span><span class="o">,</span> <span class="n">batchsize</span><span class="o">*(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">));</span>
-    <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
-    <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
-<span class="o">}</span>
+<pre><code>int batch = datasize / batchsize;
+for(int i=0;i&lt;batch;i++){
+    List inparams = new ArrayList();
+    List batchdata = batchdatas.subList(batchsize*i, batchsize*(i+1));
+    inparams.add(new CEntityList(batchdata));
+    RemoteCall.commonInvoke(operator, inparams, "CheckCmd");
+}
 
-<span class="kt">int</span> <span class="n">left</span> <span class="o">=</span> <span class="n">datasize</span> <span class="o">%</span> <span class="n">batchsize</span><span class="o">;</span>
-<span class="k">if</span><span class="o">(</span><span class="n">left</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">){</span>
-    <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
-    <span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">batchsize</span><span class="o">*</span><span class="n">batch</span><span class="o">,</span> <span class="n">datasize</span><span class="o">);</span>
-    <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
-    <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
-<span class="o">}</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+int left = datasize % batchsize;
+if(left != 0){
+    List inparams = new ArrayList();
+    List batchdata = batchdatas.subList(batchsize*batch, datasize);
+    inparams.add(new CEntityList(batchdata));
+    RemoteCall.commonInvoke(operator, inparams, "CheckCmd");
+}
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-<span class="k">else</span> <span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>}
+else {</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
-<span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdatas</span><span class="o">));</span>
-<span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>List inparams = new ArrayList();
+inparams.add(new CEntityList(batchdatas));
+RemoteCall.commonInvoke(operator, inparams, "CheckCmd");
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</code></pre></div></p>
+<p>}
+{% endhighlight %}</p>
 
 <p>从代码的实现看，思路还是比较清晰的。如果不足一次，就一次提交。否则计算出一共要分多少次，
 然后逐次处理提交，最后还要判断是否还有剩余的，如果有就再处理一次。</p>
@@ -203,39 +157,41 @@
 <p>有没什么办法可以避免重复? 或许有些童鞋第一反应是给这几句代码抽取成小方法。
 不过这里有更好的办法，首先细想一下就会发现不足一次的判断(datasize > batchsize)不是必要的，
 如果计算批次而是计算每次的起始点和结束点，上面两个分支也可以合并一下。调整后代码如下：
-<div class="highlight"><pre><code class="java"><span class="n">List</span> <span class="n">batchdatas</span> <span class="o">=</span> <span class="o">...;</span>
-<span class="kt">int</span> <span class="n">batchsize</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span> <span class="c1">// load from parameter&lt;/p&gt;</span>
+{% highlight java %}
+List batchdatas = ...;
+int batchsize = 10; // load from parameter</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="kt">int</span> <span class="n">datasize</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
-<span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">startidx</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">startidx</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">datasize</span><span class="o">;</span><span class="n">startidx</span><span class="o">+=</span><span class="n">batchsize</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>int datasize = batchdatas.size();
+for(int startidx=0;startidx&lt;datasize;startidx+=batchsize){</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kt">int</span> <span class="n">endidx</span> <span class="o">=</span> <span class="o">(</span><span class="n">startidx</span><span class="o">+</span><span class="n">batchsize</span><span class="o">)</span> <span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">datasize</span> <span class="o">?</span> <span class="n">datasize</span> <span class="o">:</span> <span class="o">(</span><span class="n">startidx</span><span class="o">+</span><span class="n">batchsize</span><span class="o">);</span>
+<pre><code>int endidx = (startidx+batchsize) &gt; datasize ? datasize : (startidx+batchsize);
 
-<span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
-<span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">startidx</span><span class="o">,</span> <span class="n">endidx</span><span class="o">);</span>
-<span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
-<span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+List inparams = new ArrayList();
+List batchdata = batchdatas.subList(startidx, endidx);
+inparams.add(new CEntityList(batchdata));
+RemoteCall.commonInvoke(operator, inparams, "CheckCmd");
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</code></pre></div></p>
+<p>}
+{% endhighlight %}</p>
 
 <p>其中计算endidx使用了一个三元表达式，使用三元表达式用来替代一些简单的if-else语句是个实用的小技巧。
 代码量缩小为原来的三分之一，代码少了，维护量也轻松了。</p>
 
 <p>类似这样的代码也并不少见，例如计算总页数的分页逻辑有下面的写法
-<div class="highlight"><pre><code class="java"><span class="c1">// 常用做法</span>
-<span class="kt">int</span> <span class="n">totalpage</span> <span class="o">=</span> <span class="n">totalsize</span> <span class="o">/</span> <span class="n">pagesize</span><span class="o">;</span>
-<span class="k">if</span><span class="o">(</span><span class="n">totalsize</span> <span class="o">%</span> <span class="n">pagesize</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+// 常用做法
+int totalpage = totalsize / pagesize;
+if(totalsize % pagesize != 0){</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">totalpage</span><span class="o">++;</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>totalpage++;
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>}</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">// 另外一种写法</span>
-<span class="kt">int</span> <span class="n">totalpage</span> <span class="o">=</span> <span class="o">(</span><span class="n">totalsize</span> <span class="o">+</span> <span class="n">pagesize</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">/</span> <span class="n">pagesize</span><span class="o">;</span>
-</code></pre></div></p>
+<p>// 另外一种写法
+int totalpage = (totalsize + pagesize - 1) / pagesize;
+{% endhighlight %}</p>
 
 <h3>基本功很重要</h3>
 
@@ -244,57 +200,8 @@
 以来面试的童鞋为例，连基本算法的时间复杂度都没弄清楚的人不在少数，所以
 在项目代码中，经常看到化简为繁的代码，现在也很习惯了。</p>
 
-<p>
-
-
-<h2>"improve bitter code"系列文章:</h2>
-<ul>
- 
-  
-  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
-  
- 
-  
-  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
-  
- 
-  
-  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
-  
- 
-  
-  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
-  
-
-</ul>
-
-
-
-</p>
+<p>{% assign series_list = "improve bitter code" %}
+{% include series_list.html %}</p>
 ]]></content>
   </entry>
   

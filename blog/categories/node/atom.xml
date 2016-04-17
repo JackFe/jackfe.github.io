@@ -4,7 +4,7 @@
   <title><![CDATA[Category: node | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/node/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-03-10T22:45:25+08:00</updated>
+  <updated>2016-04-17T09:25:26+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -23,152 +23,160 @@
 <h3>Callbacks</h3>
 
 <p>下面是关于解析json文件的示例代码:
-<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs);</span>
-<span class="s1">function readJSON(path, cb){</span>
-<span class="s1">  fs.readFile(path, &#39;</span><span class="nx">utf8</span><span class="err">&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+{% highlight javascript %}
+var fs = require('fs);
+function readJSON(path, cb){
+  fs.readFile(path, 'utf8', function(err, data){</p>
 
-<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">cb</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">));</span>
-<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+<pre><code>cb(JSON.parse(data));
+</code></pre>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></p>
+<p>  }
+}
+{% endhighlight %}</p>
 
 <p>显然，上面的代码没有处理异常情况，因此再加个异常处理逻辑上去:
-<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs);</span>
-<span class="s1">function readJSON(path, cb){</span>
-<span class="s1">  fs.readFile(path, &#39;</span><span class="nx">utf8</span><span class="err">&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+{% highlight javascript %}
+var fs = require('fs);
+function readJSON(path, cb){
+  fs.readFile(path, 'utf8', function(err, data){</p>
 
-<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
-<span class="nx">cb</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">));</span>
-<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+<pre><code>if(err) return cb(err);
+cb(JSON.parse(data));
+</code></pre>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></p>
+<p>  }
+}
+{% endhighlight %}</p>
 
 <p>还没有结束，我们还没考虑到文件内容不是json这种情况，会导致parse出现异常，因此再处理一下：
-<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs);</span>
-<span class="s1">function readJSON(path, cb){</span>
-<span class="s1">  fs.readFile(path, &#39;</span><span class="nx">utf8</span><span class="err">&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+{% highlight javascript %}
+var fs = require('fs);
+function readJSON(path, cb){
+  fs.readFile(path, 'utf8', function(err, data){</p>
 
-<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
-<span class="k">try</span><span class="p">{</span>
-  <span class="nx">cb</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">));</span>
-<span class="p">}</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
-  <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+<pre><code>if(err) return cb(err);
+try{
+  cb(JSON.parse(data));
+}catch(err){
+  cb(err);
+}
+</code></pre>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></p>
+<p>  }
+}
+{% endhighlight %}</p>
 
 <p>对于cb来说，仍然无法区分正常结果和异常内容，这个问题通常可以通过增加一个err参数来处理，如:
-<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs);</span>
-<span class="s1">function readJSON(path, cb){</span>
-<span class="s1">  fs.readFile(path, &#39;</span><span class="nx">utf8</span><span class="err">&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+{% highlight javascript %}
+var fs = require('fs);
+function readJSON(path, cb){
+  fs.readFile(path, 'utf8', function(err, data){</p>
 
-<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
-<span class="k">try</span><span class="p">{</span>
-  <span class="kd">var</span> <span class="nx">json</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
-<span class="p">}</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
-  <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">json</span><span class="p">);</span>
-<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+<pre><code>if(err) return cb(err);
+try{
+  var json = JSON.parse(data);
+}catch(err){
+  return cb(err);
+}
+cb(null, json);
+</code></pre>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div></p>
+<p>  }
+}
+{% endhighlight %}</p>
 
 <p><strong>这个示例告诉我们，对于callback，需要时刻准备应付正常结果和异常情况的处理。</strong></p>
 
 <p>再来看看另外一个常见错误:
-<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">readJSONFiles</span><span class="p">(</span><span class="nx">files</span><span class="p">,</span> <span class="nx">cb</span><span class="p">){</span>
-  <span class="kd">var</span> <span class="nx">results</span> <span class="o">=</span> <span class="p">{};</span>
-  <span class="kd">var</span> <span class="nx">remaining</span> <span class="o">=</span> <span class="nx">files</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+{% highlight javascript %}
+function readJSONFiles(files, cb){
+  var results = {};
+  var remaining = files.length;</p>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">files</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">file</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+<p>  files.forEach(function(file){</p>
 
-<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">readJSON</span><span class="p">(</span><span class="nx">file</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">json</span><span class="p">){</span>
-  <span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+<pre><code>readJSON(file, function(err, json){
+  if(err) return cb(err);
 
-  <span class="nx">results</span><span class="p">[</span><span class="nx">file</span><span class="p">]</span> <span class="o">=</span> <span class="nx">json</span><span class="p">;</span>
-  <span class="k">if</span><span class="p">(</span><span class="o">!--</span><span class="nx">remaining</span><span class="p">)</span> <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">results</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+  results[file] = json;
+  if(!--remaining) cb(null, results);
+}
+</code></pre>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">});</span>
-<span class="p">}</span>
-</code></pre></div></p>
+<p>  });
+}
+{% endhighlight %}</p>
 
 <p>这里隐含了一个常见的场景:<strong>批量处理时，任意一个失败，及时退出</strong>。有时候可以用标识符，这里采用另外一种手法：<strong>重置回调方法</strong>。
-<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">readJSONFiles</span><span class="p">(</span><span class="nx">files</span><span class="p">,</span> <span class="nx">cb</span><span class="p">){</span>
-  <span class="kd">var</span> <span class="nx">results</span> <span class="o">=</span> <span class="p">{};</span>
-  <span class="kd">var</span> <span class="nx">remaining</span> <span class="o">=</span> <span class="nx">files</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+{% highlight javascript %}
+function readJSONFiles(files, cb){
+  var results = {};
+  var remaining = files.length;</p>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="nx">files</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">file</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+<p>  files.forEach(function(file){</p>
 
-<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">readJSON</span><span class="p">(</span><span class="nx">file</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">json</span><span class="p">){</span>
-  <span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
-    <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
-    <span class="nx">cb</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){};</span>
-    <span class="k">return</span><span class="p">;</span>
-  <span class="p">}</span>
+<pre><code>readJSON(file, function(err, json){
+  if(err){
+    cb(err);
+    cb = function(){};
+    return;
+  }
 
-  <span class="nx">results</span><span class="p">[</span><span class="nx">file</span><span class="p">]</span> <span class="o">=</span> <span class="nx">json</span><span class="p">;</span>
-  <span class="k">if</span><span class="p">(</span><span class="o">!--</span><span class="nx">remaining</span><span class="p">)</span> <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">results</span><span class="p">);</span>
-<span class="p">}</span>
-<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+  results[file] = json;
+  if(!--remaining) cb(null, results);
+}
+</code></pre>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">});</span>
-<span class="p">}</span>
-</code></pre></div></p>
+<p>  });
+}
+{% endhighlight %}</p>
 
 <h3>Nested Callbacks</h3>
 
 <p>先看看一个恐怖的例子:
-<div class="highlight"><pre><code class="javascript"><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT A ...&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
-  <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT B ...&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+{% highlight javascript %}
+db.query('SELECT A ...', function(){
+  db.query('SELECT B ...', function(){</p>
 
-<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT C ...&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
-  <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT D ...&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
-  <span class="p">});</span>
-<span class="p">});</span>
-<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+<pre><code>db.query('SELECT C ...', function(){
+  db.query('SELECT D ...', function(){
+  });
+});
+</code></pre>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">});</span>
-<span class="p">});</span>
-</code></pre></div></p>
+<p>  });
+});
+{% endhighlight %}</p>
 
 <p>活生生就是一个怪物:)，多层嵌套的回调不是很好的风格，我们需要一些流程控制的东西来辅助，例如Control Flow Libs:
-<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">async</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;async&#39;</span><span class="p">);</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+{% highlight javascript %}
+var async = require('async');</p>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">async</span><span class="p">.</span><span class="nx">series</span><span class="p">({</span>
-  <span class="nx">queryA</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">next</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+<p>async.series({
+  queryA: function(next){</p>
 
-<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT A ...&#39;</span><span class="p">,</span> <span class="nx">next</span><span class="p">);</span>
-<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+<pre><code>db.query('SELECT A ...', next);
+</code></pre>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">},</span>
-  <span class="nx">queryB</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">next</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+<p>  },
+  queryB: function(next){</p>
 
-<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT B ...&#39;</span><span class="p">,</span> <span class="nx">next</span><span class="p">);</span>
-<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+<pre><code>db.query('SELECT B ...', next);
+</code></pre>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">},</span>
-  <span class="nx">queryA</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">next</span><span class="p">){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+<p>  },
+  queryA: function(next){</p>
 
-<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT C ...&#39;</span><span class="p">,</span> <span class="nx">next</span><span class="p">);</span>
-<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+<pre><code>db.query('SELECT C ...', next);
+</code></pre>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}</span>
-  <span class="c1">// ...</span>
-<span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">results</span><span class="p">){</span>
-  <span class="c1">//...</span>
-<span class="p">});</span>
-</code></pre></div></p>
+<p>  }
+  // ...
+}, function(err, results){
+  //...
+});
+{% endhighlight %}</p>
 
 <p>像上面的代码，最明显的地方就是异常处理被完全隔离出来。<strong>如果要把代码分布到很多小方法里边的话，Node.js的确不是很容易做到</strong>。</p>
 
@@ -177,81 +185,85 @@
 <p>通常throw new Error(msg)可以让你的程序进行异常退出，并在控制台上输入错误信息和堆栈信息。</p>
 
 <p>但有时候我们要考虑的是，<strong>一些未知的bug</strong>，例如下面一个有bug的示例:
-<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">MyClass</span><span class="p">(){}</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+{% highlight javascript %}
+function MyClass(){}</p>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">MyClass</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">myMethod</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
-  <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+<p>MyClass.prototype.myMethod = function(){
+  setTimeout(function(){</p>
 
-<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="k">this</span><span class="p">.</span><span class="nx">myOtherMethod</span><span class="p">();</span>
-<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+<pre><code>this.myOtherMethod();
+</code></pre>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">},</span> <span class="mi">10</span><span class="p">);</span>
-<span class="p">}</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+<p>  }, 10);
+}</p>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">MyClass</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">myOtherMethod</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){};</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+<p>MyClass.prototype.myOtherMethod = function(){};</p>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="p">(</span><span class="k">new</span> <span class="nx">MyClass</span><span class="p">).</span><span class="nx">myMethod</span><span class="p">();</span>
-</code></pre></div></p>
+<p>(new MyClass).myMethod();
+{% endhighlight %}</p>
 
 <p>我们可以采用Global Catch的方式:
-<div class="highlight"><pre><code class="javascript"><span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;uncaughtException&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
-  <span class="nx">console</span><span class="p">.</span><span class="nx">err</span><span class="p">(</span><span class="s1">&#39;uncaught exception: &#39;</span> <span class="o">+</span> <span class="nx">err</span><span class="p">.</span><span class="nx">stack</span><span class="p">);</span>
-<span class="p">});</span>
-</code></pre></div></p>
+{% highlight javascript %}
+process.on('uncaughtException', function(err){
+  console.err('uncaught exception: ' + err.stack);
+});
+{% endhighlight %}</p>
 
 <p>更好的处理方式是:<strong>进程挂了，认栽了，到更高层面上去处理</strong>。
-<div class="highlight"><pre><code class="javascript"><span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;uncaughtException&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
-  <span class="c1">// You could use node-airbake for this</span>
-  <span class="nx">sendErrorToLog</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
+{% highlight javascript %}
+process.on('uncaughtException', function(err){
+  // You could use node-airbake for this
+  sendErrorToLog(function(){</p>
 
-<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="c1">// Once the error was logged, kill the process</span>
-<span class="nx">console</span><span class="p">.</span><span class="nx">err</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nx">stack</span><span class="p">);</span>
-<span class="nx">process</span><span class="p">.</span><span class="nx">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
-<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
+<pre><code>// Once the error was logged, kill the process
+console.err(err.stack);
+process.exit(1);
+</code></pre>
 
-<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">}</span>
-<span class="p">});</span>
-</code></pre></div></p>
+<p>  }
+});
+{% endhighlight %}</p>
 
 <h3>Deployment</h3>
 
 <p>比较初级的方式是采用node直接运行或在后台运行。老手可能会采用一个脚本来搞:
-<div class="highlight"><pre><code class="bash">&lt;/p&gt;
+{% highlight bash %}</p>
 
-&lt;h1&gt;! /bin/bash&lt;/h1&gt;
+<h1>! /bin/bash</h1>
 
-&lt;p&gt;while :
-<span class="k">do</span>
-<span class="k">  </span>node server.js
-  <span class="nb">echo</span> <span class="s2">&quot;Server crashed!&quot;</span>
+<p>while :
+do
+  node server.js
+  echo "Server crashed!"
   sleep 1
-<span class="k">done</span>
-</code></pre></div></p>
+done
+{% endhighlight %}</p>
 
 <p>专家级采用的方式可能是(借助成熟的集成工具):
-<div class="highlight"><pre><code class="bash">&lt;/p&gt;
+{% highlight bash %}</p>
 
-&lt;h1&gt;!upstart&lt;/h1&gt;
+<h1>!upstart</h1>
 
-&lt;p&gt;description <span class="s2">&quot;myapp&quot;</span>
-author <span class="s2">&quot;felix&quot;</span>&lt;/p&gt;
+<p>description "myapp"
+author "felix"</p>
 
-&lt;p&gt;start on<span class="o">(</span><span class="nb">local</span>-filesystems and net-device-up <span class="nv">IFACE</span><span class="o">=</span>eth0<span class="o">)</span>
-stop on shutdown&lt;/p&gt;
+<p>start on(local-filesystems and net-device-up IFACE=eth0)
+stop on shutdown</p>
 
-&lt;p&gt;respawn <span class="c"># restart when job dies</span>
-respawn limit 5 60 <span class="c"># give up restart after 5 respawns in 60 seconds&lt;/p&gt;</span>
+<p>respawn # restart when job dies
+respawn limit 5 60 # give up restart after 5 respawns in 60 seconds</p>
 
-&lt;p&gt;script
-  <span class="nb">exec </span>sudo -u www-data /path/to/server.js &gt;&gt; /var/log/myapp.log 2&gt;&amp;amp;1
+<p>script
+  exec sudo -u www-data /path/to/server.js >> /var/log/myapp.log 2>&amp;1
 end script
-</code></pre></div></p>
+{% endhighlight %}</p>
 
 <p>当然，还有些创新风格的(基于托管平台的):
-<div class="highlight"><pre><code class="bash"><span class="nv">$git</span> push joyent master
-<span class="nv">$git</span> push nodejitsu master
-<span class="nv">$git</span> push heroku master
-</code></pre></div></p>
+{% highlight bash %}
+$git push joyent master
+$git push nodejitsu master
+$git push heroku master
+{% endhighlight %}</p>
 
 <p><strong>没有托管平台的话，借助成熟的工具应该是最好的选择，性价比高。</strong></p>
 ]]></content>
@@ -283,29 +295,8 @@ end script
 业务逻辑较少，快响应的特殊场景，需要关注的领域并不是很多，
 写得太多反而会埋没重点。有兴趣的同学，真的值得一看。</p>
 
-<p>
-
-
-<h2>"书评"系列文章:</h2>
-<ul>
- 
-  
-  <li><a href="/blog/20120815_thought-read-javascript-idea.html">2012-08-15 书评-JavaScript语言精髓与编程实践</a></li>
-  
- 
-  
-  <li><a href="/blog/20120815_thought-read-node-web-development.html">2012-08-15 书评-Node Web开发</a></li>
-  
- 
-  
-  <li><a href="/blog/20120818_thought-read-jolt-book.html">2012-08-18 书评-Jolt大奖精选丛书</a></li>
-  
-
-</ul>
-
-
-
-</p>
+<p>{% assign series_list = "书评" %}
+{% include series_list.html %}</p>
 ]]></content>
   </entry>
   

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 反射 | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/fan-she/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-03-10T22:45:25+08:00</updated>
+  <updated>2016-04-17T09:25:26+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -40,16 +40,17 @@
 
 <h3>原型类型vs包装类型(XXX.TYPE)</h3>
 
-<p><div class="highlight"><pre><code class="java"><span class="n">Void</span> <span class="o">-&gt;</span> <span class="kt">void</span> <span class="o">-&gt;</span> <span class="n">V</span>
-<span class="n">Byte</span> <span class="o">-&gt;</span> <span class="kt">byte</span> <span class="o">-&gt;</span> <span class="n">B</span>
-<span class="n">Character</span> <span class="o">-&gt;</span> <span class="kt">char</span> <span class="o">-&gt;</span> <span class="n">C</span>
-<span class="n">Short</span> <span class="o">-&gt;</span> <span class="kt">short</span> <span class="o">-&gt;</span> <span class="n">S</span>
-<span class="n">Integer</span> <span class="o">-&gt;</span> <span class="kt">int</span> <span class="o">-&gt;</span> <span class="n">I</span>
-<span class="n">Long</span> <span class="o">-&gt;</span> <span class="kt">long</span> <span class="o">-&gt;</span> <span class="n">J</span>
-<span class="n">Float</span> <span class="o">-&gt;</span> <span class="kt">float</span> <span class="o">-&gt;</span> <span class="n">F</span>
-<span class="n">Double</span> <span class="o">-&gt;</span> <span class="kt">double</span> <span class="o">-&gt;</span> <span class="n">D</span>
-<span class="n">Boolean</span> <span class="o">-&gt;</span> <span class="kt">boolean</span> <span class="o">-&gt;</span> <span class="n">Z</span>
-</code></pre></div></p>
+<p>{% highlight java %}
+Void -> void -> V
+Byte -> byte -> B
+Character -> char -> C
+Short -> short -> S
+Integer -> int -> I
+Long -> long -> J
+Float -> float -> F
+Double -> double -> D
+Boolean -> boolean -> Z
+{% endhighlight %}</p>
 
 <h3>类与接口</h3>
 
@@ -60,49 +61,52 @@
 </ul>
 
 
-<p><div class="highlight"><pre><code class="java"><span class="kd">class</span> <span class="nc">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="c1">//类</span>
-<span class="kd">class</span> <span class="nc">java</span><span class="o">.</span><span class="na">util</span><span class="o">.</span><span class="na">AbstractList</span> <span class="c1">//抽象类</span>
-<span class="kd">interface</span> <span class="nc">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Runnable</span> <span class="c1">//接口</span>
-</code></pre></div></p>
+<p>{% highlight java %}
+class java.lang.String //类
+class java.util.AbstractList //抽象类
+interface java.lang.Runnable //接口
+{% endhighlight %}</p>
 
 <h3>数组类型</h3>
 
-<p><div class="highlight"><pre><code class="java"><span class="c1">//基本类型数组</span>
-<span class="kt">int</span><span class="o">[].</span><span class="na">class</span> <span class="o">-&gt;</span> <span class="o">[</span><span class="n">I</span>
-<span class="kt">int</span><span class="o">[][].</span><span class="na">class</span> <span class="o">-&gt;</span> <span class="o">[[</span><span class="n">I</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>{% highlight java %}
+//基本类型数组
+int[].class -> [I
+int[][].class -> [[I</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//普通类型数组</span>
-<span class="n">String</span><span class="o">[].</span><span class="na">class</span> <span class="o">-&gt;</span> <span class="o">[</span><span class="n">Ljava</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">;</span>
-<span class="n">Integer</span><span class="o">[][].</span><span class="na">class</span> <span class="o">-&gt;</span> <span class="o">[[</span><span class="n">Ljava</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">Integer</span><span class="o">;</span>
-</code></pre></div></p>
+<p>//普通类型数组
+String[].class -> [Ljava.lang.String;
+Integer[][].class -> [[Ljava.lang.Integer;
+{% endhighlight %}</p>
 
 <h2>理解类型判断方法</h2>
 
-<p><div class="highlight"><pre><code class="java"><span class="c1">//是否某个类型的实例</span>
-<span class="n">i</span> <span class="k">instanceof</span> <span class="n">Integer</span>
-<span class="n">Integer</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">isInstance</span><span class="o">(</span><span class="n">i</span><span class="o">)</span>
-<span class="n">Person</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">isInstance</span><span class="o">(</span><span class="k">new</span> <span class="n">SuperTeacher</span><span class="o">(</span><span class="s">&quot;&quot;</span><span class="o">))&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>{% highlight java %}
+//是否某个类型的实例
+i instanceof Integer
+Integer.class.isInstance(i)
+Person.class.isInstance(new SuperTeacher(""))</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//是否数组</span>
-<span class="n">x</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">isArray</span><span class="o">()&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>//是否数组
+x.getClass().isArray()</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//是否父子类/接口关系</span>
-<span class="n">Number</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">isAssignableFrom</span><span class="o">(</span><span class="n">Integer</span><span class="o">.</span><span class="na">class</span><span class="o">)&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>//是否父子类/接口关系
+Number.class.isAssignableFrom(Integer.class)</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//是否原型类型</span>
-<span class="n">i</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">isPrimitive</span><span class="o">()</span>
-<span class="n">Integer</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">isPrimitive</span><span class="o">()</span>
-<span class="n">Integer</span><span class="o">.</span><span class="na">TYPE</span><span class="o">.</span><span class="na">isPrimitive</span><span class="o">()&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>//是否原型类型
+i.getClass().isPrimitive()
+Integer.class.isPrimitive()
+Integer.TYPE.isPrimitive()</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//是否注解</span>
-<span class="n">Logger</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">isAnnotation</span><span class="o">()&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>//是否注解
+Logger.class.isAnnotation()</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//是否枚举</span>
-<span class="n">Status</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">isEnum</span><span class="o">()&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>//是否枚举
+Status.class.isEnum()</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//是否接口</span>
-<span class="n">List</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">isInterface</span><span class="o">()</span>
-</code></pre></div></p>
+<p>//是否接口
+List.class.isInterface()
+{% endhighlight %}</p>
 
 <h2>理解修饰符</h2>
 
@@ -113,32 +117,35 @@
 
 
 <p>示例代码如下:
-<div class="highlight"><pre><code class="java"><span class="kt">int</span> <span class="n">mod</span> <span class="o">=</span> <span class="n">Teacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getModifiers</span><span class="o">();</span>
-<span class="n">assertTrue</span><span class="o">(</span><span class="n">Modifier</span><span class="o">.</span><span class="na">isPublic</span><span class="o">(</span><span class="n">mod</span><span class="o">));</span>
-</code></pre></div>
+{% highlight java %}
+int mod = Teacher.class.getModifiers();
+assertTrue(Modifier.isPublic(mod));
+{% endhighlight %}
 常见的修饰符判断方法有:
-<div class="highlight"><pre><code class="java"><span class="c1">//可见性</span>
-<span class="n">isPublic</span><span class="o">,</span><span class="n">isProtected</span><span class="o">,</span><span class="n">isPrivate</span>
-<span class="c1">//类型属性相关</span>
-<span class="n">isInterface</span><span class="o">,</span><span class="n">isAbstract</span><span class="o">,</span><span class="n">isFinal</span><span class="o">,</span><span class="n">isStatic</span>
-<span class="c1">//特殊作用</span>
-<span class="n">isSynchronized</span><span class="o">,</span><span class="n">isNative</span><span class="o">,</span><span class="n">isTransient</span><span class="o">,</span><span class="n">isVolatile</span>
-</code></pre></div></p>
+{% highlight java %}
+//可见性
+isPublic,isProtected,isPrivate
+//类型属性相关
+isInterface,isAbstract,isFinal,isStatic
+//特殊作用
+isSynchronized,isNative,isTransient,isVolatile
+{% endhighlight %}</p>
 
 <h2>理解类型关系</h2>
 
-<p><div class="highlight"><pre><code class="java"><span class="c1">//类-&gt;父类(单继承,只有一个)</span>
-<span class="n">Class</span><span class="err">#</span><span class="n">getSuperclass</span><span class="o">()&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>{% highlight java %}
+//类->父类(单继承,只有一个)
+Class#getSuperclass()</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//类、接口-&gt;实现接口(多继承,可能有多个)</span>
-<span class="n">Class</span><span class="err">#</span><span class="n">getInterfaces</span><span class="o">()&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>//类、接口->实现接口(多继承,可能有多个)
+Class#getInterfaces()</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//类-&gt;内部类(可能有多个)</span>
-<span class="n">Class</span><span class="err">#</span><span class="n">getDeclaredClasses</span><span class="o">()&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>//类->内部类(可能有多个)
+Class#getDeclaredClasses()</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//内部类-&gt;外部类(只有一个)</span>
-<span class="n">Class</span><span class="err">#</span><span class="n">getEnclosingClass</span><span class="o">()</span>
-</code></pre></div></p>
+<p>//内部类->外部类(只有一个)
+Class#getEnclosingClass()
+{% endhighlight %}</p>
 
 <h3>相关练习</h3>
 
@@ -154,38 +161,41 @@
 <h3>对象生成</h3>
 
 <p>可以采用无参数构造方法或有参数方式
-<div class="highlight"><pre><code class="java"><span class="c1">//需要存在无参构造方法</span>
-<span class="n">String</span> <span class="n">s</span> <span class="o">=</span> <span class="s">&quot;com.xxx.Student&quot;</span><span class="o">;</span>
-<span class="n">Class</span> <span class="n">t</span> <span class="o">=</span> <span class="n">Class</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="n">s</span><span class="o">);</span>
-<span class="n">Teacher</span> <span class="n">teacher</span> <span class="o">=</span> <span class="o">(</span><span class="n">Teacher</span><span class="o">)</span><span class="n">t</span><span class="o">.</span><span class="na">newInstance</span><span class="o">();&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+//需要存在无参构造方法
+String s = "com.xxx.Student";
+Class t = Class.forName(s);
+Teacher teacher = (Teacher)t.newInstance();</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//直接调用构造方法</span>
-<span class="n">Constructor</span><span class="o">[]</span> <span class="n">cons</span> <span class="o">=</span> <span class="n">SuperTeacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getConstructors</span><span class="o">();</span>
-<span class="n">Object</span> <span class="n">obj</span> <span class="o">=</span> <span class="n">cons</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">newInstance</span><span class="o">(</span><span class="s">&quot;hello&quot;</span><span class="o">);</span>
-</code></pre></div></p>
+<p>//直接调用构造方法
+Constructor[] cons = SuperTeacher.class.getConstructors();
+Object obj = cons[0].newInstance("hello");
+{% endhighlight %}</p>
 
 <h3>获取成员</h3>
 
 <p>成员一般指Field,Method,Constructor等信息
-<div class="highlight"><pre><code class="java"><span class="c1">//属性</span>
-<span class="n">Field</span><span class="o">[]</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">Teacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getDeclaredFields</span><span class="o">();</span>
-<span class="n">Field</span><span class="o">[]</span> <span class="n">fs</span> <span class="o">=</span> <span class="n">Teacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getFields</span><span class="o">();</span><span class="c1">//只有公有的&lt;/p&gt;</span>
+{% highlight java %}
+//属性
+Field[] fs = Teacher.class.getDeclaredFields();
+Field[] fs = Teacher.class.getFields();//只有公有的</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//方法</span>
-<span class="n">Medhod</span><span class="o">[]</span> <span class="n">ms</span> <span class="o">=</span> <span class="n">Teacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getDeclaredMethods</span><span class="o">();</span>
-<span class="n">Medhod</span><span class="o">[]</span> <span class="n">ms</span> <span class="o">=</span> <span class="n">Teacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getdMethods</span><span class="o">();</span><span class="c1">//只有公有的&lt;/p&gt;</span>
+<p>//方法
+Medhod[] ms = Teacher.class.getDeclaredMethods();
+Medhod[] ms = Teacher.class.getdMethods();//只有公有的</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//构造方法</span>
-<span class="n">Constructor</span><span class="o">[]</span> <span class="n">cs</span> <span class="o">=</span> <span class="n">Teacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getDeclaredConstructors</span><span class="o">();</span>
-<span class="n">Constructor</span><span class="o">[]</span> <span class="n">cs</span> <span class="o">=</span> <span class="n">Teacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getConstructors</span><span class="o">();</span><span class="c1">//只有公有的</span>
-</code></pre></div></p>
+<p>//构造方法
+Constructor[] cs = Teacher.class.getDeclaredConstructors();
+Constructor[] cs = Teacher.class.getConstructors();//只有公有的
+{% endhighlight %}</p>
 
 <p>获取成员可以通过参数直接定位,以属性和方法为例:
-<div class="highlight"><pre><code class="java"><span class="n">SuperTeacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getField</span><span class="o">(</span><span class="s">&quot;name&quot;</span><span class="o">);&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+SuperTeacher.class.getField("name");</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">SuperTeacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getMethod</span><span class="o">(</span><span class="s">&quot;setBounds&quot;</span><span class="o">,</span> <span class="n">Integer</span><span class="o">.</span><span class="na">TYPE</span><span class="o">);</span><span class="c1">//参数是int</span>
-<span class="n">SuperTeacher</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getMethod</span><span class="o">(</span><span class="s">&quot;setBounds&quot;</span><span class="o">,</span> <span class="n">Integer</span><span class="o">.</span><span class="na">class</span><span class="o">);</span><span class="c1">//参数是Integer</span>
-</code></pre></div></p>
+<p>SuperTeacher.class.getMethod("setBounds", Integer.TYPE);//参数是int
+SuperTeacher.class.getMethod("setBounds", Integer.class);//参数是Integer
+{% endhighlight %}</p>
 
 <p>相关练习
 * Test:找到某个类所有的非private的普通方法</p>
@@ -194,15 +204,17 @@
 
 <p>拿到成员之后，就可以进行调用了。像Field需要使用get/set方法，
 Method使用invoke方法，Constructor使用newInstance方法。如：
-<div class="highlight"><pre><code class="java"><span class="n">Field</span><span class="err">#</span><span class="n">set</span><span class="o">(</span><span class="n">obj</span><span class="o">);</span>
-<span class="n">Field</span><span class="err">#</span><span class="n">get</span><span class="o">(</span><span class="n">obj</span><span class="o">);&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+Field#set(obj);
+Field#get(obj);</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">Method</span><span class="err">#</span><span class="n">invoke</span><span class="o">(</span><span class="n">obj</span><span class="o">,</span> <span class="n">args</span><span class="o">);</span>
-</code></pre></div></p>
+<p>Method#invoke(obj, args);
+{% endhighlight %}</p>
 
 <p>有时候需要绕过可见性进行调用，需要通过setAccessible方法进行处理，如
-<div class="highlight"><pre><code class="java"><span class="n">Field</span><span class="err">#</span><span class="n">setAccessible</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span><span class="c1">// if not set, fail</span>
-</code></pre></div></p>
+{% highlight java %}
+Field#setAccessible(true);// if not set, fail
+{% endhighlight %}</p>
 
 <p>对于参数数组的话，通过args并不能区分是数组类型还是不定参数类型(都是通过数组进行传递)。
 如果需要继续区别，应该对Method进行检测，检测方式是Method#isVarArgs</p>
@@ -210,46 +222,49 @@ Method使用invoke方法，Constructor使用newInstance方法。如：
 <h3>处理返回值</h3>
 
 <p>对于方法调用，可以对返回值进行处理。即使返回为void或数组类型也是可以识别的。如:
-<div class="highlight"><pre><code class="java"><span class="n">Class</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;?&gt;</span> <span class="n">returnType</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="na">getReturnType</span><span class="o">();</span>
-<span class="n">assertEquals</span><span class="o">(</span><span class="kt">void</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="n">returnType</span><span class="o">);</span>
-<span class="n">assertTrue</span><span class="o">(</span><span class="n">returnType</span><span class="o">.</span><span class="na">isArray</span><span class="o">());</span>
-</code></pre></div>
+{% highlight java %}
+Class&lt;?> returnType = method.getReturnType();
+assertEquals(void.class, returnType);
+assertTrue(returnType.isArray());
+{% endhighlight %}
 如果是数组的话，由于返回值是Object类型，需要通过Array工具类进行处理(见java api文档)</p>
 
 <h3>其他:关于内部类调用的秘密</h3>
 
 <h4>普通内部类</h4>
 
-<p><div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">A</span><span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>{% highlight java %}
+public class A{</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">private</span> <span class="n">List</span> <span class="n">stus</span><span class="o">;</span>
-<span class="kd">public</span> <span class="kt">int</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="k">new</span> <span class="n">B</span><span class="o">().</span><span class="na">test</span><span class="o">();</span> <span class="o">}</span>
-<span class="kd">class</span> <span class="nc">B</span><span class="o">{</span>
-    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="n">stus</span><span class="o">.</span><span class="na">size</span><span class="o">();</span> <span class="o">}</span>
-<span class="o">}</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>private List stus;
+public int test() { return new B().test(); }
+class B{
+    public int test() { return stus.size(); }
+}
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</code></pre></div>
+<p>}
+{% endhighlight %}
 关于上面的内部类，为什么B能够调用到A的stus属性，通过观察生成的字节码，得到的实际结果是:
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">A</span><span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+public class A{</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">private</span> <span class="n">List</span> <span class="n">stus</span><span class="o">;</span>
-<span class="kd">static</span> <span class="n">List</span> <span class="n">access$0</span><span class="o">(</span><span class="n">A</span> <span class="n">a</span><span class="o">)</span> <span class="o">{</span> <span class="k">return</span> <span class="n">a</span><span class="o">.</span><span class="na">stus</span><span class="o">;</span> <span class="o">}</span>
-<span class="kd">public</span> <span class="kt">int</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="k">new</span> <span class="n">A$B</span><span class="o">(</span><span class="k">this</span><span class="o">).</span><span class="na">test</span><span class="o">();</span> <span class="o">}</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>private List stus;
+static List access$0(A a) { return a.stus; }
+public int test() { return new A$B(this).test(); }
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>}</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="kd">class</span> <span class="nc">A</span><span class="n">$B</span><span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>class A$B{</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">A</span> <span class="k">this</span><span class="n">$0</span><span class="o">;</span>
-<span class="n">A$B</span><span class="o">(</span><span class="n">A</span> <span class="n">a</span><span class="o">)</span> <span class="o">{</span> <span class="k">this</span><span class="n">$0</span> <span class="o">=</span> <span class="n">a</span><span class="o">;</span> <span class="o">}</span>
-<span class="kd">public</span> <span class="kt">int</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="n">A</span><span class="o">.</span><span class="na">access</span><span class="n">$0</span><span class="o">(</span><span class="k">this</span><span class="n">$0</span><span class="o">),</span><span class="n">size</span><span class="o">();</span> <span class="o">}</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>A this$0;
+A$B(A a) { this$0 = a; }
+public int test() { return A.access$0(this$0),size(); }
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</code></pre></div>
+<p>}
+{% endhighlight %}
 我们可以发现:</p>
 
 <ol>
@@ -261,35 +276,37 @@ Method使用invoke方法，Constructor使用newInstance方法。如：
 
 <h4>静态内部类</h4>
 
-<p><div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">A</span><span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>{% highlight java %}
+public class A{</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">private</span> <span class="kd">static</span> <span class="n">List</span> <span class="n">stus</span><span class="o">;</span>
-<span class="kd">public</span> <span class="kt">int</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="k">new</span> <span class="n">B</span><span class="o">().</span><span class="na">test</span><span class="o">();</span> <span class="o">}</span>
-<span class="kd">static</span> <span class="kd">class</span> <span class="nc">B</span><span class="o">{</span>
-    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="n">stus</span><span class="o">.</span><span class="na">size</span><span class="o">();</span> <span class="o">}</span>
-<span class="o">}</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>private static List stus;
+public int test() { return new B().test(); }
+static class B{
+    public int test() { return stus.size(); }
+}
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</code></pre></div>
+<p>}
+{% endhighlight %}
 对于静态内部类，情况就比较简单，得到的实际结果是:
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">A</span><span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+public class A{</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kd">private</span> <span class="kd">static</span> <span class="n">List</span> <span class="n">stus</span><span class="o">;</span>
-<span class="kd">static</span> <span class="n">List</span> <span class="n">access$0</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="n">stus</span><span class="o">;</span> <span class="o">}</span>
-<span class="kd">public</span> <span class="kt">int</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="k">new</span> <span class="n">A$B</span><span class="o">().</span><span class="na">test</span><span class="o">();</span> <span class="o">}</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>private static List stus;
+static List access$0() { return stus; }
+public int test() { return new A$B().test(); }
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>}</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="kd">class</span> <span class="nc">A</span><span class="n">$B</span><span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>class A$B{</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">A$B</span><span class="o">()</span> <span class="o">{}</span>
-<span class="kd">public</span> <span class="kt">int</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span> <span class="k">return</span> <span class="n">A</span><span class="o">.</span><span class="na">access</span><span class="n">$0</span><span class="o">(),</span><span class="n">size</span><span class="o">();</span> <span class="o">}</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>A$B() {}
+public int test() { return A.access$0(),size(); }
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</code></pre></div>
+<p>}
+{% endhighlight %}
 我们可以发现:</p>
 
 <ol>
@@ -304,97 +321,108 @@ Method使用invoke方法，Constructor使用newInstance方法。如：
 <h2>理解泛型</h2>
 
 <p>java的泛型是擦除式,运行时没有泛型的概念.所以下面的代码会编译通过但执行报类型转换错误:
-<div class="highlight"><pre><code class="java"><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">strs</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Array</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;();</span>
-<span class="n">add2List</span><span class="o">(</span><span class="n">strs</span><span class="o">);</span>
-<span class="n">String</span> <span class="n">str</span> <span class="o">=</span> <span class="n">strs</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+List<String> strs = new Array<String>();
+add2List(strs);
+String str = strs.get(0);</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//add2List的实现</span>
-<span class="kt">void</span> <span class="nf">add2List</span><span class="o">(</span><span class="n">List</span> <span class="n">lt</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>//add2List的实现
+void add2List(List lt){</p>
 
-<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">lt</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
-<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+<pre><code>lt.add(1);
+</code></pre>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
-</code></pre></div></p>
+<p>}
+{% endhighlight %}</p>
 
 <p>通过javap -c Test.class可以看到类似下面的指令:
-<div class="highlight"><pre><code class="java"><span class="c1">// String str = strs.get(0);</span>
-<span class="mi">7</span><span class="o">:</span> <span class="n">invokeinterface</span> <span class="err">#</span><span class="mi">31</span><span class="o">,</span> <span class="mi">2</span><span class="o">;</span> <span class="c1">//interfaceMethod java/util/List.get:(l)Ljava/lang/Object;</span>
-<span class="mi">12</span><span class="o">:</span> <span class="n">checkcast</span> <span class="err">#</span><span class="mi">37</span><span class="o">;</span> <span class="c1">//class java/lang/String&lt;/p&gt;</span>
+{% highlight java %}
+// String str = strs.get(0);
+7: invokeinterface #31, 2; //interfaceMethod java/util/List.get:(l)Ljava/lang/Object;
+12: checkcast #37; //class java/lang/String</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">// lt.add(1);</span>
-<span class="mi">2</span><span class="o">:</span> <span class="n">invokestatic</span> <span class="err">#</span><span class="mi">41</span><span class="o">;</span> <span class="c1">//Method java/lang/Integer.valueOf:(l)Ljava/lang/Integer;</span>
-<span class="mi">5</span><span class="o">:</span> <span class="n">invokeinterface</span> <span class="err">#</span><span class="mi">47</span><span class="o">,</span> <span class="mi">2</span><span class="o">;</span> <span class="c1">//InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z</span>
-</code></pre></div>
+<p>// lt.add(1);
+2: invokestatic #41; //Method java/lang/Integer.valueOf:(l)Ljava/lang/Integer;
+5: invokeinterface #47, 2; //InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+{% endhighlight %}
 很明显，在checkcast的时候会出错。</p>
 
 <p>虽然说运行时不关注是否泛型，但是还是有办法可以找到一些泛型相关信息的。和泛型类型的类图如下面所示：
 <img src="/assets/images/java_types.png" alt="java泛型类型结构" /></p>
 
 <p>下面以Method为例进行描述(关于field之类的就不描述了)：
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">T</span> <span class="nf">method2</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">a</span><span class="o">,</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">b</span><span class="o">,</span> <span class="n">List</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;?&gt;</span> <span class="n">c</span><span class="o">,</span> <span class="kt">float</span><span class="o">[]</span> <span class="n">f</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span>
-</code></pre></div></p>
+{% highlight java %}
+public T method2(List<T> a, List<String> b, List&lt;?> c, float[] f) throws Exception
+{% endhighlight %}</p>
 
 <h3>分析入口</h3>
 
-<p><div class="highlight"><pre><code class="java"><span class="n">Method</span><span class="err">#</span><span class="n">getGenericParameterTypes</span><span class="o">()</span>
-<span class="n">Method</span><span class="err">#</span><span class="n">getGenericReturnType</span><span class="o">()</span>
-<span class="n">Method</span><span class="err">#</span><span class="n">getGenericExceptionTypes</span><span class="o">()</span>
-</code></pre></div></p>
+<p>{% highlight java %}
+Method#getGenericParameterTypes()
+Method#getGenericReturnType()
+Method#getGenericExceptionTypes()
+{% endhighlight %}</p>
 
 <p>通过上面一些方法可以得到下面的类型关系：
-<div class="highlight"><pre><code class="java"><span class="n">T</span> <span class="o">-&gt;</span> <span class="n">TypeVariable</span>
-<span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="o">-&gt;</span> <span class="n">ParameterizedType</span>
-<span class="n">List</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;?&gt;</span> <span class="o">-&gt;</span> <span class="n">ParameterizedType</span>
-<span class="kt">float</span><span class="o">[]</span> <span class="o">-&gt;</span> <span class="n">GenericArrayType</span>
-<span class="n">Exception</span> <span class="o">-&gt;</span> <span class="n">Class</span>
-</code></pre></div></p>
+{% highlight java %}
+T -> TypeVariable
+List<String> -> ParameterizedType
+List&lt;?> -> ParameterizedType
+float[] -> GenericArrayType
+Exception -> Class
+{% endhighlight %}</p>
 
 <p>ParameterizedType描述的是一种多级泛型的关系，可以继续通过getActualTypeArguments继续进行处理,可以得到
-<div class="highlight"><pre><code class="java"><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="o">-&gt;</span> <span class="n">Class</span>
-<span class="n">List</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;?&gt;</span> <span class="o">-&gt;</span> <span class="n">WildcardType</span>
-<span class="n">List</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="o">-&gt;</span> <span class="n">TypeVariable</span>
-</code></pre></div></p>
+{% highlight java %}
+List<String> -> Class
+List&lt;?> -> WildcardType
+List<T> -> TypeVariable
+{% endhighlight %}</p>
 
 <p>处理Type是比较麻烦的事情，每种具体类型都有自己特殊的处理方法(见图所示)，但平时这个东西很少用到。</p>
 
 <h2>New in JDK7</h2>
 
 <p>jdk7以前有4种方法调用指令:
-<div class="highlight"><pre><code class="java"><span class="n">invokestatic</span> <span class="o">-&gt;</span> <span class="err">静态方法调用</span>
-<span class="n">invokespecial</span> <span class="o">-&gt;</span> <span class="err">特殊方法</span><span class="o">(</span><span class="err">如构造方法</span><span class="o">)</span><span class="err">调用</span>
-<span class="n">invokevirtual</span> <span class="o">-&gt;</span> <span class="err">普通方法调用</span>
-<span class="n">invokeinterface</span> <span class="o">-&gt;</span> <span class="err">接口方法调用</span>
-</code></pre></div></p>
+{% highlight java %}
+invokestatic -> 静态方法调用
+invokespecial -> 特殊方法(如构造方法)调用
+invokevirtual -> 普通方法调用
+invokeinterface -> 接口方法调用
+{% endhighlight %}</p>
 
 <p>在jdk7中实现了新的规范jsr292，增加了新的字节码指令invokedynamic,通过下面的选项可以开启。
-<div class="highlight"><pre><code class="java"><span class="nl">XX:</span><span class="o">+</span><span class="n">UnlockExperimentalVMOptions</span>
-<span class="nl">XX:</span><span class="o">+</span><span class="n">EnableInvokeDynamic</span>
-<span class="nl">XX:</span><span class="o">+</span><span class="n">EnableMethodHandles</span>
-</code></pre></div></p>
+{% highlight java %}
+XX:+UnlockExperimentalVMOptions
+XX:+EnableInvokeDynamic
+XX:+EnableMethodHandles
+{% endhighlight %}</p>
 
 <p>该指令只需要制定方法名称，只要求引用非空对象而已，但javac还没法生成这样的指令。调用方式如下:
-<div class="highlight"><pre><code class="java"><span class="n">invokedynamic</span> <span class="err">#</span><span class="mi">10</span><span class="o">;</span> <span class="c1">//DynamicMethod java/lang/Object.lessThan:(Ljava/lang/Object;)</span>
-</code></pre></div></p>
+{% highlight java %}
+invokedynamic #10; //DynamicMethod java/lang/Object.lessThan:(Ljava/lang/Object;)
+{% endhighlight %}</p>
 
 <p>但是可以有相关的api可以模拟出这种指令调用方式，如下(看上去和普通反射调用没什么明显不同)：
-<div class="highlight"><pre><code class="java"><span class="n">MethodType</span> <span class="n">type</span> <span class="o">=</span> <span class="n">MethodType</span><span class="o">.</span><span class="na">methodType</span><span class="o">(</span><span class="kt">int</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="kt">int</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="kt">int</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-<span class="n">MutableCallSite</span> <span class="n">callSite</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MutableCallSite</span><span class="o">(</span><span class="n">type</span><span class="o">);</span>
-<span class="n">MethodHandle</span> <span class="n">invoker</span> <span class="o">=</span> <span class="n">callSite</span><span class="o">.</span><span class="na">dynamicInvoker</span><span class="o">();&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+{% highlight java %}
+MethodType type = MethodType.methodType(int.class, int.class, int.class);
+MutableCallSite callSite = new MutableCallSite(type);
+MethodHandle invoker = callSite.dynamicInvoker();</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">MethodHandles</span><span class="o">.</span><span class="na">Lookup</span> <span class="n">lookup</span> <span class="o">=</span> <span class="n">MethodHandles</span><span class="o">.</span><span class="na">lookup</span><span class="o">();</span>
-<span class="n">MethodHandle</span> <span class="n">mhMax</span> <span class="o">=</span> <span class="n">lookup</span><span class="o">.</span><span class="na">findStatic</span><span class="o">(</span><span class="n">Math</span><span class="o">.</span><span class="na">class</span><span class="o">,</span> <span class="s">&quot;max&quot;</span><span class="o">,</span> <span class="n">type</span><span class="o">);&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
+<p>MethodHandles.Lookup lookup = MethodHandles.lookup();
+MethodHandle mhMax = lookup.findStatic(Math.class, "max", type);</p>
 
-<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">callSite</span><span class="o">.</span><span class="na">setTarget</span><span class="o">(</span><span class="n">mhMax</span><span class="o">);</span>
-<span class="n">invoker</span><span class="o">.</span><span class="na">invokeWithArguments</span><span class="o">(</span><span class="mi">3</span><span class="o">,</span><span class="mi">5</span><span class="o">);</span>
-</code></pre></div></p>
+<p>callSite.setTarget(mhMax);
+invoker.invokeWithArguments(3,5);
+{% endhighlight %}</p>
 
 <p>这种调用方式有几个关键的概念:
-<div class="highlight"><pre><code class="java"><span class="n">method</span> <span class="n">handle</span> <span class="err">方法句柄，是</span><span class="n">callsite</span><span class="err">的目标</span>
-<span class="n">bootstrap</span> <span class="n">method</span> <span class="err">引导方法</span>
-<span class="n">CallSite</span> <span class="err">调用点</span>
-<span class="n">method</span> <span class="n">type</span> <span class="err">方法类型</span>
-</code></pre></div></p>
+{% highlight java %}
+method handle 方法句柄，是callsite的目标
+bootstrap method 引导方法
+CallSite 调用点
+method type 方法类型
+{% endhighlight %}</p>
 
 <p>这个指令可以增强很多基于JVM的动态语言的方法调用性能，所以潜力很大，更多具体信息，可以参考下面的一些链接:
 * http://www.infoq.com/cn/news/2011/01/invokedynamic
