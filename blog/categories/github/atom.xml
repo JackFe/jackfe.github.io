@@ -4,7 +4,7 @@
   <title><![CDATA[Category: github | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/github/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-04-17T14:57:43+08:00</updated>
+  <updated>2016-04-17T15:41:51+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -409,88 +409,83 @@ master分支保留生成的网站。下面是大概的操作过程，针对已�
 <p>接着，处理master分支，清除所有内容。注意git pull的功能是让本地可以识别到远程分支。
 <strong>.nojekyll文件</strong>是让github page不启用jekyll生成网站，而是直接使用目录下的内容。
 并把所有带下划线的目录都过滤掉。
-{% highlight bash %}
-cd mccxj.github.com
-git rm -fr *</p>
+<div class="highlight"><pre><code class="bash"><span class="nb">cd </span>mccxj.github.com
+git rm -fr *&lt;/p&gt;
 
-<p>touch .nojekyll
-git add .nojekyll</p>
+&lt;p&gt;touch .nojekyll
+git add .nojekyll&lt;/p&gt;
 
-<h1>add _<em>/</em> to .gitignore</h1>
+&lt;h1&gt;add _&lt;em&gt;/&lt;/em&gt; to .gitignore&lt;/h1&gt;
 
-<p>vi .gitignore</p>
+&lt;p&gt;vi .gitignore&lt;/p&gt;
 
-<p>git commit -a -m "remote all pages"
-{% endhighlight %}</p>
+&lt;p&gt;git commit -a -m <span class="s2">&quot;remote all pages&quot;</span>
+</code></pre></div></p>
 
 <p>下面，继续处理source分支，其实基本保持不变就可以了，主要是生成网站内容。
 <strong>带t的参数是让source跟踪远程source分支</strong>。我的jekyll是采用最新源码装的，命令参数有些变化，
 请参考jekyll帮助，
-{% highlight bash %}
-git checkout -t origin/source</p>
+<div class="highlight"><pre><code class="bash">git checkout -t origin/source&lt;/p&gt;
 
-<p>$ git branch -a
+&lt;p&gt;<span class="nv">$ </span>git branch -a
   master
-* source
-  remotes/origin/HEAD -> origin/master
+* <span class="nb">source</span>
+<span class="nb">  </span>remotes/origin/HEAD -&gt; origin/master
   remotes/origin/master
-  remotes/origin/source</p>
+  remotes/origin/source&lt;/p&gt;
 
-<h1>generate page to _site</h1>
+&lt;h1&gt;generate page to _site&lt;/h1&gt;
 
-<p>jekyll build
-{% endhighlight %}</p>
+&lt;p&gt;jekyll build
+</code></pre></div></p>
 
 <p>最后，切回master分支，并<strong>拷贝网站内容</strong>到根目录，然后把内容提交并push到远程即可。
-{% highlight bash %}
-git checkout master</p>
+<div class="highlight"><pre><code class="bash">git checkout master&lt;/p&gt;
 
-<p>cp -r _site/* .</p>
+&lt;p&gt;cp -r _site/* .&lt;/p&gt;
 
-<h1>add then commit</h1>
+&lt;h1&gt;add <span class="k">then </span>commit&lt;/h1&gt;
 
-<p>git add / git commit</p>
+&lt;p&gt;git add / git commit&lt;/p&gt;
 
-<h1>push to remote branch</h1>
+&lt;h1&gt;push to remote branch&lt;/h1&gt;
 
-<p>git push origin master
-{% endhighlight %}</p>
+&lt;p&gt;git push origin master
+</code></pre></div></p>
 
 <h3>新写作流程</h3>
 
 <p>现在已经迁移完成了，下面介绍一些新写作流程。</p>
 
 <p>首先，<strong>注意要在source分支上工作</strong>，在提交到远程之前都是一样。
-{% highlight bash %}
-git checkout source</p>
+<div class="highlight"><pre><code class="bash">git checkout <span class="nb">source</span>&lt;/p&gt;
 
-<h1>rake post title="xxxx"</h1>
+&lt;h1&gt;rake post <span class="nv">title</span><span class="o">=</span><span class="s2">&quot;xxxx&quot;</span>&lt;/h1&gt;
 
-<h1>write something</h1>
+&lt;h1&gt;write something&lt;/h1&gt;
 
-<p>git add xxxx.md
-git commit -m "add new post"</p>
+&lt;p&gt;git add xxxx.md
+git commit -m <span class="s2">&quot;add new post&quot;</span>&lt;/p&gt;
 
-<h1>jekyll build</h1>
+&lt;h1&gt;jekyll build&lt;/h1&gt;
 
-<p>jekyll serve
-{% endhighlight %}</p>
+&lt;p&gt;jekyll serve
+</code></pre></div></p>
 
 <p>当你确认完成，并生成网站内容后，切换到master分支处理。
 <strong>注意需要提交两个分支</strong>，例如使用git push可以同时提交两个分支。
-{% highlight bash %}
-git checkout master</p>
+<div class="highlight"><pre><code class="bash">git checkout master&lt;/p&gt;
 
-<p>cp -r _site/* .</p>
+&lt;p&gt;cp -r _site/* .&lt;/p&gt;
 
-<h1>add then commit</h1>
+&lt;h1&gt;add <span class="k">then </span>commit&lt;/h1&gt;
 
-<p>git add / git commit</p>
+&lt;p&gt;git add / git commit&lt;/p&gt;
 
-<h1>push to remote branch</h1>
+&lt;h1&gt;push to remote branch&lt;/h1&gt;
 
-<p>git push
-{% endhighlight %}</p>
+&lt;p&gt;git push
+</code></pre></div></p>
 
 <p>还不算麻烦吧，其实我是尝试切换到<a href="http://octopress.org/">octopress</a>，发现有不少地方出现问题，才采用这种方式的。Enjoy It!</p>
 ]]></content>
@@ -510,7 +505,102 @@ git checkout master</p>
 <p>这次我也调整了一些博客的路径，我也采用了这个方式。不过我只对当前已有的页面生成一次，以后的就不用这个插件了。
 另外，我不想去修改每个页面的alias标签，所以我调整了代码，只对我的url规则进行处理。下面是我使用的版本。</p>
 
-<p>{% gist 4645990 alias_generator.rb %}</p>
+<p><div><script src='https://gist.github.com/4645990.js?file=alias_generator.rb'></script>
+<noscript><pre><code># Alias Generator for Posts.
+#
+# Example:
+#   alias /20121010_hello.html to /blog/20121010_hello.html
+#   alias /hello.html to /pages/20121010_hello.html
+#
+# Place the full path of the alias (place to redirect from) inside the
+# destination post&#39;s YAML Front Matter. One or more aliases may be given.
+#
+# Forked from Thomas Mango &#39;s jekyll_alias_generator
+# At http://github.com/tsmango/jekyll_alias_generator
+# PLugin License: MIT
+
+module Jekyll
+
+  class AliasGenerator &lt; Generator
+
+    def generate(site)
+      @site = site
+
+      process_posts
+      process_pages
+    end
+
+    def process_posts
+      # alias /20121010_hello.html to /blog/20121010_hello.html
+      @site.posts.each do |post|
+        generate_aliases(post.url, &quot;\/#{$1}&quot;) if /^\/blog\/(.+)$/ =~ post.url
+      end
+    end
+
+    def process_pages
+      # alias /hello.html to /pages/20121010_hello.html
+      @site.pages.each do |page|
+        dest = page.destination(&#39;&#39;)
+        generate_aliases(dest, &quot;\/#{$1}&quot;)  if /^\/pages\/(.+)$/ =~ dest
+      end
+    end
+
+    def generate_aliases(destination_path, aliases)
+      alias_paths ||= Array.new
+      alias_paths &lt;&lt; aliases
+      alias_paths.compact!
+
+      alias_paths.flatten.each do |alias_path|
+        alias_path = alias_path.to_s
+
+        alias_dir  = File.extname(alias_path).empty? ? alias_path : File.dirname(alias_path)
+        alias_file = File.extname(alias_path).empty? ? &quot;index.html&quot; : File.basename(alias_path)
+        fs_path_to_dir   = File.join(@site.dest, alias_dir)
+        alias_index_path = File.join(alias_dir, alias_file)
+
+        FileUtils.mkdir_p(fs_path_to_dir)
+
+        File.open(File.join(fs_path_to_dir, alias_file), &#39;w&#39;) do |file|
+          file.write(alias_template(destination_path))
+        end
+
+        (alias_index_path.split(&#39;/&#39;).size + 1).times do |sections|
+          @site.static_files &lt;&lt; Jekyll::AliasFile.new(@site, @site.dest, alias_index_path.split(&#39;/&#39;)[0, sections].join(&#39;/&#39;), nil)
+        end
+      end
+    end
+
+    def alias_template(destination_path)
+      &lt;&lt;-EOF
+      &lt;!DOCTYPE html&gt;
+      &lt;html&gt;
+      &lt;head&gt;
+      &lt;link rel=&quot;canonical&quot; href=&quot;#{destination_path}&quot;/&gt;
+      &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;
+      &lt;meta http-equiv=&quot;refresh&quot; content=&quot;0;url=#{destination_path}&quot; /&gt;
+      &lt;/head&gt;
+      &lt;/html&gt;
+      EOF
+    end
+  end
+
+  class AliasFile &lt; StaticFile
+    require &#39;set&#39;
+
+    def destination(dest)
+      File.join(dest, @dir)
+    end
+
+    def modified?
+      return false
+    end
+
+    def write(dest)
+      return true
+    end
+  end
+end</code></pre></noscript></div>
+</p>
 ]]></content>
   </entry>
   
@@ -526,7 +616,114 @@ github page可以直接嵌入gist，并且能显示高亮。
 不过我不想太依赖gist，所以<strong>修改成使用pygments高亮的方式</strong>。
 看看下面gist_tag.rb这个插件的效果:</p>
 
-<p>{% gist 4648237 gist_tag.rb %}</p>
+<p><div><script src='https://gist.github.com/4648237.js?file=gist_tag.rb'></script>
+<noscript><pre><code>require &#39;cgi&#39;
+require &#39;digest/md5&#39;
+require &#39;net/https&#39;
+require &#39;uri&#39;
+
+module Jekyll
+  class GistTag &lt; Liquid::Tag
+    include Liquid::StandardFilters
+    def initialize(tag_name, text, token)
+      super
+      @text           = text
+      @options        = {:encoding =&gt; &quot;utf-8&quot;}
+      @cache_disabled = false
+      @cache_folder   = File.expand_path &quot;../_gist_cache&quot;, File.dirname(__FILE__)
+      FileUtils.mkdir_p @cache_folder
+    end
+
+    def render(context)
+      if parts = @text.match(/([\d]*) lang=(.+) (.*)/)
+        gist, @lang, file = parts[1].strip, parts[2].strip, parts[3].strip
+        script_url = script_url_for gist, file
+        code       = get_cached_gist(gist, file) || get_gist_from_web(gist, file)
+
+        context.registers[:site].pygments
+        html_output_for context, script_url, code
+      else
+        &quot;&quot;
+      end
+    end
+
+    def html_output_for(context, script_url, code)
+      if context.registers[:site].pygments
+        output = add_code_tags(Pygments.highlight(code, :lexer =&gt; @lang, :options =&gt; @options))
+      else
+        render_codehighlighter(code)
+      end
+    end
+
+    def add_code_tags(code)
+      # Add nested &lt;code&gt; tags to code blocks
+      code = code.sub(/&lt;pre&gt;/,&#39;&lt;pre&gt;&lt;code class=&quot;#{@lang}&quot;&gt;&#39;)
+      code = code.sub(/&lt;\/pre&gt;/,&quot;&lt;/code&gt;&lt;/pre&gt;&quot;)
+    end
+
+    def render_codehighlighter(code)
+      #The div is required because RDiscount blows ass
+      &lt;&lt;-HTML
+&lt;div&gt;
+  &lt;pre&gt;&lt;code class=&#39;#{@lang}&#39;&gt;#{h(code).strip}&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+      HTML
+    end
+
+    def script_url_for(gist_id, filename)
+      &quot;https://gist.github.com/#{gist_id}.js?file=#{filename}&quot;
+    end
+
+    def get_gist_url_for(gist, file)
+      &quot;https://raw.github.com/gist/#{gist}/#{file}&quot;
+    end
+
+    def cache(gist, file, data)
+      cache_file = get_cache_file_for gist, file
+      File.open(cache_file, &quot;w&quot;) do |io|
+        io.write data
+      end
+    end
+
+    def get_cached_gist(gist, file)
+      return nil if @cache_disabled
+      cache_file = get_cache_file_for gist, file
+      File.read cache_file if File.exist? cache_file
+    end
+
+    def get_cache_file_for(gist, file)
+      bad_chars = /[^a-zA-Z0-9\-_.]/
+      gist      = gist.gsub bad_chars, &#39;&#39;
+      file      = file.gsub bad_chars, &#39;&#39;
+      md5       = Digest::MD5.hexdigest &quot;#{gist}-#{file}&quot;
+      File.join @cache_folder, &quot;#{gist}-#{file}-#{md5}.cache&quot;
+    end
+
+    def get_gist_from_web(gist, file)
+      gist_url          = get_gist_url_for gist, file
+      raw_uri           = URI.parse gist_url
+      https             = Net::HTTP.new raw_uri.host, raw_uri.port
+      https.use_ssl     = true
+      https.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      request           = Net::HTTP::Get.new raw_uri.request_uri
+      data              = https.request request
+      data              = data.body
+      cache gist, file, data unless @cache_disabled
+      data
+    end
+  end
+
+  class GistTagNoCache &lt; GistTag
+    def initialize(tag_name, text, token)
+      super
+      @cache_disabled = true
+    end
+  end
+end
+
+Liquid::Template.register_tag(&#39;gist&#39;, Jekyll::GistTag)
+Liquid::Template.register_tag(&#39;gistnocache&#39;, Jekyll::GistTagNoCache)</code></pre></noscript></div>
+</p>
 ]]></content>
   </entry>
   

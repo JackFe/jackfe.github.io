@@ -9,7 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="刚读到这本书的时候，有种相见恨晚的感觉。不同于一般的时间管理类书籍，无病呻吟式的洗脑不见了，例子也少了强加因果关系的痕迹，有些观点印象比较深，值得一读。下面是一些比较有感觉的部分，和大家分享一下。 欲望 人希望欲望尽快得到满足。这是人性，所以衍生了速成，不劳而获，学习浮于表面这些浮躁的社会现象。 &hellip;">
+  <meta name="description" content="春运临近，浏览器抢票软件也变得流行，没回来那几天就看到新闻说:12306 抢票版插件拖垮 Github 服务器
+，没想到回来之后就发现github page不能用了，正确的说应该是github的子域名都不能用了，看来是贴倒部和宫刑部的新春贺礼来的。 抢票插件和github什么关系 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +65,61 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130120_github-across-gfw.html">抢票插件搞得上github Page都要轻功</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-20T00:00:00+08:00" pubdate data-updated="true">Jan 20<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130120_github-across-gfw.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/assets/images/2013/acrossgfw.jpg" alt="抢票插件搞得上github page都要轻功" /></p>
+
+<p>春运临近，浏览器抢票软件也变得流行，没回来那几天就看到新闻说:<a href="http://www.oschina.net/news/36770/12306_ticket_helper">12306 抢票版插件拖垮 Github 服务器</a>
+，没想到回来之后就发现github page不能用了，正确的说应该是github的子域名都不能用了，看来是贴倒部和宫刑部的新春贺礼来的。</p>
+
+<h2>抢票插件和github什么关系</h2>
+
+<p>抢票插件引用了github上的一个js文件，但github有个安全检测，当访问比较频繁的时候就会直接返回403 forbidden。
+然后作者没多想就在插件里加了个重试机制。如果返回的是403就每5秒重试一次，并且是永久重试，结果github认为你访问的更频繁了于是一直返回403。
+可想而知这就成了死循环，使用插件的用户一多，对github而言就产生DDOS了。
+换句话说，这是github的一种安全机制而已，抢票插件和github基本没什么关系，有关部门的做法更是弱智得不行呀。:)</p>
+
+<h2>轻功之ssh</h2>
+
+<p>以前用过free gate这种东西，不过不大稳定，而且感觉风险比较高。呵呵，你懂的。<br/>
+<a href="http://www.ssh110.com/help.html">ssh使用帮助</a>,跟人感觉用ssh命令行配合chrome插件是最方便的。<br/>
+<a href="http://blog.onlybird.com/%E5%85%8D%E8%B4%B9ssh%E4%BB%A3%E7%90%86">免费ssh代理</a>,速度还不错，不过不是特别稳定。<br/>
+<a href="http://wendal.net/2013/0108.html">Nutz福利之轻功</a>,应该不错,不过我还没用上。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -534,71 +590,6 @@ end script
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20121225_arrange.html">超级整理术简单笔记</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-12-25T00:00:00+08:00" pubdate data-updated="true">Dec 25<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20121225_arrange.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>今天去体育西那边，看到戴玉堆了一桌子的书，挖了本超级整理术的书，在坐地铁的时间看完了。
-内容非常浅显直白，原则就是让信息自动化，让工作规则化，让大脑有更多时间思考。</p>
-
-<p>下面简单记录了比较可行的操作。</p>
-
-<ol>
-<li><p>使用谷歌搜索来处理文件查找，桌面搜索的好处是可以直接查找内容，另外找文件名的话，
-everything也不错，我通常让它自动启动，另外用快捷方式操作程序的话，ctrl+r或launchy都是非常实用的工具。</p></li>
-<li><p>使用rss订阅，通常有邮箱订阅或者鲜果之类的客户端，google reader也有很多人推荐，
-不过鲜果没有展示博文列表的功能，很难看到哪些更新过。所以最好还是使用google reader，
-客户端的话，我发现FeedDemon非常不错，和reader配合天衣无缝。rss订阅有很多好处，主要是信息自动飞进来，
-通过阅读大量的信息，开阔视野，增强判断力，有助于在信息大爆炸时代辨别那少量的有用信息。
-有个遗憾就是，reader在公司用不了，只能在家里用。</p></li>
-<li><p>邮件只读一遍，尽快回复，对邮件分门别类。我通常是把没处理完的标红，然后消灭之。
-书中提到说，养成这个习惯，让别人对你有好的印象，有助于推动别人和协作。</p></li>
-<li><p>将大脑清空，把所有要做的事记录到TODO上，这个非常重要。
-我通常使用wunderlist来处理，无论工作事情还是生活事情，
-无论大事小事，急事闲事，都记录到上面去。即使这件事情很琐碎或者很紧急，记录上去也是好处多多的。
-wunderlist的功能非常简单，支持多客户端。友情提醒一下，工具这东西，不要挑复杂的。
-当然，有时候我还借助番茄钟来管理。</p></li>
-<li><p>利用TODO整理时间，使用节约的时间提升自己。做事的时候按照TODO的列表弄，就不至于手忙脚乱了。
-我通常是使用wunderlist的加星功能，只是关注加星的事项。
-因为TODO帮助我们把时间分配到合理的事情上去，防止时间碎片化，所以不至于瞎忙了。</p></li>
-<li><p>工作台和电脑桌面要整洁。作者提倡的是整一个整理日，定期清理。</p></li>
-<li><p>开会议题要具体，责任要落实，使用会议纪要并用TODO跟踪。
-作者还提到，开会要注意成本，所以开会前就要把讨论事宜详细列出，记录会议纪要并跟踪完成情况，我们公司的会就是效率不行呀。</p></li>
-</ol>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/14/">&larr; Older</a>
@@ -614,6 +605,10 @@ wunderlist的功能非常简单，支持多客户端。友情提醒一下，工�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
@@ -649,10 +644,6 @@ wunderlist的功能非常简单，支持多客户端。友情提醒一下，工�
     
       <li class="post">
         <a href="/blog/20141229_des-hack.html">常见DES实现陷阱</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20141225_java-common-util.html">java常见工具库培训</a>
       </li>
     
   </ul>

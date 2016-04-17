@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 数独 | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/shu-du/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-04-17T14:57:43+08:00</updated>
+  <updated>2016-04-17T15:41:51+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -33,69 +33,69 @@
 
 <h3>ruby代码示例</h3>
 
-<p>{% highlight ruby %}</p>
+<p><div class="highlight"><pre><code class="ruby"><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 
-<h1>判断能否在[i,j]上填入val</h1>
+<span class="sr">&lt;h1&gt;判断能否在[i,j]上填入val&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
 
-<p>def is_ok?(i,j,val)
-  (0..8).each do |m|</p>
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">is_ok?</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">val</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">m</span><span class="o">|&lt;</span><span class="sr">/p&gt;</span>
 
-<pre><code>return false if @arr[i][m] == val &amp;&amp; m!=j #判断行不重复
-return false if @arr[m][j] == val &amp;&amp; m!=i #判断列不重复
-</code></pre>
+<span class="sr">&lt;pre&gt;&lt;code&gt;return false if @arr[i][m] == val &amp;amp;&amp;amp; m!=j #判断行不重复</span>
+<span class="sr">return false if @arr[m][j] == val &amp;amp;&amp;amp; m!=i #判断列不重复</span>
+<span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
 
-<p>  end
-  (i-i%3..i-i%3+2).each do |m|</p>
+<span class="sr">&lt;p&gt;  end</span>
+<span class="sr">  (i-i%3..i-i%3+2).each do |m|&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
 
-<pre><code>(j-j%3..j-j%3+2).each do |n|
-  return false if @arr[m][n] == val &amp;&amp; i!=m &amp;&amp; j!=n #判断小九宫格不重复
-end
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="p">(</span><span class="n">j</span><span class="o">-</span><span class="n">j</span><span class="o">%</span><span class="mi">3</span><span class="o">.</span><span class="n">.j</span><span class="o">-</span><span class="n">j</span><span class="o">%</span><span class="mi">3</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">n</span><span class="o">|</span>
+  <span class="k">return</span> <span class="kp">false</span> <span class="k">if</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">n</span><span class="o">]</span> <span class="o">==</span> <span class="n">val</span> <span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span> <span class="n">i!</span><span class="o">=</span><span class="n">m</span> <span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span> <span class="n">j!</span><span class="o">=</span><span class="n">n</span> <span class="c1">#判断小九宫格不重复</span>
+<span class="k">end</span>
+<span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>  end
-  true
-end</p>
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">end</span>
+  <span class="kp">true</span>
+<span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 
-<h1>用来输出数独</h1>
+<span class="sr">&lt;h1&gt;用来输出数独&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
 
-<p>def print; (0..8).each { |m| p @arr[m] }; end</p>
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">print</span><span class="p">;</span> <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">m</span><span class="o">|</span> <span class="nb">p</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">]</span> <span class="p">};</span> <span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 
-<h1>用来表示是否找到解</h1>
+<span class="sr">&lt;h1&gt;用来表示是否找到解&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
 
-<p>@ok = false</p>
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="vi">@ok</span> <span class="o">=</span> <span class="kp">false</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 
-<h1>处理序号为mark开始的格子</h1>
+<span class="sr">&lt;h1&gt;处理序号为mark开始的格子&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
 
-<p>def walk(mark)
-  m, n = mark/9, mark%9
-  val = @arr[m][n]
-  # 当前已经有初始值的情况
-  if val != 0</p>
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span>
+  <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">mark</span><span class="o">/</span><span class="mi">9</span><span class="p">,</span> <span class="n">mark</span><span class="o">%</span><span class="mi">9</span>
+  <span class="n">val</span> <span class="o">=</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">n</span><span class="o">]</span>
+  <span class="c1"># 当前已经有初始值的情况</span>
+  <span class="k">if</span> <span class="n">val</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 
-<pre><code>mark == 80 ? @ok = true : walk(mark+1)
-return
-</code></pre>
+<span class="sr">&lt;pre&gt;&lt;code&gt;mark == 80 ? @ok = true : walk(mark+1)</span>
+<span class="sr">return</span>
+<span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
 
-<p>  end</p>
+<span class="sr">&lt;p&gt;  end&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
 
-<p>  # 没有初始值的情况
-  (1..9).each do |v|</p>
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="c1"># 没有初始值的情况</span>
+  <span class="p">(</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="mi">9</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">v</span><span class="o">|&lt;</span><span class="sr">/p&gt;</span>
 
-<pre><code>if is_ok?(m, n, v)
-  @arr[m][n] = v
-  @ok = true and return if mark==80 # 找到一个解
-  walk(mark+1) #填好值之后，继续深度搜索
-  return if @ok
-end
-</code></pre>
+<span class="sr">&lt;pre&gt;&lt;code&gt;if is_ok?(m, n, v)</span>
+<span class="sr">  @arr[m][n] = v</span>
+<span class="sr">  @ok = true and return if mark==80 # 找到一个解</span>
+<span class="sr">  walk(mark+1) #填好值之后，继续深度搜索</span>
+<span class="sr">  return if @ok</span>
+<span class="sr">end</span>
+<span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
 
-<p>  end
-  @arr[m][n]=0 # 都处理完，没有找到就恢复
-end</p>
+<span class="sr">&lt;p&gt;  end</span>
+<span class="sr">  @arr[m][n]=0 # 都处理完，没有找到就恢复</span>
+<span class="sr">end&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
 
-<p>walk(0)
-@ok ? print : (p "no solution")
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="n">walk</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="vi">@ok</span> <span class="p">?</span> <span class="nb">print</span> <span class="p">:</span> <span class="p">(</span><span class="nb">p</span> <span class="s2">&quot;no solution&quot;</span><span class="p">)</span>
+</code></pre></div></p>
 
 <h3>回溯法的基本步骤：</h3>
 
@@ -109,31 +109,31 @@ end</p>
 <h3>回溯法的基本结构</h3>
 
 <p>我们考虑递归的方式(比较容易理解)，递推的以后再讨论。
-{% highlight ruby %}</p>
+<div class="highlight"><pre><code class="ruby"><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 
-<h1>init</h1>
+<span class="sr">&lt;h1&gt;init&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
 
-<p>flag = false # 标记是否找到解
-u = {} # 已知解, 并假设(x1,x2....xn)为可选的解空间</p>
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="n">flag</span> <span class="o">=</span> <span class="kp">false</span> <span class="c1"># 标记是否找到解</span>
+<span class="n">u</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># 已知解, 并假设(x1,x2....xn)为可选的解空间&lt;/p&gt;</span>
 
-<p>def backtrack(k)
-  (x1..xn).each do |x|</p>
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">backtrack</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">x1</span><span class="o">.</span><span class="n">.xn</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">x</span><span class="o">|&lt;</span><span class="sr">/p&gt;</span>
 
-<pre><code>if is_ok?(x, k) # 过滤无效的解
-  u.add(x) # 把x加入已知解u
-  backtrack(k+1) if u.is_part? # 部分解的情况，继续处理
-  flag = true and exit if u.is_full? # 找到解并退出
-  # fail的时候有可能需要对u进行恢复
-end
-</code></pre>
+<span class="sr">&lt;pre&gt;&lt;code&gt;if is_ok?(x, k) # 过滤无效的解</span>
+<span class="sr">  u.add(x) # 把x加入已知解u</span>
+<span class="sr">  backtrack(k+1) if u.is_part? # 部分解的情况，继续处理</span>
+<span class="sr">  flag = true and exit if u.is_full? # 找到解并退出</span>
+<span class="sr">  # fail的时候有可能需要对u进行恢复</span>
+<span class="sr">end</span>
+<span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
 
-<p>  end
-  # fail的时候有可能需要对u进行恢复
-end</p>
+<span class="sr">&lt;p&gt;  end</span>
+<span class="sr">  # fail的时候有可能需要对u进行恢复</span>
+<span class="sr">end&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
 
-<p>backtrack(1) # 从1开始搜索
-flag ? p u : "no solution"
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="n">backtrack</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># 从1开始搜索</span>
+<span class="n">flag</span> <span class="p">?</span> <span class="nb">p</span> <span class="n">u</span> <span class="p">:</span> <span class="s2">&quot;no solution&quot;</span>
+</code></pre></div></p>
 ]]></content>
   </entry>
   

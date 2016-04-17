@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 读书笔记 | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/du-shu-bi-ji/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-04-17T14:57:43+08:00</updated>
+  <updated>2016-04-17T15:41:51+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -146,18 +146,18 @@
 使用异步调用时，try-catch可能会失效<br/>
 使用err来作为回调方法的参数，或者区分success和error的回调方法<br/>
 处理uncaught异常，可以使用:
-{% highlight javascript %}</p>
+<div class="highlight"><pre><code class="javascript"><span class="o">&lt;</span><span class="err">/p&gt;</span>
 
-<h1>Broswer</h1>
+<span class="o">&lt;</span><span class="nx">h1</span><span class="o">&gt;</span><span class="nx">Broswer</span><span class="o">&lt;</span><span class="err">/h1&gt;</span>
 
-<p>window.onerror = function(err){
-}</p>
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nb">window</span><span class="p">.</span><span class="nx">onerror</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+<span class="p">}</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
 
-<h1>Node</h1>
+<span class="o">&lt;</span><span class="nx">h1</span><span class="o">&gt;</span><span class="nx">Node</span><span class="o">&lt;</span><span class="err">/h1&gt;</span>
 
-<p>process.on('uncaughtException', function(err){
-})
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;uncaughtException&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+<span class="p">})</span>
+</code></pre></div></p>
 
 <h2>流程控制</h2>
 
@@ -188,23 +188,22 @@
 
 <p>介绍了promises和deferred的区别，deferred是promises一个子集，它不能自己控制状态变更，需要有由其他事件出触发。
 对于node来说，现在是采用回调方法的方式，要采用deferred方式，主要做些改变。例如：
-{% highlight javascript %}
-deferredCallback = function(deferred) {
-  return function(err) {</p>
+<div class="highlight"><pre><code class="javascript"><span class="nx">deferredCallback</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">deferred</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
 
-<pre><code>if (err) {
-  deferred.reject(err);
-} else {
-  deferred.resolve(Array.prototype.slice.call(arguments, 1));
-};
-</code></pre>
+<span class="o">&lt;</span><span class="nx">pre</span><span class="o">&gt;&lt;</span><span class="nx">code</span><span class="o">&gt;</span><span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">deferred</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+  <span class="nx">deferred</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
+<span class="p">};</span>
+<span class="o">&lt;</span><span class="err">/code&gt;&lt;/pre&gt;</span>
 
-<p>  };
-}</p>
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span>  <span class="p">};</span>
+<span class="p">}</span><span class="o">&lt;</span><span class="err">/p&gt;</span>
 
-<p>var fileReading = new $.Deferred();
-fs.readFile(filename, 'utf8', deferredCallback(fileReading));
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="nx">p</span><span class="o">&gt;</span><span class="kd">var</span> <span class="nx">fileReading</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">$</span><span class="p">.</span><span class="nx">Deferred</span><span class="p">();</span>
+<span class="nx">fs</span><span class="p">.</span><span class="nx">readFile</span><span class="p">(</span><span class="nx">filename</span><span class="p">,</span> <span class="s1">&#39;utf8&#39;</span><span class="p">,</span> <span class="nx">deferredCallback</span><span class="p">(</span><span class="nx">fileReading</span><span class="p">));</span>
+</code></pre></div></p>
 
 <h2>Async.js</h2>
 

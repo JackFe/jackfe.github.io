@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 封装 | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/feng-zhuang/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-04-17T14:57:43+08:00</updated>
+  <updated>2016-04-17T15:41:51+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -29,68 +29,64 @@
 这种情况下，通常只需写好变量，然后用工具生成相应的访问器方法。</p>
 
 <p>在最近修改一处代码的时候，就看到下面的逻辑，并且这段代码在多个文件出现过。
-{% highlight java %}
-PrepaidInput prepaid = ...// load from request</p>
+<div class="highlight"><pre><code class="java"><span class="n">PrepaidInput</span> <span class="n">prepaid</span> <span class="o">=</span> <span class="o">...</span><span class="c1">// load from request&lt;/p&gt;</span>
 
-<p>String start = prepaid.getStartTime();
-String end = prepaid.getEndTime();</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">String</span> <span class="n">start</span> <span class="o">=</span> <span class="n">prepaid</span><span class="o">.</span><span class="na">getStartTime</span><span class="o">();</span>
+<span class="n">String</span> <span class="n">end</span> <span class="o">=</span> <span class="n">prepaid</span><span class="o">.</span><span class="na">getEndTime</span><span class="o">();&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<p>if(StringUtils.isNotEmpty(start)){</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">start</span><span class="o">)){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>String newstart = start.replaceAll("-", "");
-if(newstart.length() &gt; 8){
-    newstart = newstart.substring(0, 9);
-    prepaid.setStartTime(newstart);
-}
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">String</span> <span class="n">newstart</span> <span class="o">=</span> <span class="n">start</span><span class="o">.</span><span class="na">replaceAll</span><span class="o">(</span><span class="s">&quot;-&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">);</span>
+<span class="k">if</span><span class="o">(</span><span class="n">newstart</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="mi">8</span><span class="o">){</span>
+    <span class="n">newstart</span> <span class="o">=</span> <span class="n">newstart</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">9</span><span class="o">);</span>
+    <span class="n">prepaid</span><span class="o">.</span><span class="na">setStartTime</span><span class="o">(</span><span class="n">newstart</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<p>// 继续处理结束时间end
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">// 继续处理结束时间end</span>
+</code></pre></div></p>
 
 <h3>封装还需要行为</h3>
 
 <p>上面的代码是很常见的处理方式，对象只是传值的作用。给变量封装到方法里边，提供了get/set方法。
 本质上来说，就像换了个马甲，和直接暴露数据差不多。类似的代码出现很多，先看下面简单点得例子：
-{% highlight java %}
-if("1".equals(subs.getStatus())){</p>
+<div class="highlight"><pre><code class="java"><span class="k">if</span><span class="o">(</span><span class="s">&quot;1&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">subs</span><span class="o">.</span><span class="na">getStatus</span><span class="o">())){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>     //TODO
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>     <span class="c1">//TODO</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-{% endhighlight %}
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div>
 没有行为，顶多算是基于对象的编程。
 从行为及职责考虑，这里暴露了状态值1，因为调用方必须理解这个值的作用。
 封装，除了封装数据，还得封装出行为的样子来。如：
-{% highlight java %}
-if(subs.isActive()){</p>
+<div class="highlight"><pre><code class="java"><span class="k">if</span><span class="o">(</span><span class="n">subs</span><span class="o">.</span><span class="na">isActive</span><span class="o">()){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>     //TODO
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>     <span class="c1">//TODO</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
 
 <p>对于最前面的代码，修改方式有很多，有一种方式就是在set里边, 组装对象的时候调用set方法顺便把格式给处理了。<br/>
 没有规定说get.set都会对应一个私有变量，也没有规定get.set要成对出现，如果这是在内部使用的变量，为什么要暴露出来?<br/>
 同样除了get/set也没有规定不能提供其他的方法。
-{% highlight java %}
-void setStartTime(String startTime){</p>
+<div class="highlight"><pre><code class="java"><span class="kt">void</span> <span class="nf">setStartTime</span><span class="o">(</span><span class="n">String</span> <span class="n">startTime</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>String newstart = startTime;
-if(StringUtils.isNotEmpty(startTime)){
-    String newstart = startTime.replaceAll("-", "");
-    if(newstart.length() &gt; 8){
-        newstart = newstart.substring(0, 8);
-    }
-}
-this.startTime = newstart;
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">String</span> <span class="n">newstart</span> <span class="o">=</span> <span class="n">startTime</span><span class="o">;</span>
+<span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">startTime</span><span class="o">)){</span>
+    <span class="n">String</span> <span class="n">newstart</span> <span class="o">=</span> <span class="n">startTime</span><span class="o">.</span><span class="na">replaceAll</span><span class="o">(</span><span class="s">&quot;-&quot;</span><span class="o">,</span> <span class="s">&quot;&quot;</span><span class="o">);</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">newstart</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="mi">8</span><span class="o">){</span>
+        <span class="n">newstart</span> <span class="o">=</span> <span class="n">newstart</span><span class="o">.</span><span class="na">substring</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">8</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="k">this</span><span class="o">.</span><span class="na">startTime</span> <span class="o">=</span> <span class="n">newstart</span><span class="o">;</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
 
 <h3>现实情况</h3>
 
@@ -99,8 +95,57 @@ this.startTime = newstart;
 引用郑大的话:我们需要更好的封装，通常的做法是封装出行为。行为从哪来，从实际需求来。<br/>
 所以，还是得在平时工作中有意识、有针对性的实践才行呀!</p>
 
-<p>{% assign series_list = "improve bitter code" %}
-{% include series_list.html %}</p>
+<p>
+
+
+<h2>"improve bitter code"系列文章:</h2>
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</p>
 ]]></content>
   </entry>
   
@@ -115,16 +160,15 @@ this.startTime = newstart;
 
 <p>今天好奇浏览了一下N项目的代码变更历史，发现有人提交了一段关于校验文件格式的代码。
 其中包括一段校验日期格式的java代码。代码是这样的：
-{% highlight java %}
-String validDateStr = // read from file lines
-String regex = "(([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})(((0[13578]|1[02])(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)(0[1-9]|[12][0-9]|30))|(02(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))0229)";
-if(validDateStr.matches(regex)){</p>
+<div class="highlight"><pre><code class="java"><span class="n">String</span> <span class="n">validDateStr</span> <span class="o">=</span> <span class="c1">// read from file lines</span>
+<span class="n">String</span> <span class="n">regex</span> <span class="o">=</span> <span class="s">&quot;(([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})(((0[13578]|1[02])(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)(0[1-9]|[12][0-9]|30))|(02(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))0229)&quot;</span><span class="o">;</span>
+<span class="k">if</span><span class="o">(</span><span class="n">validDateStr</span><span class="o">.</span><span class="na">matches</span><span class="o">(</span><span class="n">regex</span><span class="o">)){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>// do something
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">// do something</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
 
 <p>看到这个正则表达式，我立马纠结了，这个正则表达式不知是什么意思。
 虽然前几天写代码的同事来问过怎么写校验日期的正则，我当时比较忙，叫他找找有没有现成的。
@@ -145,37 +189,35 @@ if(validDateStr.matches(regex)){</p>
 
 <p>应该说，这几种情况都应该考虑一下，例如对于上面的例子来说，要使用这么复杂的正则，加上一些简单的注释
 是相当有必要的，至少要说明你是想验证什么样的格式。更进一步，封装到方法里边去，例如
-{% highlight java %}
-public static boolean isStrictYYYYMMDD(String datestr){</p>
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">isStrictYYYYMMDD</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>return datestr.matches(STRICT_YYYYMMDD_REGEX);
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">return</span> <span class="n">datestr</span><span class="o">.</span><span class="na">matches</span><span class="o">(</span><span class="n">STRICT_YYYYMMDD_REGEX</span><span class="o">);</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-{% endhighlight %}
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div>
 不过这里有个缺点，只能校验一种日期格式，因为日期格式不像邮箱地址，它的形式多样，这样处理能得到的收益并不是很高。
 如果我们可以传递校验日期的格式就更好了。</p>
 
 <h3>换个实现方式</h3>
 
 <p>换个思路，如果不使用正则表达式会怎样，例如<a href="http://docs.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html">SimpleDateFormat</a>就提供了严格验证的格式，示例代码如下：
-{% highlight java %}
-public static boolean isStrictYYYYMMDD(String datestr){</p>
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">isStrictYYYYMMDD</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");  
-//设置为严格验证模式
-format.setLenient(false);
-try{
-    format.parse(str);
-    return true;
-} catch (ParseException e) {
-    // ignore exeeption
-}
-return false;
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">SimpleDateFormat</span> <span class="n">format</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SimpleDateFormat</span><span class="o">(</span><span class="s">&quot;yyyyMMdd&quot;</span><span class="o">);</span>  
+<span class="c1">//设置为严格验证模式</span>
+<span class="n">format</span><span class="o">.</span><span class="na">setLenient</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+<span class="k">try</span><span class="o">{</span>
+    <span class="n">format</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="n">str</span><span class="o">);</span>
+    <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ParseException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// ignore exeeption</span>
+<span class="o">}</span>
+<span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-{% endhighlight %}
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div>
 如果没有设置为严格验证模式的话，20090230这种日期就会变成20090302。</p>
 
 <p>相对于上面正则的方式来说，代码是多了几行，但是因为格式可以变，灵活性有所提高，代码也容易理解了。
@@ -183,26 +225,24 @@ return false;
 当然有个折中的方法就是由客户端代码构造format作为传输传递，这样做还有个好处就是，验证日期格式的方法完全就是通用的。</p>
 
 <p>例如，我们可以提供下面的api和调用方式:
-{% highlight java %}
-//client
-SimpleDateFormat format = // 由客户端代码构建format
-boolean isDate = DateUtil.isDateFormat(datestr, format);</p>
+<div class="highlight"><pre><code class="java"><span class="c1">//client</span>
+<span class="n">SimpleDateFormat</span> <span class="n">format</span> <span class="o">=</span> <span class="c1">// 由客户端代码构建format</span>
+<span class="kt">boolean</span> <span class="n">isDate</span> <span class="o">=</span> <span class="n">DateUtil</span><span class="o">.</span><span class="na">isDateFormat</span><span class="o">(</span><span class="n">datestr</span><span class="o">,</span> <span class="n">format</span><span class="o">);&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<p>//DateUtil api
-boolean isDateFormat(String datestr, SimpleDateFormat format);
-boolean isDateFormat(String datestr, String formatstr);//单次调用
-boolean isStrictDateFormat(String datestr, String formatstr);//单次使用,用于严格处理
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//DateUtil api</span>
+<span class="kt">boolean</span> <span class="nf">isDateFormat</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">,</span> <span class="n">SimpleDateFormat</span> <span class="n">format</span><span class="o">);</span>
+<span class="kt">boolean</span> <span class="nf">isDateFormat</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">,</span> <span class="n">String</span> <span class="n">formatstr</span><span class="o">);</span><span class="c1">//单次调用</span>
+<span class="kt">boolean</span> <span class="nf">isStrictDateFormat</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">,</span> <span class="n">String</span> <span class="n">formatstr</span><span class="o">);</span><span class="c1">//单次使用,用于严格处理</span>
+</code></pre></div></p>
 
 <p>在不改变接口的情况下，最初的代码可以调整成以下形式
-{% highlight java %}
-public static boolean isStrictYYYYMMDD(String datestr){</p>
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">isStrictYYYYMMDD</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>return isStrictDateFormat(datestr, DateUtil.YYYYMMDD);
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">return</span> <span class="n">isStrictDateFormat</span><span class="o">(</span><span class="n">datestr</span><span class="o">,</span> <span class="n">DateUtil</span><span class="o">.</span><span class="na">YYYYMMDD</span><span class="o">);</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
 
 <h3>总结</h3>
 
@@ -214,8 +254,57 @@ public static boolean isStrictYYYYMMDD(String datestr){</p>
 </ol>
 
 
-<p>{% assign series_list = "improve bitter code" %}
-{% include series_list.html %}</p>
+<p>
+
+
+<h2>"improve bitter code"系列文章:</h2>
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</p>
 ]]></content>
   </entry>
   

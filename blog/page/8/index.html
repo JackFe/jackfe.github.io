@@ -9,7 +9,7 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="经常在一些文本处理、字符串拆解的逻辑中，需要对字符串按照一定的分隔符进行拆解。这样的功能，大多数时候我们会求助于String的split方法。关于这个方法，有几个坑是需要注意的，而掉坑想象在代码中已经出现许多次，值得大家注意。 split的参数是正则表达式 一个很常见的问题， &hellip;">
+  <meta name="description" content="String对象是无状态的 String的内部属性在初始化的时候就固定好了，也没有提供方法进行修改(反射等极端方法除外)，并且类被定义成final，所以String对象都是是实实在在的无状态对象，是不可变的。 在通常的字符串拼接中，如果采用+运算符的话，通常会产生一个字符串对象， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +64,131 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130809_java-hell-string-append.html">说说字符串拼接</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-09T00:00:00+08:00" pubdate data-updated="true">Aug 9<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130809_java-hell-string-append.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>String对象是无状态的</h3>
+
+<p>String的内部属性在初始化的时候就固定好了，也没有提供方法进行修改(反射等极端方法除外)，并且类被定义成final，所以String对象都是是实实在在的无状态对象，是不可变的。</p>
+
+<p>在通常的字符串拼接中，如果采用+运算符的话，通常会产生一个字符串对象，并把两个字符串的内部字符数组拷贝过去。
+因此，在一个常见的频繁修改字符串的场景中，字符数组的拷贝开销是很大的，随之字符串的加长会越到后面越慢,例如下面的代码。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">String</span> <span class="n">sb</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="k">for</span><span class="o">(</span><span class="n">String</span> <span class="n">str</span> <span class="o">:</span> <span class="n">strs</span><span class="o">){</span>
+</span><span class='line'>  <span class="n">sb</span> <span class="o">+=</span> <span class="n">str</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="k">return</span> <span class="n">sb</span><span class="o">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>StringBuffer与StringBuilder</h3>
+
+<p>jdk早就考虑了这种场景，于是提供了StringBuffer，简单来说，就是一个可变的字符数组，开辟了一个字符数组缓冲区，增加(Append)时只是往缓冲区的空余地方写字符，当然也有可能缓冲区不够用，它的开销就集中在不够用的缓冲区扩展中(每次在现有基础上扩展一倍空间)。所以，最好能提前估计字符串的最终长度，减少扩展造成的消耗。不过，即便如此，通常也要把直接用String拼接的效率高许多，例如下面的代码。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">StringBuffer</span> <span class="n">sb</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringBuffer</span><span class="o">();</span>
+</span><span class='line'><span class="k">for</span><span class="o">(</span><span class="n">String</span> <span class="n">str</span> <span class="o">:</span> <span class="n">strs</span><span class="o">){</span>
+</span><span class='line'>  <span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">str</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="k">return</span> <span class="n">sb</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>到了jdk5，增加了StringBuilder，相对于StringBuffer来说，虽然它不是线程安全的，但在绝大多数场景下都是适用的，并且理论效率更佳(从oracle jdk的实现看，两个类除了是否同步这点，实现是一致的)。因此，习惯使用StringBuffer的童鞋，应该多关注一下StringBuilder。</p>
+
+<h3>字符串拼接的编译优化</h3>
+
+<p>再回到+操作符，本身java是没有运算符重载的，+只会对基本数学运算有效，而字符串，这么写只是语法糖而已，会变成StringBuilder操作(jdk5之前是StringBuffer)。例如下面的代码:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">String</span> <span class="nf">test</span><span class="o">(</span><span class="n">String</span> <span class="n">a</span><span class="o">){</span>
+</span><span class='line'>   <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="s">&quot;b&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>通过javap查看，可以看到是这样的(大意就是new一个StringBuilder对象然后用append进行连接);</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="nf">test</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">);</span>
+</span><span class='line'>  <span class="nl">Code:</span>
+</span><span class='line'>   <span class="n">Stack</span><span class="o">=</span><span class="mi">2</span><span class="o">,</span> <span class="n">Locals</span><span class="o">=</span><span class="mi">2</span><span class="o">,</span> <span class="n">Args_size</span><span class="o">=</span><span class="mi">2</span>
+</span><span class='line'>   <span class="mi">0</span><span class="o">:</span>   <span class="k">new</span>     <span class="err">#</span><span class="mi">2</span><span class="o">;</span> <span class="c1">//class java/lang/StringBuilder</span>
+</span><span class='line'>   <span class="mi">3</span><span class="o">:</span>   <span class="n">dup</span>
+</span><span class='line'>   <span class="mi">4</span><span class="o">:</span>   <span class="n">invokespecial</span>   <span class="err">#</span><span class="mi">3</span><span class="o">;</span> <span class="c1">//Method java/lang/StringBuilder.&quot;&lt;init&gt;&quot;:()V</span>
+</span><span class='line'>   <span class="mi">7</span><span class="o">:</span>   <span class="n">aload_1</span>
+</span><span class='line'>   <span class="mi">8</span><span class="o">:</span>   <span class="n">invokevirtual</span>   <span class="err">#</span><span class="mi">4</span><span class="o">;</span> <span class="c1">//Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;</span>
+</span><span class='line'>   <span class="mi">11</span><span class="o">:</span>  <span class="n">ldc</span>     <span class="err">#</span><span class="mi">5</span><span class="o">;</span> <span class="c1">//String b</span>
+</span><span class='line'>   <span class="mi">13</span><span class="o">:</span>  <span class="n">invokevirtual</span>   <span class="err">#</span><span class="mi">4</span><span class="o">;</span> <span class="c1">//Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;</span>
+</span><span class='line'>   <span class="mi">16</span><span class="o">:</span>  <span class="n">invokevirtual</span>   <span class="err">#</span><span class="mi">6</span><span class="o">;</span> <span class="c1">//Method java/lang/StringBuilder.toString:()Ljava/lang/String;</span>
+</span><span class='line'>   <span class="mi">19</span><span class="o">:</span>  <span class="n">areturn</span>
+</span><span class='line'>  <span class="nl">LineNumberTable:</span>
+</span><span class='line'>   <span class="n">line</span> <span class="mi">3</span><span class="o">:</span> <span class="mi">0</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>因此，如果是像上面的情况，直接用+是合理的，对于其他情况，得考虑StringBuilder，同时要避免无意生成多余字符串的情况，例如append(&#8221;s&#8221; + a)的写法，编译器是不会自动优化的，写代码的时候应该换成append(&#8221;s&#8221;).append(a)。</p>
+
+<p>更多关于字符串不变量的讨论，请见<a href="http://mccxj.github.io/blog/20130615_java-string-constant-pool.html">初探Java字符串</a></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -491,99 +616,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130806_was-connection-close-fail.html">WebSphere数据源中的连接被意外关闭案例</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-08-06T00:00:00+08:00" pubdate data-updated="true">Aug 6<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130806_was-connection-close-fail.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>频繁创建连接的现象</h3>
-
-<p>前阵子维护反馈说，oracle数据库每秒创建连接数过高，而主要来源来自于WebSphere集群所在的主机。
-按理说，使用连接池的应用，连接是不会很频繁的。追溯一下所在主机的程序，发现可疑对象是一个使用jdbc轮子的应用。
-就是自己写了一套代码封装了jdbc操作，虽然连接是从数据源中获取的。</p>
-
-<p>但是，单纯看代码，的确没发现有什么问题，该关闭的地方也关闭，不存在泄露的情况。再说，这种现象也不是泄露的表现。
-另外，由于生产上的数据库连接串，开发人员是没有的，所以生成都是通过jndi的方式来处理的，不存在盗链的代码。</p>
-
-<p>不过，我们还是在日志里边发现一些问题。在SystemOut的日志里边，频繁出现类似下面的异常信息:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">[</span><span class="mi">12</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="mi">27</span> <span class="mi">9</span><span class="o">:</span><span class="mi">01</span><span class="o">:</span><span class="mi">29</span><span class="o">:</span><span class="mi">262</span> <span class="n">GMT</span><span class="o">+</span><span class="mi">08</span><span class="o">:</span><span class="mi">00</span><span class="o">]</span> <span class="mi">00000038</span> <span class="n">MCWrapper</span>     <span class="n">E</span>   <span class="nl">J2CA0081E:</span>
-</span><span class='line'><span class="err">尝试对资源</span> <span class="n">ecareDB</span> <span class="err">的</span> <span class="n">ManagedConnection</span> <span class="n">WSRdbManagedConnectionImpl</span><span class="err">@</span><span class="mi">23</span><span class="n">f823f8</span> <span class="err">执行方法</span> <span class="n">cleanup</span> <span class="err">时，</span>
-</span><span class='line'><span class="err">方法</span> <span class="n">cleanup</span> <span class="err">失败。捕获的异常：</span><span class="n">com</span><span class="o">.</span><span class="na">ibm</span><span class="o">.</span><span class="na">ws</span><span class="o">.</span><span class="na">exception</span><span class="o">.</span><span class="na">WsException</span><span class="o">:</span> <span class="nl">DSRA0080E:</span>
-</span><span class='line'><span class="n">An</span> <span class="n">exception</span> <span class="n">was</span> <span class="n">received</span> <span class="n">by</span> <span class="n">the</span> <span class="n">Data</span> <span class="n">Store</span> <span class="n">Adapter</span><span class="o">.</span> <span class="n">See</span> <span class="n">original</span> <span class="n">exception</span> <span class="nl">message:</span>
-</span><span class='line'> <span class="n">Cannot</span> <span class="n">call</span> <span class="err">&#39;</span><span class="n">cleanup</span><span class="err">&#39;</span> <span class="n">on</span> <span class="n">a</span> <span class="n">ManagedConnection</span> <span class="k">while</span> <span class="n">it</span> <span class="n">is</span> <span class="n">still</span> <span class="n">in</span> <span class="n">a</span> <span class="n">transaction</span><span class="o">..</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>异常的来源，居然是连接的close方法。</p>
-
-<h3>为什么close会失败</h3>
-
-<p>在WebSphere的资料上没有找到相关的描述，但是我在ibatis的文档上找到了相关的描述(ibatis developer guide的12-13页)：</p>
-
-<p>The <transactionManager> element also allows an optional attribute commitRequired that can be true or
-false.  Normally iBATIS will not commit transactions unless an insert, update, or delete operation has been
-performed.  This is true even if you explicitly call the commitTransaction() method.  This behavior
-creates problems in some cases.  If you want iBATIS to always commit transactions, even if no insert,
-update, or delete operation has been performed, then set the value of the commitRequired attribute to true.
-Examples of where this attribute is useful include:</p>
-
-<ol>
-<li><p>If you call a stored procedures that updates data as well as returning rows.  In that case you would
-call the procedure with the queryForList() operation – so iBATIS would not normally commit the
-transaction.  But then the updates would be rolled back.</p></li>
-<li><p>In a WebSphere environment when you are using connection pooling and you use the JNDI
-<dataSource> and the JDBC or JTA transaction manager.  WebSphere requires all transactions on
-pooled connections to be committed or the connection will not be returned to the pool.</p></li>
-</ol>
-
-
-<p>Note that the commitRequired attribute has no effect when using the EXTERNAL transaction manager.</p>
-
-<h3>结论及对策</h3>
-
-<p>从上面的描述上看到，WebSphere环境的连接是需要提交事务的，否则会被意外关闭。
-并且，如果选择ibatis的事务管理机制，就应该设置commitRequired属性，要么就应该使用spring的事务解决方案。</p>
-
-<p>我们尝试给查询语句增加commit操作，果然异常信息不再出现，并且数据库连接数也大幅度减少了。
-看来，在生产系统中还是应该优先考虑成熟的解决方案，不要随便造轮子。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/9/">&larr; Older</a>
@@ -599,6 +631,10 @@ pooled connections to be committed or the connection will not be returned to the
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
@@ -634,10 +670,6 @@ pooled connections to be committed or the connection will not be returned to the
     
       <li class="post">
         <a href="/blog/20141229_des-hack.html">常见DES实现陷阱</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20141225_java-common-util.html">java常见工具库培训</a>
       </li>
     
   </ul>

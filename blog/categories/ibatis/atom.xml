@@ -4,7 +4,7 @@
   <title><![CDATA[Category: ibatis | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/ibatis/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-04-17T14:57:43+08:00</updated>
+  <updated>2016-04-17T15:41:51+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -24,95 +24,91 @@
 
 <h4>java代码1:</h4>
 
-<p>{% highlight java %}
-   Map map = new HashMap();
-   ComplexBean bean = new ComplexBean();
-   bean.setMap(new HashMap());
-   bean.getMap().put("id", new Integer(1));
-   map.put("bean", bean);
-   Account account = new Account();
-   account.setId(2);
-   Account anotherAccount = new Account();
-   anotherAccount.setId(3);
-   map.put("accounts", new Account[] {account, anotherAccount});
-   Integer id = (Integer) sqlMap.queryForObject("mapBeanMap", map);
-{% endhighlight %}</p>
+<p><div class="highlight"><pre><code class="java">   <span class="n">Map</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">();</span>
+   <span class="n">ComplexBean</span> <span class="n">bean</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ComplexBean</span><span class="o">();</span>
+   <span class="n">bean</span><span class="o">.</span><span class="na">setMap</span><span class="o">(</span><span class="k">new</span> <span class="n">HashMap</span><span class="o">());</span>
+   <span class="n">bean</span><span class="o">.</span><span class="na">getMap</span><span class="o">().</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;id&quot;</span><span class="o">,</span> <span class="k">new</span> <span class="n">Integer</span><span class="o">(</span><span class="mi">1</span><span class="o">));</span>
+   <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;bean&quot;</span><span class="o">,</span> <span class="n">bean</span><span class="o">);</span>
+   <span class="n">Account</span> <span class="n">account</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Account</span><span class="o">();</span>
+   <span class="n">account</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
+   <span class="n">Account</span> <span class="n">anotherAccount</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Account</span><span class="o">();</span>
+   <span class="n">anotherAccount</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">3</span><span class="o">);</span>
+   <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;accounts&quot;</span><span class="o">,</span> <span class="k">new</span> <span class="n">Account</span><span class="o">[]</span> <span class="o">{</span><span class="n">account</span><span class="o">,</span> <span class="n">anotherAccount</span><span class="o">});</span>
+   <span class="n">Integer</span> <span class="n">id</span> <span class="o">=</span> <span class="o">(</span><span class="n">Integer</span><span class="o">)</span> <span class="n">sqlMap</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="s">&quot;mapBeanMap&quot;</span><span class="o">,</span> <span class="n">map</span><span class="o">);</span>
+</code></pre></div></p>
 
 <h4>ibatis配置1:</h4>
 
-<p>{% highlight xml %}
- <select id="mapBeanMap"
-   parameterClass="map"
-   resultClass="int" >
+<p><div class="highlight"><pre><code class="xml"> <span class="nt">&lt;select</span> <span class="na">id=</span><span class="s">&quot;mapBeanMap&quot;</span>
+   <span class="na">parameterClass=</span><span class="s">&quot;map&quot;</span>
+   <span class="na">resultClass=</span><span class="s">&quot;int&quot;</span> <span class="nt">&gt;</span>
    select count(ACC_ID) from Account where ACC_ID in (#bean.map.id#,#accounts[0].id#,#accounts[1].id#)
- </select>
-{% endhighlight %}</p>
+ <span class="nt">&lt;/select&gt;</span>
+</code></pre></div></p>
 
 <h4>java代码2:</h4>
 
-<p>{% highlight java %}
-   Map map = new HashMap();
-   ComplexBean bean = new ComplexBean();
-   bean.setMap(new HashMap());
-   Account account = new Account();
-   account.setId(2);
-   Account anotherAccount = new Account();
-   anotherAccount.setId(3);
-   bean.getMap().put("accounts", new Account[] {account, anotherAccount});
-   map.put("bean", bean);
-{% endhighlight %}</p>
+<p><div class="highlight"><pre><code class="java">   <span class="n">Map</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">();</span>
+   <span class="n">ComplexBean</span> <span class="n">bean</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ComplexBean</span><span class="o">();</span>
+   <span class="n">bean</span><span class="o">.</span><span class="na">setMap</span><span class="o">(</span><span class="k">new</span> <span class="n">HashMap</span><span class="o">());</span>
+   <span class="n">Account</span> <span class="n">account</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Account</span><span class="o">();</span>
+   <span class="n">account</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
+   <span class="n">Account</span> <span class="n">anotherAccount</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Account</span><span class="o">();</span>
+   <span class="n">anotherAccount</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">3</span><span class="o">);</span>
+   <span class="n">bean</span><span class="o">.</span><span class="na">getMap</span><span class="o">().</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;accounts&quot;</span><span class="o">,</span> <span class="k">new</span> <span class="n">Account</span><span class="o">[]</span> <span class="o">{</span><span class="n">account</span><span class="o">,</span> <span class="n">anotherAccount</span><span class="o">});</span>
+   <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;bean&quot;</span><span class="o">,</span> <span class="n">bean</span><span class="o">);</span>
+</code></pre></div></p>
 
 <h4>ibatis配置2:</h4>
 
-<p>{% highlight xml %}
- <select id="mapBeanMap2"
-   parameterClass="map"
-   resultClass="int" >
+<p><div class="highlight"><pre><code class="xml"> <span class="nt">&lt;select</span> <span class="na">id=</span><span class="s">&quot;mapBeanMap2&quot;</span>
+   <span class="na">parameterClass=</span><span class="s">&quot;map&quot;</span>
+   <span class="na">resultClass=</span><span class="s">&quot;int&quot;</span> <span class="nt">&gt;</span>
    select count(ACC_ID) from Account where ACC_ID in
-   <iterate close=")" open="(" conjunction="," property="bean.map.accounts"></p>
+   <span class="nt">&lt;iterate</span> <span class="na">close=</span><span class="s">&quot;)&quot;</span> <span class="na">open=</span><span class="s">&quot;(&quot;</span> <span class="na">conjunction=</span><span class="s">&quot;,&quot;</span> <span class="na">property=</span><span class="s">&quot;bean.map.accounts&quot;</span><span class="nt">&gt;&lt;/p&gt;</span>
 
-<pre><code> #bean.map.accounts[].id#
-</code></pre>
+<span class="nt">&lt;pre&gt;&lt;code&gt;</span> #bean.map.accounts[].id#
+<span class="nt">&lt;/code&gt;&lt;/pre&gt;</span>
 
-<p>   </iterate>
- </select>
-{% endhighlight %}</p>
+<span class="nt">&lt;p&gt;</span>   <span class="nt">&lt;/iterate&gt;</span>
+ <span class="nt">&lt;/select&gt;</span>
+</code></pre></div></p>
 
 <h2>ibatis与泛型</h2>
 
 <p>当使用复杂配置并且参数带有泛型的时候，使用比较标签有可能导致如下错误:There is no READABLE property named ‘XXX’ in class ‘java.lang.Object’.这是因为进行比较的时候，ibatis是通过反射获取类型而不是先计算值的,这样泛型的时候会获取到Object类而不能得到真实的类型,自己简单打个补丁先:
-{% highlight diff %}</p>
+<div class="highlight"><pre><code class="diff">&lt;/p&gt;
 
-<h1>Index: src/com/ibatis/sqlmap/engine/mapping/sql/dynamic/elements/ConditionalTagHandler.java</h1>
+&lt;h1&gt;Index: src/com/ibatis/sqlmap/engine/mapping/sql/dynamic/elements/ConditionalTagHandler.java&lt;/h1&gt;
 
-<p>--- src/com/ibatis/sqlmap/engine/mapping/sql/dynamic/elements/ConditionalTagHandler.java (revision 1079874)
-+++ src/com/ibatis/sqlmap/engine/mapping/sql/dynamic/elements/ConditionalTagHandler.java (working copy)
-@@ -72,14 +72,13 @@</p>
+&lt;p&gt;--- src/com/ibatis/sqlmap/engine/mapping/sql/dynamic/elements/ConditionalTagHandler.java (revision 1079874)
+<span class="gi">+++ src/com/ibatis/sqlmap/engine/mapping/sql/dynamic/elements/ConditionalTagHandler.java (working copy)</span>
+<span class="gu">@@ -72,14 +72,13 @@&lt;/p&gt;</span>
 
-<pre><code> if (prop != null) {
+&lt;pre&gt;&lt;code&gt; if (prop != null) {
    value1 = PROBE.getObject(parameterObject, prop);
-</code></pre>
+&lt;/code&gt;&lt;/pre&gt;
 
-<ul>
-<li>   type = PROBE.getPropertyTypeForGetter(parameterObject, prop);
+&lt;ul&gt;
+&lt;li&gt;   type = PROBE.getPropertyTypeForGetter(parameterObject, prop);
  } else {
-   value1 = parameterObject;</li>
-<li>   if (value1 != null) {</li>
-<li><pre><code> type = parameterObject.getClass();
-</code></pre></li>
-<li>   } else {</li>
-<li><pre><code> type = Object.class;
-</code></pre></li>
-<li>   }</li>
-<li> }</li>
-<li> if (value1 != null) {</li>
-<li>  type = value1.getClass();</li>
-<li> } else {</li>
-<li>  type = Object.class;
+   value1 = parameterObject;&lt;/li&gt;
+&lt;li&gt;   if (value1 != null) {&lt;/li&gt;
+&lt;li&gt;&lt;pre&gt;&lt;code&gt; type = parameterObject.getClass();
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;   } else {&lt;/li&gt;
+&lt;li&gt;&lt;pre&gt;&lt;code&gt; type = Object.class;
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;li&gt;   }&lt;/li&gt;
+&lt;li&gt; }&lt;/li&gt;
+&lt;li&gt; if (value1 != null) {&lt;/li&gt;
+&lt;li&gt;  type = value1.getClass();&lt;/li&gt;
+&lt;li&gt; } else {&lt;/li&gt;
+&lt;li&gt;  type = Object.class;
  }
  if (comparePropertyName != null) {
    Object value2 = PROBE.getObject(parameterObject, comparePropertyName);
-{% endhighlight %}</li>
+</code></pre></div></li>
 </ul>
 
 

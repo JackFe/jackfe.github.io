@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-04-17T14:57:43+08:00</updated>
+  <updated>2016-04-17T15:41:51+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -428,40 +428,39 @@ class UrlMatcher {
 <p>周六做code diff的时候发现B项目一段颇长的处理逻辑(40行左右)。处理流程是这样的，
 从页面上取到一批数据之后，用这批数据封装参数进行后台调用(远程调用)。为了避免数据调用超时，
 对这批数据进行分批多次调用。代码如下所示(现实的代码比这个要复杂些，并且没有使用subList方法)：
-{% highlight java %}
-List batchdatas = ...;
-int batchsize = 10; // load from parameter</p>
+<div class="highlight"><pre><code class="java"><span class="n">List</span> <span class="n">batchdatas</span> <span class="o">=</span> <span class="o">...;</span>
+<span class="kt">int</span> <span class="n">batchsize</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span> <span class="c1">// load from parameter&lt;/p&gt;</span>
 
-<p>int datasize = batchdatas.size();
-if(datasize > batchsize){</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="kt">int</span> <span class="n">datasize</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+<span class="k">if</span><span class="o">(</span><span class="n">datasize</span> <span class="o">&gt;</span> <span class="n">batchsize</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>int batch = datasize / batchsize;
-for(int i=0;i&lt;batch;i++){
-    List inparams = new ArrayList();
-    List batchdata = batchdatas.subList(batchsize*i, batchsize*(i+1));
-    inparams.add(new CEntityList(batchdata));
-    RemoteCall.commonInvoke(operator, inparams, "CheckCmd");
-}
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kt">int</span> <span class="n">batch</span> <span class="o">=</span> <span class="n">datasize</span> <span class="o">/</span> <span class="n">batchsize</span><span class="o">;</span>
+<span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">i</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">batch</span><span class="o">;</span><span class="n">i</span><span class="o">++){</span>
+    <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+    <span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">batchsize</span><span class="o">*</span><span class="n">i</span><span class="o">,</span> <span class="n">batchsize</span><span class="o">*(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">));</span>
+    <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
+    <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+<span class="o">}</span>
 
-int left = datasize % batchsize;
-if(left != 0){
-    List inparams = new ArrayList();
-    List batchdata = batchdatas.subList(batchsize*batch, datasize);
-    inparams.add(new CEntityList(batchdata));
-    RemoteCall.commonInvoke(operator, inparams, "CheckCmd");
-}
-</code></pre>
+<span class="kt">int</span> <span class="n">left</span> <span class="o">=</span> <span class="n">datasize</span> <span class="o">%</span> <span class="n">batchsize</span><span class="o">;</span>
+<span class="k">if</span><span class="o">(</span><span class="n">left</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">){</span>
+    <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+    <span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">batchsize</span><span class="o">*</span><span class="n">batch</span><span class="o">,</span> <span class="n">datasize</span><span class="o">);</span>
+    <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
+    <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+<span class="o">}</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-else {</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+<span class="k">else</span> <span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>List inparams = new ArrayList();
-inparams.add(new CEntityList(batchdatas));
-RemoteCall.commonInvoke(operator, inparams, "CheckCmd");
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+<span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdatas</span><span class="o">));</span>
+<span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
 
 <p>从代码的实现看，思路还是比较清晰的。如果不足一次，就一次提交。否则计算出一共要分多少次，
 然后逐次处理提交，最后还要判断是否还有剩余的，如果有就再处理一次。</p>
@@ -473,41 +472,39 @@ RemoteCall.commonInvoke(operator, inparams, "CheckCmd");
 <p>有没什么办法可以避免重复? 或许有些童鞋第一反应是给这几句代码抽取成小方法。
 不过这里有更好的办法，首先细想一下就会发现不足一次的判断(datasize > batchsize)不是必要的，
 如果计算批次而是计算每次的起始点和结束点，上面两个分支也可以合并一下。调整后代码如下：
-{% highlight java %}
-List batchdatas = ...;
-int batchsize = 10; // load from parameter</p>
+<div class="highlight"><pre><code class="java"><span class="n">List</span> <span class="n">batchdatas</span> <span class="o">=</span> <span class="o">...;</span>
+<span class="kt">int</span> <span class="n">batchsize</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span> <span class="c1">// load from parameter&lt;/p&gt;</span>
 
-<p>int datasize = batchdatas.size();
-for(int startidx=0;startidx&lt;datasize;startidx+=batchsize){</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="kt">int</span> <span class="n">datasize</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+<span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">startidx</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">startidx</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">datasize</span><span class="o">;</span><span class="n">startidx</span><span class="o">+=</span><span class="n">batchsize</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>int endidx = (startidx+batchsize) &gt; datasize ? datasize : (startidx+batchsize);
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="kt">int</span> <span class="n">endidx</span> <span class="o">=</span> <span class="o">(</span><span class="n">startidx</span><span class="o">+</span><span class="n">batchsize</span><span class="o">)</span> <span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">datasize</span> <span class="o">?</span> <span class="n">datasize</span> <span class="o">:</span> <span class="o">(</span><span class="n">startidx</span><span class="o">+</span><span class="n">batchsize</span><span class="o">);</span>
 
-List inparams = new ArrayList();
-List batchdata = batchdatas.subList(startidx, endidx);
-inparams.add(new CEntityList(batchdata));
-RemoteCall.commonInvoke(operator, inparams, "CheckCmd");
-</code></pre>
+<span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+<span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">startidx</span><span class="o">,</span> <span class="n">endidx</span><span class="o">);</span>
+<span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
+<span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
 
 <p>其中计算endidx使用了一个三元表达式，使用三元表达式用来替代一些简单的if-else语句是个实用的小技巧。
 代码量缩小为原来的三分之一，代码少了，维护量也轻松了。</p>
 
 <p>类似这样的代码也并不少见，例如计算总页数的分页逻辑有下面的写法
-{% highlight java %}
-// 常用做法
-int totalpage = totalsize / pagesize;
-if(totalsize % pagesize != 0){</p>
+<div class="highlight"><pre><code class="java"><span class="c1">// 常用做法</span>
+<span class="kt">int</span> <span class="n">totalpage</span> <span class="o">=</span> <span class="n">totalsize</span> <span class="o">/</span> <span class="n">pagesize</span><span class="o">;</span>
+<span class="k">if</span><span class="o">(</span><span class="n">totalsize</span> <span class="o">%</span> <span class="n">pagesize</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>totalpage++;
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">totalpage</span><span class="o">++;</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<p>// 另外一种写法
-int totalpage = (totalsize + pagesize - 1) / pagesize;
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">// 另外一种写法</span>
+<span class="kt">int</span> <span class="n">totalpage</span> <span class="o">=</span> <span class="o">(</span><span class="n">totalsize</span> <span class="o">+</span> <span class="n">pagesize</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">/</span> <span class="n">pagesize</span><span class="o">;</span>
+</code></pre></div></p>
 
 <h3>基本功很重要</h3>
 
@@ -516,8 +513,57 @@ int totalpage = (totalsize + pagesize - 1) / pagesize;
 以来面试的童鞋为例，连基本算法的时间复杂度都没弄清楚的人不在少数，所以
 在项目代码中，经常看到化简为繁的代码，现在也很习惯了。</p>
 
-<p>{% assign series_list = "improve bitter code" %}
-{% include series_list.html %}</p>
+<p>
+
+
+<h2>"improve bitter code"系列文章:</h2>
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</p>
 ]]></content>
   </entry>
   
@@ -553,90 +599,89 @@ int totalpage = (totalsize + pagesize - 1) / pagesize;
 
 <h3>代码示例</h3>
 
-<p>{% highlight ruby %}
-def init
-  @arr = Array.new(8)
-  (0..7).each do |i| @arr[i] = Array.new(8, 0) end
-  @path = Array.new(64)
-  @ok = false
-  @poss = [[-2, 1], [2, 1], [1, 2], [-1, 2], [2, -1], [-2, -1], [-1, -2], [1, -2]]
-end</p>
+<p><div class="highlight"><pre><code class="ruby"><span class="k">def</span> <span class="nf">init</span>
+  <span class="vi">@arr</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">7</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">end</span>
+  <span class="vi">@path</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>
+  <span class="vi">@ok</span> <span class="o">=</span> <span class="kp">false</span>
+  <span class="vi">@poss</span> <span class="o">=</span> <span class="o">[[-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">]]</span>
+<span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 
-<h1>判断[x,y]是否在棋盘内并未走过</h1>
+<span class="sr">&lt;h1&gt;判断[x,y]是否在棋盘内并未走过&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
 
-<p>def valid?(x,y)
-  x>=0 &amp;&amp; x<8 && y>=0 &amp;&amp; y&lt;8 &amp;&amp; @arr[x][y]==0
-end</p>
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">valid?</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+  <span class="n">x</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span> <span class="n">x</span><span class="o">&lt;</span><span class="mi">8</span> <span class="o">&amp;&amp;</span> <span class="n">y</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span> <span class="n">y</span><span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="mi">8</span> <span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span><span class="o">&amp;</span><span class="n">amp</span><span class="p">;</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">x</span><span class="o">][</span><span class="n">y</span><span class="o">]==</span><span class="mi">0</span>
+<span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 
-<h1>判断当前点有哪些方向可以走</h1>
+<span class="sr">&lt;h1&gt;判断当前点有哪些方向可以走&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
 
-<p>def filter(mark)
-  posz, mustpos = {}, nil
-  a, b = @path[mark]
-  @poss.each do |pos|</p>
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span>
+  <span class="n">posz</span><span class="p">,</span> <span class="n">mustpos</span> <span class="o">=</span> <span class="p">{},</span> <span class="kp">nil</span>
+  <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="vi">@path</span><span class="o">[</span><span class="n">mark</span><span class="o">]</span>
+  <span class="vi">@poss</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">pos</span><span class="o">|&lt;</span><span class="sr">/p&gt;</span>
 
-<pre><code>axp, bxp = a+pos[0], b+pos[1]
-if valid?(axp, bxp)
-  sz = 0
-  @poss.each do |ps|
-    ap, bp = axp+ps[0], bxp+ps[1]
-    sz+=1 if valid?(ap, bp) # 存在空点
-  end
-  if sz&gt;0
-    posz[pos] = sz
-  else
-    mustpos.nil? ? (mustpos = pos) : (return [])
-  end
-end
-</code></pre>
+<span class="sr">&lt;pre&gt;&lt;code&gt;axp, bxp = a+pos[0], b+pos[1]</span>
+<span class="sr">if valid?(axp, bxp)</span>
+<span class="sr">  sz = 0</span>
+<span class="sr">  @poss.each do |ps|</span>
+<span class="sr">    ap, bp = axp+ps[0], bxp+ps[1]</span>
+<span class="sr">    sz+=1 if valid?(ap, bp) # 存在空点</span>
+<span class="sr">  end</span>
+<span class="sr">  if sz&amp;gt;0</span>
+<span class="sr">    posz[pos] = sz</span>
+<span class="sr">  else</span>
+<span class="sr">    mustpos.nil? ? (mustpos = pos) : (return [])</span>
+<span class="sr">  end</span>
+<span class="sr">end</span>
+<span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
 
-<p>  end
-  # 对目标点的方向多寡进行排序
-  mustpos.nil? ? posz.keys.sort {|a,b| posz[a]&lt;=>posz[b]} : [mustpos]
-end</p>
+<span class="sr">&lt;p&gt;  end</span>
+<span class="sr">  # 对目标点的方向多寡进行排序</span>
+<span class="sr">  mustpos.nil? ? posz.keys.sort {|a,b| posz[a]&amp;lt;=&gt;posz[b]} : [mustpos]</span>
+<span class="sr">end&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
 
-<p>def walk(mark)
-  if mark==63</p>
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">mark</span><span class="o">==</span><span class="mi">63</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 
-<pre><code>@ok = true
-return
-</code></pre>
+<span class="sr">&lt;pre&gt;&lt;code&gt;@ok = true</span>
+<span class="sr">return</span>
+<span class="sr">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;</span><span class="sr">/pre&gt;</span>
 
-<p>  end
-  a, b = @path[mark]
-  filter(mark).each do |pos|</p>
+<span class="sr">&lt;p&gt;  end</span>
+<span class="sr">  a, b = @path[mark]</span>
+<span class="sr">  filter(mark).each do |pos|&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
 
-<pre><code>rp = [a+pos[0], b+pos[1]]
-@path[mark+1] = rp
-@arr[rp[0]][rp[1]] = 1
-walk(mark+1)
-@ok ? return : (@arr[rp[0]][rp[1]] = 0)
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">rp</span> <span class="o">=</span> <span class="o">[</span><span class="n">a</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span>
+<span class="vi">@path</span><span class="o">[</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="o">]</span> <span class="o">=</span> <span class="n">rp</span>
+<span class="vi">@arr</span><span class="o">[</span><span class="n">rp</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">rp</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">walk</span><span class="p">(</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="vi">@ok</span> <span class="p">?</span> <span class="k">return</span> <span class="p">:</span> <span class="p">(</span><span class="vi">@arr</span><span class="o">[</span><span class="n">rp</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">rp</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>  end
-end</p>
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">end</span>
+<span class="k">end</span><span class="o">&lt;</span><span class="sr">/p&gt;</span>
 
-<p>(0..7).each do |i|
-  (0..7).each do |j|</p>
+<span class="sr">&lt;p&gt;(0..7).each do |i|</span>
+<span class="sr">  (0..7).each do |j|&lt;/</span><span class="nb">p</span><span class="o">&gt;</span>
 
-<pre><code>init
-@path[0] = [i,j]
-@arr[i][j] = 1
-walk(0)
-if @ok
-  @path.each_with_index do |ps, idx|
-    @arr[ps[0]][ps[1]] = idx
-  end
-  @arr.each do |ar| p ar end
-  puts
-else
-  "no solution"
-end
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">init</span>
+<span class="vi">@path</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span> <span class="o">=</span> <span class="o">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">]</span>
+<span class="vi">@arr</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">walk</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="k">if</span> <span class="vi">@ok</span>
+  <span class="vi">@path</span><span class="o">.</span><span class="n">each_with_index</span> <span class="k">do</span> <span class="o">|</span><span class="n">ps</span><span class="p">,</span> <span class="n">idx</span><span class="o">|</span>
+    <span class="vi">@arr</span><span class="o">[</span><span class="n">ps</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">ps</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="n">idx</span>
+  <span class="k">end</span>
+  <span class="vi">@arr</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">ar</span><span class="o">|</span> <span class="nb">p</span> <span class="n">ar</span> <span class="k">end</span>
+  <span class="nb">puts</span>
+<span class="k">else</span>
+  <span class="s2">&quot;no solution&quot;</span>
+<span class="k">end</span>
+<span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>  end
-end
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span>  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div></p>
 ]]></content>
   </entry>
   

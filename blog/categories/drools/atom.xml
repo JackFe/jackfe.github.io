@@ -4,7 +4,7 @@
   <title><![CDATA[Category: drools | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/drools/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-04-17T14:57:43+08:00</updated>
+  <updated>2016-04-17T15:41:51+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -57,13 +57,12 @@ stomp是一个简单的容易实现的基于文本的协议，openwire是一种�
 <h4>2009-01-15附加</h4>
 
 <p>activemq的failover功能配置很简单~例如简单修改brokerURL为"failover:(tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0)"，正常情况是会出现下面的信息：
-{% highlight properties %}
-ActiveMQ Task 15/01 16:52:43,672 DEBUG [failover.FailoverTransport]-802 Waiting 5120 ms before attempting connection.
-ActiveMQ Task 15/01 16:52:45,569 DEBUG [failover.FailoverTransport]-593 urlList connectionList:[tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0]
-ActiveMQ Task 15/01 16:52:45,569 DEBUG [failover.FailoverTransport]-712 Attempting connect to: tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0
-ActiveMQ Task 15/01 16:52:45,570 DEBUG [failover.FailoverTransport]-753 Connect fail to: tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0, reason: java.net.ConnectException: Connection refused
-ActiveMQ Task 15/01 16:52:45,570 DEBUG [ tcp.TcpTransport]-458 Stopping transport tcp://null:0
-{% endhighlight %}</p>
+<div class="highlight"><pre><code class="properties"><span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:43,672 DEBUG [failover.FailoverTransport]-802 Waiting 5120 ms before attempting connection.</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,569 DEBUG [failover.FailoverTransport]-593 urlList connectionList:[tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0]</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,569 DEBUG [failover.FailoverTransport]-712 Attempting connect to: tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,570 DEBUG [failover.FailoverTransport]-753 Connect fail to: tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0, reason: java.net.ConnectException: Connection refused</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,570 DEBUG [ tcp.TcpTransport]-458 Stopping transport tcp://null:0</span>
+</code></pre></div></p>
 
 <h4>2009-01-16附加</h4>
 

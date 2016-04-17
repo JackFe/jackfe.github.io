@@ -9,11 +9,9 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="10年时接触activemq和drools时收集的一些资料 activeMQ资料 activeMQ官方网站
-JMS消息类型模型
-实战activeMQ
-ActiveMQ4.1 +Spring2.0的POJO JMS方案(上)整理版
-ActiveMQ4.1 +Spring2.0的POJO JMS方案( &hellip;">
+  <meta name="description" content="这是刚到公司时写的~ 有时候真是不看不知道，这样一个每月数亿业务量，数十亿营收的大型系统，原来也就是这样的质量。
+我们可以想象这种系统一开始都是美好的，只是渐渐的变味了。就拿我们这边java的来说，原来也应该是有公用代码库的，只是那么久每人去维护，项目赶工，
+自立山寨的情况多了， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -68,6 +66,70 @@ ActiveMQ4.1 +Spring2.0的POJO JMS方案( &hellip;">
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121202_framework-improve-base-library.html">从某维护系统的架构改造谈起–公用代码库(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-02T00:00:00+08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2012</time>
+        
+         | <a href="/blog/20121202_framework-improve-base-library.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这是刚到公司时写的~</p>
+
+<p>有时候真是不看不知道，这样一个每月数亿业务量，数十亿营收的大型系统，原来也就是这样的质量。
+我们可以想象这种系统一开始都是美好的，只是渐渐的变味了。就拿我们这边java的来说，原来也应该是有公用代码库的，只是那么久每人去维护，项目赶工，
+自立山寨的情况多了，这些东西的反向价值就越来越明显了。典型的表现有：
+* 自立门户的现象很突出，经常可以找到n个方法是做同样事情的；
+* 神级的类很多，例如某个类可以提供字符串，时间，web，业务相关的操作；
+* 公用类代码质量良莠不齐，有很多明显写得不好的地方(曾经有个数千行的类就给我砍倒1/3代码)；
+* 缺乏公用库的document和quickstart</p>
+
+<p>这样造成浪费，花了很多冤枉时间去实现已有功能，缺乏统一规划。大家都有体会，维护一个杂乱无章的系统是多么的困难，
+在这种系统想写出漂亮的代码是很考水平的。现在代码库又特别庞大，怪不得很多同事慢慢地就给系统同化了，
+缺乏持续改进的动力。在上次retro会议的时候，针对缺乏统一的公用代码库的问题，针对质量和维护的问题，我提了一些做法：</p>
+
+<p><img src="/assets/images/common_lib.jpg" alt="公共代码库迁移" /></p>
+
+<ol>
+<li>方向是在保留现有逻辑的基础上，针对新添加的功能和修改的功能，逐渐迁移到新的公用库。</li>
+<li>至于公用库的选材，主要是从各大现有公用库进行提炼，对神级类进行拆分，并结合开发人员提需求的做法，形成我们的公用库。</li>
+<li>为了避免山寨的出现，培训和文档是必须有的。</li>
+<li>针对如何让程序员接受并找到新公用库的问题，建立新的source目录，并在文档上通过目录－包结构－类的层次做好文档(javadoc)。</li>
+<li>除了必要的培训之外，主要的审查方式还是通过每天的code diff和定期的code review来做到大家对公用库的认同和理解。</li>
+<li>维护是要靠大家去推动的，就像上面说的，由程序员反馈需求或提供补丁的方式，保证公用库的持续改进。</li>
+</ol>
+
+
+<p>现在工作进展还算顺利，过段时间再看看效果怎样，或许咨询一下顾问看看有没有改进的地方。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -614,80 +676,6 @@ typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20121130_findbugs.html">Findbugs使用有感(旧)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-11-30T00:00:00+08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20121130_findbugs.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>最近抽出点时间来处理项目上庞大的findbugs问题,处理过程中总结了下面几类参见的毛病：</p>
-
-<h3>关于IO流</h3>
-
-<p>见过的有写response的outputStream,文件下载,数据导出。这些场景涉及流读取、写入和最后的关闭，是findbugs检查的重灾区.
-解决办法是使用common-io库,常用的方法有IOUtils#copy,IOUtils#write,IOUtils#closeQuietly。</p>
-
-<h3>关于无效变量操作</h3>
-
-<p>包括变量使用后置null,没有被使用的变量，虽然这种findbugs问题很低级,不过在系统中仍然存在很多。
-处理办法是
-1. 变量使用后置null是没什么用的,JVM的GC比想象中智能多了；
-2. 假如变量在稍后的处理过程一定会被赋值,则init是没有意义的。<br/>
-遵循的原则是相关的变量和操作集中在一起，缩短变量的作用域(同时，这样也对JVM比较友好)</p>
-
-<h3>关于对象的延时加载</h3>
-
-<p>系统中有些类实现了延时加载的singleton模式，还有的Action类中的实例变量使用了延时加载的方式。
-很不幸的是，singleton的延时加载实现几乎都是错的, Action类的实例变量延时加载也没什么意义。
-要实现singleton，最简单的方式是预加载方式,如果想做延时加载,可以使用内部静态类的实现方式。</p>
-
-<h3>关于执行效率</h3>
-
-<p>包括string的修改操作,map的遍历操作。如果有string的大量修改操作，应该使用StringBuffer或者StringBuilder
-(在jdk5以上，StringBuilder适用于大多数场合)。而对于map的遍历,应该使用entrySet而不是keySet,这些注意一下就ok了。
-另外系统有很多DateFormater的东西，用了很多静态变量来提高效率，可惜jdk的日期库是非常烂的,DateFormater也不是线程安全的东西，应该避免使用静态变量。</p>
-
-<h3>关于异常处理</h3>
-
-<p>Exception is caught when Exception is not thrown 这个findbugs问题在系统出现非常多，也是最难处理的问题。从这个点
-就可以看出系统实现非常混乱，本来属于不同抽象层次的代码都堆在一起了，没有层次之分。这个问题一般是需要修改到那段逻辑的时候才会去
-解决，通过抽取方法/类的方式，把异常进行抽象化，最后借助框架层次上的异常统一处理逻辑就通常可以把Action上面的所有的try-catch干掉。</p>
-
-<h3>关于注释</h3>
-
-<p>这其实不是findbugs问题。可以发现java代码里边很多注释是没什么用的，包括一些显而易见的注释,方法注释(通常只有方法描述是有点意义，其他都是抄模板的)
-注释写不好，还不如不写，正确的做法是尽量写出自文档化的代码。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/17/">&larr; Older</a>
@@ -703,6 +691,10 @@ typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
@@ -738,10 +730,6 @@ typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择
     
       <li class="post">
         <a href="/blog/20141229_des-hack.html">常见DES实现陷阱</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20141225_java-common-util.html">java常见工具库培训</a>
       </li>
     
   </ul>

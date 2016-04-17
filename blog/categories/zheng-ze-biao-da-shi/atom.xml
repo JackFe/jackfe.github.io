@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 正则表达式 | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/zheng-ze-biao-da-shi/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-04-17T14:57:43+08:00</updated>
+  <updated>2016-04-17T15:41:51+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -24,16 +24,15 @@
 
 <p>今天好奇浏览了一下N项目的代码变更历史，发现有人提交了一段关于校验文件格式的代码。
 其中包括一段校验日期格式的java代码。代码是这样的：
-{% highlight java %}
-String validDateStr = // read from file lines
-String regex = "(([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})(((0[13578]|1[02])(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)(0[1-9]|[12][0-9]|30))|(02(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))0229)";
-if(validDateStr.matches(regex)){</p>
+<div class="highlight"><pre><code class="java"><span class="n">String</span> <span class="n">validDateStr</span> <span class="o">=</span> <span class="c1">// read from file lines</span>
+<span class="n">String</span> <span class="n">regex</span> <span class="o">=</span> <span class="s">&quot;(([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})(((0[13578]|1[02])(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)(0[1-9]|[12][0-9]|30))|(02(0[1-9]|[1][0-9]|2[0-8]))))|((([0-9]{2})(0[48]|[2468][048]|[13579][26])|((0[48]|[2468][048]|[3579][26])00))0229)&quot;</span><span class="o">;</span>
+<span class="k">if</span><span class="o">(</span><span class="n">validDateStr</span><span class="o">.</span><span class="na">matches</span><span class="o">(</span><span class="n">regex</span><span class="o">)){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>// do something
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="c1">// do something</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
 
 <p>看到这个正则表达式，我立马纠结了，这个正则表达式不知是什么意思。
 虽然前几天写代码的同事来问过怎么写校验日期的正则，我当时比较忙，叫他找找有没有现成的。
@@ -54,37 +53,35 @@ if(validDateStr.matches(regex)){</p>
 
 <p>应该说，这几种情况都应该考虑一下，例如对于上面的例子来说，要使用这么复杂的正则，加上一些简单的注释
 是相当有必要的，至少要说明你是想验证什么样的格式。更进一步，封装到方法里边去，例如
-{% highlight java %}
-public static boolean isStrictYYYYMMDD(String datestr){</p>
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">isStrictYYYYMMDD</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>return datestr.matches(STRICT_YYYYMMDD_REGEX);
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">return</span> <span class="n">datestr</span><span class="o">.</span><span class="na">matches</span><span class="o">(</span><span class="n">STRICT_YYYYMMDD_REGEX</span><span class="o">);</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-{% endhighlight %}
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div>
 不过这里有个缺点，只能校验一种日期格式，因为日期格式不像邮箱地址，它的形式多样，这样处理能得到的收益并不是很高。
 如果我们可以传递校验日期的格式就更好了。</p>
 
 <h3>换个实现方式</h3>
 
 <p>换个思路，如果不使用正则表达式会怎样，例如<a href="http://docs.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html">SimpleDateFormat</a>就提供了严格验证的格式，示例代码如下：
-{% highlight java %}
-public static boolean isStrictYYYYMMDD(String datestr){</p>
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">isStrictYYYYMMDD</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");  
-//设置为严格验证模式
-format.setLenient(false);
-try{
-    format.parse(str);
-    return true;
-} catch (ParseException e) {
-    // ignore exeeption
-}
-return false;
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">SimpleDateFormat</span> <span class="n">format</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SimpleDateFormat</span><span class="o">(</span><span class="s">&quot;yyyyMMdd&quot;</span><span class="o">);</span>  
+<span class="c1">//设置为严格验证模式</span>
+<span class="n">format</span><span class="o">.</span><span class="na">setLenient</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+<span class="k">try</span><span class="o">{</span>
+    <span class="n">format</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="n">str</span><span class="o">);</span>
+    <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">ParseException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// ignore exeeption</span>
+<span class="o">}</span>
+<span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-{% endhighlight %}
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div>
 如果没有设置为严格验证模式的话，20090230这种日期就会变成20090302。</p>
 
 <p>相对于上面正则的方式来说，代码是多了几行，但是因为格式可以变，灵活性有所提高，代码也容易理解了。
@@ -92,26 +89,24 @@ return false;
 当然有个折中的方法就是由客户端代码构造format作为传输传递，这样做还有个好处就是，验证日期格式的方法完全就是通用的。</p>
 
 <p>例如，我们可以提供下面的api和调用方式:
-{% highlight java %}
-//client
-SimpleDateFormat format = // 由客户端代码构建format
-boolean isDate = DateUtil.isDateFormat(datestr, format);</p>
+<div class="highlight"><pre><code class="java"><span class="c1">//client</span>
+<span class="n">SimpleDateFormat</span> <span class="n">format</span> <span class="o">=</span> <span class="c1">// 由客户端代码构建format</span>
+<span class="kt">boolean</span> <span class="n">isDate</span> <span class="o">=</span> <span class="n">DateUtil</span><span class="o">.</span><span class="na">isDateFormat</span><span class="o">(</span><span class="n">datestr</span><span class="o">,</span> <span class="n">format</span><span class="o">);&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<p>//DateUtil api
-boolean isDateFormat(String datestr, SimpleDateFormat format);
-boolean isDateFormat(String datestr, String formatstr);//单次调用
-boolean isStrictDateFormat(String datestr, String formatstr);//单次使用,用于严格处理
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">//DateUtil api</span>
+<span class="kt">boolean</span> <span class="nf">isDateFormat</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">,</span> <span class="n">SimpleDateFormat</span> <span class="n">format</span><span class="o">);</span>
+<span class="kt">boolean</span> <span class="nf">isDateFormat</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">,</span> <span class="n">String</span> <span class="n">formatstr</span><span class="o">);</span><span class="c1">//单次调用</span>
+<span class="kt">boolean</span> <span class="nf">isStrictDateFormat</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">,</span> <span class="n">String</span> <span class="n">formatstr</span><span class="o">);</span><span class="c1">//单次使用,用于严格处理</span>
+</code></pre></div></p>
 
 <p>在不改变接口的情况下，最初的代码可以调整成以下形式
-{% highlight java %}
-public static boolean isStrictYYYYMMDD(String datestr){</p>
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">isStrictYYYYMMDD</span><span class="o">(</span><span class="n">String</span> <span class="n">datestr</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>return isStrictDateFormat(datestr, DateUtil.YYYYMMDD);
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">return</span> <span class="n">isStrictDateFormat</span><span class="o">(</span><span class="n">datestr</span><span class="o">,</span> <span class="n">DateUtil</span><span class="o">.</span><span class="na">YYYYMMDD</span><span class="o">);</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
 
 <h3>总结</h3>
 
@@ -123,8 +118,57 @@ public static boolean isStrictYYYYMMDD(String datestr){</p>
 </ol>
 
 
-<p>{% assign series_list = "improve bitter code" %}
-{% include series_list.html %}</p>
+<p>
+
+
+<h2>"improve bitter code"系列文章:</h2>
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</p>
 ]]></content>
   </entry>
   

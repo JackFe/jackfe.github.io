@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 单出口 | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/dan-chu-kou/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-04-17T14:57:43+08:00</updated>
+  <updated>2016-04-17T15:41:51+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -25,27 +25,26 @@
 <p>前阵子代码评审的时候发现一段代码，逻辑是用于查找一个最大日期，代码逻辑大约是这样的：
 如果没有相关的日期记录，则返回当前日期，否则，当日期值为空时，是业务限制异常，并且配置的
 相关日期小于当前日期的话，还是应该选择当前日期。代码如下：
-{% highlight java %}
-public String getPrivMaxDate(){</p>
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">String</span> <span class="nf">getPrivMaxDate</span><span class="o">(){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>String currDate = DateUtil.parse(new Date());
-String maxDate = currDate;
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">String</span> <span class="n">currDate</span> <span class="o">=</span> <span class="n">DateUtil</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="k">new</span> <span class="n">Date</span><span class="o">());</span>
+<span class="n">String</span> <span class="n">maxDate</span> <span class="o">=</span> <span class="n">currDate</span><span class="o">;</span>
 
-List&lt;String&gt; privMaxDates = ...; //load data from database
-if(Objects.isNotEmpty(privMaxDates)){
-    maxDate = privMaxDates.get(0);
-    if(StringUtils.isEmpty(maxDate)){
-        throw new BusinessException("...");
-    }
-    else if(maxDate.compareTo(currDate) &lt; 0)
-        maxDate = currDate;
-    }
-}
-return maxDate;
-</code></pre>
+<span class="n">List</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">String</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">privMaxDates</span> <span class="o">=</span> <span class="o">...;</span> <span class="c1">//load data from database</span>
+<span class="k">if</span><span class="o">(</span><span class="n">Objects</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">privMaxDates</span><span class="o">)){</span>
+    <span class="n">maxDate</span> <span class="o">=</span> <span class="n">privMaxDates</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(</span><span class="n">maxDate</span><span class="o">)){</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">BusinessException</span><span class="o">(</span><span class="s">&quot;...&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">maxDate</span><span class="o">.</span><span class="na">compareTo</span><span class="o">(</span><span class="n">currDate</span><span class="o">)</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="mi">0</span><span class="o">)</span>
+        <span class="n">maxDate</span> <span class="o">=</span> <span class="n">currDate</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="k">return</span> <span class="n">maxDate</span><span class="o">;</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
 
 <p>大家应该被我的描述搞晕，我也觉得说得很乱。从代码看，maxDate有好几处地方可以修改，有时候是当前日期，有时候是配置的日期，的确比较乱。
 接下来我们尝试对代码进行一些简单的修改，看看效果。</p>
@@ -61,29 +60,28 @@ return maxDate;
 </ol>
 
 
-<p>{% highlight java %}
-public String getPrivMaxDate(){</p>
+<p><div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">String</span> <span class="nf">getPrivMaxDate</span><span class="o">(){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>String currDate = DateUtil.parse(new Date());
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">String</span> <span class="n">currDate</span> <span class="o">=</span> <span class="n">DateUtil</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="k">new</span> <span class="n">Date</span><span class="o">());</span>
 
-List&lt;String&gt; privMaxDates = ...; //load data from database
-if(Objects.isEmpty(privMaxDates)){
-    return currDate;
-}
+<span class="n">List</span><span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span><span class="n">String</span><span class="o">&amp;</span><span class="n">gt</span><span class="o">;</span> <span class="n">privMaxDates</span> <span class="o">=</span> <span class="o">...;</span> <span class="c1">//load data from database</span>
+<span class="k">if</span><span class="o">(</span><span class="n">Objects</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(</span><span class="n">privMaxDates</span><span class="o">)){</span>
+    <span class="k">return</span> <span class="n">currDate</span><span class="o">;</span>
+<span class="o">}</span>
 
-String maxDate = privMaxDates.get(0);
-if(StringUtils.isEmpty(maxDate)){
-    throw new BusinessException("...");
-}
+<span class="n">String</span> <span class="n">maxDate</span> <span class="o">=</span> <span class="n">privMaxDates</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+<span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(</span><span class="n">maxDate</span><span class="o">)){</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nf">BusinessException</span><span class="o">(</span><span class="s">&quot;...&quot;</span><span class="o">);</span>
+<span class="o">}</span>
 
-if(maxDate.compareTo(currDate) &lt; 0)
-    return currDate;
-}
-return maxDate;
-</code></pre>
+<span class="k">if</span><span class="o">(</span><span class="n">maxDate</span><span class="o">.</span><span class="na">compareTo</span><span class="o">(</span><span class="n">currDate</span><span class="o">)</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="mi">0</span><span class="o">)</span>
+    <span class="k">return</span> <span class="n">currDate</span><span class="o">;</span>
+<span class="o">}</span>
+<span class="k">return</span> <span class="n">maxDate</span><span class="o">;</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+</code></pre></div></p>
 
 <p>经过改造，由于maxDate只赋值一次，代码变得好理解了。</p>
 
@@ -98,24 +96,23 @@ return maxDate;
 
 <h5>对于很小的if-else语句，可以考虑转换成三元表达式。如下面代码示例</h5>
 
-<p>{% highlight java %}
-String forward = null;
-if(success){</p>
+<p><div class="highlight"><pre><code class="java"><span class="n">String</span> <span class="n">forward</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+<span class="k">if</span><span class="o">(</span><span class="n">success</span><span class="o">){&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>forward = "success";
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">forward</span> <span class="o">=</span> <span class="s">&quot;success&quot;</span><span class="o">;</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}
-else{</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}</span>
+<span class="k">else</span><span class="o">{&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<pre><code>forward = "fail";
-</code></pre>
+<span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="n">forward</span> <span class="o">=</span> <span class="s">&quot;fail&quot;</span><span class="o">;</span>
+<span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;}&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 
-<p>// or this way
-String forward = success ? "success" : "fail";
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="c1">// or this way</span>
+<span class="n">String</span> <span class="n">forward</span> <span class="o">=</span> <span class="n">success</span> <span class="o">?</span> <span class="s">&quot;success&quot;</span> <span class="o">:</span> <span class="s">&quot;fail&quot;</span><span class="o">;</span>
+</code></pre></div></p>
 
 <h5>对于存在多次赋值的情况，如果发现已经是最终的返回值，在调整时可以使用return，理清逻辑。</h5>
 
@@ -124,8 +121,57 @@ String forward = success ? "success" : "fail";
 <p>后话：单赋值还有其他一些好处，例如便于调试定位，
 在eralng中所有的变量都是单赋值的，没接触过是很难想象是怎样的一种场景。有兴趣可以去了解一下。</p>
 
-<p>{% assign series_list = "improve bitter code" %}
-{% include series_list.html %}</p>
+<p>
+
+
+<h2>"improve bitter code"系列文章:</h2>
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: '不可避免'的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</p>
 ]]></content>
   </entry>
   

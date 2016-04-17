@@ -4,7 +4,7 @@
   <title><![CDATA[Category: unzip | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/unzip/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-04-17T14:57:43+08:00</updated>
+  <updated>2016-04-17T15:41:51+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -28,36 +28,36 @@
 最后嘛，我担心改动path路径对oracle造成影响，就修改了恢复脚本的unzip路径。结果总算搞定了。</p>
 
 <p>简略翻译修改版:
-{% highlight bash %}</p>
+<div class="highlight"><pre><code class="bash">&lt;/p&gt;
 
-<h1>从http://www.info-zip.org/下载源代码</h1>
+&lt;h1&gt;从http://www.info-zip.org/下载源代码&lt;/h1&gt;
 
-<p>cd unzip-5.52
-vi unix/Makefile</p>
+&lt;p&gt;cd unzip-5.52
+vi unix/Makefile&lt;/p&gt;
 
-<h1>使用:/Linux on查找到下面这段描述</h1>
+&lt;h1&gt;使用:/Linux on查找到下面这段描述&lt;/h1&gt;
 
-<h1>Linux on 386 platform, using the assembler replacement for crc32.c. (-O4 and</h1>
+&lt;h1&gt;Linux on 386 platform, using the assembler replacement <span class="k">for </span>crc32.c. <span class="o">(</span>-O4 and&lt;/h1&gt;
 
-<h1>-fno-strength-reduce have virtually no effect beyond -O3. Add "-m486</h1>
+&lt;h1&gt;-fno-strength-reduce have virtually no effect beyond -O3. Add <span class="s2">&quot;-m486&lt;/h1&gt;</span>
 
-<h1>-malign-functions=2 -malign-jumps=2 -malign-loops=2" for Pentium [Pro]</h1>
+<span class="s2">&lt;h1&gt;-malign-functions=2 -malign-jumps=2 -malign-loops=2&quot;</span> <span class="k">for </span>Pentium <span class="o">[</span>Pro<span class="o">]</span>&lt;/h1&gt;
 
-<h1>systems.)</h1>
+&lt;h1&gt;systems.<span class="o">)</span>&lt;/h1&gt;
 
-<p>linux: unix_make</p>
+&lt;p&gt;linux: unix_make&lt;/p&gt;
 
-<h1>在这段的下面可以找到并进行替换</h1>
+&lt;h1&gt;在这段的下面可以找到并进行替换&lt;/h1&gt;
 
-<p>CF="-O3 -Wall -I. -DASM_CRC $(LOC)"\
-CF="-O3 -Wall -I. -DASM_CRC -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 $(LOC)"\</p>
+&lt;p&gt;CF<span class="o">=</span><span class="s2">&quot;-O3 -Wall -I. -DASM_CRC $(LOC)&quot;</span><span class="se">\</span>
+<span class="nv">CF</span><span class="o">=</span><span class="s2">&quot;-O3 -Wall -I. -DASM_CRC -DLARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 $(LOC)&quot;</span><span class="se">\&lt;</span>/p&gt;
 
-<h1>保存后下面就是一些编译替换的后续工作了</h1>
+&lt;h1&gt;保存后下面就是一些编译替换的后续工作了&lt;/h1&gt;
 
-<p>make -f unix/Makefile linux
+&lt;p&gt;make -f unix/Makefile linux
 which unzip
 cp unzip /usr/bin/unzip
-{% endhighlight %}</p>
+</code></pre></div></p>
 
 <h3>关于gcc -D_FILE_OFFSET_BITS=64的描述(找不到原始出处了)</h3>
 

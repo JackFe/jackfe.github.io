@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 工具 | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/gong-ju/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-04-17T14:57:43+08:00</updated>
+  <updated>2016-04-17T15:41:51+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -180,27 +180,26 @@ Fiddler可以也可以让你检查所有的http通讯，设置断点，以及Fid
     <id>http://mccxj.github.com/blog/reverse-svn-diff-file</id>
     <content type="html"><![CDATA[<h3>生成回退补丁的脚本</h3>
 
-<p>{% highlight ruby %}
-open("C:/Users/peipei/Desktop/svn2.diff", 'w') do |f|</p>
+<p><div class="highlight"><pre><code class="ruby"><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;C:/Users/peipei/Desktop/svn2.diff&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|&lt;</span><span class="sr">/p&gt;</span>
 
-<pre><code>open("C:/Users/peipei/Desktop/svn.diff", 'r') do |ff|
-    ff.readlines.each do |line|
-        if line.start_with?("@@")
-            line =~ /@@\ \-(.+)\ \+(.+)\ @@/
-            f &lt;&lt; "@@\ \-#{$2}\ \+#{$1}\ @@\n"
-        elsif line.start_with?("+ ")
-            f &lt;&lt; "-#{line.slice(1..-1)}"
-        elsif line.start_with?("- ")
-            f &lt;&lt; "+#{line.slice(1..-1)}"
-        else
-            f &lt;&lt; line
-        end
-    end
-end
-</code></pre>
+<span class="sr">&lt;pre&gt;&lt;code&gt;open(&quot;C:/</span><span class="no">Users</span><span class="o">/</span><span class="n">peipei</span><span class="o">/</span><span class="no">Desktop</span><span class="o">/</span><span class="n">svn</span><span class="o">.</span><span class="n">diff</span><span class="s2">&quot;, &#39;r&#39;) do |ff|</span>
+<span class="s2">    ff.readlines.each do |line|</span>
+<span class="s2">        if line.start_with?(&quot;</span><span class="err">@@</span><span class="s2">&quot;)</span>
+<span class="s2">            line =~ /@@\ \-(.+)\ \+(.+)\ @@/</span>
+<span class="s2">            f &amp;lt;&amp;lt; &quot;</span><span class="err">@@</span><span class="p">\</span> <span class="p">\</span><span class="o">-</span><span class="c1">#{$2}\ \+#{$1}\ @@\n&quot;</span>
+        <span class="k">elsif</span> <span class="n">line</span><span class="o">.</span><span class="n">start_with?</span><span class="p">(</span><span class="s2">&quot;+ &quot;</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="s2">&quot;-</span><span class="si">#{</span><span class="n">line</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">elsif</span> <span class="n">line</span><span class="o">.</span><span class="n">start_with?</span><span class="p">(</span><span class="s2">&quot;- &quot;</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="s2">&quot;+</span><span class="si">#{</span><span class="n">line</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">else</span>
+            <span class="n">f</span> <span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span> <span class="n">line</span>
+        <span class="k">end</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+<span class="o">&lt;</span><span class="sr">/code&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
 
-<p>end
-{% endhighlight %}</p>
+<span class="o">&lt;</span><span class="nb">p</span><span class="o">&gt;</span><span class="k">end</span>
+</code></pre></div></p>
 
 <h3>其他计划</h3>
 
@@ -257,38 +256,37 @@ end
 
 <p>当然首先需要安装svn命令行客户端，然后通过<a href="http://docs.oracle.com/javase/6/docs/api/java/lang/Runtime.html#exec(java.lang.String)">Runtime.exec()</a>来获取输出信息，解析这些信息入库即可。</p>
 
-<p>{% highlight bash %}</p>
+<p><div class="highlight"><pre><code class="bash">&lt;/p&gt;
 
-<h1>获取最新版本号,使用正则/Last Changed Rev: (\d+)/得到最新版本</h1>
+&lt;h1&gt;获取最新版本号,使用正则/Last Changed Rev: <span class="o">(</span><span class="se">\d</span>+<span class="o">)</span>/得到最新版本&lt;/h1&gt;
 
-<p>svn info http://hustoj.googlecode.com/svn/trunk</p>
+&lt;p&gt;svn info http://hustoj.googlecode.com/svn/trunk&lt;/p&gt;
 
-<h1>获取svn log，这个解析比较麻烦，需要用正则分组</h1>
+&lt;h1&gt;获取svn log，这个解析比较麻烦，需要用正则分组&lt;/h1&gt;
 
-<p>svn log -l 1 -v http://hustoj.googlecode.com/svn/trunk</p>
+&lt;p&gt;svn log -l 1 -v http://hustoj.googlecode.com/svn/trunk&lt;/p&gt;
 
-<h1>获取diff文件，对于更新(M)的文件</h1>
+&lt;h1&gt;获取diff文件，对于更新<span class="o">(</span>M<span class="o">)</span>的文件&lt;/h1&gt;
 
-<p>svn diff -c 1659 http://hustoj.googlecode.com/svn/trunk/web/admin/contest_list.php</p>
+&lt;p&gt;svn diff -c 1659 http://hustoj.googlecode.com/svn/trunk/web/admin/contest_list.php&lt;/p&gt;
 
-<h1>获取完整文件，对于增加(A)删除(D)的文件，需要直接取版本</h1>
+&lt;h1&gt;获取完整文件，对于增加<span class="o">(</span>A<span class="o">)</span>删除<span class="o">(</span>D<span class="o">)</span>的文件，需要直接取版本&lt;/h1&gt;
 
-<p>svn cat http://hustoj.googlecode.com/svn/trunk/web/admin/contest_list.php@1655
-{% endhighlight %}</p>
+&lt;p&gt;svn cat http://hustoj.googlecode.com/svn/trunk/web/admin/contest_list.php@1655
+</code></pre></div></p>
 
 <p>不过在实际处理的时候，默认的diff取出来的上下文太少，所以我使用了外部diff工具:
-{% highlight bash %}
-svn diff -c 1659 --diff-cmd /usr/bin/diff -x "-U20" http://hustoj.googlecode.com/svn/trunk/web/admin/contest_list.php                  <br/>
-{% endhighlight %}</p>
+<div class="highlight"><pre><code class="bash">svn diff -c 1659 --diff-cmd /usr/bin/diff -x <span class="s2">&quot;-U20&quot;</span> http://hustoj.googlecode.com/svn/trunk/web/admin/contest_list.php                  &lt;br/&gt;
+</code></pre></div></p>
 
 <p>不过通过程序执行命令获取数据时还存在一点问题:获取不到diff数据。
 为了解决这个问题，我再封装了一个shell文件来调用。
-{% highlight bash %}</p>
+<div class="highlight"><pre><code class="bash">&lt;/p&gt;
 
-<h1>!/bin/bash</h1>
+&lt;h1&gt;!/bin/bash&lt;/h1&gt;
 
-<p>svn diff -c $1 --diff-cmd /usr/bin/diff -x "-U$2" $3
-{% endhighlight %}</p>
+&lt;p&gt;svn diff -c <span class="nv">$1</span> --diff-cmd /usr/bin/diff -x <span class="s2">&quot;-U$2&quot;</span> <span class="nv">$3</span>
+</code></pre></div></p>
 
 <p>总的来说，实现的难度并不大，只是遇到了一些小问题，能够把一个想法化成现实，并且确实提高了效率，还是挺满意的。</p>
 ]]></content>
