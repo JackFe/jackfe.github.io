@@ -9,7 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="手绘的思维导图 先看看今天早上手绘的作品，没有工具绘制的工整，但感觉效果更棒! 再谈谈这本书 这本书感觉就是从小工到专家的续作，但不是只有程序员才能阅读并受益的书籍，推荐指数:5个星星。 书的主题是围绕德雷福斯技能模型，区分L型和R型思维方式，讲述如何学习的技能。在实践方式上， &hellip;">
+  <meta name="description" content="平时做的应用，的确很少涉及非常具体的局部算法。不过最近一段时间还是遇到了一些，稍微整理一下，留个纪念。 产品的组合生成 举个例子，手机的颜色有黑白的，内存有16G,32G的，那么就有黑色16G,黑色32G，白色16G，黑色32G等组合项，
+当然属性可能不止两项，想列出所有的组合项。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +65,482 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130327_these-days-algorithms.html">这些天,我们用到的算法</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-27T00:00:00+08:00" pubdate data-updated="true">Mar 27<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130327_these-days-algorithms.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>平时做的应用，的确很少涉及非常具体的局部算法。不过最近一段时间还是遇到了一些，稍微整理一下，留个纪念。</p>
+
+<h3>产品的组合生成</h3>
+
+<p>举个例子，手机的颜色有黑白的，内存有16G,32G的，那么就有黑色16G,黑色32G，白色16G，黑色32G等组合项，
+当然属性可能不止两项，想列出所有的组合项。</p>
+
+<p>如果只有两种属性，很简单</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="k">for</span><span class="o">(</span><span class="err">属性</span> <span class="n">in</span> <span class="err">属性</span><span class="mi">1</span><span class="o">)</span>
+</span><span class='line'>    <span class="k">for</span><span class="o">(</span><span class="err">属性</span> <span class="n">in</span> <span class="err">属性</span><span class="mi">2</span><span class="o">)</span>
+</span><span class='line'>       <span class="c1">// TODO 得到组合项</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>但是，如果有不定项的话，就不能这么写了。</p>
+
+<p><strong>这需要知道点回溯法的技巧，我是用了非递归的方式编写的</strong>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">static</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;</span> <span class="nf">merge</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;...</span> <span class="n">ls</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="n">ls</span><span class="o">.</span><span class="na">length</span><span class="o">;</span>
+</span><span class='line'>    <span class="kt">int</span><span class="o">[]</span> <span class="n">pos</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">len</span><span class="o">];</span><span class="c1">//对i而言，表示第i种属性当前选择是哪个值</span>
+</span><span class='line'>    <span class="n">Arrays</span><span class="o">.</span><span class="na">fill</span><span class="o">(</span><span class="n">pos</span><span class="o">,</span> <span class="mi">0</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">String</span><span class="o">[]</span> <span class="n">r</span> <span class="o">=</span> <span class="k">new</span> <span class="n">String</span><span class="o">[</span><span class="n">len</span><span class="o">];</span><span class="c1">//存放待生成的组合项</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">List</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;</span> <span class="n">res</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;();</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span><span class="c1">//当前正在遍历第几种属性</span>
+</span><span class='line'>    <span class="k">while</span> <span class="o">(</span><span class="n">k</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">while</span> <span class="o">(</span><span class="n">pos</span><span class="o">[</span><span class="n">k</span><span class="o">]</span> <span class="o">&lt;</span> <span class="n">ls</span><span class="o">[</span><span class="n">k</span><span class="o">].</span><span class="na">size</span><span class="o">())</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">r</span><span class="o">[</span><span class="n">k</span><span class="o">]</span> <span class="o">=</span> <span class="n">ls</span><span class="o">[</span><span class="n">k</span><span class="o">].</span><span class="na">get</span><span class="o">(</span><span class="n">pos</span><span class="o">[</span><span class="n">k</span><span class="o">]);</span>
+</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">k</span> <span class="o">==</span> <span class="n">len</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">{</span><span class="c1">//是否已经是最后一个属性</span>
+</span><span class='line'>                <span class="c1">// 找到一个组合项，复制到res里边去</span>
+</span><span class='line'>                <span class="n">pos</span><span class="o">[</span><span class="n">k</span><span class="o">]</span> <span class="o">=</span> <span class="n">pos</span><span class="o">[</span><span class="n">k</span><span class="o">]</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span><span class='line'>                <span class="n">k</span><span class="o">++;</span><span class="c1">//当前位置的属性已经选择，处理下一种属性</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="n">pos</span><span class="o">[</span><span class="n">k</span><span class="o">]</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">k</span><span class="o">--;</span><span class="c1">//当前位置的属性已经遍历完，需要回溯到上一种属性去</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">k</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">pos</span><span class="o">[</span><span class="n">k</span><span class="o">]</span> <span class="o">=</span> <span class="n">pos</span><span class="o">[</span><span class="n">k</span><span class="o">]</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">res</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>说真的，即使加了注释，没有相关的算法基础，也是不容易看清楚的，所以有同事看到这个写法，在大呼救命。</p>
+
+<h3>请求URL参数匹配</h3>
+
+<p>最近有需求，要对请求里边的参数做匹配，规则是这样的：</p>
+
+<p>例如有下面三条规则(其中问号表示变量，参数的顺序没关系):
+* User=?&amp;Password=BB&amp;CurrentTab=LOG&amp;CurrentTab2=LOG
+* User=?&amp;Password=?&amp;CurrentTab=LOG1
+* User=?&amp;Password=?&amp;CurrentTab=LOG</p>
+
+<p>如果请求参数是XX=222&amp;User=Q&amp;Password=BB&amp;CurrentTab=LOG，则只能匹配第三条，因为第一条多一个参数，第二条的值是LOG1，对应不上。<br/>
+如果请求参数是User=QQ&amp;CurrentTab=LOG1&amp;Password=AA,同样只能匹配到第三条。</p>
+
+<p>有个非常简单的思路，就是把参数拆开，然后一个个匹配。但是由于业务的请求数非常大，担心对系统是否有影响。</p>
+
+<p>于是，弄了个测试原型，开50个线程的线程池，跑500个任务，每个任务跑1w次，匹配3个配置项。整个框架代码是这样的:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">work</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">final</span> <span class="n">String</span> <span class="n">match1</span> <span class="o">=</span> <span class="s">&quot;User=?&amp;Password=BB&amp;CurrentTab=LOG&amp;CurrentTab2=LOG&quot;</span><span class="o">;</span>
+</span><span class='line'>    <span class="kd">final</span> <span class="n">String</span> <span class="n">match2</span> <span class="o">=</span> <span class="s">&quot;User=?&amp;Password=?&amp;CurrentTab=LOG1&quot;</span><span class="o">;</span>
+</span><span class='line'>    <span class="kd">final</span> <span class="n">String</span> <span class="n">match3</span> <span class="o">=</span> <span class="s">&quot;User=?&amp;Password=?&amp;CurrentTab=LOG&quot;</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">ExecutorService</span> <span class="n">pool</span> <span class="o">=</span> <span class="n">Executors</span><span class="o">.</span><span class="na">newFixedThreadPool</span><span class="o">(</span><span class="mi">50</span><span class="o">);</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">tasksize</span> <span class="o">=</span> <span class="mi">500</span><span class="o">;</span>
+</span><span class='line'>    <span class="kd">final</span> <span class="n">CountDownLatch</span> <span class="n">latch</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CountDownLatch</span><span class="o">(</span><span class="n">tasksize</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kt">long</span> <span class="n">s</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">nanoTime</span><span class="o">();</span>
+</span><span class='line'>    <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">tasksize</span><span class="o">;</span> <span class="n">k</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">pool</span><span class="o">.</span><span class="na">submit</span><span class="o">(</span><span class="k">new</span> <span class="n">Runnable</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>            <span class="nd">@Override</span>
+</span><span class='line'>            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>                <span class="n">Random</span> <span class="n">r</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Random</span><span class="o">(</span><span class="mi">100000000</span><span class="o">);</span>
+</span><span class='line'>                <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10000</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>                    <span class="n">String</span> <span class="n">toMatch</span> <span class="o">=</span> <span class="s">&quot;XX=&quot;</span>
+</span><span class='line'>                                     <span class="o">+</span> <span class="n">r</span><span class="o">.</span><span class="na">nextInt</span><span class="o">()</span>
+</span><span class='line'>                                     <span class="o">+</span> <span class="s">&quot;&amp;User=AA&amp;Password=BB&amp;CurrentTab=LOG&quot;</span><span class="o">;</span>
+</span><span class='line'>                    <span class="c1">// TODO 测试toMatch</span>
+</span><span class='line'>                <span class="o">}</span>
+</span><span class='line'>                <span class="n">latch</span><span class="o">.</span><span class="na">countDown</span><span class="o">();</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>        <span class="o">});</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">latch</span><span class="o">.</span><span class="na">await</span><span class="o">();</span>
+</span><span class='line'>    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">System</span><span class="o">.</span><span class="na">nanoTime</span><span class="o">()</span> <span class="o">-</span> <span class="n">s</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>先用最简单的方法来做基准测试，有时候最简单的方法就可以满足要求了，粗略的代码如下:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>                    <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">matchs</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;();</span>
+</span><span class='line'>                    <span class="n">String</span><span class="o">[]</span> <span class="n">split</span> <span class="o">=</span> <span class="n">toMatch</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">&quot;&amp;&quot;</span><span class="o">);</span>
+</span><span class='line'>                    <span class="k">for</span> <span class="o">(</span><span class="n">String</span> <span class="n">mss</span> <span class="o">:</span> <span class="n">split</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>                        <span class="n">String</span><span class="o">[]</span> <span class="n">split2</span> <span class="o">=</span> <span class="n">mss</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">&quot;=&quot;</span><span class="o">);</span>
+</span><span class='line'>                        <span class="n">matchs</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">split2</span><span class="o">[</span><span class="mi">0</span><span class="o">],</span> <span class="n">split2</span><span class="o">[</span><span class="mi">1</span><span class="o">]);</span>
+</span><span class='line'>                    <span class="o">}</span>
+</span><span class='line'>                    <span class="n">similar</span><span class="o">(</span><span class="n">match1</span><span class="o">,</span> <span class="n">matchs</span><span class="o">);</span>
+</span><span class='line'>                    <span class="n">similar</span><span class="o">(</span><span class="n">match2</span><span class="o">,</span> <span class="n">matchs</span><span class="o">);</span>
+</span><span class='line'>                    <span class="n">similar</span><span class="o">(</span><span class="n">match3</span><span class="o">,</span> <span class="n">matchs</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>                    <span class="o">....</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">private</span> <span class="kt">boolean</span> <span class="nf">similar</span><span class="o">(</span><span class="n">String</span> <span class="n">match</span><span class="o">,</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">String</span><span class="o">&gt;</span> <span class="n">matchs</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">String</span><span class="o">[]</span> <span class="n">ms</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">&quot;&amp;&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="k">for</span> <span class="o">(</span><span class="n">String</span> <span class="n">m</span> <span class="o">:</span> <span class="n">ms</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">String</span><span class="o">[]</span> <span class="n">split2</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">&quot;=&quot;</span><span class="o">);</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(!</span><span class="n">matchs</span><span class="o">.</span><span class="na">containsKey</span><span class="o">(</span><span class="n">split2</span><span class="o">[</span><span class="mi">0</span><span class="o">]))</span>
+</span><span class='line'>            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(!</span><span class="s">&quot;?&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">split2</span><span class="o">[</span><span class="mi">1</span><span class="o">]))</span> <span class="o">{</span>
+</span><span class='line'>            <span class="k">if</span> <span class="o">(!</span><span class="n">split2</span><span class="o">[</span><span class="mi">1</span><span class="o">].</span><span class="na">equals</span><span class="o">(</span><span class="n">matchs</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">split2</span><span class="o">[</span><span class="mi">0</span><span class="o">])))</span>
+</span><span class='line'>                <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>在我的机器上简单跑一下，大约要28s。这个算法非常暴力，用split和map结构搞定了。
+如果用StringTokenizer的话，还能快些，我试了一下，把第一步split换了的话，大约需要25s.
+<strong>我觉得这个效果也还是可以接受的。</strong></p>
+
+<p>下面再用纯手工操作字符串的方式，代码如下:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>                    <span class="n">UrlMatcher</span> <span class="n">matcher</span> <span class="o">=</span> <span class="k">new</span> <span class="n">UrlMatcher</span><span class="o">(</span><span class="n">toMatch</span><span class="o">);</span>
+</span><span class='line'>                    <span class="n">matcher</span><span class="o">.</span><span class="na">match</span><span class="o">(</span><span class="n">match1</span><span class="o">);</span>
+</span><span class='line'>                    <span class="n">matcher</span><span class="o">.</span><span class="na">match</span><span class="o">(</span><span class="n">match2</span><span class="o">);</span>
+</span><span class='line'>                    <span class="n">matcher</span><span class="o">.</span><span class="na">match</span><span class="o">(</span><span class="n">match3</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">class</span> <span class="nc">UrlMatcher</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="n">String</span> <span class="n">toMatch</span><span class="o">;</span>
+</span><span class='line'>    <span class="kt">int</span><span class="o">[]</span> <span class="n">pos</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="mi">20</span><span class="o">];</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">ps</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="nf">UrlMatcher</span><span class="o">(</span><span class="n">String</span> <span class="n">toMatch</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">ss</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>        <span class="k">this</span><span class="o">.</span><span class="na">toMatch</span> <span class="o">=</span> <span class="n">toMatch</span><span class="o">;</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="n">toMatch</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">st</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">ed</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">len</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="kt">char</span> <span class="n">c</span> <span class="o">=</span> <span class="n">toMatch</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">c</span> <span class="o">==</span> <span class="sc">&#39;=&#39;</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>                <span class="n">ed</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>                <span class="n">pos</span><span class="o">[</span><span class="n">ss</span><span class="o">++]</span> <span class="o">=</span> <span class="n">st</span><span class="o">;</span>
+</span><span class='line'>                <span class="n">pos</span><span class="o">[</span><span class="n">ss</span><span class="o">++]</span> <span class="o">=</span> <span class="n">ed</span><span class="o">;</span>
+</span><span class='line'>                <span class="n">st</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>                <span class="n">pos</span><span class="o">[</span><span class="n">ss</span><span class="o">++]</span> <span class="o">=</span> <span class="n">st</span><span class="o">;</span>
+</span><span class='line'>            <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">c</span> <span class="o">==</span> <span class="sc">&#39;&amp;&#39;</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>                <span class="n">pos</span><span class="o">[</span><span class="n">ss</span><span class="o">++]</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>                <span class="n">st</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="n">pos</span><span class="o">[</span><span class="n">ss</span><span class="o">]</span> <span class="o">=</span> <span class="n">len</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>        <span class="n">ps</span> <span class="o">=</span> <span class="o">(</span><span class="n">ss</span> <span class="o">+</span> <span class="mi">1</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">match</span><span class="o">(</span><span class="n">String</span> <span class="n">m</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">st</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">ed</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">vs</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>        <span class="kt">int</span> <span class="n">ve</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">len</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="kt">char</span> <span class="n">c</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">c</span> <span class="o">==</span> <span class="sc">&#39;=&#39;</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>                <span class="n">ed</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>                <span class="n">vs</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>            <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">c</span> <span class="o">==</span> <span class="sc">&#39;&amp;&#39;</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>                <span class="n">ve</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>                <span class="k">if</span> <span class="o">(!</span><span class="n">match2</span><span class="o">(</span><span class="n">m</span><span class="o">,</span> <span class="n">st</span><span class="o">,</span> <span class="n">ed</span><span class="o">,</span> <span class="n">vs</span><span class="o">,</span> <span class="n">ve</span><span class="o">))</span> <span class="o">{</span>
+</span><span class='line'>                    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>                <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>                <span class="n">st</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">;</span>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nf">match2</span><span class="o">(</span><span class="n">m</span><span class="o">,</span> <span class="n">st</span><span class="o">,</span> <span class="n">ed</span><span class="o">,</span> <span class="n">vs</span><span class="o">,</span> <span class="n">len</span> <span class="o">-</span> <span class="mi">1</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kt">boolean</span> <span class="nf">match2</span><span class="o">(</span><span class="n">String</span> <span class="n">m</span><span class="o">,</span> <span class="kt">int</span> <span class="n">st</span><span class="o">,</span> <span class="kt">int</span> <span class="n">ed</span><span class="o">,</span> <span class="kt">int</span> <span class="n">vs</span><span class="o">,</span> <span class="kt">int</span> <span class="n">ve</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="kt">boolean</span> <span class="n">ma</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">ps</span><span class="o">;</span> <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">4</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="k">if</span> <span class="o">(</span><span class="n">pos</span><span class="o">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">]</span> <span class="o">-</span> <span class="n">pos</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">==</span> <span class="n">ed</span> <span class="o">-</span> <span class="n">st</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>                <span class="kt">int</span> <span class="n">sst</span> <span class="o">=</span> <span class="n">st</span> <span class="o">-</span> <span class="n">pos</span><span class="o">[</span><span class="n">i</span><span class="o">];</span>
+</span><span class='line'>                <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="n">pos</span><span class="o">[</span><span class="n">i</span><span class="o">];</span> <span class="n">j</span> <span class="o">&lt;=</span> <span class="n">pos</span><span class="o">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="o">];</span> <span class="n">j</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>                    <span class="k">if</span> <span class="o">(</span><span class="n">toMatch</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">j</span><span class="o">)</span> <span class="o">!=</span> <span class="n">m</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">sst</span> <span class="o">+</span> <span class="n">j</span><span class="o">))</span> <span class="o">{</span>
+</span><span class='line'>                        <span class="n">ma</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>                    <span class="o">}</span>
+</span><span class='line'>                <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>                <span class="k">if</span> <span class="o">(</span><span class="n">ma</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>                    <span class="k">if</span> <span class="o">(</span><span class="n">ve</span> <span class="o">==</span> <span class="n">vs</span> <span class="o">&amp;&amp;</span> <span class="sc">&#39;?&#39;</span> <span class="o">==</span> <span class="n">m</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">vs</span><span class="o">))</span> <span class="o">{</span>
+</span><span class='line'>                        <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>                    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span><span class='line'>                        <span class="k">if</span> <span class="o">(</span><span class="n">pos</span><span class="o">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">3</span><span class="o">]</span> <span class="o">-</span> <span class="n">pos</span><span class="o">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="o">]</span> <span class="o">==</span> <span class="n">ve</span> <span class="o">-</span> <span class="n">vs</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>                            <span class="kt">int</span> <span class="n">vst</span> <span class="o">=</span> <span class="n">vs</span> <span class="o">-</span> <span class="n">pos</span><span class="o">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="o">];</span>
+</span><span class='line'>                            <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="n">pos</span><span class="o">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="o">];</span> <span class="n">j</span> <span class="o">&lt;=</span> <span class="n">pos</span><span class="o">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">3</span><span class="o">];</span> <span class="n">j</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>                                <span class="k">if</span> <span class="o">(</span><span class="n">toMatch</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">j</span><span class="o">)</span> <span class="o">!=</span> <span class="n">m</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">vst</span> <span class="o">+</span> <span class="n">j</span><span class="o">))</span> <span class="o">{</span>
+</span><span class='line'>                                    <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>                                <span class="o">}</span>
+</span><span class='line'>                            <span class="o">}</span>
+</span><span class='line'>                            <span class="k">return</span> <span class="kc">true</span><span class="o">;</span>
+</span><span class='line'>                        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span><span class='line'>                            <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>                        <span class="o">}</span>
+</span><span class='line'>                    <span class="o">}</span>
+</span><span class='line'>                <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="o">}</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="k">return</span> <span class="kc">false</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p></p>
+
+<p>代码比较粗糙，对某些情况不是很严格，但不影响总体的性能评测，<strong>这个逻辑不到2s，要快15倍以上</strong>。
+这个写法的特点是:<strong>使用数组而不是Map，使用标记位置而不是截取字符串，一次扫描。</strong></p>
+
+<p><strong>不过，这个代码很粗糙，不要太当真。</strong></p>
+
+<p>看看我机器上显示的虚拟机负载情况。</p>
+
+<p>图1:最简单的做法
+<img src="/assets/images/2013/match1.jpg" alt="简单方法+多线程" /></p>
+
+<p>图2:手工打造，相对的内存消耗小些
+<img src="/assets/images/2013/match2.jpg" alt="手工打造+多线程" /></p>
+
+<p>图3:还是手工打造，不过单线程，相对来说CPU使用率就小很多了
+<img src="/assets/images/2013/match3.jpg" alt="手工打造+单线程" /></p>
+
+<h3>小结</h3>
+
+<p>经常听到算法没什么用，算法没地方使用的论调，我也都一笑置之。
+不过，<strong>我也承认，在现在的工作中，的确很少会直接面对非常具体的局部算法</strong>。
+但我还是不能赞同上面的观点，<strong>毕竟有些场景还是不得不考虑的</strong>:</p>
+
+<ol>
+<li>做不到，没有算法的支持，根本不知怎么写好</li>
+<li>做不好，简单的实现没法满足，需要高效的算法</li>
+</ol>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1037,48 +1514,6 @@ Java虚拟机(JVM)里边的即时编译器(JIT)可以做到传统编译器不能
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130206_mini-maven.html">迷你Maven</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-02-06T00:00:00+08:00" pubdate data-updated="true">Feb 6<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130206_mini-maven.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2><strong>根据<a href="http://www.juvenxu.com/mvn-def-guide/">Maven权威指南</a>编制的思维导图</strong></h2>
-
-<h2>可以在Dropbox上下载到这个<a href="https://www.dropbox.com/s/mjn0efcr9n6ly97/%E8%BF%B7%E4%BD%A0Maven.xmind">xmind文件</a></h2>
-
-<p><img src="/assets/images/2013/maven.png" alt="迷你Maven" /></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/12/">&larr; Older</a>
@@ -1097,6 +1532,10 @@ Java虚拟机(JVM)里边的即时编译器(JIT)可以做到传统编译器不能
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151216_aes256-Illegal-key-size-or-default-parameters.html">AES256算法遇到 Illegal key size or default parameters的解决办法</a>
       </li>
     
       <li class="post">
@@ -1129,10 +1568,6 @@ Java虚拟机(JVM)里边的即时编译器(JIT)可以做到传统编译器不能
     
       <li class="post">
         <a href="/blog/20150107_charset-intro.html">关于编码与乱码问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20141229_des-hack.html">常见DES实现陷阱</a>
       </li>
     
   </ul>

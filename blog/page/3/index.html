@@ -9,8 +9,9 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="目前项目中常见的工具库有apache commons,google guava,再算上spring的话，需要自己从头开始写工具类的情况大大减少。
-为了给广大童鞋普及一下工具库用法，减少无用功(还可能因为实现的不好留后遗症的)，这里简单的介绍一下相关工具类。google guava大家应该比较陌生， &hellip;">
+  <meta name="description" content="DES要点说明 DES走的是分组加密，每次处理对象的是8位byte，所以对字符串加解密的时候，会涉及字符编码格式和补齐8位的问题。
+DES的密钥是固定8位的byte的，其中前7位是加解密用的，最后一位是校验码。
+3DES的增强型的DES，带3个key，如果3个key一样，就是DES， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +66,247 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20141229_des-hack.html">常见DES实现陷阱</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-12-29T00:00:00+08:00" pubdate data-updated="true">Dec 29<span>th</span>, 2014</time>
+        
+         | <a href="/blog/20141229_des-hack.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>DES要点说明</h3>
+
+<ul>
+<li>DES走的是分组加密，每次处理对象的是8位byte，所以对字符串加解密的时候，会涉及字符编码格式和补齐8位的问题。</li>
+<li>DES的密钥是固定8位的byte的，其中前7位是加解密用的，最后一位是校验码。</li>
+<li>3DES的增强型的DES，带3个key，如果3个key一样，就是DES，也有一种变种是1、3是一样的。但都是固定8位的。</li>
+<li>3DES通常是EDE,就是先加密(k1)再解密(k2)再加密(k3)</li>
+</ul>
+
+
+<p>目前，项目代码中有3个和DES实现相关的类,下面看看他们有哪些问题：</p>
+
+<h3>案例1</h3>
+
+<ul>
+<li>从字符串到byte的转换，有指定编码格式GBK，这个是可以接受的。</li>
+<li>使用的是DESede,就是3DES的EDE加密方式，但是3个key是一样的，没有意义。</li>
+<li>加密时代码先自行进行了补齐操作(补\0),但是补齐是在字符串上操作的，不是在字节上操作，导致实际上可能没有对齐(中文情况)。</li>
+<li>调用加密API时，没有指定补齐方式，会采用默认补齐，造成重复补齐(当然也修复了上面的补齐操作)。</li>
+<li>解密指定NoPadding，和加密Padding方式不一样，造成解密结果最后会出现很多多余的字节。所以结果必须得trim一下才行。</li>
+</ul>
+
+
+<p>参考代码如下：</p>
+
+<p>补齐实现有误：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">String</span> <span class="nf">encrypt</span><span class="o">(</span><span class="n">String</span> <span class="n">in</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">String</span> <span class="n">strIn</span> <span class="o">=</span> <span class="n">in</span><span class="o">;</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="kc">null</span> <span class="o">==</span> <span class="n">strIn</span> <span class="o">||</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">strIn</span><span class="o">))</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="s">&quot;&quot;</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+</span><span class='line'>    <span class="n">i</span> <span class="o">=</span> <span class="n">strIn</span><span class="o">.</span><span class="na">length</span><span class="o">()</span> <span class="o">%</span> <span class="mi">8</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="mi">0</span> <span class="o">==</span> <span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">strIn</span> <span class="o">+=</span> <span class="s">&quot;\0&quot;</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">while</span> <span class="o">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">strIn</span> <span class="o">+=</span> <span class="s">&quot;\0&quot;</span><span class="o">;</span>
+</span><span class='line'>            <span class="n">i</span><span class="o">--;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>    <span class="kt">byte</span><span class="o">[]</span> <span class="n">bytes</span> <span class="o">=</span> <span class="n">strIn</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="n">CHARSET</span><span class="o">);</span>
+</span><span class='line'>    <span class="kt">byte</span><span class="o">[]</span> <span class="n">enbytes</span> <span class="o">=</span> <span class="n">encryptCipher</span><span class="o">.</span><span class="na">doFinal</span><span class="o">(</span><span class="n">bytes</span><span class="o">);</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nf">byteArrToHexStr</span><span class="o">(</span><span class="n">enbytes</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>key是一样的，补齐方式没对应上：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="nf">DESedeEncrypt</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kt">byte</span><span class="o">[]</span> <span class="n">buffer</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[]</span> <span class="o">{</span>
+</span><span class='line'>            <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span>
+</span><span class='line'>            <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span><span class="o">,</span> <span class="mh">0x31</span>
+</span><span class='line'>    <span class="o">};</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">SecretKeySpec</span> <span class="n">key</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SecretKeySpec</span><span class="o">(</span><span class="n">buffer</span><span class="o">,</span> <span class="s">&quot;DESede&quot;</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">try</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">encryptCipher</span> <span class="o">=</span> <span class="n">Cipher</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="n">KEY_ALGORITHM</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">encryptCipher</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="n">Cipher</span><span class="o">.</span><span class="na">ENCRYPT_MODE</span><span class="o">,</span> <span class="n">key</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">decryptCipher</span> <span class="o">=</span> <span class="n">Cipher</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="s">&quot;DESede/ECB/NoPadding&quot;</span><span class="o">);</span>
+</span><span class='line'>        <span class="n">decryptCipher</span><span class="o">.</span><span class="na">init</span><span class="o">(</span><span class="n">Cipher</span><span class="o">.</span><span class="na">DECRYPT_MODE</span><span class="o">,</span> <span class="n">key</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">NoSuchAlgorithmException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">Throwables</span><span class="o">.</span><span class="na">propagate</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">NoSuchPaddingException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">Throwables</span><span class="o">.</span><span class="na">propagate</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InvalidKeyException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">Throwables</span><span class="o">.</span><span class="na">propagate</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>案例2</h3>
+
+<ul>
+<li>从字符串到byte的转换，采用了系统默认编码，存在平台移植性问题。</li>
+<li>密钥key的长度布置8位，有多余字符(虽然只取前8位避免出错)，造成混乱。</li>
+</ul>
+
+
+<p>key的格式不标准，有多余字符:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kd">static</span> <span class="n">String</span> <span class="n">strDefaultKey</span> <span class="o">=</span> <span class="s">&quot;mywebsite123456%&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="kd">private</span> <span class="n">Key</span> <span class="nf">getKey</span><span class="o">(</span><span class="kt">byte</span><span class="o">[]</span> <span class="n">arrBTmp</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kt">byte</span><span class="o">[]</span> <span class="n">arrB</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="mi">8</span><span class="o">];</span>
+</span><span class='line'>    <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">arrBTmp</span><span class="o">.</span><span class="na">length</span> <span class="o">&amp;&amp;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">arrB</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">arrB</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">arrBTmp</span><span class="o">[</span><span class="n">i</span><span class="o">];</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">Key</span> <span class="n">key</span> <span class="o">=</span> <span class="k">new</span> <span class="n">javax</span><span class="o">.</span><span class="na">crypto</span><span class="o">.</span><span class="na">spec</span><span class="o">.</span><span class="na">SecretKeySpec</span><span class="o">(</span><span class="n">arrB</span><span class="o">,</span> <span class="s">&quot;DES&quot;</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="k">return</span> <span class="n">key</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>案例3</h3>
+
+<ul>
+<li>从字符串到byte的转换，采用了系统默认编码，存在平台移植性问题。</li>
+<li>实现不是标准的DES，或3DES，是在DES基础上定义了一套加密。</li>
+<li>根据目前key的长度，比标准3DES都要慢很多，另外没有采用JDK带的API。</li>
+</ul>
+
+
+<p>key的长度不标准：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">DesUtil</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">firstKey</span> <span class="o">=</span> <span class="s">&quot;com.xxx.xxxpro&quot;</span><span class="o">;</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">secondKey</span> <span class="o">=</span> <span class="s">&quot;xxx_web&quot;</span><span class="o">;</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">thirdKey</span> <span class="o">=</span> <span class="s">&quot;xxxservice&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>实现方式是对每个key补齐8位，再切割形成每组多个8位的key，再采用EEE的方式进行处理:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>                    <span class="k">for</span> <span class="o">(</span><span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">firstLength</span><span class="o">;</span> <span class="n">x</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>                        <span class="n">tempBt</span> <span class="o">=</span> <span class="n">enc</span><span class="o">(</span><span class="n">tempBt</span><span class="o">,</span> <span class="o">(</span><span class="kt">int</span><span class="o">[])</span> <span class="n">firstKeyBt</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">x</span><span class="o">));</span>
+</span><span class='line'>                    <span class="o">}</span>
+</span><span class='line'>                    <span class="k">for</span> <span class="o">(</span><span class="n">y</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="n">secondLength</span><span class="o">;</span> <span class="n">y</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>                        <span class="n">tempBt</span> <span class="o">=</span> <span class="n">enc</span><span class="o">(</span><span class="n">tempBt</span><span class="o">,</span> <span class="o">(</span><span class="kt">int</span><span class="o">[])</span> <span class="n">secondKeyBt</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">y</span><span class="o">));</span>
+</span><span class='line'>                    <span class="o">}</span>
+</span><span class='line'>                    <span class="k">for</span> <span class="o">(</span><span class="n">z</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">z</span> <span class="o">&lt;</span> <span class="n">thirdLength</span><span class="o">;</span> <span class="n">z</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>                        <span class="n">tempBt</span> <span class="o">=</span> <span class="n">enc</span><span class="o">(</span><span class="n">tempBt</span><span class="o">,</span> <span class="o">(</span><span class="kt">int</span><span class="o">[])</span> <span class="n">thirdKeyBt</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">z</span><span class="o">));</span>
+</span><span class='line'>                    <span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -438,94 +680,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-04-10T00:00:00+08:00" pubdate data-updated="true">Apr 10<span>th</span>, 2014</time>
-        
-         | <a href="/blog/20140410_books-to-be-read.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>ruby元编程</h3>
-
-<ul>
-<li>作者Paolo Perrotta</li>
-<li>阅读于2014-04-22,大约5天</li>
-<li>适合有一定ryby/rails开发经验的同学,对认识ruby魔法很有帮助</li>
-</ul>
-
-
-<p>最近看这本书，主要是跟别人谈起这本书，一时兴起又阅读一下，主要是复习复习。毕竟自己搞ruby/rails有好几个年头了，虽然现在主要以java为主，但是ruby还是我工作以外的首选。说回这本书，是系统介绍ruby魔法的魔法书，如果想了解一下那些神奇的库是怎么实现的，又或者想用ruby构建自己的DSL，这本书可以给你足够的知识点。放马去吧！</p>
-
-<h3>CSS实战手册</h3>
-
-<ul>
-<li>作者David Sawyer McFarland</li>
-<li>阅读于2014-04-18,大约7天</li>
-<li>适合想系统学习点CSS的童鞋，书籍出版了有些年头，不过的确经典，强力推荐</li>
-</ul>
-
-
-<p>最近在弄个网站，苦恼bootstrap水太深，想调整难度大，所以看看书找找感觉。
-这个The Missing Manual系列还是比较出名的，特别是这本CSS实战手册，难度也不是大，但讲解得很系统化。
-其实，这本书还出了新版，专注CSS3了。可惜的是，现在只有英文版，不是很适合我这种CSS初哥，不过下一阶段打算看看。
-那么多概念，还是浮云呀，终究还是看基础扎不扎实。</p>
-
-<h3>Go语言编程</h3>
-
-<ul>
-<li>作者许式伟、吕桂华(七牛云存储团队)</li>
-<li>阅读于2014-04-09,大约3天</li>
-<li>适合对Go语言刚兴趣、想一窥究竟的童鞋,内容一般、比较浅显,不是很适应英文的童鞋可以优先考虑</li>
-</ul>
-
-
-<p>看这本书主要是冲着七牛云存储团队的名气去的，毕竟他们是国内第一个吃螃蟹的，据说90%以上的代码都是GO实现的。
-另外，我最近用Go在做点东西，看从中看到对Go实践方式的解读。阅读之后，感觉内容偏浅，不如看官方文档。
-不过里边有些例子还不错，适合有其他语言经验的童鞋阅读，可以通过对比其他语言的代码实现，加深印象。
-总结一下，这书适合快速浏览，剩下的还是老老实实编程吧。</p>
-
-<h3>代码的未来</h3>
-
-<ul>
-<li>作者松本行弘(Ruby之父)</li>
-<li>阅读于2014-04-06,大约3天</li>
-<li>适合轻松阅读、扩展知识面,不深入,可以读读</li>
-</ul>
-
-
-<p>这本书和作者另外一本书&#8221;松本行弘的程式世界&#8221;感觉有些类似，都是以发表在某专栏的文章集合为主。
-可能是由于篇幅问题，大多都是泛泛而谈，点到即止。阅读起来没有什么压力，如果有需要深入的话，就得自己去找资料了。
-总体来说，我对这类书还是挺感兴趣的，可以挑选一些自己感兴趣的话题进行阅读，有助于开阔视野。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/4/">&larr; Older</a>
@@ -544,6 +698,10 @@
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151216_aes256-Illegal-key-size-or-default-parameters.html">AES256算法遇到 Illegal key size or default parameters的解决办法</a>
       </li>
     
       <li class="post">
@@ -576,10 +734,6 @@
     
       <li class="post">
         <a href="/blog/20150107_charset-intro.html">关于编码与乱码问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20141229_des-hack.html">常见DES实现陷阱</a>
       </li>
     
   </ul>

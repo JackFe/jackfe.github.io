@@ -9,10 +9,9 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="在android上看过一个一笔画的小游戏，规则很简单，要连续一笔，不能重复。
-当然，到后面比较难的时候还会限制方向，有些线路必须走多次等等。并不是觉得这有游戏做得多么的好，或者很有创意。
-我只是从程序员的角度来看问题，用程序是怎么处理的。
-我们只需要尝试所有可能的路径就可以了，这里用了回朔法， &hellip;">
+  <meta name="description" content="问题描述 有个楼梯，一个人一次可以走1级或2级，那么走上一条100级的楼梯，有多少种不同的走法? 找到规律 先找到规律，从简单情况开始，设f(n)是n级楼梯的走法数量。那么就有: n=1,肯定只有一种走法,即f(1)=1
+n=2,可以一级级走或者一次两级,即f(2)=2
+对于n>2的情况， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -67,6 +66,70 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120709_stair-walk.html">简单的楼梯问题</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-09T00:00:00+08:00" pubdate data-updated="true">Jul 9<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120709_stair-walk.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>问题描述</h2>
+
+<p>有个楼梯，一个人一次可以走1级或2级，那么走上一条100级的楼梯，有多少种不同的走法?</p>
+
+<h2>找到规律</h2>
+
+<p>先找到规律，从简单情况开始，设f(n)是n级楼梯的走法数量。那么就有:</p>
+
+<ol>
+<li>n=1,肯定只有一种走法,即f(1)=1</li>
+<li>n=2,可以一级级走或者一次两级,即f(2)=2</li>
+<li>对于n>2的情况，如果第一次走1级，剩下的楼梯有f(n-1)种走法，如果走2级，剩下的楼梯有f(n-2)种走法。
+那么总的走法是f(n)=f(n-1)+f(n-2)。</li>
+</ol>
+
+
+<h2>斐波纳契数列</h2>
+
+<p>说白了，这是个斐波纳契数列。计算的时候简单的动态规划即可。下面是简单的ruby源码:</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span>
+<span class="mi">98</span><span class="o">.</span><span class="n">times</span> <span class="p">{</span><span class="n">b</span><span class="p">,</span><span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="o">+</span><span class="n">b</span><span class="p">,</span><span class="n">b</span><span class="p">}</span>
+<span class="nb">p</span> <span class="n">b</span> <span class="c1">#=&gt; 573147844013817084101</span>
+</code></pre></div>
+
+
+<p>看，真的是一个天文数字来的。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -395,78 +458,6 @@ SET LC_ALL=zh_CN.UTF-8</p></blockquote>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120628_how-to-play-go.html">围棋中气的判断</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-06-28T00:00:00+08:00" pubdate data-updated="true">Jun 28<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120628_how-to-play-go.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>围棋玩法</h2>
-
-<p>围棋本身的规则是非常简单的。判断一个子能不能落在某个点是最基本的问题。<br/>
-如果不能吃掉对方但这个子周围还有气(空点)的话，是可以落子的。<br/>
-如果能吃掉对方但不是打劫这种特殊情况的话，也是可以落子的。<br/>
-我们先不考虑打劫这种情况，问题就归结为如何判断某个子是否有气，而杀子就是判断四周的子是否有气。</p>
-
-<h2>用递归来判断</h2>
-
-<p>假设有个方法try2kill(r,c)，它可以用来判断r行c列的子是否有气，如果没气返回true，否则返回false。</p>
-
-<p>递归过程如下：</p>
-
-<ol>
-<li>判断四周是否存在一个气，就是有个空格(0)，如果有返回false。</li>
-<li>否则，给当前点记录为预杀状态(x)(表示自己周围没有明显的气)</li>
-<li>再依次判断四周的点，对每个点例如左边(left)：</li>
-<li>如果左边未出边界且和当前点是同一颜色(但并非预杀状态)，则调用try2kill进行判断</li>
-<li>如果其中一个点有气(try2kill返回false)，则直接返回false</li>
-<li>如果四周都判断完，没有发现明显的气，则返回true(这样所有预杀状态的都是没气的，都会被杀掉)</li>
-</ol>
-
-
-<h2>打劫处理</h2>
-
-<p>打劫有个特殊的地方就是不能立即回提，本质上是不能在对弈过程中出现同形。<br/>
-一个比较简单有效的办法就是，记录落子次序和每次的吃子数(通过上面的判断逻辑)。
-这两个记录都是很容易记录的。判断是否打劫违规就是当前手和上一手的吃子数是否都为1。
-且当前落子点对应上手的死子点，当前死子点对应上手的落子点。<br/>
-这些条件符合的话，这就是一次违规。</p>
-
-<h2>后续</h2>
-
-<p>有了这些判断逻辑，要实现整个走法已经不是问题了，有兴趣的可以试试。<br/>
-当然，围棋最复杂的地方还是人工智能领域，现阶段的电脑围棋还是比较弱的。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/24/">&larr; Older</a>
@@ -485,6 +476,10 @@ SET LC_ALL=zh_CN.UTF-8</p></blockquote>
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151216_aes256-Illegal-key-size-or-default-parameters.html">AES256算法遇到 Illegal key size or default parameters的解决办法</a>
       </li>
     
       <li class="post">
@@ -517,10 +512,6 @@ SET LC_ALL=zh_CN.UTF-8</p></blockquote>
     
       <li class="post">
         <a href="/blog/20150107_charset-intro.html">关于编码与乱码问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20141229_des-hack.html">常见DES实现陷阱</a>
       </li>
     
   </ul>

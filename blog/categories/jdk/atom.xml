@@ -4,7 +4,7 @@
   <title><![CDATA[Category: jdk | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/jdk/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-04-17T15:41:51+08:00</updated>
+  <updated>2016-04-17T15:52:18+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -12,6 +12,35 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[AES256算法遇到 Illegal key size or default parameters的解决办法]]></title>
+    <link href="http://mccxj.github.com/blog/20151216_aes256-Illegal-key-size-or-default-parameters.html"/>
+    <updated>2015-12-16T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/aes256-Illegal-key-size-or-default-parameters</id>
+    <content type="html"><![CDATA[<p>```java
+java.security.InvalidKeyException: Illegal key size or default parameters</p>
+
+<pre><code>at javax.crypto.Cipher.a(DashoA13*..)
+at javax.crypto.Cipher.a(DashoA13*..)
+at javax.crypto.Cipher.a(DashoA13*..)
+at javax.crypto.Cipher.init(DashoA13*..)
+at javax.crypto.Cipher.init(DashoA13*..)
+at com.xxx.AESWithFileKey.encrypt(AESWithFileKey.java:81)
+at com.xxx.AESWithFileKey.main(AESWithFileKey.java:148)
+</code></pre>
+
+<p>```</p>
+
+<p>Google到问题原因，链接地址如下：http://stackoverflow.com/questions/6481627/java-security-illegal-key-size-or-default-parameters</p>
+
+<p>根据回答找到下载新jar包链接地址如下：http://www.oracle.com/technetwork/java/javase/downloads/jce-6-download-429243.html<br/>
+把里面的两个jar包：local_policy.jar 和 US_export_policy.jar 替换掉原来安装目录C:\Program Files\Java\jre6\lib\security 下的两个jar包就可以了</p>
+
+<p>上面是在oracle的jdk出现的。
+如果是IBM的jdk出现问题，参考<a href="http://www-01.ibm.com/support/knowledgecenter/SSAW57_7.0.0/com.ibm.websphere.nd.multiplatform.doc/info/ae/ae/twbs_tunev6wss.html">调整 Version 7.0 应用程序的 Web Services Security</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[初始化httpClient失败原因分析]]></title>
