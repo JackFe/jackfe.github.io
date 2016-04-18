@@ -9,8 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="为了在公司里边推广jstl，而总结的一些jstl使用技巧: jstl可以很方便的处理NullPointException,访问越界等常见问题 &lt;c:set var=”SPExtraInfoList” value=”${queryresult[3]}”/&gt;
-&lt;c:out value &hellip;">
+  <meta name="description" content="我感觉maven这东西比ant容易上手(ant每个项目规则都不一样),看那个100页的迷你书+例子(推荐basecrm或spring3.0)基本就ok了~~
+哎，本来想写的很多，发现写出来的却很少。多多包涵! maven是一个项目管理工具，跟ant相比亮点在于它遵守了COC规则，只要遵守就好处多多 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +65,185 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121130_maven-quickstart.html">Maven学习要点(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-11-30T00:00:00+08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20121130_maven-quickstart.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>我感觉maven这东西比ant容易上手(ant每个项目规则都不一样),看那个100页的迷你书+例子(推荐basecrm或spring3.0)基本就ok了~~
+哎，本来想写的很多，发现写出来的却很少。多多包涵!</p>
+
+<ul>
+<li>maven是一个项目管理工具，跟ant相比亮点在于它遵守了COC规则，只要遵守就好处多多</li>
+<li>maven可以分为三部分:maven本身(提供基本功能),仓库(提供jar),maven插件(提供更多的集成功能)</li>
+<li>maven的配置文件是settings.xml,maven项目的配置文件是pom.xml</li>
+<li>settings.xml主要是配置仓库镜像,本地仓库,网络访问设置等信息,常用配置:</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;localRepository&gt;</span>D:/repository<span class="nt">&lt;/localRepository&gt;</span> --本地仓库
+   <span class="nt">&lt;proxy&gt;</span>  --网络代理
+     <span class="nt">&lt;id&gt;</span>optional<span class="nt">&lt;/id&gt;</span>
+     <span class="nt">&lt;active&gt;</span>true<span class="nt">&lt;/active&gt;</span>
+     <span class="nt">&lt;protocol&gt;</span>http<span class="nt">&lt;/protocol&gt;</span>
+     <span class="nt">&lt;username&gt;</span>proxyuser<span class="nt">&lt;/username&gt;</span>
+     <span class="nt">&lt;password&gt;</span>proxypass<span class="nt">&lt;/password&gt;</span>
+     <span class="nt">&lt;host&gt;</span>proxy.host.net<span class="nt">&lt;/host&gt;</span>
+     <span class="nt">&lt;port&gt;</span>80<span class="nt">&lt;/port&gt;</span>
+     <span class="nt">&lt;nonProxyHosts&gt;</span>local.net|some.host.com<span class="nt">&lt;/nonProxyHosts&gt;</span>
+   <span class="nt">&lt;/proxy&gt;</span>
+  <span class="nt">&lt;mirror&gt;</span>  --仓库镜像
+    <span class="nt">&lt;id&gt;</span>nexus<span class="nt">&lt;/id&gt;</span>
+    <span class="nt">&lt;mirrorOf&gt;</span>*<span class="nt">&lt;/mirrorOf&gt;</span>
+    <span class="nt">&lt;name&gt;</span>Mirror for maven central.<span class="nt">&lt;/name&gt;</span>
+    <span class="nt">&lt;url&gt;</span>http://10.137.27.223:8080/nexus/content/groups/public<span class="nt">&lt;/url&gt;</span>
+  <span class="nt">&lt;/mirror&gt;</span>
+</code></pre></div>
+
+
+<ul>
+<li>pom.xml主要分为三部分:项目本身的信息,使用的插件,依赖的jar</li>
+<li>项目本身的信息,用于唯一标识(groupid-artifactId-version, 通常是这3部分)，例如</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;modelVersion&gt;</span>4.0.0<span class="nt">&lt;/modelVersion&gt;</span> --maven3.x都是使用4.0.0
+ <span class="nt">&lt;groupId&gt;</span>com.huawei.boss<span class="nt">&lt;/groupId&gt;</span>
+ <span class="nt">&lt;artifactId&gt;</span>boss-common<span class="nt">&lt;/artifactId&gt;</span>
+ <span class="nt">&lt;version&gt;</span>0.0.1-SNAPSHOT<span class="nt">&lt;/version&gt;</span>
+ <span class="nt">&lt;packaging&gt;</span>jar<span class="nt">&lt;/packaging&gt;</span>
+</code></pre></div>
+
+
+<p>类似这个，默认就会被打包成boss-common-0.0.1-SNAPSHOT.jar。同样，项目的依赖库也是通过这种坐标在仓库中寻找的。</p>
+
+<ul>
+<li>artifactId通常推荐使用项目名当前缀,当项目是打包成war的时候,通常需要制定发布后的命名:</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;build&gt;</span>
+   <span class="nt">&lt;finalName&gt;</span>bossbase<span class="nt">&lt;/finalName&gt;</span>
+ <span class="nt">&lt;/build&gt;</span>
+</code></pre></div>
+
+
+<ul>
+<li>可以通过properties定义一些常量,并通过${spring.version}之类来引用</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;properties&gt;</span>
+       <span class="nt">&lt;project.build.sourceEncoding&gt;</span>UTF-8<span class="nt">&lt;/project.build.sourceEncoding&gt;</span>
+       <span class="nt">&lt;spring.version&gt;</span>2.5.6<span class="nt">&lt;/spring.version&gt;</span>
+ <span class="nt">&lt;/properties&gt;</span>
+</code></pre></div>
+
+
+<ul>
+<li>jar包依赖常用的有如下配置(仅举例说明):</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;dependencies&gt;</span>
+     <span class="nt">&lt;dependency&gt;</span>
+           <span class="nt">&lt;groupId&gt;</span>org.springframework<span class="nt">&lt;/groupId&gt;</span>
+               <span class="nt">&lt;artifactId&gt;</span>spring-core<span class="nt">&lt;/artifactId&gt;</span>
+             <span class="nt">&lt;version&gt;</span>${spring.version}<span class="nt">&lt;/version&gt;</span>  --常量引用,在引用同个项目多个模块的时候相当有效
+           <span class="nt">&lt;type&gt;</span>jar<span class="nt">&lt;/type&gt;</span>  --默认就是jar
+             <span class="nt">&lt;scope&gt;</span>compile<span class="nt">&lt;/scope&gt;</span>  --默认是compile,表示对编译,测试,运行都有效
+       <span class="nt">&lt;/dependency&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+          <span class="nt">&lt;groupId&gt;</span>geronimo-spec<span class="nt">&lt;/groupId&gt;</span>
+            <span class="nt">&lt;artifactId&gt;</span>geronimo-spec-jta<span class="nt">&lt;/artifactId&gt;</span> --这个是为了不依赖sun的专用东东
+           <span class="nt">&lt;version&gt;</span>1.0.1B-rc4<span class="nt">&lt;/version&gt;</span>
+                <span class="nt">&lt;type&gt;</span>pom<span class="nt">&lt;/type&gt;</span>
+          <span class="nt">&lt;scope&gt;</span>provided<span class="nt">&lt;/scope&gt;</span>  --在运行的时候不依赖，我们常见的时候j2ee规范之类的api,如servlet-api
+  <span class="nt">&lt;/dependency&gt;</span>
+       <span class="nt">&lt;dependency&gt;</span>
+             <span class="nt">&lt;groupId&gt;</span>junit<span class="nt">&lt;/groupId&gt;</span>
+               <span class="nt">&lt;artifactId&gt;</span>junit<span class="nt">&lt;/artifactId&gt;</span>
+           <span class="nt">&lt;version&gt;</span>4.8.2<span class="nt">&lt;/version&gt;</span>
+             <span class="nt">&lt;type&gt;</span>jar<span class="nt">&lt;/type&gt;</span>
+               <span class="nt">&lt;scope&gt;</span>test<span class="nt">&lt;/scope&gt;</span>  --只在测试的时候生效,另外还有个ruuntime的scope,用于运行时依赖(如jdbc驱动等)
+      <span class="nt">&lt;/dependency&gt;</span>
+   <span class="nt">&lt;dependency&gt;</span>
+     <span class="nt">&lt;groupId&gt;</span>org.hibernate<span class="nt">&lt;/groupId&gt;</span>
+     <span class="nt">&lt;artifactId&gt;</span>hibernate<span class="nt">&lt;/artifactId&gt;</span>
+     <span class="nt">&lt;version&gt;</span>3.2.5.ga<span class="nt">&lt;/version&gt;</span>
+     <span class="nt">&lt;exclusions&gt;</span>  --这里是排除依赖，因为jta官方版是在maven仓库中找不到的
+       <span class="nt">&lt;exclusion&gt;</span>
+         <span class="nt">&lt;groupId&gt;</span>javax.transaction<span class="nt">&lt;/groupId&gt;</span>
+         <span class="nt">&lt;artifactId&gt;</span>jta<span class="nt">&lt;/artifactId&gt;</span>
+       <span class="nt">&lt;/exclusion&gt;</span>
+     <span class="nt">&lt;/exclusions&gt;</span>
+   <span class="nt">&lt;/dependency&gt;</span>
+ <span class="nt">&lt;/dependencies&gt;</span>
+</code></pre></div>
+
+
+<ul>
+<li>当项目是分模块进行的时候,通常会考虑使用modules,如:</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="xml">   <span class="nt">&lt;modules&gt;</span>
+       <span class="nt">&lt;module&gt;</span>basecrm-parent<span class="nt">&lt;/module&gt;</span>
+       <span class="nt">&lt;module&gt;</span>common<span class="nt">&lt;/module&gt;</span>
+       <span class="nt">&lt;module&gt;</span>systemmgr<span class="nt">&lt;/module&gt;</span>
+       <span class="nt">&lt;module&gt;</span>prodmgr<span class="nt">&lt;/module&gt;</span>
+   <span class="nt">&lt;/modules&gt;</span>
+</code></pre></div>
+
+
+<p>这个时候至少会有两级pom.xml,这样像properties,dependency等都是可以继承的(可参考basecrm项目或者spring3.x)</p>
+
+<ul>
+<li><p>plugin资源非常多，简单举几个常用插件(配置请上网找)<br/>
+maven-compiler-plugin 主要是配置编译方面的选项(例如使用什么版本的jdk)<br/>
+maven-surefire-plugin 跟测试有关的,例如配置测试失败是否继续,是否跳过测试等<br/>
+build-helper-maven-plugin 用于配置项目的目录结构,例如配置多个源代码目录等<br/>
+maven-shade-plugin 我只知道可以用来给打包加点料~~<br/>
+tomcat-maven-plugin 顾名思义,用于集成tomcat<br/>
+maven-jetty-plugin 顾名思义,用于集成jetty</p></li>
+<li><p>others <br/>
+maven仓库代理推荐nexus(网内已经有个现成的:http://10.137.27.223:8080/nexus)<br/>
+eclipse中的maven插件推荐m2eclipse(update-site: http://m2eclipse.sonatype.org/sites/m2e)<br/>
+maven实战迷你书(http://www.infoq.com/cn/minibooks/maven-in-action)</p></li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -435,81 +614,6 @@ typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20121120_how-to-share.html">关于分享</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-11-20T00:00:00+08:00" pubdate data-updated="true">Nov 20<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20121120_how-to-share.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>分享好处多多</h2>
-
-<p>通过做一些分享活动，一方面可以扩大自己的影响力，让更多的人知道你。
-另外一方面，可以加深自己对知识的理解，在交流中纠正一些错误的理解。
-还可以提高自己的表达能力。可以说，除了需要花时间准备之外，分享对自己来说，几乎是百利而无一害的。</p>
-
-<h2>参与度与氛围</h2>
-
-<p>自己做分享，总是希望有更多的人来参与，并从中营造一个愉悦的氛围，
-互惠互利，从中可以学习到更多。但是，经常遇到的事实是，参与的童鞋常常不愿意发言。
-一方面是可能是自己不擅长，更多看成是培训，而不是交流活动，害怕犯错。还有就是，
-他们没有事先做一些准备，对内容理解不够快，所以也没什么特别的疑问。
-我认为，提出一些低级问题，并不是什么丢人的事情，可能是分享人没有照顾到你(经常是一类人)，
-如果你不提出来的话，或许分享人会自认为大家都很明白。总之，参与一些分享活动，能全身心
-投入，收获会更大。</p>
-
-<h2>敢于分享</h2>
-
-<p>很多童鞋都害怕分享，总是担心自己水平不够，准备不够充分，所以一拖再拖。
-以我的经验，分享的内容你刚刚够得着就可以了，因为你准备的过程中，会对自己掌握的内容进行
-筛选，收集更多的资料，然后进行浓缩总结，到最后你把它分享给其他人，整个过程下来，就是一次很好的
-锻炼机会。不要太担心做不好，即使有些地方自己说不清，但或许经过众人的讨论，理解得就更好了。
-还有就是，什么都要计划，给自己的分享计划加个合理的期限吧，少许的压力能让你做得更好。</p>
-
-<h2>节奏与时间</h2>
-
-<p>每次分享的时间不要过长，我就犯过这样的错误，到后面很多人都开始走神了。
-还有就是，主题要比较单一，免得铺开太大，不好收缩，影响时间和效果。
-时间比较长的话，中间可以适当休息一下。</p>
-
-<h2>想不到的收获</h2>
-
-<p>最近做了一次关于oracle执行计划的分享活动，说实话，我对这个主题不是很熟悉。
-但是我觉得这东西很有用，也非常适合团队里的童鞋，所以花了几个星期的时间收集资料，
-最后做了这么一个分享活动。经自己讲解了一遍，自己对这些知识加深了理解。更让我想不到的事情就是，
-有其他项目组的童鞋遇到了相关的问题，跑来跟我讨论(哥俨然是专家啦)。正因为这样，我才有机会遇到更多现实的问题，
-从而促进我对这些东西的理解，如果没有这次分享，有些东西可能就没法用在实践上了。
-我想，很多高手也是这么炼成的。:)</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/18/">&larr; Older</a>
@@ -539,6 +643,10 @@ typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择
       </li>
     
       <li class="post">
+        <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
       </li>
     
@@ -560,10 +668,6 @@ typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择
     
       <li class="post">
         <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
       </li>
     
   </ul>

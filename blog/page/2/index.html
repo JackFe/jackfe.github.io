@@ -9,7 +9,7 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="问题描述 这个今天早上提供的一个生产问题。大体是说，改资料的时候，有个客户的名字有生僻字，叫&#8221;刘&#8221;,保存之后就乱码了，变成&#8221;刘?&#8221; 分析过程 乱码需要确认数据传输过程中编码方式。 数据是通过jQuery的ajax过来的，并且没有提前处理数据( &hellip;">
+  <meta name="description" content="问题描述 昨天收到有个童鞋发来的一个问题咨询，如下图所示。 提到几个疑问: 配置如图所示,然后共享库和项目自身lib下都有一个“xxxx-common.jar”，如果项目用到jar包里面的一个类，将会是共享库的还是自身lib的呢？发现是用的lib里边的。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +64,131 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-10-11T00:00:00+08:00" pubdate data-updated="true">Oct 11<span>th</span>, 2015</time>
+        
+         | <a href="/blog/20151011_websphere-sharelib-loading.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>问题描述</h2>
+
+<p>昨天收到有个童鞋发来的一个问题咨询，如下图所示。</p>
+
+<p><img src="/assets/images/2015/was-sharelib1.png" alt="问题截图" /></p>
+
+<p>提到几个疑问:</p>
+
+<ol>
+<li>配置如图所示,然后共享库和项目自身lib下都有一个“xxxx-common.jar”，如果项目用到jar包里面的一个类，将会是共享库的还是自身lib的呢？发现是用的lib里边的。</li>
+<li>现网情况也是xxlib和lib下都有那jar包，但是根据日志来看，是用共享库的。</li>
+</ol>
+
+
+<h2>我的疑惑</h2>
+
+<p>现网的配置如何，暂时没查明。不过就开发环境的配置来看，我一直认为Parent First应该会走共享库的，目前的现象和我掌握的知识不匹配。</p>
+
+<p>于是，我上网搜索了一下Websphere关于共享库的资料，主要的链接如下：</p>
+
+<ul>
+<li>http://www.ibm.com/developerworks/cn/websphere/library/techarticles/haoaili/0512/</li>
+<li>http://www-01.ibm.com/support/knowledgecenter/SSAW57_8.5.5/com.ibm.websphere.nd.doc/ae/tcws_sharedlib_nativelib.html?lang=zh</li>
+<li>https://10.132.10.69:9043/ibm/help/index.jsp?topic=/com.ibm.ws.console.environment/ucws_rsharedlib_inst.html</li>
+</ul>
+
+
+<p>通过这些链接资料的描述(不得不说，这些中文翻译很隐晦)，但的确是可以解释目前的情况的。</p>
+
+<h2>关于Websphere共享库的理解</h2>
+
+<p>首先，Websphere的共享库和tomcat的共享库差别很大，而我却一直以为是差不多的。<br/>
+tomcat的共享库是一个独立的类加载器，并且在多个Web应用中共享。好处是明显的，共享加载的类，优化内存使用。</p>
+
+<p>其次，Webshpere的共享库非常灵(fu)活(za)，有多种配置组合可以影响结果。具体如下:</p>
+
+<h4>共享库是可以选择和服务器关联或者和应用关联的</h4>
+
+<ul>
+<li>和服务器关联，参考http://www-01.ibm.com/support/knowledgecenter/SSAW57_8.5.5/com.ibm.websphere.nd.doc/ae/tcws_sharedlib_server.html?lang=zh</li>
+<li>和应用关联，参考http://www-01.ibm.com/support/knowledgecenter/SSAW57_8.5.5/com.ibm.websphere.nd.doc/ae/tcws_sharedlib_app.html?lang=zh</li>
+</ul>
+
+
+<h4>共享库是可以选择是否使用隔离的类装入器(就是独立的类加载器)</h4>
+
+<p>设置参考下图所示:</p>
+
+<p><img src="/assets/images/2015/was-sharelib2.png" alt="请对此共享库使用隔离的类装入器" /></p>
+
+<h4>和共享库相关的类加载策略如下:</h4>
+
+<ul>
+<li>如果选择和服务器关联，那么将忽略&#8221;请对此共享库使用隔离的类装入器&#8221;的选项，此时共享库路径将会添加到应用程序服务器(application server)类装入器加载路径上。</li>
+<li>如果选择和应用关联，并且没有设置&#8221;请对此共享库使用隔离的类装入器&#8221;,那么共享库路径将会添加到应用的类加载器加载路径上。此时共享库只有优化管理类库的作用，并不能减少重复加载类造成的内存占用。</li>
+<li>如果选择和应用关联，并且设置&#8221;请对此共享库使用隔离的类装入器&#8221;,那么共享库将作为独立的类加载器，并且各个应用之间共享这个共享库。此时共享库和tomcat的共享库类似，可以减少重复加载类造成的内存占用。</li>
+</ul>
+
+
+<p>对于第三种情况，它的类加载顺序如下：</p>
+
+<p>如果应用的类载入顺序选择“父类装入器装入的类最先”,即Parent First，那么顺序如下:</p>
+
+<ul>
+<li>检查相关联的库类装入器是否可以装入类。(共享库)</li>
+<li>检查它的父代类装入器是否可以装入类。(应用服务器及更高)</li>
+<li>检查应用程序或 WAR 模块类装入器是否可以装入类。(应用)</li>
+</ul>
+
+
+<p>如果应用的类载入顺序选择“本地类装入器装入的类最先”,即Parent Last，那么顺序如下:</p>
+
+<ul>
+<li>检查应用程序或 WAR 模块类装入器是否可以装入类。(应用)</li>
+<li>检查相关联的库类装入器是否可以装入类。(共享库)</li>
+<li>检查它的父代类装入器是否可以装入类。(应用服务器及更高)</li>
+</ul>
+
+
+<h2>现象解释</h2>
+
+<ul>
+<li>开发环境中，共享库和应用关联，并且没有设置&#8221;请对此共享库使用隔离的类装入器&#8221;，所以共享库路径将会添加到应用的类加载器加载路径上，相当于在一个类加载路径上存在同样的类，所以使用到lib中的是可能的。</li>
+<li>生产环境中配置尚未查明，如果共享库和应用关联，并且设置&#8221;请对此共享库使用隔离的类装入器&#8221;，按同样的载入顺序设置，即Parent First，那么是会加载到共享库的。</li>
+<li>如果同样是没有设置&#8221;请对此共享库使用隔离的类装入器&#8221;，那么情况如开发环境情况，使用到共享库中的也是可能的。</li>
+<li>对于同一个类加载路径上存在同样的类，具体会加载哪个是不确定的，所以上述情况都是合理的。所以应该把应用中重复的jar包移除。</li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1127,181 +1252,6 @@ XX设计模式不要硬套，从过程式演变出来更加自然(经验性的�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2015-01-08T00:00:00+08:00" pubdate data-updated="true">Jan 8<span>th</span>, 2015</time>
-        
-         | <a href="/blog/20150108_net-sf-json-problem.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>问题描述</h3>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">String</span> <span class="n">content</span> <span class="o">=</span> <span class="s">&quot;{\&quot;response_head\&quot;:{\&quot;menuid\&quot;:\&quot;xxx\&quot;,\&quot;process_code\&quot;:\&quot;xxx\&quot;,\&quot;verify_code\&quot;:\&quot;\&quot;,\&quot;resp_time\&quot;:\&quot;20150107103234\&quot;,\&quot;sequence\&quot;:{\&quot;resp_seq\&quot;:\&quot;20150107103301\&quot;,\&quot;operation_seq\&quot;:\&quot;\&quot;},\&quot;retinfo\&quot;:{\&quot;retcode\&quot;:\&quot;120\&quot;,\&quot;rettype\&quot;:\&quot;0\&quot;,\&quot;retmsg\&quot;:\&quot;[182096|]处理失败,原因:[屏蔽具体的失败原因！]\&quot;}},\&quot;response_body\&quot;:{} }&quot;</span><span class="o">;</span>
-</span><span class='line'><span class="n">JSONObject</span> <span class="n">object</span> <span class="o">=</span> <span class="n">JSONObject</span><span class="o">.</span><span class="na">fromObject</span><span class="o">(</span><span class="n">content</span><span class="o">);</span>
-</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">object</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
-</span><span class='line'>
-</span><span class='line'><span class="cm">/*</span>
-</span><span class='line'><span class="cm">{&quot;response_head&quot;:{&quot;menuid&quot;:&quot;xxx&quot;,&quot;process_code&quot;:&quot;xxx&quot;,&quot;verify_code&quot;:&quot;&quot;,&quot;resp_time&quot;:&quot;20150107103234&quot;,&quot;sequence&quot;:{&quot;resp_seq&quot;:&quot;20150107103301&quot;,&quot;operation_seq&quot;:&quot;&quot;},&quot;retinfo&quot;:{&quot;retcode&quot;:&quot;120&quot;,&quot;rettype&quot;:&quot;0&quot;,&quot;retmsg&quot;:[&quot;182096|&quot;]}},&quot;response_body&quot;:{}}</span>
-</span><span class='line'><span class="cm">*/</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>问题分析</h3>
-
-<p>采用json-lib-2.4-jdk15.jar，测试代码如上，会发现retmsg的值变成&#8221;[182096|&#8221;.</p>
-
-<p>测试简化json字符串，最终效果如下：</p>
-
-<p>解析失败的例子：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="s2">&quot;{\&quot;response_head\&quot;:{\&quot;retmsg\&quot;:\&quot;[182096|]处理失败,原因:[屏蔽具体的失败原因！]\&quot;}}&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>继续简化的话，就会解析成功</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="s2">&quot;{\&quot;response_head\&quot;:\&quot;[182096|]处理失败,原因:[屏蔽具体的失败原因！]\&quot;}&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>找了一下源码，发现json-lib在某些情况下(绕来绕去，断点发现的)会尝试解析字符串，看看是不是json对象。（尼玛，太智能了）</p>
-
-<p>AbstractJSON.java中的260行,这个时候str是后面的内容。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'>     <span class="o">}</span> <span class="k">else</span> <span class="k">if</span><span class="o">(</span> <span class="n">JSONUtils</span><span class="o">.</span><span class="na">mayBeJSON</span><span class="o">(</span> <span class="n">str</span> <span class="o">)</span> <span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>        <span class="k">try</span> <span class="o">{</span>
-</span><span class='line'>           <span class="k">return</span> <span class="n">JSONSerializer</span><span class="o">.</span><span class="na">toJSON</span><span class="o">(</span> <span class="n">str</span><span class="o">,</span> <span class="n">jsonConfig</span> <span class="o">);</span>
-</span><span class='line'>        <span class="o">}</span> <span class="k">catch</span><span class="o">(</span> <span class="n">JSONException</span> <span class="n">jsone</span> <span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>           <span class="k">return</span> <span class="n">str</span><span class="o">;</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>     <span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>JsonArray.java中的1130行，这个时候v已经是&#8221;182096|&#8221;。这个时候会判断v是不是一个json对象，如果搞一个数组回去，否则就是搞一个字符串(上述现象)。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'>           <span class="n">tokener</span><span class="o">.</span><span class="na">back</span><span class="o">();</span>
-</span><span class='line'>           <span class="n">Object</span> <span class="n">v</span> <span class="o">=</span> <span class="n">tokener</span><span class="o">.</span><span class="na">nextValue</span><span class="o">(</span> <span class="n">jsonConfig</span> <span class="o">);</span>
-</span><span class='line'>           <span class="k">if</span><span class="o">(</span> <span class="o">!</span><span class="n">JSONUtils</span><span class="o">.</span><span class="na">isFunctionHeader</span><span class="o">(</span> <span class="n">v</span> <span class="o">)</span> <span class="o">){</span>
-</span><span class='line'>              <span class="k">if</span><span class="o">(</span> <span class="n">v</span> <span class="k">instanceof</span> <span class="n">String</span> <span class="o">&amp;&amp;</span> <span class="n">JSONUtils</span><span class="o">.</span><span class="na">mayBeJSON</span><span class="o">(</span> <span class="o">(</span><span class="n">String</span><span class="o">)</span> <span class="n">v</span> <span class="o">)</span> <span class="o">){</span>
-</span><span class='line'>                 <span class="n">jsonArray</span><span class="o">.</span><span class="na">addValue</span><span class="o">(</span> <span class="n">JSONUtils</span><span class="o">.</span><span class="na">DOUBLE_QUOTE</span> <span class="o">+</span> <span class="n">v</span> <span class="o">+</span> <span class="n">JSONUtils</span><span class="o">.</span><span class="na">DOUBLE_QUOTE</span><span class="o">,</span>
-</span><span class='line'>                       <span class="n">jsonConfig</span> <span class="o">);</span>
-</span><span class='line'>              <span class="o">}</span><span class="k">else</span><span class="o">{</span>
-</span><span class='line'>                 <span class="n">jsonArray</span><span class="o">.</span><span class="na">addValue</span><span class="o">(</span> <span class="n">v</span><span class="o">,</span> <span class="n">jsonConfig</span> <span class="o">);</span>
-</span><span class='line'>              <span class="o">}</span>
-</span><span class='line'>              <span class="n">fireElementAddedEvent</span><span class="o">(</span> <span class="n">index</span><span class="o">,</span> <span class="n">jsonArray</span><span class="o">.</span><span class="na">get</span><span class="o">(</span> <span class="n">index</span><span class="o">++</span> <span class="o">),</span> <span class="n">jsonConfig</span> <span class="o">);</span>
-</span><span class='line'>           <span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>例如，下面的情况会产生一个数组：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="s2">&quot;{\&quot;response_head\&quot;:{\&quot;retmsg\&quot;:\&quot;[{1820: 96|}]处理失败,原因:[屏蔽具体的失败原因！]\&quot;}}&quot;</span>
-</span><span class='line'>
-</span><span class='line'><span class="p">{</span><span class="nt">&quot;response_head&quot;</span><span class="p">:{</span><span class="nt">&quot;retmsg&quot;</span><span class="p">:[{</span><span class="nt">&quot;1820&quot;</span><span class="p">:</span><span class="s2">&quot;96|&quot;</span><span class="p">}]}}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>关于如何判断是否是json,是会判断以[开头，以]结束的，刚好中枪。而尝试去截取中间内容的时候，又碰巧遇到中间的]字符，所以生成的字符串就是被截断了一部分的。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'>   <span class="cm">/**</span>
-</span><span class='line'><span class="cm">    * Tests if the String possibly represents a valid JSON String.&lt;br&gt;</span>
-</span><span class='line'><span class="cm">    * Valid JSON strings are:</span>
-</span><span class='line'><span class="cm">    * &lt;ul&gt;</span>
-</span><span class='line'><span class="cm">    * &lt;li&gt;&quot;null&quot;&lt;/li&gt;</span>
-</span><span class='line'><span class="cm">    * &lt;li&gt;starts with &quot;[&quot; and ends with &quot;]&quot;&lt;/li&gt;</span>
-</span><span class='line'><span class="cm">    * &lt;li&gt;starts with &quot;{&quot; and ends with &quot;}&quot;&lt;/li&gt;</span>
-</span><span class='line'><span class="cm">    * &lt;/ul&gt;</span>
-</span><span class='line'><span class="cm">    */</span>
-</span><span class='line'>   <span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">mayBeJSON</span><span class="o">(</span> <span class="n">String</span> <span class="n">string</span> <span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>      <span class="k">return</span> <span class="n">string</span> <span class="o">!=</span> <span class="kc">null</span>
-</span><span class='line'>            <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="s">&quot;null&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span> <span class="n">string</span> <span class="o">)</span>
-</span><span class='line'>                  <span class="o">||</span> <span class="o">(</span><span class="n">string</span><span class="o">.</span><span class="na">startsWith</span><span class="o">(</span> <span class="s">&quot;[&quot;</span> <span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="n">string</span><span class="o">.</span><span class="na">endsWith</span><span class="o">(</span> <span class="s">&quot;]&quot;</span> <span class="o">))</span> <span class="o">||</span> <span class="o">(</span><span class="n">string</span><span class="o">.</span><span class="na">startsWith</span><span class="o">(</span> <span class="s">&quot;{&quot;</span> <span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="n">string</span><span class="o">.</span><span class="na">endsWith</span><span class="o">(</span> <span class="s">&quot;}&quot;</span> <span class="o">)));</span>
-</span><span class='line'>   <span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>问题结论</h3>
-
-<ul>
-<li>当json对象中某个值是以&#8221;{&#8220;开头，&#8221;}&#8221;结束，或者&#8221;[&#8220;开头,&#8221;]&#8221;结束的时候，解析结果可能不是期望的。</li>
-<li>不幸的是，目前来看，这个问题是无解的，考虑使用其他json库吧。</li>
-</ul>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/3/">&larr; Older</a>
@@ -1331,6 +1281,10 @@ XX设计模式不要硬套，从过程式演变出来更加自然(经验性的�
       </li>
     
       <li class="post">
+        <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
       </li>
     
@@ -1352,10 +1306,6 @@ XX设计模式不要硬套，从过程式演变出来更加自然(经验性的�
     
       <li class="post">
         <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
       </li>
     
   </ul>

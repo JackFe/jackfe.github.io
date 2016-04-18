@@ -9,9 +9,9 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="备注: 示例中的代码并不是真实代码的完全拷贝 一段分批处理的逻辑 周六做code diff的时候发现B项目一段颇长的处理逻辑(40行左右)。处理流程是这样的，
-从页面上取到一批数据之后，用这批数据封装参数进行后台调用(远程调用)。为了避免数据调用超时，
-对这批数据进行分批多次调用。代码如下所示( &hellip;">
+  <meta name="description" content="备注: 示例中的代码并不是真实代码的完全拷贝 究竟是哪个日期 前阵子代码评审的时候发现一段代码，逻辑是用于查找一个最大日期，代码逻辑大约是这样的：
+如果没有相关的日期记录，则返回当前日期，否则，当日期值为空时，是业务限制异常，并且配置的
+相关日期小于当前日期的话，还是应该选择当前日期。代码如下： &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +66,187 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120729_improve-bitter-code-5.html">Improve Bitter Code: 拘泥于单出口方法</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-29T00:00:00+08:00" pubdate data-updated="true">Jul 29<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120729_improve-bitter-code-5.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>究竟是哪个日期</h3>
+
+<p>前阵子代码评审的时候发现一段代码，逻辑是用于查找一个最大日期，代码逻辑大约是这样的：
+如果没有相关的日期记录，则返回当前日期，否则，当日期值为空时，是业务限制异常，并且配置的
+相关日期小于当前日期的话，还是应该选择当前日期。代码如下：</p>
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">String</span> <span class="nf">getPrivMaxDate</span><span class="o">(){</span>
+    <span class="n">String</span> <span class="n">currDate</span> <span class="o">=</span> <span class="n">DateUtil</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="k">new</span> <span class="n">Date</span><span class="o">());</span>
+    <span class="n">String</span> <span class="n">maxDate</span> <span class="o">=</span> <span class="n">currDate</span><span class="o">;</span>
+    
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">privMaxDates</span> <span class="o">=</span> <span class="o">...;</span> <span class="c1">//load data from database</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">Objects</span><span class="o">.</span><span class="na">isNotEmpty</span><span class="o">(</span><span class="n">privMaxDates</span><span class="o">)){</span>
+        <span class="n">maxDate</span> <span class="o">=</span> <span class="n">privMaxDates</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(</span><span class="n">maxDate</span><span class="o">)){</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">BusinessException</span><span class="o">(</span><span class="s">&quot;...&quot;</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">else</span> <span class="nf">if</span><span class="o">(</span><span class="n">maxDate</span><span class="o">.</span><span class="na">compareTo</span><span class="o">(</span><span class="n">currDate</span><span class="o">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="o">)</span>
+            <span class="n">maxDate</span> <span class="o">=</span> <span class="n">currDate</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">maxDate</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>大家应该被我的描述搞晕，我也觉得说得很乱。从代码看，maxDate有好几处地方可以修改，有时候是当前日期，有时候是配置的日期，的确比较乱。
+接下来我们尝试对代码进行一些简单的修改，看看效果。</p>
+
+<h3>移动代码，快速逃离</h3>
+
+<p>接下来，我们要做一些小的调整:</p>
+
+<ol>
+<li>反转条件，让小逻辑先行，如Objects.isNotEmpty(privMaxDates)的判断</li>
+<li>避免修改变量，让代码简单化，如直接使用currDate</li>
+<li>throw本身属于返回值的一种，所以在它之后的代码可以简化，例如代码中的else if</li>
+</ol>
+
+
+<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">String</span> <span class="nf">getPrivMaxDate</span><span class="o">(){</span>
+    <span class="n">String</span> <span class="n">currDate</span> <span class="o">=</span> <span class="n">DateUtil</span><span class="o">.</span><span class="na">parse</span><span class="o">(</span><span class="k">new</span> <span class="n">Date</span><span class="o">());</span>
+    
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">privMaxDates</span> <span class="o">=</span> <span class="o">...;</span> <span class="c1">//load data from database</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">Objects</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(</span><span class="n">privMaxDates</span><span class="o">)){</span>
+        <span class="k">return</span> <span class="n">currDate</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="n">String</span> <span class="n">maxDate</span> <span class="o">=</span> <span class="n">privMaxDates</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">);</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">StringUtils</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">(</span><span class="n">maxDate</span><span class="o">)){</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">BusinessException</span><span class="o">(</span><span class="s">&quot;...&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="k">if</span><span class="o">(</span><span class="n">maxDate</span><span class="o">.</span><span class="na">compareTo</span><span class="o">(</span><span class="n">currDate</span><span class="o">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="o">)</span>
+        <span class="k">return</span> <span class="n">currDate</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">maxDate</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>经过改造，由于maxDate只赋值一次，代码变得好理解了。</p>
+
+<h3>灵活的结构调整</h3>
+
+<p>借助eclipse提供的重构功能，可以对代码进行调整。对于我们常见的if语句，可以ctrl+1就有很多神奇的提示。
+例如if反转，添加else，切换成三元表达式等手法。</p>
+
+<h5>对于if语句里边有很大块的代码，可以考虑使用反转，让另外一个分支先处理。</h5>
+
+<p>例如上面的例子。另外，对有些只有if没有else的代码块，在操作手法上可以先用ctrl+1添加else，再进行反转操作。</p>
+
+<h5>对于很小的if-else语句，可以考虑转换成三元表达式。如下面代码示例</h5>
+
+<div class="highlight"><pre><code class="java"><span class="n">String</span> <span class="n">forward</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+<span class="k">if</span><span class="o">(</span><span class="n">success</span><span class="o">){</span>
+    <span class="n">forward</span> <span class="o">=</span> <span class="s">&quot;success&quot;</span><span class="o">;</span>
+<span class="o">}</span>
+<span class="k">else</span><span class="o">{</span>
+    <span class="n">forward</span> <span class="o">=</span> <span class="s">&quot;fail&quot;</span><span class="o">;</span>
+<span class="o">}</span>
+
+<span class="c1">// or this way</span>
+<span class="n">String</span> <span class="n">forward</span> <span class="o">=</span> <span class="n">success</span> <span class="o">?</span> <span class="s">&quot;success&quot;</span> <span class="o">:</span> <span class="s">&quot;fail&quot;</span><span class="o">;</span>
+</code></pre></div>
+
+
+<h5>对于存在多次赋值的情况，如果发现已经是最终的返回值，在调整时可以使用return，理清逻辑。</h5>
+
+<p>例如上面的例子。同时，经过分解也便于对复杂的代码进行封装抽取更小的方法。</p>
+
+<p>后话：单赋值还有其他一些好处，例如便于调试定位，
+在eralng中所有的变量都是单赋值的，没接触过是很难想象是怎样的一种场景。有兴趣可以去了解一下。</p>
+
+<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
+
+
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
+  
+ 
+  
+  <li>2012-07-29 improve bitter code: 拘泥于单出口方法</li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -735,119 +916,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120721_improve-bitter-code.html">Improve Bitter Code</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-21T00:00:00+08:00" pubdate data-updated="true">Jul 21<span>st</span>, 2012</time>
-        
-         | <a href="/blog/20120721_improve-bitter-code.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>想法</h3>
-
-<p>周五的时候去了趟图书馆，回来的时候已经2点了，又是组织参加每周的代码评审了。
-这项活动已经参加了很多次了，但还是经常会遇到相同的问题，即使每天codediff，
-也很难避免问题一次次的重复出现。代码基还是不可避免的膨胀，需求变化还是那么的频繁，
-人员流动还是那么快，新人还是有那么多不成熟的编码风格。</p>
-
-<p>在这个开发团队里边，也没少唠叨编码规范，codediff也是经常再做，代码评审还是有弄，
-但最终的效果，体现在代码上，还远远没有那么乐观。我认为这有好些原因：一方面是历史原因，
-代码基庞大，复杂，每天对着这些代码，连好代码是怎样的都没有见过，还能真的无师自通?
-另外一方面是各种质量改进活动参与度都不是很高，毕竟目标是完成需求，时间久了热情一点点磨灭，
-对这个就更不重视了。</p>
-
-<p>相信很多人看过郑大的代码之丑，里边很多素材就出自我所在的项目组，所以这种代码我也看见不少了，
-正因为如此，我觉得我也能写一些相关的内容。在下班坐地铁回来的时候，
-我列了一些相关主题，更确信了还是有很多内容可以做文章的。大多数题材来自
-项目的代码，自己的想法思路则是来源于平时的实践，工作经历，还有开源代码和各种相关的书籍。</p>
-
-<h3>计划</h3>
-
-<p>整个系列围绕bitter code来说，毕竟维护现有代码是非常重要的工作。这么个系列名称灵感来源于
-代码之丑系列和一本叫bitter java的书籍。虽然我觉得代码之丑的名称不是很好，但内容形式会和
-这个系列类似，只是会多加一些上下文和背景。文章内容仍然以代码为主线，写出我对代码的改进意见，
-至于发布周期，大约是一个星期争取不少于两篇!!</p>
-
-<p>期待吧!!!</p>
-
-<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
-
-
-<ul>
- 
-  
-  <li>2012-07-21 improve bitter code</li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
-  
- 
-  
-  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
-  
- 
-  
-  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
-  
- 
-  
-  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
-  
-
-</ul>
-
-
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/22/">&larr; Older</a>
@@ -877,6 +945,10 @@
       </li>
     
       <li class="post">
+        <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
       </li>
     
@@ -898,10 +970,6 @@
     
       <li class="post">
         <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
       </li>
     
   </ul>

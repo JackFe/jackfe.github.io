@@ -4,7 +4,7 @@
   <title><![CDATA[小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-04-18T22:40:01+08:00</updated>
+  <updated>2016-04-18T23:04:35+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -282,6 +282,388 @@
 
 <p>上面是在oracle的jdk出现的。
 如果是IBM的jdk出现问题，参考<a href="http://www-01.ibm.com/support/knowledgecenter/SSAW57_7.0.0/com.ibm.websphere.nd.multiplatform.doc/info/ae/ae/twbs_tunev6wss.html">调整 Version 7.0 应用程序的 Web Services Security</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[关于android ndk的jni总结]]></title>
+    <link href="http://mccxj.github.com/blog/20151028_android-ndk-jni.html"/>
+    <updated>2015-10-28T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/android-ndk-jni</id>
+    <content type="html"><![CDATA[<h2>开发工具支持</h2>
+
+<p>主要要点如下，更详细的应该参考官方文档:</p>
+
+<ol>
+<li>需要下载android ndk，并设置ANDROID_NDK_HOME并设置PATH, 在eclipse中顺便也设置一下。</li>
+<li>eclipse支持android ndk开发，只需要在项目中右键添加Android Tools > Add Native Support即可。</li>
+</ol>
+
+
+<h2>配置文件</h2>
+
+<p>主要配置文件有2个: Android.mk,Application.mk,详细配置还是应该阅读官方文档。下面说一下常用配置。</p>
+
+<h4>Application.mk</h4>
+
+<p>详细配置参考https://developer.android.com/intl/zh-cn/ndk/guides/application_mk.html</p>
+
+<ul>
+<li>APP_STL := stlport_static 设置是否依赖的C++标准库特性，非常重要，详细参数参考https://developer.android.com/intl/zh-cn/ndk/guides/cpp-support.html#runtimes</li>
+<li>APP_ABI := armeabi armeabi-v7a 设置需要生成so的平台，可以指定或者用all</li>
+<li>APP_OPTIM := release 生成debug还是relase版本，默认就是release</li>
+</ul>
+
+
+<h4>Android.mk</h4>
+
+<p>详细配置参考https://developer.android.com/intl/zh-cn/ndk/guides/android_mk.html<br/>
+这个配置是可以一次性生成多个so文档的，只需要区分不同的LOCAL_MODULE、LOCAL_SRC_FILES即可。</p>
+
+<p><strong>发现ndk好像默认不支持c/c++混编，所以最好统一成cpp后缀。又或者是我不清楚实际是可以的</strong></p>
+
+<ul>
+<li>LOCAL_LDLIBS += -L$(SYSROOT)/usr/lib -lz -llog -landroid 依赖的库，这个例子表示依赖zlib、android log模块及android运行库</li>
+<li>LOCAL_MODULE    := protect 生成的模块名</li>
+<li>LOCAL_SRC_FILES := NativeApplication.cpp NativeHelper.cpp arcfour.cpp MultiDex.cpp 就是把so需要的相关源文件列出来</li>
+</ul>
+
+
+<h2>jni编程</h2>
+
+<p>剩下的内容和Android都没特别关系了，都是java jni的知识。
+对于android中jni的各种限制，可以参考官方文档： http://developer.android.com/intl/zh-cn/training/articles/perf-jni.html</p>
+
+<h4>生成native方法的头文件</h4>
+
+<p>和普通java的没区别，用javah就可以了，就是需要在classpath中添加android的jar即可。举例:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd </span>native
+</span><span class='line'>javah -cp ./bin/classes;D:<span class="se">\0</span>5programs<span class="se">\A</span>ndroid<span class="se">\a</span>ndroid-windows<span class="se">\p</span>latforms<span class="se">\a</span>ndroid-19<span class="se">\a</span>ndroid.jar -d ./jni com.huawei.g3.proxy.NativeApplication
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>默认生成的方法名是有特殊命名规则的(具体规则请自行查阅资料)，如果需要不同名字，可以在JNI_OnLoad中进行动态注册，参考如下：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="kt">void</span> <span class="n">load</span><span class="p">(</span><span class="n">JNIEnv</span> <span class="o">*</span> <span class="n">env</span><span class="p">,</span> <span class="n">jclass</span> <span class="n">clz</span><span class="p">,</span> <span class="n">jobject</span> <span class="n">obj</span><span class="p">);</span>
+</span><span class='line'><span class="kt">void</span> <span class="n">run</span><span class="p">(</span><span class="n">JNIEnv</span> <span class="o">*</span> <span class="n">env</span><span class="p">,</span> <span class="n">jclass</span> <span class="n">clz</span><span class="p">,</span> <span class="n">jobject</span> <span class="n">obj</span><span class="p">);</span>
+</span><span class='line'><span class="k">static</span> <span class="n">JNINativeMethod</span> <span class="n">methods</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="p">{</span> <span class="s">&quot;load&quot;</span><span class="p">,</span> <span class="s">&quot;(Landroid/app/Application;)V&quot;</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span> <span class="n">load</span> <span class="p">},</span> <span class="p">{</span> <span class="s">&quot;run&quot;</span><span class="p">,</span> <span class="s">&quot;(Landroid/app/Application;)V&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span> <span class="n">run</span> <span class="p">}</span> <span class="p">};</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">jint</span> <span class="n">JNI_OnLoad</span><span class="p">(</span><span class="n">JavaVM</span><span class="o">*</span> <span class="n">vm</span><span class="p">,</span> <span class="kt">void</span><span class="o">*</span> <span class="n">reserved</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">JNIEnv</span><span class="o">*</span> <span class="n">env</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">vm</span><span class="o">-&gt;</span><span class="n">GetEnv</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">void</span><span class="o">**&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">env</span><span class="p">),</span> <span class="n">JNI_VERSION_1_6</span><span class="p">)</span> <span class="o">!=</span> <span class="n">JNI_OK</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">JNI_ERR</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Register methods with env-&gt;RegisterNatives.</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">methods</span><span class="p">)</span> <span class="o">/</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">methods</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+</span><span class='line'>    <span class="n">jclass</span> <span class="n">native</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">FindClass</span><span class="p">(</span><span class="s">&quot;com/huawei/g3/proxy/NativeApplication&quot;</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">env</span><span class="o">-&gt;</span><span class="n">RegisterNatives</span><span class="p">(</span><span class="n">native</span><span class="p">,</span> <span class="n">methods</span><span class="p">,</span> <span class="n">len</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">JNI_ERR</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">JNI_VERSION_1_6</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>调用java对象、方法、属性</h4>
+
+<p>当需要和java进行交互的时候，需要通过特定的api进行调用(类似java的反射，比较麻烦)，这种方式是绕过java安全检查机制的。</p>
+
+<p>首先，需要了解jni中的类型表示法(基本就是java字节码那套表示法)，<strong>特别注意的是内部类的写法</strong></p>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th> Type Signature            </th>
+<th> Java Type             </th>
+<th> 备注                              </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td> Z                         </td>
+<td> boolean               </td>
+<td>                                   |</td>
+</tr>
+<tr>
+<td></td>
+<td> B                         </td>
+<td> byte                  </td>
+<td>                                   |</td>
+</tr>
+<tr>
+<td></td>
+<td> C                         </td>
+<td> char                  </td>
+<td>                                   |</td>
+</tr>
+<tr>
+<td></td>
+<td> S                         </td>
+<td> short                 </td>
+<td>                                   |</td>
+</tr>
+<tr>
+<td></td>
+<td> I                         </td>
+<td> int                   </td>
+<td>                                   |</td>
+</tr>
+<tr>
+<td></td>
+<td> J                         </td>
+<td> long                  </td>
+<td>                                   |</td>
+</tr>
+<tr>
+<td></td>
+<td> F                         </td>
+<td> float                 </td>
+<td>                                   |</td>
+</tr>
+<tr>
+<td></td>
+<td> D                         </td>
+<td> double                </td>
+<td>                                   |</td>
+</tr>
+<tr>
+<td></td>
+<td> L fully-qualified-class ; </td>
+<td> fully-qualified-class </td>
+<td> Ljava/lang/String; 或内部类Lcom/test/A$B; |</td>
+</tr>
+<tr>
+<td></td>
+<td> [ type                    </td>
+<td> type[]                </td>
+<td> [I 或 [Ljava/lang/String;                                  |</td>
+</tr>
+<tr>
+<td></td>
+<td> ( arg-types ) ret-type    </td>
+<td> method type           </td>
+<td> ()V 或 (Ljava/lang/String;I)Z                                  |</td>
+</tr>
+<tr>
+<td></td>
+<td> V                         </td>
+<td> void                  </td>
+<td>                                   |</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>看懂上面一套表示法，下面的代码也比较容易理解了:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="n">jclass</span> <span class="n">contextClass</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">FindClass</span><span class="p">(</span><span class="s">&quot;android/content/Context&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="n">jfieldID</span> <span class="n">fieldID</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">GetStaticFieldID</span><span class="p">(</span><span class="n">contextClass</span><span class="p">,</span> <span class="s">&quot;MODE_PRIVATE&quot;</span><span class="p">,</span> <span class="s">&quot;I&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="n">jint</span> <span class="n">mpFv</span> <span class="o">=</span> <span class="p">(</span><span class="n">jint</span><span class="p">)</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">GetStaticIntField</span><span class="p">(</span><span class="n">contextClass</span><span class="p">,</span> <span class="n">fieldID</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">jstring</span> <span class="n">_payload_dex</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">NewStringUTF</span><span class="p">(</span><span class="s">&quot;payload_dex&quot;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">jclass</span> <span class="n">appClass</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">FindClass</span><span class="p">(</span><span class="s">&quot;android/app/Application&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="n">jmethodID</span> <span class="n">methodID</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">GetMethodID</span><span class="p">(</span><span class="n">appClass</span><span class="p">,</span> <span class="s">&quot;getDir&quot;</span><span class="p">,</span> <span class="s">&quot;(Ljava/lang/String;I)Ljava/io/File;&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="n">jobject</span> <span class="n">dex</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">CallObjectMethod</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">dirMd</span><span class="p">,</span> <span class="n">_payload_dex</span><span class="p">,</span> <span class="n">mpFv</span><span class="p">);</span> <span class="c1">//obj是Application对象，传进来的</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>需要注意的时候，FindClass参数中类名是不以L开头，不以;结束的</strong></p>
+
+<p>上面的代码，其实就完成了下面一句java代码:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">File</span> <span class="n">dex</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="na">getDir</span><span class="o">(</span><span class="s">&quot;payload_dex&quot;</span><span class="o">,</span> <span class="n">Context</span><span class="o">.</span><span class="na">MODE_PRIVATE</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>基本套路都是一样的： 找到类、找到方法或属性、调用方法或调用属性，对应的是jclass、jmethodID、jfieldID几种类型。<br/>
+详细的方法应该参考jni的官方文档，也很好理解。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="o">*</span> <span class="n">CallStatic</span><span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="n">Method</span>
+</span><span class='line'><span class="o">*</span> <span class="n">Call</span><span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="n">Method</span>
+</span><span class='line'><span class="o">*</span> <span class="n">SetStatic</span><span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="n">Field</span>
+</span><span class='line'><span class="o">*</span> <span class="n">Set</span><span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="n">Field</span>
+</span><span class='line'><span class="o">*</span> <span class="n">GetStatic</span><span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="n">Field</span>
+</span><span class='line'><span class="o">*</span> <span class="n">Get</span><span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="n">Field</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这里主要讲一下注意点:</p>
+
+<ul>
+<li>不带后缀、带V、带A的方法名有什么区别</li>
+</ul>
+
+
+<p>以CallObjectMethod为例，会存在三个方法:  CallObjectMethod, CallObjectMethodV, CallObjectMethodA
+这个方法都是返回Object对象(jobject)的，效果是没什么区别的，只在于参数传递机制上存在区别。</p>
+
+<ul>
+<li>类型能不完全匹配么?</li>
+</ul>
+
+
+<p>像java反射那样，获取方法是可以不指定参数类型的。但是jni的类型是必须完全匹配的，
+例如找方法void get(HashMap map)的时候，需要使用&#8221;(Ljava/util/HashMap;)V&#8221;, 而不能使用&#8221;(Ljava/util/Map;)V&#8221;。</p>
+
+<p>这种问题在处理api兼容性的时候就特别突出。例如下面的代码:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="k">if</span> <span class="p">(</span><span class="n">version</span> <span class="o">&lt;</span> <span class="mi">19</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="c1">//using hashmap</span>
+</span><span class='line'>    <span class="n">ft1</span> <span class="o">=</span> <span class="s">&quot;Ljava/util/HashMap;&quot;</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">ft2</span> <span class="o">=</span> <span class="s">&quot;java/util/HashMap&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>    <span class="c1">//using arraymap</span>
+</span><span class='line'>    <span class="n">ft1</span> <span class="o">=</span> <span class="s">&quot;Landroid/util/ArrayMap;&quot;</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">ft2</span> <span class="o">=</span> <span class="s">&quot;android/util/ArrayMap&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">jobject</span> <span class="n">mPackages</span> <span class="o">=</span> <span class="n">_getField</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">currentActivityThread</span><span class="p">,</span> <span class="s">&quot;mPackages&quot;</span><span class="p">,</span> <span class="n">ft1</span><span class="p">);</span>
+</span><span class='line'><span class="p">...</span>
+</span><span class='line'><span class="n">jmethodID</span> <span class="n">methodID</span> <span class="o">=</span> <span class="n">_getMethod</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">ft2</span><span class="p">,</span> <span class="s">&quot;get&quot;</span><span class="p">,</span> <span class="s">&quot;(Ljava/lang/Object;)Ljava/lang/Object;&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="n">jobject</span> <span class="n">wr</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">CallObjectMethod</span><span class="p">(</span><span class="n">mPackages</span><span class="p">,</span> <span class="n">methodID</span><span class="p">,</span> <span class="p">(</span><span class="n">jobject</span><span class="p">)</span> <span class="n">pk</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>在java中就可以不用那么烦躁，获取mPackages对象，强制转换成两个类的共同接口Map即可，省事很多。</p>
+
+<ul>
+<li>关于引用、字符串、异常处理</li>
+</ul>
+
+
+<p>在jni中主要有LocalRef、GlobalRef两种。正常产生的jobject对象，是属于LocalRef的，它的生命周期在当前线程的当前方法有效，类似于c/c++在栈分配的对象。 <br/>
+<strong>官方tips也提到了，即使这个对象本身在本地方法返回之后仍然存在，这个引用也是无效的。而实际上只预留了16个LocalRef空间</strong></p>
+
+<p>所以在使用上需要特别注意:</p>
+
+<ol>
+<li>不要过度分配LocalRef，及时通过DeleteLocalRef方法进行删除。或者通过EnsureLocalCapacity/PushLocalFrame预留更多，不过貌似很少需要。</li>
+<li>如果需要在多次调用中保留，应该采用GlobalRef。通过NewGlobalRef/DeleteGlobalRef手动维护引用。</li>
+<li>和反射一样，查找类、获取方法、获取属性都是有消耗的，在频繁调用的jni方法中，应该通过GlobalRef预先保留相关对象。</li>
+<li>对于stirng类，如果和原生c字符串进行转换操作的时候，需要注意释放内存。</li>
+<li>虽然C++本身也有异常处理，但是切记空指针异常不同于java，需要注意可能为NULL的代码。</li>
+<li>不像java传参是传值(对象是隐含指针传递)，在c++中要注意区分传值、传指针、传引用。</li>
+</ol>
+
+
+<h4>通过GlobalRef优化jni的例子</h4>
+
+<p>注意: jint等基本类型、jmethodID、jfieldID都不是jobject，不需要管理引用。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="k">static</span> <span class="n">jobject</span> <span class="n">decryptCipher</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">jint</span> <span class="n">JNI_OnLoad</span><span class="p">(</span><span class="n">JavaVM</span><span class="o">*</span> <span class="n">vm</span><span class="p">,</span> <span class="kt">void</span><span class="o">*</span> <span class="n">reserved</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="p">...</span>
+</span><span class='line'>  <span class="n">jobject</span> <span class="n">localDecryptCipher</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">CallStaticObjectMethod</span><span class="p">(</span><span class="n">cipher</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span>
+</span><span class='line'>          <span class="n">desbuf</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">decryptCipher</span> <span class="o">=</span> <span class="p">(</span><span class="n">jobject</span><span class="p">)</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">NewGlobalRef</span><span class="p">(</span><span class="n">localDecryptCipher</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">env</span><span class="o">-&gt;</span><span class="n">DeleteLocalRef</span><span class="p">(</span><span class="n">localDecryptCipher</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="n">JNI_OnUnload</span><span class="p">(</span><span class="n">JavaVM</span> <span class="o">*</span><span class="n">vm</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">reserved</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="p">...</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">decryptCipher</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="n">env</span><span class="o">-&gt;</span><span class="n">DeleteGlobalRef</span><span class="p">(</span><span class="n">decryptCipher</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">encryptCipher</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="n">env</span><span class="o">-&gt;</span><span class="n">DeleteGlobalRef</span><span class="p">(</span><span class="n">encryptCipher</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>操作java字符串、c字符串的例子</h4>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">c_msg2</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">GetStringUTFChars</span><span class="p">(</span><span class="n">dataDir</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>  <span class="c1">// dateDir是jstring对象</span>
+</span><span class='line'><span class="n">string</span> <span class="n">libPath</span><span class="p">(</span><span class="n">c_msg2</span><span class="p">);</span>
+</span><span class='line'><span class="n">env</span><span class="o">-&gt;</span><span class="n">ReleaseStringUTFChars</span><span class="p">(</span><span class="n">dataDir</span><span class="p">,</span> <span class="n">c_msg2</span><span class="p">);</span> <span class="c1">// 和GetStringChars不同，GetStringUTFChars方法会分配内存并进行拷贝到c字符串，所以需要手动释放</span>
+</span><span class='line'><span class="n">libPath</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;/lib&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="n">LOGI</span><span class="p">(</span><span class="s">&quot;lib path is %s&quot;</span><span class="p">,</span> <span class="n">libPath</span><span class="p">.</span><span class="n">c_str</span><span class="p">());</span>
+</span><span class='line'><span class="n">jstring</span> <span class="n">libDir</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">NewStringUTF</span><span class="p">(</span><span class="n">libPath</span><span class="p">.</span><span class="n">c_str</span><span class="p">());</span> <span class="c1">// 重新转换成jstring</span>
+</span></code></pre></td></tr></table></div></figure>
+
 ]]></content>
   </entry>
   
@@ -2607,340 +2989,6 @@ XX设计模式不要硬套，从过程式演变出来更加自然(经验性的�
 <h2>规避方式</h2>
 
 <p>乖乖使用jdk6，不要使用jdk7。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[android+maven问题记录]]></title>
-    <link href="http://mccxj.github.com/blog/20140219_android-maven-problems.html"/>
-    <updated>2014-02-19T00:00:00+08:00</updated>
-    <id>http://mccxj.github.com/blog/android-maven-problems</id>
-    <content type="html"><![CDATA[<h2>参考材料</h2>
-
-<ul>
-<li>https://code.google.com/p/maven-android-plugin/wiki/GettingStarted</li>
-<li>http://books.sonatype.com/mvnref-book/reference/android-dev.html</li>
-<li>http://www.ikoding.com/build-android-project-with-maven/</li>
-<li>https://github.com/mosabua/maven-android-sdk-deployer</li>
-<li>http://rgladwell.github.io/m2e-android/</li>
-<li>http://wiki.eclipse.org/M2E_plugin_execution_not_covered</li>
-</ul>
-
-
-<h2>前提条件</h2>
-
-<ul>
-<li>JDK 1.6+</li>
-<li>Android SDK r21.1+</li>
-<li>Maven 3.1.1+</li>
-<li>Set environment variable ANDROID_HOME to the path of your installed Android SDK and add $ANDROID_HOME/tools as well as $ANDROID_HOME/platform-tools to your $PATH. (or on Windows %ANDROID_HOME%\tools and %ANDROID_HOME%\platform-tools)</li>
-</ul>
-
-
-<p>特别注意maven的版本号</p>
-
-<h2>maven配置</h2>
-
-<p>请设置环境变量M2_HOME，并把settings.xml放到M2_HOME/conf中去。</p>
-
-<h2>eclipse配置</h2>
-
-<p>对于eclipse来说，除了要maven插件，还需要<a href="http://rgladwell.github.io/m2e-android/">m2e-android</a>插件。</p>
-
-<h2>dependency中support-v4的版本号只有很旧r7</h2>
-
-<p>其实除了support-v4,像android也有类似的问题。有一种解决方案是采用<a href="https://github.com/mosabua/maven-android-sdk-deployer">maven-android-sdk-deployer</a>。
-我测试过之后，发现这个解决方案虽然可行，但实际上比较麻烦。我直接在公司内的代理仓库上安装了新版本的。</p>
-
-<h2>Plugin execution not covered by lifecycle configuration</h2>
-
-<p>pom.xml很可能出现下面的错误提示:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>Plugin execution not covered by lifecycle configuration:
-</span><span class='line'> com.jayway.maven.plugins.android.generation2:android-maven-plugin:3.8.2:consume-aar
-</span><span class='line'> <span class="o">(</span>execution: default-consume-aar, phase: compile<span class="o">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>虽然不影响编译，但是很怪，可以通过下面的配置进行排除:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;pluginManagement&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;plugins&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;plugin&gt;</span>
-</span><span class='line'>          <span class="nt">&lt;groupId&gt;</span>org.eclipse.m2e<span class="nt">&lt;/groupId&gt;</span>
-</span><span class='line'>          <span class="nt">&lt;artifactId&gt;</span>lifecycle-mapping<span class="nt">&lt;/artifactId&gt;</span>
-</span><span class='line'>          <span class="nt">&lt;version&gt;</span>1.0.0<span class="nt">&lt;/version&gt;</span>
-</span><span class='line'>          <span class="nt">&lt;configuration&gt;</span>
-</span><span class='line'>              <span class="nt">&lt;lifecycleMappingMetadata&gt;</span>
-</span><span class='line'>                  <span class="nt">&lt;pluginExecutions&gt;</span>
-</span><span class='line'>                      <span class="nt">&lt;pluginExecution&gt;</span>
-</span><span class='line'>                          <span class="nt">&lt;pluginExecutionFilter&gt;</span>
-</span><span class='line'>                              <span class="nt">&lt;groupId&gt;</span>com.jayway.maven.plugins.android.generation2<span class="nt">&lt;/groupId&gt;</span>
-</span><span class='line'>                              <span class="nt">&lt;artifactId&gt;</span>android-maven-plugin<span class="nt">&lt;/artifactId&gt;</span>
-</span><span class='line'>                              <span class="nt">&lt;versionRange&gt;</span>3.8.2<span class="nt">&lt;/versionRange&gt;</span>
-</span><span class='line'>                              <span class="nt">&lt;goals&gt;</span>
-</span><span class='line'>                                  <span class="nt">&lt;goal&gt;</span>manifest-update<span class="nt">&lt;/goal&gt;</span>
-</span><span class='line'>                                  <span class="nt">&lt;goal&gt;</span>generate-sources<span class="nt">&lt;/goal&gt;</span>
-</span><span class='line'>                                  <span class="nt">&lt;goal&gt;</span>proguard<span class="nt">&lt;/goal&gt;</span>
-</span><span class='line'>                                  <span class="nt">&lt;goal&gt;</span>consume-aar<span class="nt">&lt;/goal&gt;</span>
-</span><span class='line'>                              <span class="nt">&lt;/goals&gt;</span>
-</span><span class='line'>                          <span class="nt">&lt;/pluginExecutionFilter&gt;</span>
-</span><span class='line'>                          <span class="nt">&lt;action&gt;</span>
-</span><span class='line'>                              <span class="nt">&lt;ignore</span> <span class="nt">/&gt;</span>
-</span><span class='line'>                          <span class="nt">&lt;/action&gt;</span>
-</span><span class='line'>                      <span class="nt">&lt;/pluginExecution&gt;</span>
-</span><span class='line'>                  <span class="nt">&lt;/pluginExecutions&gt;</span>
-</span><span class='line'>              <span class="nt">&lt;/lifecycleMappingMetadata&gt;</span>
-</span><span class='line'>          <span class="nt">&lt;/configuration&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;/plugin&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;/plugins&gt;</span>
-</span><span class='line'><span class="nt">&lt;/pluginManagement&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>可以参考<a href="http://wiki.eclipse.org/M2E_plugin_execution_not_covered">M2E_plugin_execution_not_covered</a></p>
-
-<h2>OutOfMemory或创建不了虚拟机</h2>
-
-<p>有时候会出现内存溢出或创建不了虚拟机的错误。考虑设置内存大小</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;plugin&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;groupId&gt;</span>com.jayway.maven.plugins.android.generation2<span class="nt">&lt;/groupId&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;artifactId&gt;</span>android-maven-plugin<span class="nt">&lt;/artifactId&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;configuration&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;dex&gt;</span>
-</span><span class='line'>          <span class="nt">&lt;jvmArguments&gt;</span>
-</span><span class='line'>              <span class="nt">&lt;jvmArgument&gt;</span>-Xms256m<span class="nt">&lt;/jvmArgument&gt;</span>
-</span><span class='line'>              <span class="nt">&lt;jvmArgument&gt;</span>-Xmx512m<span class="nt">&lt;/jvmArgument&gt;</span>
-</span><span class='line'>          <span class="nt">&lt;/jvmArguments&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;/dex&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;/configuration&gt;</span>
-</span><span class='line'><span class="nt">&lt;/plugin&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>出现maven打包太慢的情况</h2>
-
-<p>经过测量，在dex成classes.dex的阶段比较慢，dx工具有提供一些参数进行优化.</p>
-
-<ul>
-<li>incremental 增量打包，开发阶段可以开启，可以比较明显的缩短打包时间</li>
-<li>optimize 是否优化classes.dex，开发阶段可以关闭</li>
-</ul>
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;dex&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;incremental&gt;</span>true<span class="nt">&lt;/incremental&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;optimize&gt;</span>false<span class="nt">&lt;/optimize&gt;</span>
-</span><span class='line'><span class="nt">&lt;/dex&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>libpng error: Not a PNG file</h2>
-
-<p>如果直接把jpg格式换个名字，变成png，编译会报下面的错误，导致后面编译的.9图片也出问题(混淆问题的原因)</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>INFO<span class="o">]</span> libpng error: Not a PNG file
-</span><span class='line'><span class="o">[</span>INFO<span class="o">]</span> ERROR: Failure processing PNG image E:<span class="se">\p</span>rojects<span class="se">\G</span>3ESOP<span class="se">\E</span>SOP-Hubei2<span class="se">\r</span>es<span class="se">\d</span>rawable-xhdpi<span class="se">\m</span>ore_about_pic1.png
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>&#8216;build.plugins.plugin.version&#8217; is missing</h2>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>WARN<span class="o">]</span> <span class="s1">&#39;build.plugins.plugin.version&#39;</span> is missing fororg.apache.maven.plugins:maven.compiler.plugin
-</span><span class='line'>It is highly recommended to fix these problems because they threaten the stability of your build.
-</span><span class='line'>For this reason, future Maven versions might no longer support building such malformed projects.
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>很简单，给maven.compiler.plugin这个插件添加version属性。
-其实所有引用的插件都应该指定版本，不然都会有类似的提示。</p>
-
-<h2>关于编码</h2>
-
-<p>对于源码的编码格式和编译版本，应该进行指定:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;plugin&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;groupId&gt;</span>org.apache.maven.plugins<span class="nt">&lt;/groupId&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;artifactId&gt;</span>maven-compiler-plugin<span class="nt">&lt;/artifactId&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;version&gt;</span>3.1<span class="nt">&lt;/version&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;configuration&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;source&gt;</span>1.6<span class="nt">&lt;/source&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;target&gt;</span>1.6<span class="nt">&lt;/target&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;encoding&gt;</span>UTF8<span class="nt">&lt;/encoding&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;/configuration&gt;</span>
-</span><span class='line'><span class="nt">&lt;/plugin&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>对于资源处理的话，可能出现下面的提示:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>WARNING<span class="o">]</span> Using platform encoding <span class="o">(</span>GBK actually<span class="o">)</span> to copy filtered resources, i.e. build is platform dependent!
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>这个应该设置成UTF-8，如下所示:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'>      <span class="nt">&lt;plugin&gt;</span>
-</span><span class='line'>          <span class="nt">&lt;groupId&gt;</span>org.apache.maven.plugins<span class="nt">&lt;/groupId&gt;</span>
-</span><span class='line'>          <span class="nt">&lt;artifactId&gt;</span>maven-resources-plugin<span class="nt">&lt;/artifactId&gt;</span>
-</span><span class='line'>          <span class="nt">&lt;version&gt;</span>2.6<span class="nt">&lt;/version&gt;</span>
-</span><span class='line'>          <span class="nt">&lt;configuration&gt;</span>
-</span><span class='line'>              <span class="nt">&lt;encoding&gt;</span>UTF-8<span class="nt">&lt;/encoding&gt;</span>
-</span><span class='line'>          <span class="nt">&lt;/configuration&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;/plugin&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>maven-jarsigner-plugin对带特殊字符的口令的处理</h2>
-
-<p>这个弄了好久，最后发现得把密码用引用引起来。切记切记。</p>
-
-<p>后来，发现在linux这样又不能支持。所以只能用profile解决。</p>
-
-<h2>部分代码在jdk7中编译后dex出错</h2>
-
-<p>参考<a href="http://mccxj.github.com/blog/20140225_android-jdk7-bug.html">jdk7编译的bug记录</a>,暂时只用jdk6编译</p>
-
-<h2>jdk6不支持android-19的proguard</h2>
-
-<p>原因是android-19的API实现了一些jdk7的特性，在proguard会找不到这些api。
-由于和上一个问题有些冲突，暂时不考虑proguard。后续考虑考虑上jdk7。</p>
-
-<h2>如何添加.so支持</h2>
-
-<p>例如下面的百度地图SDK，需要加入一个so文件，在百度SDK里边是这样调用的：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">loadLibrary</span><span class="o">(</span><span class="s">&quot;BaiduMapSDK_v2_3_1&quot;</span><span class="o">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>如果要用maven集成的话，可以用下面的配置(已经部署到代理仓库):</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;dependency&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;groupId&gt;</span>com.baidu<span class="nt">&lt;/groupId&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;artifactId&gt;</span>libBaiduMapSDK_v2_3_1<span class="nt">&lt;/artifactId&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;version&gt;</span>2.3.1<span class="nt">&lt;/version&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;classifier&gt;</span>armeabi<span class="nt">&lt;/classifier&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;scope&gt;</span>runtime<span class="nt">&lt;/scope&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;type&gt;</span>so<span class="nt">&lt;/type&gt;</span>
-</span><span class='line'><span class="nt">&lt;/dependency&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>如何转换成eclipse项目</h2>
-
-<p>项目目录中只有pom.xml，如果要导入eclipse的话，可以考虑使用下面的命令生成.project和.classpath文件</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>mvn eclipse:eclipse
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>生成之后可能会有M2_REPO变量找不到的问题，可以在eclipse中通过window>Preferences>Maven>Installations>Add进行添加maven安装位置。</p>
-
-<p>否则的话，可以按以下方法添加M2_REPO: Window > Preferences > Java > Build Path > Classpath Variables
-新增一个M2_REPO变量指向你maven本地仓库。</p>
-
-<h2>常用命令</h2>
-
-<p>mvn clean package<br/>
-打包，但不部署。</p>
-
-<p>mvn clean install<br/>
-打包，部署并运行。</p>
-
-<p>mvn clean package android:redeploy android:run<br/>
-这个命令通常用于手机上已经安装了要部署的应用，但签名不同，所以我们打包的同时使用redeploy命令将现有应用删除并重新部署，最后使用run命令运行应用。</p>
-
-<p>mvn android:redeploy android:run<br/>
-不打包，将已生成的包重新部署并运行。</p>
-
-<p>mvn android:deploy android:run<br/>
-部署并运行已生成的包，与redeploy不同的是，deploy不会删除已有部署和应用数据</p>
 ]]></content>
   </entry>
   

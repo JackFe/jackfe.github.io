@@ -1,0 +1,653 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>关于android ndk的jni总结 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="关于android ndk的jni总结">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20151028_android-ndk-jni.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">关于android Ndk的jni总结</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-10-28T00:00:00+08:00" pubdate data-updated="true">Oct 28<span>th</span>, 2015</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h2>开发工具支持</h2>
+
+<p>主要要点如下，更详细的应该参考官方文档:</p>
+
+<ol>
+<li>需要下载android ndk，并设置ANDROID_NDK_HOME并设置PATH, 在eclipse中顺便也设置一下。</li>
+<li>eclipse支持android ndk开发，只需要在项目中右键添加Android Tools > Add Native Support即可。</li>
+</ol>
+
+
+<h2>配置文件</h2>
+
+<p>主要配置文件有2个: Android.mk,Application.mk,详细配置还是应该阅读官方文档。下面说一下常用配置。</p>
+
+<h4>Application.mk</h4>
+
+<p>详细配置参考https://developer.android.com/intl/zh-cn/ndk/guides/application_mk.html</p>
+
+<ul>
+<li>APP_STL := stlport_static 设置是否依赖的C++标准库特性，非常重要，详细参数参考https://developer.android.com/intl/zh-cn/ndk/guides/cpp-support.html#runtimes</li>
+<li>APP_ABI := armeabi armeabi-v7a 设置需要生成so的平台，可以指定或者用all</li>
+<li>APP_OPTIM := release 生成debug还是relase版本，默认就是release</li>
+</ul>
+
+
+<h4>Android.mk</h4>
+
+<p>详细配置参考https://developer.android.com/intl/zh-cn/ndk/guides/android_mk.html<br/>
+这个配置是可以一次性生成多个so文档的，只需要区分不同的LOCAL_MODULE、LOCAL_SRC_FILES即可。</p>
+
+<p><strong>发现ndk好像默认不支持c/c++混编，所以最好统一成cpp后缀。又或者是我不清楚实际是可以的</strong></p>
+
+<ul>
+<li>LOCAL_LDLIBS += -L$(SYSROOT)/usr/lib -lz -llog -landroid 依赖的库，这个例子表示依赖zlib、android log模块及android运行库</li>
+<li>LOCAL_MODULE    := protect 生成的模块名</li>
+<li>LOCAL_SRC_FILES := NativeApplication.cpp NativeHelper.cpp arcfour.cpp MultiDex.cpp 就是把so需要的相关源文件列出来</li>
+</ul>
+
+
+<h2>jni编程</h2>
+
+<p>剩下的内容和Android都没特别关系了，都是java jni的知识。
+对于android中jni的各种限制，可以参考官方文档： http://developer.android.com/intl/zh-cn/training/articles/perf-jni.html</p>
+
+<h4>生成native方法的头文件</h4>
+
+<p>和普通java的没区别，用javah就可以了，就是需要在classpath中添加android的jar即可。举例:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">cd </span>native
+</span><span class='line'>javah -cp ./bin/classes;D:<span class="se">\0</span>5programs<span class="se">\A</span>ndroid<span class="se">\a</span>ndroid-windows<span class="se">\p</span>latforms<span class="se">\a</span>ndroid-19<span class="se">\a</span>ndroid.jar -d ./jni com.huawei.g3.proxy.NativeApplication
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>默认生成的方法名是有特殊命名规则的(具体规则请自行查阅资料)，如果需要不同名字，可以在JNI_OnLoad中进行动态注册，参考如下：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="kt">void</span> <span class="n">load</span><span class="p">(</span><span class="n">JNIEnv</span> <span class="o">*</span> <span class="n">env</span><span class="p">,</span> <span class="n">jclass</span> <span class="n">clz</span><span class="p">,</span> <span class="n">jobject</span> <span class="n">obj</span><span class="p">);</span>
+</span><span class='line'><span class="kt">void</span> <span class="n">run</span><span class="p">(</span><span class="n">JNIEnv</span> <span class="o">*</span> <span class="n">env</span><span class="p">,</span> <span class="n">jclass</span> <span class="n">clz</span><span class="p">,</span> <span class="n">jobject</span> <span class="n">obj</span><span class="p">);</span>
+</span><span class='line'><span class="k">static</span> <span class="n">JNINativeMethod</span> <span class="n">methods</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span> <span class="p">{</span> <span class="s">&quot;load&quot;</span><span class="p">,</span> <span class="s">&quot;(Landroid/app/Application;)V&quot;</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span> <span class="n">load</span> <span class="p">},</span> <span class="p">{</span> <span class="s">&quot;run&quot;</span><span class="p">,</span> <span class="s">&quot;(Landroid/app/Application;)V&quot;</span><span class="p">,</span>
+</span><span class='line'>        <span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span> <span class="n">run</span> <span class="p">}</span> <span class="p">};</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">jint</span> <span class="n">JNI_OnLoad</span><span class="p">(</span><span class="n">JavaVM</span><span class="o">*</span> <span class="n">vm</span><span class="p">,</span> <span class="kt">void</span><span class="o">*</span> <span class="n">reserved</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">JNIEnv</span><span class="o">*</span> <span class="n">env</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">vm</span><span class="o">-&gt;</span><span class="n">GetEnv</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">void</span><span class="o">**&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">env</span><span class="p">),</span> <span class="n">JNI_VERSION_1_6</span><span class="p">)</span> <span class="o">!=</span> <span class="n">JNI_OK</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">JNI_ERR</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Register methods with env-&gt;RegisterNatives.</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">methods</span><span class="p">)</span> <span class="o">/</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">methods</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+</span><span class='line'>    <span class="n">jclass</span> <span class="n">native</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">FindClass</span><span class="p">(</span><span class="s">&quot;com/huawei/g3/proxy/NativeApplication&quot;</span><span class="p">);</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">env</span><span class="o">-&gt;</span><span class="n">RegisterNatives</span><span class="p">(</span><span class="n">native</span><span class="p">,</span> <span class="n">methods</span><span class="p">,</span> <span class="n">len</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="k">return</span> <span class="n">JNI_ERR</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">JNI_VERSION_1_6</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>调用java对象、方法、属性</h4>
+
+<p>当需要和java进行交互的时候，需要通过特定的api进行调用(类似java的反射，比较麻烦)，这种方式是绕过java安全检查机制的。</p>
+
+<p>首先，需要了解jni中的类型表示法(基本就是java字节码那套表示法)，<strong>特别注意的是内部类的写法</strong></p>
+
+<table>
+<thead>
+<tr>
+<th></th>
+<th> Type Signature            </th>
+<th> Java Type             </th>
+<th> 备注                              </th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td> Z                         </td>
+<td> boolean               </td>
+<td>                                   |</td>
+</tr>
+<tr>
+<td></td>
+<td> B                         </td>
+<td> byte                  </td>
+<td>                                   |</td>
+</tr>
+<tr>
+<td></td>
+<td> C                         </td>
+<td> char                  </td>
+<td>                                   |</td>
+</tr>
+<tr>
+<td></td>
+<td> S                         </td>
+<td> short                 </td>
+<td>                                   |</td>
+</tr>
+<tr>
+<td></td>
+<td> I                         </td>
+<td> int                   </td>
+<td>                                   |</td>
+</tr>
+<tr>
+<td></td>
+<td> J                         </td>
+<td> long                  </td>
+<td>                                   |</td>
+</tr>
+<tr>
+<td></td>
+<td> F                         </td>
+<td> float                 </td>
+<td>                                   |</td>
+</tr>
+<tr>
+<td></td>
+<td> D                         </td>
+<td> double                </td>
+<td>                                   |</td>
+</tr>
+<tr>
+<td></td>
+<td> L fully-qualified-class ; </td>
+<td> fully-qualified-class </td>
+<td> Ljava/lang/String; 或内部类Lcom/test/A$B; |</td>
+</tr>
+<tr>
+<td></td>
+<td> [ type                    </td>
+<td> type[]                </td>
+<td> [I 或 [Ljava/lang/String;                                  |</td>
+</tr>
+<tr>
+<td></td>
+<td> ( arg-types ) ret-type    </td>
+<td> method type           </td>
+<td> ()V 或 (Ljava/lang/String;I)Z                                  |</td>
+</tr>
+<tr>
+<td></td>
+<td> V                         </td>
+<td> void                  </td>
+<td>                                   |</td>
+</tr>
+</tbody>
+</table>
+
+
+<p>看懂上面一套表示法，下面的代码也比较容易理解了:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="n">jclass</span> <span class="n">contextClass</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">FindClass</span><span class="p">(</span><span class="s">&quot;android/content/Context&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="n">jfieldID</span> <span class="n">fieldID</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">GetStaticFieldID</span><span class="p">(</span><span class="n">contextClass</span><span class="p">,</span> <span class="s">&quot;MODE_PRIVATE&quot;</span><span class="p">,</span> <span class="s">&quot;I&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="n">jint</span> <span class="n">mpFv</span> <span class="o">=</span> <span class="p">(</span><span class="n">jint</span><span class="p">)</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">GetStaticIntField</span><span class="p">(</span><span class="n">contextClass</span><span class="p">,</span> <span class="n">fieldID</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">jstring</span> <span class="n">_payload_dex</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">NewStringUTF</span><span class="p">(</span><span class="s">&quot;payload_dex&quot;</span><span class="p">);</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">jclass</span> <span class="n">appClass</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">FindClass</span><span class="p">(</span><span class="s">&quot;android/app/Application&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="n">jmethodID</span> <span class="n">methodID</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">GetMethodID</span><span class="p">(</span><span class="n">appClass</span><span class="p">,</span> <span class="s">&quot;getDir&quot;</span><span class="p">,</span> <span class="s">&quot;(Ljava/lang/String;I)Ljava/io/File;&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="n">jobject</span> <span class="n">dex</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">CallObjectMethod</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">dirMd</span><span class="p">,</span> <span class="n">_payload_dex</span><span class="p">,</span> <span class="n">mpFv</span><span class="p">);</span> <span class="c1">//obj是Application对象，传进来的</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>需要注意的时候，FindClass参数中类名是不以L开头，不以;结束的</strong></p>
+
+<p>上面的代码，其实就完成了下面一句java代码:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">File</span> <span class="n">dex</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="na">getDir</span><span class="o">(</span><span class="s">&quot;payload_dex&quot;</span><span class="o">,</span> <span class="n">Context</span><span class="o">.</span><span class="na">MODE_PRIVATE</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>基本套路都是一样的： 找到类、找到方法或属性、调用方法或调用属性，对应的是jclass、jmethodID、jfieldID几种类型。<br/>
+详细的方法应该参考jni的官方文档，也很好理解。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="o">*</span> <span class="n">CallStatic</span><span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="n">Method</span>
+</span><span class='line'><span class="o">*</span> <span class="n">Call</span><span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="n">Method</span>
+</span><span class='line'><span class="o">*</span> <span class="n">SetStatic</span><span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="n">Field</span>
+</span><span class='line'><span class="o">*</span> <span class="n">Set</span><span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="n">Field</span>
+</span><span class='line'><span class="o">*</span> <span class="n">GetStatic</span><span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="n">Field</span>
+</span><span class='line'><span class="o">*</span> <span class="n">Get</span><span class="o">&lt;</span><span class="n">type</span><span class="o">&gt;</span><span class="n">Field</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这里主要讲一下注意点:</p>
+
+<ul>
+<li>不带后缀、带V、带A的方法名有什么区别</li>
+</ul>
+
+
+<p>以CallObjectMethod为例，会存在三个方法:  CallObjectMethod, CallObjectMethodV, CallObjectMethodA
+这个方法都是返回Object对象(jobject)的，效果是没什么区别的，只在于参数传递机制上存在区别。</p>
+
+<ul>
+<li>类型能不完全匹配么?</li>
+</ul>
+
+
+<p>像java反射那样，获取方法是可以不指定参数类型的。但是jni的类型是必须完全匹配的，
+例如找方法void get(HashMap map)的时候，需要使用&#8221;(Ljava/util/HashMap;)V&#8221;, 而不能使用&#8221;(Ljava/util/Map;)V&#8221;。</p>
+
+<p>这种问题在处理api兼容性的时候就特别突出。例如下面的代码:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="k">if</span> <span class="p">(</span><span class="n">version</span> <span class="o">&lt;</span> <span class="mi">19</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="c1">//using hashmap</span>
+</span><span class='line'>    <span class="n">ft1</span> <span class="o">=</span> <span class="s">&quot;Ljava/util/HashMap;&quot;</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">ft2</span> <span class="o">=</span> <span class="s">&quot;java/util/HashMap&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>    <span class="c1">//using arraymap</span>
+</span><span class='line'>    <span class="n">ft1</span> <span class="o">=</span> <span class="s">&quot;Landroid/util/ArrayMap;&quot;</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">ft2</span> <span class="o">=</span> <span class="s">&quot;android/util/ArrayMap&quot;</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">jobject</span> <span class="n">mPackages</span> <span class="o">=</span> <span class="n">_getField</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">currentActivityThread</span><span class="p">,</span> <span class="s">&quot;mPackages&quot;</span><span class="p">,</span> <span class="n">ft1</span><span class="p">);</span>
+</span><span class='line'><span class="p">...</span>
+</span><span class='line'><span class="n">jmethodID</span> <span class="n">methodID</span> <span class="o">=</span> <span class="n">_getMethod</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">ft2</span><span class="p">,</span> <span class="s">&quot;get&quot;</span><span class="p">,</span> <span class="s">&quot;(Ljava/lang/Object;)Ljava/lang/Object;&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="n">jobject</span> <span class="n">wr</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">CallObjectMethod</span><span class="p">(</span><span class="n">mPackages</span><span class="p">,</span> <span class="n">methodID</span><span class="p">,</span> <span class="p">(</span><span class="n">jobject</span><span class="p">)</span> <span class="n">pk</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>在java中就可以不用那么烦躁，获取mPackages对象，强制转换成两个类的共同接口Map即可，省事很多。</p>
+
+<ul>
+<li>关于引用、字符串、异常处理</li>
+</ul>
+
+
+<p>在jni中主要有LocalRef、GlobalRef两种。正常产生的jobject对象，是属于LocalRef的，它的生命周期在当前线程的当前方法有效，类似于c/c++在栈分配的对象。 <br/>
+<strong>官方tips也提到了，即使这个对象本身在本地方法返回之后仍然存在，这个引用也是无效的。而实际上只预留了16个LocalRef空间</strong></p>
+
+<p>所以在使用上需要特别注意:</p>
+
+<ol>
+<li>不要过度分配LocalRef，及时通过DeleteLocalRef方法进行删除。或者通过EnsureLocalCapacity/PushLocalFrame预留更多，不过貌似很少需要。</li>
+<li>如果需要在多次调用中保留，应该采用GlobalRef。通过NewGlobalRef/DeleteGlobalRef手动维护引用。</li>
+<li>和反射一样，查找类、获取方法、获取属性都是有消耗的，在频繁调用的jni方法中，应该通过GlobalRef预先保留相关对象。</li>
+<li>对于stirng类，如果和原生c字符串进行转换操作的时候，需要注意释放内存。</li>
+<li>虽然C++本身也有异常处理，但是切记空指针异常不同于java，需要注意可能为NULL的代码。</li>
+<li>不像java传参是传值(对象是隐含指针传递)，在c++中要注意区分传值、传指针、传引用。</li>
+</ol>
+
+
+<h4>通过GlobalRef优化jni的例子</h4>
+
+<p>注意: jint等基本类型、jmethodID、jfieldID都不是jobject，不需要管理引用。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="k">static</span> <span class="n">jobject</span> <span class="n">decryptCipher</span><span class="p">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">jint</span> <span class="n">JNI_OnLoad</span><span class="p">(</span><span class="n">JavaVM</span><span class="o">*</span> <span class="n">vm</span><span class="p">,</span> <span class="kt">void</span><span class="o">*</span> <span class="n">reserved</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="p">...</span>
+</span><span class='line'>  <span class="n">jobject</span> <span class="n">localDecryptCipher</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">CallStaticObjectMethod</span><span class="p">(</span><span class="n">cipher</span><span class="p">,</span> <span class="n">mid</span><span class="p">,</span>
+</span><span class='line'>          <span class="n">desbuf</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">decryptCipher</span> <span class="o">=</span> <span class="p">(</span><span class="n">jobject</span><span class="p">)</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">NewGlobalRef</span><span class="p">(</span><span class="n">localDecryptCipher</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">env</span><span class="o">-&gt;</span><span class="n">DeleteLocalRef</span><span class="p">(</span><span class="n">localDecryptCipher</span><span class="p">);</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">void</span> <span class="n">JNI_OnUnload</span><span class="p">(</span><span class="n">JavaVM</span> <span class="o">*</span><span class="n">vm</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">reserved</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>        <span class="p">...</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">decryptCipher</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="n">env</span><span class="o">-&gt;</span><span class="n">DeleteGlobalRef</span><span class="p">(</span><span class="n">decryptCipher</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">encryptCipher</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="n">env</span><span class="o">-&gt;</span><span class="n">DeleteGlobalRef</span><span class="p">(</span><span class="n">encryptCipher</span><span class="p">);</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>操作java字符串、c字符串的例子</h4>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">c_msg2</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">GetStringUTFChars</span><span class="p">(</span><span class="n">dataDir</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>  <span class="c1">// dateDir是jstring对象</span>
+</span><span class='line'><span class="n">string</span> <span class="n">libPath</span><span class="p">(</span><span class="n">c_msg2</span><span class="p">);</span>
+</span><span class='line'><span class="n">env</span><span class="o">-&gt;</span><span class="n">ReleaseStringUTFChars</span><span class="p">(</span><span class="n">dataDir</span><span class="p">,</span> <span class="n">c_msg2</span><span class="p">);</span> <span class="c1">// 和GetStringChars不同，GetStringUTFChars方法会分配内存并进行拷贝到c字符串，所以需要手动释放</span>
+</span><span class='line'><span class="n">libPath</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;/lib&quot;</span><span class="p">);</span>
+</span><span class='line'><span class="n">LOGI</span><span class="p">(</span><span class="s">&quot;lib path is %s&quot;</span><span class="p">,</span> <span class="n">libPath</span><span class="p">.</span><span class="n">c_str</span><span class="p">());</span>
+</span><span class='line'><span class="n">jstring</span> <span class="n">libDir</span> <span class="o">=</span> <span class="n">env</span><span class="o">-&gt;</span><span class="n">NewStringUTF</span><span class="p">(</span><span class="n">libPath</span><span class="p">.</span><span class="n">c_str</span><span class="p">());</span> <span class="c1">// 重新转换成jstring</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-10-28T00:00:00+08:00" pubdate data-updated="true">Oct 28<span>th</span>, 2015</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/android/'>android</a>, <a class='category' href='/blog/categories/jni/'>jni</a>, <a class='category' href='/blog/categories/ndk/'>ndk</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20151023_weblogic-11g-classloader-prefer.html" title="Previous Post: weblogic 11g类加载问题总结">&laquo; weblogic 11g类加载问题总结</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20151216_aes256-Illegal-key-size-or-default-parameters.html" title="Next Post: AES256算法遇到 Illegal key size or default parameters的解决办法">AES256算法遇到 Illegal key size or default parameters的解决办法 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151226_commons-dbcp-source-view.html">从commons-dbcp源码学习设计思路</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151216_aes256-Illegal-key-size-or-default-parameters.html">AES256算法遇到 Illegal key size or default parameters的解决办法</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20151028_android-ndk-jni.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20151028_android-ndk-jni.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

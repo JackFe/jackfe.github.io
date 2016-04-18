@@ -9,9 +9,14 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="关于java的编码 java的源代码编码格式和最终的运行是没什么关系的。你可以使用GBK或UTF-8来编程。
-java编译后的class文件都是使用UTF-16来存储和运行的。
-在eclipse中是根据文件设置字符编码来编译的，所以可以对不同文件使用有不同的编码，但这个不推荐。 &hellip;">
+  <meta name="description" content="问题描述 1
+2
+3
+4
+5
+6
+7
+String content = &quot;{\&quot;response_head\&quot;:{\&quot;menuid\&quot;:\&quot;xxx\&quot;,\&quot;process_code\&quot;:\&quot;xxx &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +71,181 @@ java编译后的class文件都是使用UTF-16来存储和运行的。
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-01-08T00:00:00+08:00" pubdate data-updated="true">Jan 8<span>th</span>, 2015</time>
+        
+         | <a href="/blog/20150108_net-sf-json-problem.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>问题描述</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">String</span> <span class="n">content</span> <span class="o">=</span> <span class="s">&quot;{\&quot;response_head\&quot;:{\&quot;menuid\&quot;:\&quot;xxx\&quot;,\&quot;process_code\&quot;:\&quot;xxx\&quot;,\&quot;verify_code\&quot;:\&quot;\&quot;,\&quot;resp_time\&quot;:\&quot;20150107103234\&quot;,\&quot;sequence\&quot;:{\&quot;resp_seq\&quot;:\&quot;20150107103301\&quot;,\&quot;operation_seq\&quot;:\&quot;\&quot;},\&quot;retinfo\&quot;:{\&quot;retcode\&quot;:\&quot;120\&quot;,\&quot;rettype\&quot;:\&quot;0\&quot;,\&quot;retmsg\&quot;:\&quot;[182096|]处理失败,原因:[屏蔽具体的失败原因！]\&quot;}},\&quot;response_body\&quot;:{} }&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="n">JSONObject</span> <span class="n">object</span> <span class="o">=</span> <span class="n">JSONObject</span><span class="o">.</span><span class="na">fromObject</span><span class="o">(</span><span class="n">content</span><span class="o">);</span>
+</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">object</span><span class="o">.</span><span class="na">toString</span><span class="o">());</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">{&quot;response_head&quot;:{&quot;menuid&quot;:&quot;xxx&quot;,&quot;process_code&quot;:&quot;xxx&quot;,&quot;verify_code&quot;:&quot;&quot;,&quot;resp_time&quot;:&quot;20150107103234&quot;,&quot;sequence&quot;:{&quot;resp_seq&quot;:&quot;20150107103301&quot;,&quot;operation_seq&quot;:&quot;&quot;},&quot;retinfo&quot;:{&quot;retcode&quot;:&quot;120&quot;,&quot;rettype&quot;:&quot;0&quot;,&quot;retmsg&quot;:[&quot;182096|&quot;]}},&quot;response_body&quot;:{}}</span>
+</span><span class='line'><span class="cm">*/</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>问题分析</h3>
+
+<p>采用json-lib-2.4-jdk15.jar，测试代码如上，会发现retmsg的值变成&#8221;[182096|&#8221;.</p>
+
+<p>测试简化json字符串，最终效果如下：</p>
+
+<p>解析失败的例子：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="s2">&quot;{\&quot;response_head\&quot;:{\&quot;retmsg\&quot;:\&quot;[182096|]处理失败,原因:[屏蔽具体的失败原因！]\&quot;}}&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>继续简化的话，就会解析成功</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="s2">&quot;{\&quot;response_head\&quot;:\&quot;[182096|]处理失败,原因:[屏蔽具体的失败原因！]\&quot;}&quot;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>找了一下源码，发现json-lib在某些情况下(绕来绕去，断点发现的)会尝试解析字符串，看看是不是json对象。（尼玛，太智能了）</p>
+
+<p>AbstractJSON.java中的260行,这个时候str是后面的内容。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>     <span class="o">}</span> <span class="k">else</span> <span class="k">if</span><span class="o">(</span> <span class="n">JSONUtils</span><span class="o">.</span><span class="na">mayBeJSON</span><span class="o">(</span> <span class="n">str</span> <span class="o">)</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">try</span> <span class="o">{</span>
+</span><span class='line'>           <span class="k">return</span> <span class="n">JSONSerializer</span><span class="o">.</span><span class="na">toJSON</span><span class="o">(</span> <span class="n">str</span><span class="o">,</span> <span class="n">jsonConfig</span> <span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span> <span class="k">catch</span><span class="o">(</span> <span class="n">JSONException</span> <span class="n">jsone</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>           <span class="k">return</span> <span class="n">str</span><span class="o">;</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>     <span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>JsonArray.java中的1130行，这个时候v已经是&#8221;182096|&#8221;。这个时候会判断v是不是一个json对象，如果搞一个数组回去，否则就是搞一个字符串(上述现象)。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>           <span class="n">tokener</span><span class="o">.</span><span class="na">back</span><span class="o">();</span>
+</span><span class='line'>           <span class="n">Object</span> <span class="n">v</span> <span class="o">=</span> <span class="n">tokener</span><span class="o">.</span><span class="na">nextValue</span><span class="o">(</span> <span class="n">jsonConfig</span> <span class="o">);</span>
+</span><span class='line'>           <span class="k">if</span><span class="o">(</span> <span class="o">!</span><span class="n">JSONUtils</span><span class="o">.</span><span class="na">isFunctionHeader</span><span class="o">(</span> <span class="n">v</span> <span class="o">)</span> <span class="o">){</span>
+</span><span class='line'>              <span class="k">if</span><span class="o">(</span> <span class="n">v</span> <span class="k">instanceof</span> <span class="n">String</span> <span class="o">&amp;&amp;</span> <span class="n">JSONUtils</span><span class="o">.</span><span class="na">mayBeJSON</span><span class="o">(</span> <span class="o">(</span><span class="n">String</span><span class="o">)</span> <span class="n">v</span> <span class="o">)</span> <span class="o">){</span>
+</span><span class='line'>                 <span class="n">jsonArray</span><span class="o">.</span><span class="na">addValue</span><span class="o">(</span> <span class="n">JSONUtils</span><span class="o">.</span><span class="na">DOUBLE_QUOTE</span> <span class="o">+</span> <span class="n">v</span> <span class="o">+</span> <span class="n">JSONUtils</span><span class="o">.</span><span class="na">DOUBLE_QUOTE</span><span class="o">,</span>
+</span><span class='line'>                       <span class="n">jsonConfig</span> <span class="o">);</span>
+</span><span class='line'>              <span class="o">}</span><span class="k">else</span><span class="o">{</span>
+</span><span class='line'>                 <span class="n">jsonArray</span><span class="o">.</span><span class="na">addValue</span><span class="o">(</span> <span class="n">v</span><span class="o">,</span> <span class="n">jsonConfig</span> <span class="o">);</span>
+</span><span class='line'>              <span class="o">}</span>
+</span><span class='line'>              <span class="n">fireElementAddedEvent</span><span class="o">(</span> <span class="n">index</span><span class="o">,</span> <span class="n">jsonArray</span><span class="o">.</span><span class="na">get</span><span class="o">(</span> <span class="n">index</span><span class="o">++</span> <span class="o">),</span> <span class="n">jsonConfig</span> <span class="o">);</span>
+</span><span class='line'>           <span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>例如，下面的情况会产生一个数组：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='json'><span class='line'><span class="s2">&quot;{\&quot;response_head\&quot;:{\&quot;retmsg\&quot;:\&quot;[{1820: 96|}]处理失败,原因:[屏蔽具体的失败原因！]\&quot;}}&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="p">{</span><span class="nt">&quot;response_head&quot;</span><span class="p">:{</span><span class="nt">&quot;retmsg&quot;</span><span class="p">:[{</span><span class="nt">&quot;1820&quot;</span><span class="p">:</span><span class="s2">&quot;96|&quot;</span><span class="p">}]}}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>关于如何判断是否是json,是会判断以[开头，以]结束的，刚好中枪。而尝试去截取中间内容的时候，又碰巧遇到中间的]字符，所以生成的字符串就是被截断了一部分的。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>   <span class="cm">/**</span>
+</span><span class='line'><span class="cm">    * Tests if the String possibly represents a valid JSON String.&lt;br&gt;</span>
+</span><span class='line'><span class="cm">    * Valid JSON strings are:</span>
+</span><span class='line'><span class="cm">    * &lt;ul&gt;</span>
+</span><span class='line'><span class="cm">    * &lt;li&gt;&quot;null&quot;&lt;/li&gt;</span>
+</span><span class='line'><span class="cm">    * &lt;li&gt;starts with &quot;[&quot; and ends with &quot;]&quot;&lt;/li&gt;</span>
+</span><span class='line'><span class="cm">    * &lt;li&gt;starts with &quot;{&quot; and ends with &quot;}&quot;&lt;/li&gt;</span>
+</span><span class='line'><span class="cm">    * &lt;/ul&gt;</span>
+</span><span class='line'><span class="cm">    */</span>
+</span><span class='line'>   <span class="kd">public</span> <span class="kd">static</span> <span class="kt">boolean</span> <span class="nf">mayBeJSON</span><span class="o">(</span> <span class="n">String</span> <span class="n">string</span> <span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>      <span class="k">return</span> <span class="n">string</span> <span class="o">!=</span> <span class="kc">null</span>
+</span><span class='line'>            <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="s">&quot;null&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span> <span class="n">string</span> <span class="o">)</span>
+</span><span class='line'>                  <span class="o">||</span> <span class="o">(</span><span class="n">string</span><span class="o">.</span><span class="na">startsWith</span><span class="o">(</span> <span class="s">&quot;[&quot;</span> <span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="n">string</span><span class="o">.</span><span class="na">endsWith</span><span class="o">(</span> <span class="s">&quot;]&quot;</span> <span class="o">))</span> <span class="o">||</span> <span class="o">(</span><span class="n">string</span><span class="o">.</span><span class="na">startsWith</span><span class="o">(</span> <span class="s">&quot;{&quot;</span> <span class="o">)</span> <span class="o">&amp;&amp;</span> <span class="n">string</span><span class="o">.</span><span class="na">endsWith</span><span class="o">(</span> <span class="s">&quot;}&quot;</span> <span class="o">)));</span>
+</span><span class='line'>   <span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>问题结论</h3>
+
+<ul>
+<li>当json对象中某个值是以&#8221;{&#8220;开头，&#8221;}&#8221;结束，或者&#8221;[&#8220;开头,&#8221;]&#8221;结束的时候，解析结果可能不是期望的。</li>
+<li>不幸的是，目前来看，这个问题是无解的，考虑使用其他json库吧。</li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -621,94 +801,6 @@ java编译后的class文件都是使用UTF-16来存储和运行的。
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20140815_json-intro.html">Json格式须知</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-08-15T00:00:00+08:00" pubdate data-updated="true">Aug 15<span>th</span>, 2014</time>
-        
-         | <a href="/blog/20140815_json-intro.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>着重介绍与项目使用相关的json知识。如果没有特别说明，环境是指Javascript下的json。</p>
-
-<h3>区分类型</h3>
-
-<ul>
-<li>首先需要区分json字符串和json对象，不过通常根据上下文可以区分。</li>
-<li>协议关注的是json字符串，而代码中处理的是json对象，两者通过序列化(JSON.stringify)和反序列化相互转换(JSON.parse)。</li>
-</ul>
-
-
-<h3>常见格式</h3>
-
-<ul>
-<li>主要有数组和key/value形式的object</li>
-<li>数组是有顺序的，可以不同类型，常用于顺序遍历操作。</li>
-<li>object是无顺序的，key只能是字符串，常用于快速随机查找。</li>
-<li>null是可以被序列化的，而undefined不可以(会消失)。</li>
-<li>其他的一些特殊值，如Nan，Infinity，会被序列化为null。</li>
-</ul>
-
-
-<h3>关于数组</h3>
-
-<ul>
-<li>对于数组对象，虽然支持key/value的操作，但是序列化的时候设置的值会丢失。</li>
-<li>数组序列化的长度是根据length属性来的，没有赋值的位置是null。</li>
-<li>对数组遍历不应该采用for in语句，因为通过key/value设置的值也会被输出。</li>
-</ul>
-
-
-<h3>关于Object</h3>
-
-<ul>
-<li>规范上规定key是带双引号的字符串()，但实际上很多反序列化工具能够支持数值、单引号字符串、字符串字面量(没有引号的字符串)。</li>
-<li>如果是一普通浮点数值，可以通过相应的数值作为key获取，或者通过对应的字符串来获取。如用2.2的话，可以用2.2或&#8221;2.2&#8221;。</li>
-<li>如果是一整型数值，可以用数值，但用字符串只能用整型的，如用2.0的话，可以用2.0或2或&#8221;2&#8221;,但&#8221;2.0&#8221;就不可以。</li>
-<li>如果使用字符串字面量的话，需要避免一些关键字使用。如delete</li>
-<li>key不应该重复，如果重复的话，通常结果是后面的会覆盖前面的。</li>
-<li>可以用.后面加key来取值，或者用[]这样的操作符来获取，第一种方式更推荐，但只能支持非数字开头的字符串，unicode也是可以。</li>
-<li>对object遍历可以采用for in语句。</li>
-</ul>
-
-
-<h3>协议转换</h3>
-
-<ul>
-<li>协议传输的是json字符串，但通常里边的类型都是字符串，不区分数值，因此做数值运算需要先转换。</li>
-<li>和xml一样，需要注意特殊字符如引号、回车、unicode等，尽量避免手动拼接，采用序列化工具。</li>
-<li>object类型的json序列化/序列化的时候，都不应该预期他是有顺序的，虽然很多库都有带默认顺序，应该使用数组。</li>
-</ul>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/4/">&larr; Older</a>
@@ -738,6 +830,10 @@ java编译后的class文件都是使用UTF-16来存储和运行的。
       </li>
     
       <li class="post">
+        <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
       </li>
     
@@ -759,10 +855,6 @@ java编译后的class文件都是使用UTF-16来存储和运行的。
     
       <li class="post">
         <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
       </li>
     
   </ul>

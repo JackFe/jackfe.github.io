@@ -9,8 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="今天下午的时候，在执行gem clean命令看到包依赖的时候，突然想起关于循环菜单的老问题。 无限级菜单的问题 很多系统的菜单都要求是无限级的，也就是可以很多层的父子菜单关系。
-在进行数据存储的设计的时候，以数据库为例，通常都会给菜单表增加一个父菜单的字段，用来标识从属于哪个菜单。 &hellip;">
+  <meta name="description" content="话说，很久没有更新博客了，真是惭愧呀。 今天下午，在部门里边小范围举行了一场读书分享会。我把最近读的一本书,java解惑跟大家分享一下。
+主要使用了书中的一些范例，跟大家一起学习探讨，分享会下来，大家都觉得挺高兴的。 我的主要目的也达到了，活跃一下大家的气氛，接下来计划每周简单搞一次， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +65,55 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130517_reading-share-java-puzzle.html">读书会,爱读书</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-05-17T00:00:00+08:00" pubdate data-updated="true">May 17<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130517_reading-share-java-puzzle.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>话说，很久没有更新博客了，真是惭愧呀。</p>
+
+<p>今天下午，在部门里边小范围举行了一场读书分享会。我把最近读的一本书,java解惑跟大家分享一下。
+主要使用了书中的一些范例，跟大家一起学习探讨，分享会下来，大家都觉得挺高兴的。</p>
+
+<p>我的主要目的也达到了，活跃一下大家的气氛，接下来计划每周简单搞一次，或许再弄点吃的，好好享受这个过程。
+当然，这个需要持续进行，还少不了更多人的支持，慢慢把范围和影响扩大，逐渐成为一个招牌节目:)</p>
+
+<p>java解惑也是好几年前的书了，很早之前就听过，这次是在地铁上拿电子版在看，基本上我只能答对里边一半左右的谜题，
+感觉对于java这么古板的语言，坑都不少，跟何况c++这样的庞然大物? 总体来说，我给这本书评4颗星，推荐级别。</p>
+
+<p>下周的读书会，讲一本java网络编程的入门书籍。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1483,103 +1532,6 @@ Java虚拟机(JVM)里边的即时编译器(JIT)可以做到传统编译器不能
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130306_duplicate-code.html">重复代码处理模式</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-03-06T00:00:00+08:00" pubdate data-updated="true">Mar 6<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130306_duplicate-code.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>最近在整改某项目几十个模块(子项目)的重复代码，整理的一些思路。
-其实方法在重构一书早就说过了，我个人认为要多思考方法。类的职责，
-用对象间进行协助的思路，来解决重复代码的问题。
-对于快速找到某段重复代码的处理模式，这就是关键的地方。</p>
-
-<h3>模块之间的重复代码</h3>
-
-<ul>
-<li>文件重复，但模块间通用，可推到基础模块，风险小，常见于基础工具类</li>
-<li>文件重复，但与具体模块相关，说明依赖其他模块，不适合直接推到基础模块，调整较大，建议延后处理</li>
-</ul>
-
-
-<h3>模块内文件间的重复代码</h3>
-
-<h4>强相关</h4>
-
-<ul>
-<li>直接删除一个，推上上层包结构，作为公共代码</li>
-<li>差异为通用扩展时, 合并成一个</li>
-<li>差异为特殊扩展时，采用继承方式，虽然不够彻底，但风险小</li>
-</ul>
-
-
-<h4>普通关联</h4>
-
-<ul>
-<li>以业务为准，公用包结构</li>
-<li>重复部分推到父类，由两边继承</li>
-<li>采用协助类，常见于较大粒度的对象协助</li>
-</ul>
-
-
-<h4>弱相关</h4>
-
-<ul>
-<li>重复代码进入工具类，适用于通用的场景</li>
-<li>采用协助类，参与于较小粒度的对象协助</li>
-</ul>
-
-
-<h3>文件内方法间的重复代码</h3>
-
-<ul>
-<li>抽取私有方法作为优先考虑的方法，风险小，可操作性强，需要注意方法命名</li>
-<li>抽取协作类，常见于私有方法过多、局部关联性强、复杂度过高等情况</li>
-<li>由已经存在的类实现，常见于职责过大的情况</li>
-<li>如果适用于通用逻辑，可以推到父类或工具类</li>
-</ul>
-
-
-<h3>小技巧</h3>
-
-<ul>
-<li>先抽取小方法，看清结构</li>
-<li>有时候用循环代替排山倒海式代码</li>
-<li>先简化再深化，分步骤处理</li>
-<li>识别真正不一样的地方</li>
-</ul>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/12/">&larr; Older</a>
@@ -1609,6 +1561,10 @@ Java虚拟机(JVM)里边的即时编译器(JIT)可以做到传统编译器不能
       </li>
     
       <li class="post">
+        <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
       </li>
     
@@ -1630,10 +1586,6 @@ Java虚拟机(JVM)里边的即时编译器(JIT)可以做到传统编译器不能
     
       <li class="post">
         <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
       </li>
     
   </ul>
