@@ -1,0 +1,29 @@
+@startuml
+
+package connection-delegating {
+  Connection <|-- DelegatingConnection
+  DelegatingConnection <|-- PoolGuardConnectionWrapper
+  DelegatingConnection <|-- PoolingConnection
+  DelegatingConnection <|-- PoolableConnection
+
+
+  interface Connection {
+  }
+
+  class DelegatingConnection {
+    -boolean _closed
+  }
+
+  note as N1
+    DelegatingConnection:
+      _closed用于标识原始的conn是否已经关闭
+    PoolingConnection:
+      同样由PoolableConnectionFactory的makeObject产生,只在开启statement对象池的时候出现
+    PoolableConnection:
+      由PoolableConnectionFactory的makeObject产生,close方法会尝试返回池
+    PoolGuardConnectionWrapper:
+      由PoolingDataSource产生,能够避免已关闭的连接被误用
+  end note
+}
+
+@enduml
