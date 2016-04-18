@@ -1,0 +1,325 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>从commons-dbcp源码学习设计思路 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="从commons-dbcp源码学习设计思路">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20151226_commons-dbcp-source-view.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">从commons-dbcp源码学习设计思路</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-12-26T00:00:00+08:00" pubdate data-updated="true">Dec 26<span>th</span>, 2015</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>由于整个连接池的性能是由commons-pool决定的，有空再讲解一下commons-pool的实现，特别是1.x和2.x的区别。<br/>
+此次分析的是commons-dbcp 1.x源码，对应commons-pool 1.x版本。</p>
+
+<h3>commons-dbcp怎样与commons-pool集成?</h3>
+
+<p><img src='/uml/f1687f9a3d48a70deaec48f69ce916b6.png'
+        alt='PlantUML diagram' class='plantuml'/></p>
+
+
+<p>如上图所示，集成commons-dbcp的时候采用BasicDataSource这个实现类，它的实际功能是交给PoolingDataSource的(内部是通过commons-pool来管理连接对象)。<br/>
+不过,我不是很理解为什么要这么设计?</p>
+
+<h3>commons-dbcp的连接有什么特别?</h3>
+
+<p><img src='/uml/d4ed8013a27d72d70fb693af753b01cf.png'
+        alt='PlantUML diagram' class='plantuml'/></p>
+
+
+<p>连接这种对象有点特殊的，所以commons-dbcp提供了一些connection方面的增强特性。例如:</p>
+
+<ul>
+<li>PoolGuardConnectionWrapper是最终客户端拿到的对象，能够防止多次关闭等误操作</li>
+<li>PoolableConnection是PoolGuardConnectionWrapper内部的对象，可以结合pool进行管理，最大的优势就是可以保留客户端代码无需任何改动。<strong>实际上，很多自带生命周期api的对象，一旦池化之后都会考虑这么设计。</strong></li>
+<li>PoolingConnection是开启statement pool的时候PoolableConnection的内部对象，内部采用一个KeyedObjectPool进行管理(key主要是通过执行的sql语句来生成的)。不过这种对象一般不需要池化</li>
+</ul>
+
+
+<h3>如何优化Connection、Statement、ResultSet的生命周期管理?</h3>
+
+<p>jdbc的api有个非常烦人的地方，就是每个Connection、Statement、ResultSet对象都是需要关闭。所以写起来代码繁琐的，很多人就跳过这些健壮性代码。<br/>
+我研究了一下dbcp的实现，发现它能够发现未关闭的Statement、ResultSet对象，并在适当的时候进行关闭。</p>
+
+<p><img src='/uml/c4a18a02f4cdf7e759cf87dba76133ff.png'
+        alt='PlantUML diagram' class='plantuml'/></p>
+
+
+<p>具体实现思路是这样的:</p>
+
+<ul>
+<li>需要实现生命周期管理的对象需要继承AbandonedTrace，这包括了DelegatingStatement、DelegatingResultSet、DelegatingConnection等</li>
+<li>通过DelegatingConnection生成的statement、resultset等都是带Delegating的，也就是带trace特性的。</li>
+<li>对于上图，有个特别的是DelegatingConnection的trace可能包括ResultSet，这个主要由DelegatingDatabaseMetaData产生的。因为metadata的查询不需要先有statement。</li>
+<li>处理流程调用connection.close(), 会返回到池中(见PoolableConnection)， 触发PoolableConnectionFactory的passivateObject(commons-pool的内置回调)，最后触发DelegatingConnection的passivate，在这里会递归检查所有的trace。</li>
+<li>注意的是，DelegatingConnection的close方法除了触发trace对象的关闭，还会关闭底层的连接对象。</li>
+</ul>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-12-26T00:00:00+08:00" pubdate data-updated="true">Dec 26<span>th</span>, 2015</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/commons-dbcp/'>commons-dbcp</a>, <a class='category' href='/blog/categories/yuan-ma/'>源码</a>, <a class='category' href='/blog/categories/she-ji/'>设计</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20151216_aes256-Illegal-key-size-or-default-parameters.html" title="Previous Post: AES256算法遇到 Illegal key size or default parameters的解决办法">&laquo; AES256算法遇到 Illegal key size or default parameters的解决办法</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20160416_svn-handshake-failure.html" title="Next Post: svn报文转发出现handshake_failure的问题">svn报文转发出现handshake_failure的问题 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151226_commons-dbcp-source-view.html">从commons-dbcp源码学习设计思路</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151216_aes256-Illegal-key-size-or-default-parameters.html">AES256算法遇到 Illegal key size or default parameters的解决办法</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20151226_commons-dbcp-source-view.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20151226_commons-dbcp-source-view.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

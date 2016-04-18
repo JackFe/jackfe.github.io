@@ -9,7 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="Ibatis比较少人使用的配置语法 简单来说，ibatis3虽然没有ognl,不过也支持基本的表达式（看起来有点像el表达式的样子) 上次有个问题，说到两个表单数据(两个javabean)，入同一个表，传参就应该不成问题了 java代码1: Map map = new HashMap(); &hellip;">
+  <meta name="description" content="为了在公司里边推广jstl，而总结的一些jstl使用技巧: jstl可以很方便的处理NullPointException,访问越界等常见问题 &lt;c:set var=”SPExtraInfoList” value=”${queryresult[3]}”/&gt;
+&lt;c:out value &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +65,100 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121130_jstl.html">Jstl学习经验(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-11-30T00:00:00+08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20121130_jstl.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>为了在公司里边推广jstl，而总结的一些jstl使用技巧:</p>
+
+<h4>jstl可以很方便的处理NullPointException,访问越界等常见问题</h4>
+
+<div class="highlight"><pre><code class="jsp"><span class="nt">&lt;c:set</span> <span class="na">var=</span><span class="s">”SPExtraInfoList”</span> <span class="na">value=</span><span class="s">”${queryresult[3]}”/</span><span class="nt">&gt;</span>
+<span class="nt">&lt;c:out</span> <span class="na">value=</span><span class="s">”${queryresult[3]}”/</span><span class="nt">&gt;</span>
+</code></pre></div>
+
+
+<p>这2个表达式不会因为没有第四个元素而报错</p>
+
+<h4>这2个表达式一般情况下表现是一样的，只是用c:out可以带上default的参数来处理NullPointException</h4>
+
+<div class="highlight"><pre><code class="jsp"><span class="nt">&lt;td&gt;&lt;c:out</span> <span class="na">value=</span><span class="s">”${spservice.m_SpID}”/</span><span class="nt">&gt;&lt;/td&gt;</span>
+<span class="nt">&lt;td&gt;</span>${spservice.m_SpID}<span class="nt">&lt;/td&gt;</span>
+</code></pre></div>
+
+
+<h4>即使担心其他Exception,也可以通过c:catch来做防御</h4>
+
+<div class="highlight"><pre><code class="jsp"><span class="nt">&lt;c:catch&gt;&lt;c:out</span> <span class="na">value=</span><span class="s">”${values[9]/1000.00}”/</span><span class="nt">&gt;&lt;/c:catch&gt;</span>
+</code></pre></div>
+
+
+<h4>fn:length的使用</h4>
+
+<p>用来判断集合类型或String的长度，不过只是用来判断obj是否为空的话，用le语言${empty obj}更方便(同样支持多种类型)</p>
+
+<h4>关于fn:split</h4>
+
+<p>用这个方法切割会丢失空字符串,原因是这个标签使用StringTokenizer来处理而不是split方法。</p>
+
+<div class="highlight"><pre><code class="jsp"><span class="k">&lt;%</span> <span class="n">String</span><span class="o">[]</span> <span class="n">values</span> <span class="o">=</span> <span class="o">((</span><span class="n">CEntityString</span><span class="o">)</span><span class="n">pageContext</span><span class="o">.</span><span class="na">getAttribute</span><span class="o">(</span><span class="err">“</span><span class="n">service</span><span class="err">”</span><span class="o">)).</span><span class="na">EntityString</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="err">“</span><span class="o">,</span><span class="err">”</span><span class="o">);</span>
+   <span class="n">pageContext</span><span class="o">.</span><span class="na">setAttribute</span><span class="o">(</span><span class="err">“</span><span class="n">values</span><span class="err">”</span><span class="o">,</span> <span class="n">values</span><span class="o">);</span>  <span class="k">%&gt;</span>
+</code></pre></div>
+
+
+<p>这是比较丑的例子，对格式依赖比较严重，所以最好就使用比较清晰的结构</p>
+
+<h4>关于if-else和三元表达式</h4>
+
+<p>jstl做判断分支是比较麻烦的，只提供了c:otherwise的方式，只好将就点先用着吧。如</p>
+
+<div class="highlight"><pre><code class="jsp"><span class="nt">&lt;c:choose&gt;&lt;c:when</span> <span class="na">test=</span><span class="s">”${’1′</span> <span class="err">eq</span> <span class="err">spextrainfo[0]}”</span><span class="nt">&gt;</span>是<span class="nt">&lt;/c:when&gt;&lt;c:otherwise&gt;</span>否<span class="nt">&lt; /c:otherwise&gt;&lt;/c:choose&gt;</span>
+</code></pre></div>
+
+
+<h4>jstl改变操作</h4>
+
+<p>jstl里边要做访问操作是比较方便的，不过涉及改变就挺麻烦的，如对某个字符串加个头，然后在Map里边检索，这样就不能在一个表达式里边写完，需要先c:set一下,如</p>
+
+<div class="highlight"><pre><code class="jsp"><span class="nt">&lt;c:set</span> <span class="na">var=</span><span class="s">”bzType”</span> <span class="na">value=</span><span class="s">”BizType${spservice.m_SpBizType}”/</span><span class="nt">&gt;</span>
+<span class="nt">&lt;c:out</span> <span class="na">value=</span><span class="s">”${BizTypeMap[bzType]}”/</span><span class="nt">&gt;</span>
+</code></pre></div>
+
+
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -415,168 +510,6 @@ typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20121111_javacore.html">Javacore入门介绍</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-11-11T00:00:00+08:00" pubdate data-updated="true">Nov 11<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20121111_javacore.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>什么是javacore</h2>
-
-<ul>
-<li>javacore是java应用程序在某个时间点的<strong>线程转储文件</strong>，通常也称为<strong>Thead Dump</strong></li>
-<li>记录了整个JVM的运行情况(线程, 垃圾回收, JVM运行参数, 内存地址等信息)</li>
-<li>用来诊断程序问题,其中比较典型的包括线程阻塞, CPU使用率过高, JVM Crash, 堆内存不足和类装载等问题</li>
-</ul>
-
-
-<h2>文件命名方式</h2>
-
-<p>javacore文件通常以txt方式结尾,名称格式主要是以javacore开头, <strong>加上日期,产生的时间,当时的线程编号</strong>,如javacore.20100719.003424.299228.txt(<strong>Unix</strong>)</p>
-
-<h2>javacore获取方式</h2>
-
-<ul>
-<li>发送中断signal<br/>
-AIX和Linux: SIGQUIT, <strong>kill -3 PID</strong><br/>
-Windows: Ctrl+Break, DrAdmin in WAS(未验证过)</li>
-<li>在java的执行代码中使用JavaDump()方法(未验证过)<br/>
-com.ibm.jvm.Dump.javaDump()方法促使JVM dump<br/>
-发布ProblemDiagnosticsLabToolkit应用包,通过可视化页面直接生成相关文件</li>
-<li>系统在异常时自动throw(<strong>程序不一定退出</strong>)<br/>
-严重的本地调用出错<br/>
-内存不足(例如 OutOfMemory)</li>
-</ul>
-
-
-<h2>javacore基本内容</h2>
-
-<p><img src="/assets/images/javacore1.jpg" alt="javacore基本内容" /></p>
-
-<ul>
-<li>操作系统相关信息JDK版本信息<br/>
-关注jdk的版本(1.5前后差别比较大),32位和64位在内存要求上也有区别</li>
-<li>JVM的启动参数信息<br/>
-关注一些特殊的虚拟机参数如xms,xmx,xss,java.ext.dirs等，特别是内存分配要和线程数匹配，避免xms太小(频繁gc和扩展)</li>
-<li>JVM堆内存信息,已装载入的类信息<br/>
-JIT Core Cache和JIT Data Cache是JIT编译器使用的，用于提高运行效率。一般关注Object(Reversed)(堆内存分配)和Class(用于类加载)的内存使用率</li>
-<li>dump产生原因与时间<br/>
-用于追溯当时的现状</li>
-<li>GC记录<br/>
-关注Full GC(Global GC)情况,通常伴随比较多的GC线程</li>
-<li>所有Thread执行情况(包括应用程序内部执行线程,容器线程,垃圾回收线程,定时线程,线程池线程,页面请求转发线程等多种线程信息)</li>
-</ul>
-
-
-<h2>线程状态分类</h2>
-
-<p><img src="/assets/images/javacore2.png" alt="线程状态分类" /></p>
-
-<p>整个图包括三部分，左边是线程列表，选择某个线程后，中间会展示该线程与其他线程的等待依赖关系，右边会显示线程的详细堆栈信息。
-通过在线程列表中对Name,State,Stack几列进行排序，可以对每类线程数量、是否有明显的瓶颈有个大概的印象，便于接下来的具体分析。</p>
-
-<ul>
-<li>死锁 Deadlock<br/>
-多个线程竞争多个资源，出现相互等待资源又不释放资源的情况，这种情况在现实中并不多见。</li>
-<li>执行中 Runnable<br/>
-通常这类线程堆栈真处于发送数据，数值计算，类型转换等操作。</li>
-<li>等待资源 Waiting on condition<br/>
-等待资源，如果堆栈信息明确是应用代码，则证明该线程正在等待资源，一般是大量读取某资源，且该资源采用了资源锁的情况下，
-线程进入等待状态，等待资源的读取。又或者，正在等待其他线程的执行等</li>
-<li>等待监控器检查资源 Waiting on monitor</li>
-<li>暂停 Suspended</li>
-<li>对象等待中 Object.wait()</li>
-<li>阻塞 Blocked<br/>
-线程阻塞，是指当前线程执行过程中，所需要的资源长时间等待却一直未能获取到，被容器的线程管理器标识为阻塞状态，
-可以理解为等待资源超时的线程。这种情况在was的日志中，一般可以看到CPU饥渴，或者某线程已执行了XX秒的信息</li>
-<li>停止 Parked</li>
-</ul>
-
-
-<h3>常见的线程分类</h3>
-
-<table markdown="1" class="table">
-  <tr><td>Thread开头</td><td>一般是应用自己起的后台线程，或者自己搞的线程池(没有重命名的时候),如果是独立进程大多业务都跑在这里</td></tr>
-  <tr><td>WebContainer</td><td>was容器线程，was的话业务一般都在这里，受容器线程数量控制</td></tr>
-  <tr><td>Timer</td><td>Timer定时任务，一些连接池等用于监控池内对象</td></tr>
-  <tr><td>Quartz</td><td>Quartz用于定时任务的线程，不受容器控制</td></tr>
-  <tr><td>Finalizer</td><td>用于实现finalize特殊方法的线程</td></tr>
-  <tr><td>GC Slave</td><td>GC线程，频繁gc的时候会出现不少</td></tr>
-  <tr><td>Main</td><td>主线程</td></tr>
-  <tr><td>JIT</td><td>用于实现JIT的线程</td></tr>
-</table>
-
-
-<h2>相关工具与资料</h2>
-
-<h2>策略分析</h2>
-
-<ul>
-<li>数百K的纯文本,最好借助工具,例如jca分析工具</li>
-<li><strong>采集连续的多个时间点的javacore,方便对比(手动)</strong><br/>
-一般的线程执行都会非常快，如果出现某个资源的阻塞，在短时间内的两个javacore，该线程的堆栈会变化不大。
-或多次javacore的线程都集中在等待某些资源。</li>
-<li>了解app的性质,基本处理流程</li>
-<li>app相关的处理能力(以前的数据,用于对比)</li>
-<li>问题出现时,多了解周边情况(cpu,io,外围),记录现状</li>
-<li><strong>对thread状态进行分类,业务分布情况,资源等待情况(细化)</strong></li>
-<li>如有必要,获取heapdump分析(oom)</li>
-</ul>
-
-
-<h2>javacore和heapdump的区别</h2>
-
-<p>javacore经常和heapdump联系在一起，有时候也一起出现。这里简单对两个文件进行对比，希望大家有个印象：</p>
-
-<table markdown="1" class="table">
-  <tr><td></td><td>heapdump</td><td>javacore</td></tr>
-  <tr><td>文件类型</td><td>二进制</td><td>文本</td></tr>
-  <tr><td>分析工具</td><td>Heap Analyzer</td><td>jca</td></tr>
-  <tr><td>文件内容</td><td>内存映射 对象占用信息</td><td>CPU执行信息,线程堆栈</td></tr>
-  <tr><td>作用</td><td>分析内存泄漏 大对象</td><td>分析进程挂死,响应速度慢,大对象</td></tr>
-  <tr><td>影响</td><td>对系统影响大,生成文件大,较少使用</td><td>对系统影响小,生成文件小,比较方便</td></tr>
-</table>
-
-
-<h2>相关工具与资料</h2>
-
-<ul>
-<li>javacore-tutorial.pdf 出自IBM的文档</li>
-<li>jca  javacore分析工具</li>
-<li>heap analyzer  heapdump分析工具</li>
-</ul>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/18/">&larr; Older</a>
@@ -595,6 +528,10 @@ JIT Core Cache和JIT Data Cache是JIT编译器使用的，用于提高运行效�
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151226_commons-dbcp-source-view.html">从commons-dbcp源码学习设计思路</a>
       </li>
     
       <li class="post">
@@ -627,10 +564,6 @@ JIT Core Cache和JIT Data Cache是JIT编译器使用的，用于提高运行效�
     
       <li class="post">
         <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150107_charset-intro.html">关于编码与乱码问题</a>
       </li>
     
   </ul>

@@ -1,0 +1,89 @@
+@startuml
+
+package connection-datasource {
+  interface DataSource {</p>
+
+<pre><code>+getConnection()
+</code></pre>
+
+<p>  }</p>
+
+<p>  class BasicDataSource {</p>
+
+<pre><code>#DataSource datasource
+#GenericObjectPool connectionPool
+</code></pre>
+
+<p>  }</p>
+
+<p>  class PoolingDataSource {</p>
+
+<pre><code>-ObjectPool _pool
+</code></pre>
+
+<p>  }</p>
+
+<p>  interface ObjectPool {</p>
+
+<pre><code>+borrowObject()
++returnObject()
++...()
+</code></pre>
+
+<p>  }</p>
+
+<p>  ObjectPool &lt;|-- GenericObjectPool
+  ObjectPool &lt;|-- AbandonedObjectPool</p>
+
+<p>  DataSource &lt;|-- BasicDataSource
+  DataSource &lt;|-- PoolingDataSource
+  BasicDataSource o-- PoolingDataSource : 委托给PoolingDataSource负责
+  PoolingDataSource o-- ObjectPool : 使用commons-pool进行维护</p>
+
+<p>  note as T2</p>
+
+<pre><code>用于管理连接池的状态
+</code></pre>
+
+<p>  end note
+}</p>
+
+<p>package connection-factory {
+  interface PoolableObjectFactory {</p>
+
+<pre><code>+makeObject()
++destroyObject()
++...()
+</code></pre>
+
+<p>  }</p>
+
+<p>  class PoolableConnectionFactory {</p>
+
+<pre><code>-ConnectionFactory _connFactory
+-ObjectPool _pool
+</code></pre>
+
+<p>  }</p>
+
+<p>  interface ConnectionFactory {</p>
+
+<pre><code>+createConnection()
+</code></pre>
+
+<p>  }</p>
+
+<p>  ConnectionFactory &lt;|-- DriverConnectionFactory
+  PoolableObjectFactory &lt;|-- PoolableConnectionFactory
+  ObjectPool o--o PoolableConnectionFactory : 连接的实际生成由Factory负责
+  DriverConnectionFactory --o PoolableConnectionFactory</p>
+
+<p>  note as T1</p>
+
+<pre><code>用于管理数据库drvier与连接的生成
+</code></pre>
+
+<p>  end note
+}
+
+@enduml

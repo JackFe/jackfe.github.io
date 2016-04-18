@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: commons-dbcp | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/commons-dbcp/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2016-04-18T22:40:01+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[从commons-dbcp源码学习设计思路]]></title>
+    <link href="http://mccxj.github.com/blog/20151226_commons-dbcp-source-view.html"/>
+    <updated>2015-12-26T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/commons-dbcp-source-view</id>
+    <content type="html"><![CDATA[<p>由于整个连接池的性能是由commons-pool决定的，有空再讲解一下commons-pool的实现，特别是1.x和2.x的区别。<br/>
+此次分析的是commons-dbcp 1.x源码，对应commons-pool 1.x版本。</p>
+
+<h3>commons-dbcp怎样与commons-pool集成?</h3>
+
+<p><p><img src='/uml/f702257257e2a76c467e9deefa9aba02.png'
+        alt='PlantUML diagram' class='plantuml'/></p></p>
+
+<p>如上图所示，集成commons-dbcp的时候采用BasicDataSource这个实现类，它的实际功能是交给PoolingDataSource的(内部是通过commons-pool来管理连接对象)。<br/>
+不过,我不是很理解为什么要这么设计?</p>
+
+<h3>commons-dbcp的连接有什么特别?</h3>
+
+<p><p><img src='/uml/49272355ea02549d9d583580c61f2fbd.png'
+        alt='PlantUML diagram' class='plantuml'/></p></p>
+
+<p>连接这种对象有点特殊的，所以commons-dbcp提供了一些connection方面的增强特性。例如:</p>
+
+<ul>
+<li>PoolGuardConnectionWrapper是最终客户端拿到的对象，能够防止多次关闭等误操作</li>
+<li>PoolableConnection是PoolGuardConnectionWrapper内部的对象，可以结合pool进行管理，最大的优势就是可以保留客户端代码无需任何改动。<strong>实际上，很多自带生命周期api的对象，一旦池化之后都会考虑这么设计。</strong></li>
+<li>PoolingConnection是开启statement pool的时候PoolableConnection的内部对象，内部采用一个KeyedObjectPool进行管理(key主要是通过执行的sql语句来生成的)。不过这种对象一般不需要池化</li>
+</ul>
+
+
+<h3>如何优化Connection、Statement、ResultSet的生命周期管理?</h3>
+
+<p>jdbc的api有个非常烦人的地方，就是每个Connection、Statement、ResultSet对象都是需要关闭。所以写起来代码繁琐的，很多人就跳过这些健壮性代码。<br/>
+我研究了一下dbcp的实现，发现它能够发现未关闭的Statement、ResultSet对象，并在适当的时候进行关闭。</p>
+
+<p><p><img src='/uml/9e68d18ad3c606c559685e1421abc86b.png'
+        alt='PlantUML diagram' class='plantuml'/></p></p>
+
+<p>具体实现思路是这样的:</p>
+
+<ul>
+<li>需要实现生命周期管理的对象需要继承AbandonedTrace，这包括了DelegatingStatement、DelegatingResultSet、DelegatingConnection等</li>
+<li>通过DelegatingConnection生成的statement、resultset等都是带Delegating的，也就是带trace特性的。</li>
+<li>对于上图，有个特别的是DelegatingConnection的trace可能包括ResultSet，这个主要由DelegatingDatabaseMetaData产生的。因为metadata的查询不需要先有statement。</li>
+<li>处理流程调用connection.close(), 会返回到池中(见PoolableConnection)， 触发PoolableConnectionFactory的passivateObject(commons-pool的内置回调)，最后触发DelegatingConnection的passivate，在这里会递归检查所有的trace。</li>
+<li>注意的是，DelegatingConnection的close方法除了触发trace对象的关闭，还会关闭底层的连接对象。</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+</feed>

@@ -9,8 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="平时做的应用，的确很少涉及非常具体的局部算法。不过最近一段时间还是遇到了一些，稍微整理一下，留个纪念。 产品的组合生成 举个例子，手机的颜色有黑白的，内存有16G,32G的，那么就有黑色16G,黑色32G，白色16G，黑色32G等组合项，
-当然属性可能不止两项，想列出所有的组合项。 &hellip;">
+  <meta name="description" content="今天下午的时候，在执行gem clean命令看到包依赖的时候，突然想起关于循环菜单的老问题。 无限级菜单的问题 很多系统的菜单都要求是无限级的，也就是可以很多层的父子菜单关系。
+在进行数据存储的设计的时候，以数据库为例，通常都会给菜单表增加一个父菜单的字段，用来标识从属于哪个菜单。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +65,147 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130328_cycle-menu.html">判断循环菜单的思考</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-03-28T00:00:00+08:00" pubdate data-updated="true">Mar 28<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130328_cycle-menu.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>今天下午的时候，在执行gem clean命令看到包依赖的时候，突然想起关于循环菜单的老问题。</p>
+
+<h3>无限级菜单的问题</h3>
+
+<p>很多系统的菜单都要求是无限级的，也就是可以很多层的父子菜单关系。
+在进行数据存储的设计的时候，以数据库为例，通常都会给菜单表增加一个父菜单的字段，用来标识从属于哪个菜单。</p>
+
+<p>这里就要求菜单的配置不能出现循环，例如某个菜单的父父菜单是它的子菜单，这是不允许的。
+但有时候难免出现一些错误，特别不是通过可视化界面增加菜单的时候。我们的系统也曾经出现过，例如见<a href="/blog/20120804_improve-bitter-code-7.html">定位数据问题</a>。</p>
+
+<h3>如何判断循环</h3>
+
+<p>就拿<a href="/blog/20120804_improve-bitter-code-7.html">定位数据问题</a>来说，当时时间比较急就没多想，直接参考了项目中已有的逻辑。</p>
+
+<p>考虑整个菜单结构是一棵树的话，它的判断逻辑的思路是，第一次把根结点去掉(最顶层的菜单)，
+第二次把剩余的树的根结点去掉，以此类推，直到最后没有结点(没有循环)，或没有结点可以删除(出现循环)。
+写成伪代码的话，大约是这样的:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">hasDel</span> <span class="o">=</span> <span class="kc">true</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">do</span>
+</span><span class='line'>  <span class="n">hasDel</span> <span class="o">=</span> <span class="kc">false</span>
+</span><span class='line'>  <span class="k">for</span> <span class="err">结点</span> <span class="n">in</span> <span class="err">树</span>
+</span><span class='line'>    <span class="k">if</span> <span class="err">结点</span> <span class="n">has</span> <span class="n">not</span> <span class="err">父节点</span>
+</span><span class='line'>      <span class="err">删除结点</span> <span class="n">and</span> <span class="n">hasDel</span> <span class="o">=</span> <span class="kc">true</span>
+</span><span class='line'>    <span class="n">end</span>
+</span><span class='line'>  <span class="n">end</span>
+</span><span class='line'><span class="k">while</span> <span class="n">hasDel</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="err">还剩下结点</span>
+</span><span class='line'>  <span class="err">出现循环</span>
+</span><span class='line'><span class="k">else</span>
+</span><span class='line'>  <span class="err">没有循环</span>
+</span><span class='line'><span class="n">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>因为每次操作都要循环剩下的整个树，循环的次数很关键，如果树有3层，扫描3次即可，如果层次很深，扫描的次数就比较可观了。</p>
+
+<h3>另一个思路</h3>
+
+<p>以其中某个结点为例，它有父节点..一直到根节点，或者出现循环。
+如果不是循环，则整结点都可以去掉。这样的话，只需要遍历整棵树，对未处理的结点，进行循环判断即可，而处理过的(去掉的)可以忽略。</p>
+
+<p>伪代码如下:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="k">for</span> <span class="err">结点</span> <span class="n">in</span> <span class="err">树</span>
+</span><span class='line'>  <span class="k">if</span> <span class="err">结点已经被标识为已处理</span>
+</span><span class='line'>    <span class="k">continue</span>
+</span><span class='line'>  <span class="k">else</span>
+</span><span class='line'>    <span class="err">判断结点到根结点是否存在循环</span><span class="o">(</span><span class="err">如在路径上遇到已处理的直接返回</span><span class="kc">false</span><span class="o">)</span>
+</span><span class='line'>    <span class="k">if</span> <span class="err">存在循环</span>
+</span><span class='line'>       <span class="err">出现循环</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'>       <span class="err">标记结点到根结点为已处理</span>
+</span><span class='line'>    <span class="n">end</span>
+</span><span class='line'>  <span class="n">end</span>
+</span><span class='line'><span class="n">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><strong>问题现在就回到如何判断循环链表</strong>，这其实是个经典的面试笔试题了，我在网上挑了其中一个解答:<a href="http://blog.csdn.net/splendour/article/details/7701449">判断循环链表</a>
+对于我们的情况，在遇到已处理结点的时候，直接就可以说明没有循环了，这里可以小优化一下。</p>
+
+<h3>效率分析</h3>
+
+<p>我们粗略的分析一下，外层循环的数量级是整个树的结点数，判断循环的逻辑是和结点的深度有关系的，
+以极端的情况为例，只有1层的话，很明显，相当于扫描一次结点。如果是个非常深的结点(都是单子结点)，就最后一个的结点的话，循环判断的次数也是和结点数成线性的。</p>
+
+<p><strong>结点越深，循环判断的次数就越多，跟结点到根节点的长度成正比，但一次排除的结点也越多。总体还是跟总的结点数成线性正比的。</strong>
+相对于原来的处理方式，平均效率就是它的最好效率。</p>
+
+<h3>小结</h3>
+
+<p>判断链表是否存在循环这种面试题，还是有点实际用处的，以前真的没特别留意。
+算法这东西，真的是无处不在的呀。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1439,81 +1580,6 @@ Java虚拟机(JVM)里边的即时编译器(JIT)可以做到传统编译器不能
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130304_restful.html">对RESTFul多了点理解</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-03-04T00:00:00+08:00" pubdate data-updated="true">Mar 4<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130304_restful.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>简报与REST</h3>
-
-<p>上个月春节刚刚回来，就要交技术简报文章了。实在有点不知道写什么好，还好春节回去有准备些东西，不然就要悲剧了。
-这次的主题选择的是REST。REST在国内外倒是很火热的主题了，不过在咱们公司里边很多人还是没接触过，完全没概念。
-我觉得，这也的确是个不错的主题。</p>
-
-<h3>主要内容</h3>
-
-<p><img src="/assets/images/2013/restful.png" alt="RESTFul vs CURD" /></p>
-
-<p>文章本身没什么特别，主要围绕资源来展开的，主要是给大家对REST,RESTFul等有点概念。
-主要有这些部分:</p>
-
-<ol>
-<li>资源的名称与URI的关系，资源的概念很重要</li>
-<li>获取资源的方式，主要是HTTP标准方法</li>
-<li>资源的表述，如何表达资源的外在形式</li>
-<li>资源的连通性，超媒体的概念一旦忽略就几乎等同于CRUD了</li>
-<li>状态转移，区分应用状态和资源状态</li>
-</ol>
-
-
-<p>总体来看，在写这个文章的时候，对RESTFul多了点理解，主要是以前一些忽略的地方得到了加强。
-整篇文章大概花了10页，主要以github API和ruby on rails作为例子。
-<strong>个人认为，<a href="http://developer.github.com/">Github API</a>设计得是相当有参考意义的。</strong>值得参与RESTFul API设计的同行参考。</p>
-
-<h3>推荐的书籍材料</h3>
-
-<p>除了Github API,下面的一些材料也是我很喜欢的。特别是RESTful Web Services这本书，
-里边的理论比较具有可操作性，并提出了面向资源的架构(ROA)，作为REST的实践方式，不妨学习一下。</p>
-
-<ul>
-<li><a href="http://www.redsaga.com/opendoc/REST_cn.pdf">架构风格与基于网络的软件架构设计</a></li>
-<li><a href="http://book.douban.com/subject/3094230/">RESTful Web Services</a></li>
-<li><a href="http://book.douban.com/subject/6837645/">RESTful Web Services Cookbook</a></li>
-<li><a href="http://book.douban.com/subject/6937982/">REST API Design Rulebook</a></li>
-</ul>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/12/">&larr; Older</a>
@@ -1532,6 +1598,10 @@ Java虚拟机(JVM)里边的即时编译器(JIT)可以做到传统编译器不能
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151226_commons-dbcp-source-view.html">从commons-dbcp源码学习设计思路</a>
       </li>
     
       <li class="post">
@@ -1564,10 +1634,6 @@ Java虚拟机(JVM)里边的即时编译器(JIT)可以做到传统编译器不能
     
       <li class="post">
         <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150107_charset-intro.html">关于编码与乱码问题</a>
       </li>
     
   </ul>

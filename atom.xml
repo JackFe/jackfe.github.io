@@ -4,7 +4,7 @@
   <title><![CDATA[小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-04-17T15:52:18+08:00</updated>
+  <updated>2016-04-18T22:40:01+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -192,6 +192,60 @@
 <li>调试网络信息，可以考虑javax.net.debug这个参数，它的值有很多选择，可以查阅相关材料</li>
 <li>svnkit的协议配置是通过svnkit.http.sslProtocols这个参数指定的</li>
 <li>有空了解一下HTTPS/SSL的基本原理和过程</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[从commons-dbcp源码学习设计思路]]></title>
+    <link href="http://mccxj.github.com/blog/20151226_commons-dbcp-source-view.html"/>
+    <updated>2015-12-26T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/commons-dbcp-source-view</id>
+    <content type="html"><![CDATA[<p>由于整个连接池的性能是由commons-pool决定的，有空再讲解一下commons-pool的实现，特别是1.x和2.x的区别。<br/>
+此次分析的是commons-dbcp 1.x源码，对应commons-pool 1.x版本。</p>
+
+<h3>commons-dbcp怎样与commons-pool集成?</h3>
+
+<p><img src='http://mccxj.github.com/uml/f1687f9a3d48a70deaec48f69ce916b6.png'
+        alt='PlantUML diagram' class='plantuml'/></p>
+
+
+<p>如上图所示，集成commons-dbcp的时候采用BasicDataSource这个实现类，它的实际功能是交给PoolingDataSource的(内部是通过commons-pool来管理连接对象)。<br/>
+不过,我不是很理解为什么要这么设计?</p>
+
+<h3>commons-dbcp的连接有什么特别?</h3>
+
+<p><img src='http://mccxj.github.com/uml/d4ed8013a27d72d70fb693af753b01cf.png'
+        alt='PlantUML diagram' class='plantuml'/></p>
+
+
+<p>连接这种对象有点特殊的，所以commons-dbcp提供了一些connection方面的增强特性。例如:</p>
+
+<ul>
+<li>PoolGuardConnectionWrapper是最终客户端拿到的对象，能够防止多次关闭等误操作</li>
+<li>PoolableConnection是PoolGuardConnectionWrapper内部的对象，可以结合pool进行管理，最大的优势就是可以保留客户端代码无需任何改动。<strong>实际上，很多自带生命周期api的对象，一旦池化之后都会考虑这么设计。</strong></li>
+<li>PoolingConnection是开启statement pool的时候PoolableConnection的内部对象，内部采用一个KeyedObjectPool进行管理(key主要是通过执行的sql语句来生成的)。不过这种对象一般不需要池化</li>
+</ul>
+
+
+<h3>如何优化Connection、Statement、ResultSet的生命周期管理?</h3>
+
+<p>jdbc的api有个非常烦人的地方，就是每个Connection、Statement、ResultSet对象都是需要关闭。所以写起来代码繁琐的，很多人就跳过这些健壮性代码。<br/>
+我研究了一下dbcp的实现，发现它能够发现未关闭的Statement、ResultSet对象，并在适当的时候进行关闭。</p>
+
+<p><img src='http://mccxj.github.com/uml/c4a18a02f4cdf7e759cf87dba76133ff.png'
+        alt='PlantUML diagram' class='plantuml'/></p>
+
+
+<p>具体实现思路是这样的:</p>
+
+<ul>
+<li>需要实现生命周期管理的对象需要继承AbandonedTrace，这包括了DelegatingStatement、DelegatingResultSet、DelegatingConnection等</li>
+<li>通过DelegatingConnection生成的statement、resultset等都是带Delegating的，也就是带trace特性的。</li>
+<li>对于上图，有个特别的是DelegatingConnection的trace可能包括ResultSet，这个主要由DelegatingDatabaseMetaData产生的。因为metadata的查询不需要先有statement。</li>
+<li>处理流程调用connection.close(), 会返回到池中(见PoolableConnection)， 触发PoolableConnectionFactory的passivateObject(commons-pool的内置回调)，最后触发DelegatingConnection的passivate，在这里会递归检查所有的trace。</li>
+<li>注意的是，DelegatingConnection的close方法除了触发trace对象的关闭，还会关闭底层的连接对象。</li>
 </ul>
 
 ]]></content>
@@ -2887,74 +2941,6 @@ XX设计模式不要硬套，从过程式演变出来更加自然(经验性的�
 
 <p>mvn android:deploy android:run<br/>
 部署并运行已生成的包，与redeploy不同的是，deploy不会删除已有部署和应用数据</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[考察对类加载的理解(答案篇)]]></title>
-    <link href="http://mccxj.github.com/blog/20131228_classloader-answer.html"/>
-    <updated>2013-12-28T00:00:00+08:00</updated>
-    <id>http://mccxj.github.com/blog/classloader-answer</id>
-    <content type="html"><![CDATA[<h2>独立进程篇</h2>
-
-<p>首先需要知道类加载器是怎么回事? 在Java里边，类加载器就是用来加载类的，然后才是执行代码。<br/>
-Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类加载器(app)。<br/>
-其中boot就是用来加载最开始的虚拟机和最基本的java类，ext是用来加载一些扩展类，默认是在jre/lib/ext目录下的。<br/>
-最后一个才是你真正会用到的。cp参数就是用来指定应用类加载器找类的地方，java.ext.dirs就是用来指定
-扩展类加载器找类的地方。
-这三种类加载器是有层级关系的，类似于继承关系(父子关系)。</p>
-
-<p>另外一个需要知道的概念是，类加载器在找类的时候，默认是采用双亲委派机制的。<br/>
-例如应用类加载器加载类的时候，会先叫ext去加载，ext就会叫boot去加载，只有加载不到才尝试自己去加载。<br/>
-这种做法是有个重要的因素，就是为了安全性考虑。</p>
-
-<p>最后需要知道的是，TestServlet.class.getClassLoader()获取到的时候，加载TestServlet类所使用的实际的类加载器。</p>
-
-<p>回到上面的问题。</p>
-
-<p>第一个很简单，指定了应用类加载器加载的路径，所以main方法能找到，TestServlet也能找到，config.properties也能被应用类加载器找到。
-启动是正常的。</p>
-
-<p>第二个问题，TestServlet是被扩展类加载器加载的，所以通过它来找config.properties会找不到(在应用类加载器中才能被加载到)。</p>
-
-<p>第三个问题，调整目录后，这个时候扩展类加载器的加载路径上也有config.properties，所以启动也会正常。</p>
-
-<p>现在调整了代码，换成了Thread.currentThread().getContextClassLoader()的实现。<br/>
-这个是有一点不一样的，上下文类加载器默认就是应用类加载器(如果通过代码进行修改的话)。
-上下文类加载器还是一个很有用的技术，
-可以用在JDBC这种SPI(Service Provider Interface)接口与实现分离的技术上，有兴趣可以去找找资料。</p>
-
-<p>在这种情况下，后面的三个命令都是能够正常的，因为config.properties能够被正常识别的。</p>
-
-<p>再说一点，用eclipse可以运行的程序，用命令行不一定可以，这点必须要认准最后的启动参数，通过这个来确认。
-我们这边写独立进程的时候，贪方便喜欢用java.ext.dirs这个虚拟机参数，但这个有时候会有奇怪的问题。
-大家要注意区分这个参数和cp参数的区别，这样就分析有思路，找问题很happy。</p>
-
-<h2>Web应用服务器篇</h2>
-
-<p>像tomcat这种应用服务器，本身也是一个java程序，但它可以把我们放上去的各个web应用隔离开来。
-你没法调用其他web应用中的类，看上去好像是完全不相干的。这种技巧就充分利用了自定义类加载器的功能。
-像tomcat会对每个应用单独定义一个类加载器(继承应用类加载器)，并且修改双亲委派机制。
-而是采用先从应用中的lib目录、classes目录尝试加载，没找到才到上面去找。(像was这种就跟复杂了，加载顺序也是可选的)</p>
-
-<p>所以通常我们会有共享库的概念，在tomcat中对应的就是tomcat_home/lib这个目录(老版本的话还有更多目录可选)。
-把一些第三方库放到这里，可以减少加载类的数量，从而减少内存占用。</p>
-
-<p>这里要说明的是，类可以被不同的类加载器加载，虽然是在同一个jvm里边，但是是被当成不同的类(唯一标识是类加载器+类名)。</p>
-
-<p>现在回到问题。虽然一开始就有人告诉我们，servlet是属于单例运行的。但是在这里有点小变化。</p>
-
-<p>第一个问题，这个应该最常规的做法了，appa和appb是不相干的，所以访问appb，输出的是&#8221;1 1&#8221;，因为两个类是通过不同的类加载器加载的(就是说不一样的类)，肯定生成的servlet实例是不一样的。</p>
-
-<p>第二个问题，这种是共享库的做法，所以实际上他们使用的是同一个类，但是对于不同的app，用的是不同的servlet实例。
-所以会出现静态变量有影响，当实例变量是独立的。所以最后会输出&#8221;3 1&#8221;。所以有维护静态变量的话，使用共享库是有不一样的。</p>
-
-<p>第三个问题，这种其实在生产中也很常见，上新程序的时候就可能变成这样了。其实这个跟第一种情况是一样的。
-不过，在was上加载顺序是可选的，所以情况也可能变成第二种情况。</p>
-
-<h2>后话</h2>
-
-<p>这里讲解的只是皮毛，有兴趣的童鞋，可以google更多资料和书籍，加以研究。</p>
 ]]></content>
   </entry>
   

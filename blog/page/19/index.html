@@ -9,9 +9,7 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="2012-08-18@oschina.net
-书评链接 这次书评活动有6本书，写书评的确花了不少时间呀！ 《编写有效用例》书评 刚毕业的时候，在公司就看到这本书，当时看了一下，不过不怎么懂。
-只是隐约知道有用例这么个概念，后来慢慢地接触到业务用例，测试用例等内容，才逐渐对用例有了一些理解。 &hellip;">
+  <meta name="description" content="生成回退补丁的脚本 open(&quot;C:/Users/peipei/Desktop/svn2.diff&quot;, &#39;w&#39;) do |f| open(&quot;C:/Users/peipei/Desktop/svn.diff&quot;, &#39;r&#39;) do &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +64,76 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120819_reverse-svn-diff-file.html">生成svn补丁的回退补丁</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-08-19T00:00:00+08:00" pubdate data-updated="true">Aug 19<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120819_reverse-svn-diff-file.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>生成回退补丁的脚本</h3>
+
+<div class="highlight"><pre><code class="ruby"><span class="nb">open</span><span class="p">(</span><span class="s2">&quot;C:/Users/peipei/Desktop/svn2.diff&quot;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">f</span><span class="o">|</span>
+    <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;C:/Users/peipei/Desktop/svn.diff&quot;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">ff</span><span class="o">|</span>
+        <span class="n">ff</span><span class="o">.</span><span class="n">readlines</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">line</span><span class="o">|</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">start_with?</span><span class="p">(</span><span class="s2">&quot;@@&quot;</span><span class="p">)</span>
+                <span class="n">line</span> <span class="o">=~</span> <span class="sr">/@@\ \-(.+)\ \+(.+)\ @@/</span>
+                <span class="n">f</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;@@\ \-</span><span class="si">#{</span><span class="vg">$2</span><span class="si">}</span><span class="s2">\ \+</span><span class="si">#{</span><span class="vg">$1</span><span class="si">}</span><span class="s2">\ @@</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="k">elsif</span> <span class="n">line</span><span class="o">.</span><span class="n">start_with?</span><span class="p">(</span><span class="s2">&quot;+ &quot;</span><span class="p">)</span>
+                <span class="n">f</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;-</span><span class="si">#{</span><span class="n">line</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">elsif</span> <span class="n">line</span><span class="o">.</span><span class="n">start_with?</span><span class="p">(</span><span class="s2">&quot;- &quot;</span><span class="p">)</span>
+                <span class="n">f</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;+</span><span class="si">#{</span><span class="n">line</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">else</span>
+                <span class="n">f</span> <span class="o">&lt;&lt;</span> <span class="n">line</span>
+            <span class="k">end</span>
+        <span class="k">end</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+
+
+<h3>其他计划</h3>
+
+<ol>
+<li>在codediff工具中添加通过文件名查询功能(已经实现)</li>
+<li>通过codediff工具直接生成提交补丁和回退补丁(这个延后)</li>
+<li>能够支持补丁合并(这个不是那么好弄)</li>
+</ol>
+
+
+<h3>关于代码评审</h3>
+
+<p>已经有个简单的方案了，我决定在codediff应用上支持每周代码评审功能，这周上线试用一下。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -566,131 +634,6 @@ findbugs，checkstyle, cppunit等测试项，这样代码质量问题可以得�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120814_naming-style.html">命名风格培训草稿</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-08-14T00:00:00+08:00" pubdate data-updated="true">Aug 14<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120814_naming-style.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>我记得郑大有次开课的时候，提到命名这个话题。说有次他跟一个前辈说：命名真的太难了。
-前辈说：你终于开窍了。哪天咋们心里也有这个意识，也算是开窍了。(昨晚忘记说这个事了，补充)</p>
-
-<h3>编码风格与编码规范</h3>
-
-<p>风格是带主观色彩的，有个人爱好的区别。<br/>
-规范是双刃剑，限制个人风格的随意发挥，让整体有个统一的风格。<br/>
-规范是一些风格的最佳实践的集合，但仍然是不断进步的。</p>
-
-<p>学习规范，应该从产生背景出发，理解规范背后希望解决的问题，才能更好理解规范，<strong>减少抵制情绪</strong>，或许还能改进规范。</p>
-
-<h3>破窗效应与童子军军规</h3>
-
-<p><strong>破窗效应</strong>: 一个房子如果窗户破了，没有人去修补，隔不久，其它的窗户也会莫名其妙地被人打破；
-一面墙，如果出现一些涂鸦没有被清洗掉，很快的，墙上就布满了乱七八糟、不堪入目的东西；
-一个很干净的地方，人们不好意思丢垃圾，但是一旦地上有垃圾出现之后，人就会毫不犹疑地抛，丝毫不觉羞愧。
-(选择汽车为例子也可以)<br/>
-<strong>童子军军规</strong>: 当你离开一个地方的时候，要让它比你来的时候更整洁干净。</p>
-
-<p>遵守童子军军规，警惕破窗效应。<strong>避免对代码大范围进行修改</strong><br/>
-对于老代码，总会出现<strong>新老风格冲突</strong>的情况，优化代码应该控制修改的范围和脚步，采用结对或评审的方式规避风险。<br/>
-<strong>加强代码评审</strong>, 一个人出错的几率是5%,两个人在同个地方犯错的几率才0.25%。</p>
-
-<h3>文件名规则</h3>
-
-<p>遵循<strong>约定大于配置</strong>原则，像java文件名本身是和类名有关系的，对于页面文件和配置文件，同样在命名上要存在相关性。思考下面的问题:<br/>
-<strong>如果你知道其中一个文件，如何找到相关的文件</strong></p>
-
-<h3>包名规则</h3>
-
-<p>包名规则本身就是有一套指导方针的：<br/>
-以公司网址进行打头，如com.gmcc<br/>
-通常会附带项目名,如com.gmcc.boss<br/>
-项目大的话，还会继续模块化,如com.gmcc.boss.product<br/>
-模块下面在继续分功能,从分层的角度，可以有com.gmcc.boss.product.action、service、dao、bean之类的包</p>
-
-<p>对于通常的web应用，<strong>模块化划分也可以从菜单入手进行分解</strong>，至少可以作为参考。模块如果很大，可以再<strong>拆分子模块</strong>。</p>
-
-<h3>常用命名法</h3>
-
-<p>Camel命名 &#8211; java标准命名法<br/>
-匈牙利命名 &#8211; MFC那套，变量名都带类型，如今有IDE智能提示，显得过时了。而且有货不对板的风险。<br/>
-pascal命名 &#8211; 和Camel就第一个单词首字母的区别<br/>
-下划线命名 &#8211; 在c代码、javascript、ruby等脚本中比较常见</p>
-
-<h3>类名的选择</h3>
-
-<p>主要从业务逻辑，框架要求，模式设计方面考虑:<br/>
-业务逻辑中按分层命名规范即可 &#8211; Action Controller Service Call Dao Business Bean等都是常用的后缀<br/>
-框架基础类，参考接口命名 &#8211; Filter Servlet Comparable <em>Utils </em>s<br/>
-使用设计模式时参考常见命名 &#8211; Adapter Chain Visitor Factory Builder</p>
-
-<p>虽然整个代码结构使用分层方式，但还是有地方可以考虑设计模式的，切勿错失良机。<br/>
-设计模式方面的内容参考<a href="http://book.douban.com/subject/1052241/">四人帮的书籍</a>,关于jdk的设计模式参考<a href="http://coolshell.cn/articles/3320.html">酷壳的文章</a></p>
-
-<p><strong>对于业务系统，最好准备一份业务术语词典，用来指导相关业务功能的命名</strong></p>
-
-<h3>方法命名</h3>
-
-<p>评价标准：<strong>一句话功能描述</strong>。<br/>
-通常选择动词加名词的组合，常用的动词并不多。
-命名方式可能有所不同，取决于代码的关注点。(默念，参考评价标准)如:<br/>
-getSubsByCertId &#8211; 通过证件号获取用户信息,有强调证件号的意思<br/>
-getSubs &#8211; 获取用户信息，关注结果，可能支持多种方式</p>
-
-<h3>变量命名</h3>
-
-<p>对于临时变量，通常使用i,j,k,c,b等就可以了。不应该作为其他作用存在。<br/>
-对于标记标识，选择done,found,success,ok,fail等，<strong>切勿使用flag</strong>, 评价标准(填空后读起来很顺畅):假如(找到了)&#8230;<br/>
-对于状态，整理一些常用的常量以备使用，如:READY,SUCCESS,FAILED<br/>
-对于常量，望文生义+注释(注释在这里显得很有必要)，修改checkstyle的魔鬼数字时，是<strong>学习命名的好机会</strong>。<br/>
-对于普通变量，我们常常会带上类型如subsattrList,我觉得subsattrs这种单复数形式会更好。不过这是个习惯问题，不是什么大问题。
-变量命名经验要多学习优秀开源代码，会有很多好处。有些变量名是由IDE通过方法名自动生成的，方法名恰当的时候，生成的变量名也是不错的。(总结)</p>
-
-<p>命名技巧都差不多，我经常采用办法：<strong>在心里默念需要的功能，转换成方法名/变量名。反复默念几遍命名，看看是否能够像句子一样读出来。</strong></p>
-
-<h3>注释</h3>
-
-<p><strong>代码不能代替注释，但优先考虑代码的可读性</strong>，例如使用方法抽取等手段。<br/>
-可读性的标准是<strong>代码可以像文章一样读出来</strong>,保证方法名和注释相符合，忌讳牛头不对马嘴。
-坚持这种态度的话，代码质量一定会有所提高。</p>
-
-<p>注释关注类注释和方法注释,方法内注释用于代码难以表达的地方(如某种特殊情况)。<br/>
-对于外围接口(包括前后台调用),在方法注释中进行详细说明。</p>
-
-<p>需求单号应该适当添加到代码中，我觉得类注释可能是比较合适的地方。<br/>
-修改bug的代码通常比较烂(现网的是这样)，可以标注一下BUG单号等信息。<br/>
-提交到版本库的日志要清晰，重点关注什么原因修改，修改哪些功能点等，<strong>争取让每次提交都有据可依(每次日志都是不一样的)</strong>。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/20/">&larr; Older</a>
@@ -709,6 +652,10 @@ getSubs &#8211; 获取用户信息，关注结果，可能支持多种方式</p>
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151226_commons-dbcp-source-view.html">从commons-dbcp源码学习设计思路</a>
       </li>
     
       <li class="post">
@@ -741,10 +688,6 @@ getSubs &#8211; 获取用户信息，关注结果，可能支持多种方式</p>
     
       <li class="post">
         <a href="/blog/20150108_net-sf-json-problem.html">使用net.sf.json库进行json反序列化时存在的问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150107_charset-intro.html">关于编码与乱码问题</a>
       </li>
     
   </ul>

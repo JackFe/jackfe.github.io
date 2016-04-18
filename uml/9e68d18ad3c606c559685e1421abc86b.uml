@@ -1,0 +1,21 @@
+@startuml
+
+package connection-abandoned-trace {
+  AbandonedTrace &lt;|-- DelegatingConnection
+  AbandonedTrace &lt;|-- DelegatingStatement
+  AbandonedTrace &lt;|-- DelegatingResultSet
+  AbandonedTrace &lt;|-- DelegatingDatabaseMetaData</p>
+
+<p>  DelegatingConnection "1" o-- "<em>" DelegatingStatement
+  DelegatingConnection "1" o-- "</em>" DelegatingResultSet
+  DelegatingStatement "1" o-- "*" DelegatingResultSet</p>
+
+<p>  class AbandonedTrace {</p>
+
+<pre><code>-List traceList
+</code></pre>
+
+<p>  }
+}
+
+@enduml
