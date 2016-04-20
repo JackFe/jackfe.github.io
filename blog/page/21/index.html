@@ -9,9 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="备注: 示例中的代码并不是真实代码的完全拷贝 究竟是哪个日期 前阵子代码评审的时候发现一段代码，逻辑是用于查找一个最大日期，代码逻辑大约是这样的：
-如果没有相关的日期记录，则返回当前日期，否则，当日期值为空时，是业务限制异常，并且配置的
-相关日期小于当前日期的话，还是应该选择当前日期。代码如下： &hellip;">
+  <meta name="description" content="备注: 示例中的代码并不是真实代码的完全拷贝 道高一尺，魔高一丈 魔鬼数字在项目中大量出现，是代码可读性维护性变差的重要推手。
+为了控制事态恶化，项目中加入findbugs，checkstyle等静态检查工具，试图让人自觉修复魔鬼数字这类头疼的问题。 最近在review N项目的代码时， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +65,165 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120731_improve-bitter-code-6.html">Improve Bitter Code: 对付魔鬼数字</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-31T00:00:00+08:00" pubdate data-updated="true">Jul 31<span>st</span>, 2012</time>
+        
+         | <a href="/blog/20120731_improve-bitter-code-6.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>道高一尺，魔高一丈</h3>
+
+<p>魔鬼数字在项目中大量出现，是代码可读性维护性变差的重要推手。
+为了控制事态恶化，项目中加入findbugs，checkstyle等静态检查工具，试图让人自觉修复魔鬼数字这类头疼的问题。</p>
+
+<p>最近在review N项目的代码时，发现有新童鞋对修复checkstyle的问题热情高涨，有些修改的确是有益的，
+但是对魔鬼数字的修改就显得不是正路了。大家先看看：</p>
+
+<div class="highlight"><pre><code class="java"><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_2</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
+<span class="kd">private</span> <span class="n">Static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_80</span> <span class="o">=</span> <span class="mi">80</span><span class="o">;</span>
+<span class="kd">private</span> <span class="n">Static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_1000</span> <span class="o">=</span> <span class="mi">1000</span><span class="o">;</span>
+<span class="kd">private</span> <span class="n">Static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">INT_60000</span> <span class="o">=</span> <span class="mi">60000</span><span class="o">;</span>
+</code></pre></div>
+
+
+<p>这种情况以前也出现过，那个时候刚推广checkstyle，结果有人定义了NumberUtil类，里边就有ONE, TWO&#8230;等变量，
+一直延伸到好几十。这让我非常纠结，劝说了很多次，结果这个类最终还是扎下根来了。我对此深恶痛绝。</p>
+
+<p>今天再次看到这种方式，真是道高一尺魔高一丈呀。我又要发牢骚了。</p>
+
+<h3>认清工具的本质</h3>
+
+<p>这种做法完全就是为了对付checkstyle，而不是对付那对问题代码。工具本来是想提醒程序员，避免写出难以维护的代码。
+结果我们更聪明，把代码藏起来，眼不见为净。这样其实是把数字和变量名直接关联起来了，
+你能想象一个叫INT_2的变量值确是1么? 如果在不同含义的逻辑里边使用这样一个魔鬼变量，
+一旦值发生变化，就会顺带把不应该修改的地方也改动了。</p>
+
+<p>如果我们真的是为了提高自己的编码水平，提高项目的代码质量，就应该认真的对待这些魔鬼数字。
+对于魔鬼数字，应该有一个良好的命名，对于经常出现的，还应该找个合适的地方加以管理。接下来以上面的例子继续分析。</p>
+
+<h3>解决魔鬼数字</h3>
+
+<p>要解决魔鬼数字，首先是认清魔鬼数字代表的意义，给它起一个合适的名字。</p>
+
+<p>查看源代码，可以发现，做了下面的代码调整：</p>
+
+<ol>
+<li>2是某个值在列表中的位置索引，换成XXX_IDX</li>
+<li>80是http的默认端口，换成DEFAULT_HTTP_PROT</li>
+<li>1000是用来把秒换成毫秒的，可以用MILLISECONDS_PER_SECOND</li>
+<li>60000是默认超时时间来的，换成DEFAULT_TIMEOUT</li>
+</ol>
+
+
+<p>同样，经常会看到魔鬼字符串，&#8221;0&#8221;,&#8221;1&#8221;这样的值出现代码里边，也应该
+把给他们起一个好的名字，例如作为执行结果，有SUCCESS、FAILED等。</p>
+
+<h3>更进一步</h3>
+
+<p>需要考虑的还有常量定义的地方，另外考虑使用方法封装来处理魔鬼数字的逻辑。
+这样可以隐藏一些细节，把作用域限制在很小的地方。
+例如下面经常出现的魔鬼字符串，就可以考虑把整个判断逻辑封装到user类里边去，
+而不只是简单的定义出ACTIVE这样一个常量。</p>
+
+<div class="highlight"><pre><code class="java"><span class="c1">// 原有的代码</span>
+<span class="k">if</span><span class="o">(</span><span class="s">&quot;1&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">user</span><span class="o">.</span><span class="na">getStatus</span><span class="o">())){</span>
+    <span class="c1">// ...</span>
+<span class="o">}</span>
+
+<span class="c1">// 改造后,&quot;1&quot;作为user的常量使用于isActive方法</span>
+<span class="k">if</span><span class="o">(</span><span class="n">user</span><span class="o">.</span><span class="na">isActive</span><span class="o">()){</span>
+    <span class="c1">// ...</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>不过话说回来，解决魔鬼数字、字符串之类等&#8217;小枝小节&#8217;，花费的精力不小。
+但不要忽视这些细节，这样可以让自己不断提高对代码的认识，也便于其他人维护你的代码。</p>
+
+<p>对付魔鬼数字，还是不要走捷径的好！</p>
+
+<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
+
+
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li>2012-07-31 improve bitter code: 对付魔鬼数字</li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -764,158 +922,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120724_improve-bitter-code-1.html">Improve Bitter Code: 迷惑的boolean参数</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-24T00:00:00+08:00" pubdate data-updated="true">Jul 24<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120724_improve-bitter-code-1.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
-
-<h3>群里的讨论</h3>
-
-<p>前两天在开发群里边，有同事讨论一个api: 增加一个取特定序列值的方法。并给出了以下的原型代码：</p>
-
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Object</span> <span class="nf">getSeqValue</span><span class="o">(</span><span class="n">String</span> <span class="n">seqname</span><span class="o">,</span> <span class="n">String</span> <span class="n">maindb</span><span class="o">){</span>
-    <span class="k">if</span><span class="o">(</span><span class="s">&quot;1&quot;</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">maindb</span><span class="o">)){</span>
-        <span class="n">DbRunContext</span><span class="o">.</span><span class="na">setRegion</span><span class="o">(</span><span class="n">DbRunContext</span><span class="o">.</span><span class="na">MAINDB</span><span class="o">);</span>
-    <span class="o">}</span>
-    <span class="c1">// more codes</span>
-    <span class="k">return</span> <span class="n">XXDao</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
-<span class="o">}</span>
-</code></pre></div>
-
-
-<p>其中maindb是因为项目支持多数据库的缘故，传入参数maindb来判断是否走主库还是地市库。
-我不知道这个&#8221;1&#8221;是怎么来的，我随口冒出一句：能不能不传递maindb,谁知道要传递什么呢?</p>
-
-<p>于是很快冒出&#8221;改进&#8221;方案，换成一个布尔值，代码变成这样:</p>
-
-<div class="highlight"><pre><code class="java"><span class="kd">public</span> <span class="n">Object</span> <span class="nf">getSeqValue</span><span class="o">(</span><span class="n">String</span> <span class="n">seqname</span><span class="o">,</span> <span class="kt">boolean</span> <span class="n">isMaindb</span><span class="o">){</span>
-    <span class="k">if</span><span class="o">(</span><span class="n">isMaindb</span><span class="o">){</span>
-        <span class="n">DbRunContext</span><span class="o">.</span><span class="na">setRegion</span><span class="o">(</span><span class="n">DbRunContext</span><span class="o">.</span><span class="na">MAINDB</span><span class="o">);</span>
-    <span class="o">}</span>
-    <span class="c1">// more codes</span>
-    <span class="k">return</span> <span class="n">XXDao</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
-<span class="o">}</span>
-</code></pre></div>
-
-
-<p>很显然这不是一个好的解决办法，我从使用者的角度来说，举了下面的例子:</p>
-
-<div class="highlight"><pre><code class="java"><span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
-<span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
-</code></pre></div>
-
-
-<p>单单看上面的调用方式，谁能很清楚的说明分别是什么意思?</p>
-
-<p>很明显，这相当的困难。所以我建议对方法进行重命名，例如</p>
-
-<div class="highlight"><pre><code class="java"><span class="n">getSeqValueFromMaindb</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
-<span class="n">getSeqValue</span><span class="o">(</span><span class="n">seqname</span><span class="o">);</span>
-</code></pre></div>
-
-
-<p>当然，可以考虑把原来的方法换成私有的，这样避免代码重复而不会对调用者造成困惑。</p>
-
-<h3>迷惑人的参数随处可见</h3>
-
-<p>在我们的代码里边，类似这样的参数困惑随处可见，除了这种布尔值，还有&#8221;1&#8221;和&#8221;0&#8221;
-这种魔法数字，字符串，因为调用太频繁了，很多人不愿意给他取个好听的名字。</p>
-
-<p>例如区分调用后台逻辑是否起事务，用得太多了，加上老代码就这么用，所以很多同事
-没有意识加个IS_TRANSACTION这类的静态变量。看，代码就变成下面的样子：</p>
-
-<div class="highlight"><pre><code class="java"><span class="n">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">cmd</span><span class="o">,</span> <span class="n">subcmd</span><span class="o">,</span> <span class="s">&quot;1&quot;</span><span class="o">);</span>
-<span class="n">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">cmd</span><span class="o">,</span> <span class="n">subcmd</span><span class="o">,</span> <span class="s">&quot;0&quot;</span><span class="o">);</span>
-</code></pre></div>
-
-
-<p>参数这东西，对看代码的人来说没什么特别的帮助，参数越多越迷惑。
-当两个方法调用就差一个布尔值不一样的时候，那是相当痛苦的。
-所以最好还是从方法名上进行区分，保持代码的可读性。对于接口方法，公用方法，更是应该如此。</p>
-
-<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
-
-
-<ul>
- 
-  
-  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
-  
- 
-  
-  <li>2012-07-24 improve bitter code: 迷惑的boolean参数</li>
-  
- 
-  
-  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
-  
- 
-  
-  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
-  
- 
-  
-  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
-  
- 
-  
-  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
-  
- 
-  
-  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
-  
- 
-  
-  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
-  
-
-</ul>
-
-
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/22/">&larr; Older</a>
@@ -934,6 +940,10 @@
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20160105_source-reading.html">源码阅读应该得到什么?</a>
       </li>
     
       <li class="post">
@@ -966,10 +976,6 @@
     
       <li class="post">
         <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
       </li>
     
   </ul>

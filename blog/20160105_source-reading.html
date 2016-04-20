@@ -1,0 +1,418 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>源码阅读应该得到什么? - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="源码阅读应该得到什么?">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20160105_source-reading.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">源码阅读应该得到什么?</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-01-05T00:00:00+08:00" pubdate data-updated="true">Jan 5<span>th</span>, 2016</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>我们平时会接触到不少开源项目, 很多人都期望能够通过阅读源码理解更多东西，把从中学到的东西用于平时的框架使用，设计和编码实现过程。</p>
+
+<p>不过，浩瀚的代码量，应该关注什么? 作为一个屌丝程序员，分享一下屌丝经验:</p>
+
+<ol>
+<li>首先，你应该有一定的使用经验。从使用中，去找相关特性是如何实现的。</li>
+<li>最好阅读一下官方文档，了解使用的场景，高层设计、特性介绍。做到心中有数。</li>
+<li>关于设计模式。提前学习一下还是有用的，学习源码的时候就不用揪着设计模式不放，会崩溃的。</li>
+<li>同上，很多源码书会画很庞大的类图，时序图等。这些看上去很高大上，然并卯。</li>
+<li>还是要带的问题去跟踪，一次跟踪一小部分，就是一次要有一个关注点，集中分析。别走马观花。</li>
+<li>建议使用maven等高大上工具关联源码，应该多调试调试，但是单步调试帮助不大。</li>
+<li>同上，应该提高代码&#8221;猜想&#8221;能力,大步调试过去，验证自己的猜测。</li>
+<li>linus说: 烂程序员关心的是代码。好程序员关心的是数据结构和它们之间的关系。</li>
+<li>多补充理论知识。虽然很花时间。</li>
+<li>凑数的，找个感兴趣的开始吧。</li>
+</ol>
+
+
+<p>上面废话很多，下面来个事例。</p>
+
+<p>commons httpclinet 3.x 这是一个很超好用的库，实际上也是比较容易理解的。</p>
+
+<p>我阅读的时候，列了一下自己的关注点或者问题列表。</p>
+
+<ul>
+<li>如何打开HttpClient库的详细日志</li>
+<li>httpclient默认参数有哪些?如User Agent、Charset怎么进行定制?</li>
+<li>httpclient的连接是怎样管理的? 内部是连接池还是什么? HttpClient能用于多线程环境么?如何应用?</li>
+<li>关于MultiThreadedHttpConnectionManager的数据结构是怎样的?</li>
+<li>uri和content中的字符编码是怎么处理的? 例如像处理带中文的路径。</li>
+<li>HttpClient#executeMethod实现细节，为什么hostconfig要克隆一份?为什么不能直接设置?</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">hostconfig</span> <span class="o">==</span> <span class="n">defaulthostconfig</span> <span class="o">||</span> <span class="n">uri</span><span class="o">.</span><span class="na">isAbsoluteURI</span><span class="o">())</span> <span class="o">{</span>
+</span><span class='line'>        <span class="c1">// make a deep copy of the host defaults</span>
+</span><span class='line'>        <span class="n">hostconfig</span> <span class="o">=</span> <span class="o">(</span><span class="n">HostConfiguration</span><span class="o">)</span> <span class="n">hostconfig</span><span class="o">.</span><span class="na">clone</span><span class="o">();</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">uri</span><span class="o">.</span><span class="na">isAbsoluteURI</span><span class="o">())</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">hostconfig</span><span class="o">.</span><span class="na">setHost</span><span class="o">(</span><span class="n">uri</span><span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>HttpClient、HttpMethod(GetMethod、PostMethod)、HostConfiguration、HttpConnectionManager、HttpClientParams、HttpConnection、HttpState、AuthChallengeProcessor主要负责什么?</li>
+<li>命令行参数、HttpClient、HttpMethod、HostConfiguration都可以设置params，有区别? 参数在框架中是怎样存储的?</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="n">HttpClient</span> <span class="n">httpClient</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HttpClient</span><span class="o">();</span>
+</span><span class='line'>    <span class="n">httpClient</span><span class="o">.</span><span class="na">getParams</span><span class="o">().</span><span class="na">setConnectionManagerTimeout</span><span class="o">(</span><span class="mi">30000L</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">httpClient</span><span class="o">.</span><span class="na">getHostConfiguration</span><span class="o">().</span><span class="na">getParams</span><span class="o">().</span><span class="na">setLongParameter</span><span class="o">(</span>
+</span><span class='line'>            <span class="n">HttpClientParams</span><span class="o">.</span><span class="na">CONNECTION_MANAGER_TIMEOUT</span><span class="o">,</span> <span class="mi">30000L</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">GetMethod</span> <span class="n">post</span> <span class="o">=</span> <span class="k">new</span> <span class="n">GetMethod</span><span class="o">(</span><span class="s">&quot;http://10.132.10.59:4567&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">post</span><span class="o">.</span><span class="na">getParams</span><span class="o">().</span><span class="na">setHttpElementCharset</span><span class="o">(</span><span class="s">&quot;UTF-8&quot;</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>HttpClient会自动处理请求跳转? 会不会出现死循环? 怎样的响应才会自动跳转? 如何关闭这个特性</li>
+<li>HttpClient的自动重试功能是怎样? 怎么进行定制?</li>
+<li>HttpClient是使用java自带的HttpUrlConnection实现的么? 报文是怎么组装和解析的?</li>
+<li>连接超时、读取超时、读写缓冲区、还有禁用Nagle等常见属性如何设置?</li>
+<li>多次调用之间的cookie怎么管理的?</li>
+<li>chunked模式是怎么实现的? 多大刷一次?</li>
+</ul>
+
+
+<p>大家可以参考这个，在阅读的时候，列出问题列表，然后从源码中找找答案。</p>
+
+<p><strong>细节是魔鬼:)</strong></p>
+
+<p><strong>========================华丽的分割线========================</strong></p>
+
+<p>关于第8点，以MultiThreadedHttpConnectionManager为例，如何分析数据结构? (昨晚分析的，时间有限，不保证正确性)</p>
+
+<p>从本质来说，整个链接管理的结构是:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="err">维护一个</span><span class="n">connectionPool</span><span class="o">,</span> <span class="err">内部维护一个</span><span class="n">mapHosts</span><span class="err">，它的结构是</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">HostConfiguration</span><span class="o">,</span> <span class="n">HostConnectionPool</span><span class="o">&gt;</span>
+</span><span class='line'><span class="n">HostConnectionPool</span><span class="err">的内部结构是两个链表，</span><span class="n">freeConnections</span><span class="err">维护空闲连接，</span><span class="n">waitingThreads</span><span class="err">维护正在等待连接的线程</span>
+</span><span class='line'>
+</span><span class='line'><span class="err">还有一个静态的</span><span class="n">ReferenceQueue</span><span class="err">和</span><span class="n">ReferenceQueueThread</span><span class="err">，用来实现防止某些连接丢失的情况。至于是怎么做到丢失的连接能够回到</span><span class="n">ReferenceQueue</span><span class="err">，就是通过对</span><span class="n">HttpConnection</span><span class="err">进行加强得到的。</span>
+</span><span class='line'>
+</span><span class='line'><span class="err">实际上通过管理器得到的</span><span class="n">HttpConnection</span><span class="err">是经过层层代理的。层次是这样的</span><span class="o">:</span> <span class="n">HttpConnectionAdapter</span> <span class="o">-</span> <span class="n">HttpConnectionWithReference</span> <span class="o">-</span> <span class="n">HttpConnection</span>
+</span><span class='line'><span class="n">HttpConnectionWithReference</span><span class="err">就是通过一个</span><span class="n">WeakReference</span><span class="err">关联到</span><span class="n">ReferenceQueue</span><span class="err">，这样根据弱引用特性，一定可被回收就会进入</span><span class="n">ReferenceQueue</span><span class="err">从而被线程扫描到。</span>
+</span><span class='line'>
+</span><span class='line'><span class="err">为了实现闲时连接关闭的功能，使用了</span><span class="n">IdleConnectionHandler</span><span class="err">，它的内部结构是有个</span><span class="n">Map</span><span class="err">记录空闲连接</span><span class="o">(</span><span class="err">在</span><span class="n">releaseConnection</span><span class="err">的时候放入</span><span class="o">)</span><span class="err">和当时的时间。</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>代码就是围绕这些核心数据结构进行操作的。通过上面的基本结构，就可以实现以下特性:</p>
+
+<ol>
+<li>总连接数和每主机总连接数限制。连接数默认50，每host默认2连接(经常容易忽略，通常需要定制)</li>
+<li>能够防止连接丢失。如上面所说，拿出去的HttpConnection是加强过的，会关联到一个静态的ReferenceQueue,并使用一个线程ReferenceQueueThread不停监听并回收。</li>
+<li>实现了获取连接的超时限制。就是通过waitingThreads实现的。当找不到空闲连接的时候就添加进去，然后wait。如果有releaseConnection的时候，就会interupt等待的第一个线程。我个人认为线程有可能被interupt之后仍然占用不到连接，从而排到最后去，真是悲剧。</li>
+<li>能够支持连接闲时关闭。这个默认是需要主动触发，通过IdleConnectionHandler比较时间来实现的。</li>
+</ol>
+
+
+<p>最后，这个类是支持多线程的，主要是使用了同步机制，锁定ConnectionPool对象实现的。<br/>
+另外，HttpConnection对象实际上并不是一个正式的连接，要open之后才会真的建立连接。<br/>
+实际上也是一个lazy代理对象，可以避免整个连接管理操作不被阻塞，只有到实际操作时open的时候才连接。</p>
+
+<p><strong>========================华丽的分割线========================</strong></p>
+
+<p>关于第9点，以commons-httpclient为例，这当中涉及到哪些理论基础呢? 简单列举一下:</p>
+
+<ol>
+<li>java弱引用、克隆特性</li>
+<li>线程协调、中断机制</li>
+<li>网络编码、http协议</li>
+<li>tcp相关参数的含义</li>
+<li>常见对象池化技术</li>
+</ol>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-01-05T00:00:00+08:00" pubdate data-updated="true">Jan 5<span>th</span>, 2016</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/opensource/'>opensource</a>, <a class='category' href='/blog/categories/reading/'>reading</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20151226_commons-dbcp-source-view.html" title="Previous Post: 从commons-dbcp源码学习设计思路">&laquo; 从commons-dbcp源码学习设计思路</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20160416_svn-handshake-failure.html" title="Next Post: svn报文转发出现handshake_failure的问题">svn报文转发出现handshake_failure的问题 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20160105_source-reading.html">源码阅读应该得到什么?</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151226_commons-dbcp-source-view.html">从commons-dbcp源码学习设计思路</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151216_aes256-Illegal-key-size-or-default-parameters.html">AES256算法遇到 Illegal key size or default parameters的解决办法</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20160105_source-reading.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20160105_source-reading.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

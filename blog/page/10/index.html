@@ -9,7 +9,11 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="String印象 String是java中的无处不在的类，使用也很简单。初学java，就已经有字符串是不可变的盖棺定论，解释通常是:它是final的。 不过，String是有字面量这一说法的，这是其他类型所没有的特性(除原生类型)。另外，java中也有字符串常量池这个说法，用来存储字符串字面量， &hellip;">
+  <meta name="description" content="最近有个需求，是关于一个Socket连接池的功能改造，要求实现下面的需求: 可配置多个服务器地址
+服务器地址可以配置权重(比如3:2:1)
+连接池可以设置最小连接和最大连接
+某服务器从崩溃中恢复后，连接池中的连接数可以自动恢复到服务器之间的权重比。
+连接可设置最大空闲释放时间 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +68,62 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130630_object-balance-pool.html">带平衡的对象池设计</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-06-30T00:00:00+08:00" pubdate data-updated="true">Jun 30<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130630_object-balance-pool.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>最近有个需求，是关于一个Socket连接池的功能改造，要求实现下面的需求:</p>
+
+<ol>
+<li>可配置多个服务器地址</li>
+<li>服务器地址可以配置权重(比如3:2:1)</li>
+<li>连接池可以设置最小连接和最大连接</li>
+<li>某服务器从崩溃中恢复后，连接池中的连接数可以自动恢复到服务器之间的权重比。</li>
+<li>连接可设置最大空闲释放时间</li>
+</ol>
+
+
+<p>一开始有同事自定义了一个链表来做取数和归还的操作，在线程安全方面操作感觉还是有点麻烦。
+后来我采用PriorityBlockingQueue来实现，其实就是内部变成了堆的结构。见下面的图:</p>
+
+<p><img src="/assets/images/2013/pool/1.png" alt="数据结构" /></p>
+
+<p><img src="/assets/images/2013/pool/2.png" alt="类图" /></p>
+
+<p><img src="/assets/images/2013/pool/3.png" alt="状态图" /></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1343,53 +1403,6 @@ URI既可以看成是资源的地址，也可以看成是资源的名称。如�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130519_rss-reading.html">Goodbye,Google Reader</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-05-19T00:00:00+08:00" pubdate data-updated="true">May 19<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130519_rss-reading.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>今天早上,把Google Reader的订阅迁移到鲜果,顺便整理了Reader里边的RSS订阅,略为增长了一点,到153个，主要增加了许多国内著名互联网公司的团队博客。
-鲜果是把订阅和RSS订阅分开的，对于我来说，这显得很不习惯。对于鲜果来说，想打造社交阅读平台，又不得不保留RSS订阅这种传统模式，也是挺无奈的。</p>
-
-<p>另外，看过Feng写的<a href="http://dbanotes.net/mylife/the_bloggers.html">那些写过博客的人们</a>,我也发现了有不少人的博客很久之前就停止更新了。
-博客这东西，在微博，微信等新媒体的冲击下，更显得步伐缓慢，似乎不适应新时代的要求。但只有这些写下的文字，才显得有点沉淀，
-也只有部分通过写博客获得了某些真实东西的人才坚持下来。</p>
-
-<p>分享一下我的<a href="https://www.dropbox.com/s/ypo8lnsjogbtklm/export-2013-05-19.opml?v=0rc-">RSS订阅</a>.</p>
-
-<p>Google Reader即将关闭，阅读还将继续~</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/11/">&larr; Older</a>
@@ -1408,6 +1421,10 @@ URI既可以看成是资源的地址，也可以看成是资源的名称。如�
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20160105_source-reading.html">源码阅读应该得到什么?</a>
       </li>
     
       <li class="post">
@@ -1440,10 +1457,6 @@ URI既可以看成是资源的地址，也可以看成是资源的名称。如�
     
       <li class="post">
         <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
       </li>
     
   </ul>

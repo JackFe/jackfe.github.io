@@ -307,6 +307,182 @@ org.tmatesoft.svn.core.SVNException: svn: &hellip;">
       
   <header>
     
+      <h1 class="entry-title"><a href="/blog/20160105_source-reading.html">源码阅读应该得到什么?</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-01-05T00:00:00+08:00" pubdate data-updated="true">Jan 5<span>th</span>, 2016</time>
+        
+         | <a href="/blog/20160105_source-reading.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>我们平时会接触到不少开源项目, 很多人都期望能够通过阅读源码理解更多东西，把从中学到的东西用于平时的框架使用，设计和编码实现过程。</p>
+
+<p>不过，浩瀚的代码量，应该关注什么? 作为一个屌丝程序员，分享一下屌丝经验:</p>
+
+<ol>
+<li>首先，你应该有一定的使用经验。从使用中，去找相关特性是如何实现的。</li>
+<li>最好阅读一下官方文档，了解使用的场景，高层设计、特性介绍。做到心中有数。</li>
+<li>关于设计模式。提前学习一下还是有用的，学习源码的时候就不用揪着设计模式不放，会崩溃的。</li>
+<li>同上，很多源码书会画很庞大的类图，时序图等。这些看上去很高大上，然并卯。</li>
+<li>还是要带的问题去跟踪，一次跟踪一小部分，就是一次要有一个关注点，集中分析。别走马观花。</li>
+<li>建议使用maven等高大上工具关联源码，应该多调试调试，但是单步调试帮助不大。</li>
+<li>同上，应该提高代码&#8221;猜想&#8221;能力,大步调试过去，验证自己的猜测。</li>
+<li>linus说: 烂程序员关心的是代码。好程序员关心的是数据结构和它们之间的关系。</li>
+<li>多补充理论知识。虽然很花时间。</li>
+<li>凑数的，找个感兴趣的开始吧。</li>
+</ol>
+
+
+<p>上面废话很多，下面来个事例。</p>
+
+<p>commons httpclinet 3.x 这是一个很超好用的库，实际上也是比较容易理解的。</p>
+
+<p>我阅读的时候，列了一下自己的关注点或者问题列表。</p>
+
+<ul>
+<li>如何打开HttpClient库的详细日志</li>
+<li>httpclient默认参数有哪些?如User Agent、Charset怎么进行定制?</li>
+<li>httpclient的连接是怎样管理的? 内部是连接池还是什么? HttpClient能用于多线程环境么?如何应用?</li>
+<li>关于MultiThreadedHttpConnectionManager的数据结构是怎样的?</li>
+<li>uri和content中的字符编码是怎么处理的? 例如像处理带中文的路径。</li>
+<li>HttpClient#executeMethod实现细节，为什么hostconfig要克隆一份?为什么不能直接设置?</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">hostconfig</span> <span class="o">==</span> <span class="n">defaulthostconfig</span> <span class="o">||</span> <span class="n">uri</span><span class="o">.</span><span class="na">isAbsoluteURI</span><span class="o">())</span> <span class="o">{</span>
+</span><span class='line'>        <span class="c1">// make a deep copy of the host defaults</span>
+</span><span class='line'>        <span class="n">hostconfig</span> <span class="o">=</span> <span class="o">(</span><span class="n">HostConfiguration</span><span class="o">)</span> <span class="n">hostconfig</span><span class="o">.</span><span class="na">clone</span><span class="o">();</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">uri</span><span class="o">.</span><span class="na">isAbsoluteURI</span><span class="o">())</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">hostconfig</span><span class="o">.</span><span class="na">setHost</span><span class="o">(</span><span class="n">uri</span><span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>HttpClient、HttpMethod(GetMethod、PostMethod)、HostConfiguration、HttpConnectionManager、HttpClientParams、HttpConnection、HttpState、AuthChallengeProcessor主要负责什么?</li>
+<li>命令行参数、HttpClient、HttpMethod、HostConfiguration都可以设置params，有区别? 参数在框架中是怎样存储的?</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="n">HttpClient</span> <span class="n">httpClient</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HttpClient</span><span class="o">();</span>
+</span><span class='line'>    <span class="n">httpClient</span><span class="o">.</span><span class="na">getParams</span><span class="o">().</span><span class="na">setConnectionManagerTimeout</span><span class="o">(</span><span class="mi">30000L</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">httpClient</span><span class="o">.</span><span class="na">getHostConfiguration</span><span class="o">().</span><span class="na">getParams</span><span class="o">().</span><span class="na">setLongParameter</span><span class="o">(</span>
+</span><span class='line'>            <span class="n">HttpClientParams</span><span class="o">.</span><span class="na">CONNECTION_MANAGER_TIMEOUT</span><span class="o">,</span> <span class="mi">30000L</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">GetMethod</span> <span class="n">post</span> <span class="o">=</span> <span class="k">new</span> <span class="n">GetMethod</span><span class="o">(</span><span class="s">&quot;http://10.132.10.59:4567&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">post</span><span class="o">.</span><span class="na">getParams</span><span class="o">().</span><span class="na">setHttpElementCharset</span><span class="o">(</span><span class="s">&quot;UTF-8&quot;</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>HttpClient会自动处理请求跳转? 会不会出现死循环? 怎样的响应才会自动跳转? 如何关闭这个特性</li>
+<li>HttpClient的自动重试功能是怎样? 怎么进行定制?</li>
+<li>HttpClient是使用java自带的HttpUrlConnection实现的么? 报文是怎么组装和解析的?</li>
+<li>连接超时、读取超时、读写缓冲区、还有禁用Nagle等常见属性如何设置?</li>
+<li>多次调用之间的cookie怎么管理的?</li>
+<li>chunked模式是怎么实现的? 多大刷一次?</li>
+</ul>
+
+
+<p>大家可以参考这个，在阅读的时候，列出问题列表，然后从源码中找找答案。</p>
+
+<p><strong>细节是魔鬼:)</strong></p>
+
+<p><strong>========================华丽的分割线========================</strong></p>
+
+<p>关于第8点，以MultiThreadedHttpConnectionManager为例，如何分析数据结构? (昨晚分析的，时间有限，不保证正确性)</p>
+
+<p>从本质来说，整个链接管理的结构是:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="err">维护一个</span><span class="n">connectionPool</span><span class="o">,</span> <span class="err">内部维护一个</span><span class="n">mapHosts</span><span class="err">，它的结构是</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">HostConfiguration</span><span class="o">,</span> <span class="n">HostConnectionPool</span><span class="o">&gt;</span>
+</span><span class='line'><span class="n">HostConnectionPool</span><span class="err">的内部结构是两个链表，</span><span class="n">freeConnections</span><span class="err">维护空闲连接，</span><span class="n">waitingThreads</span><span class="err">维护正在等待连接的线程</span>
+</span><span class='line'>
+</span><span class='line'><span class="err">还有一个静态的</span><span class="n">ReferenceQueue</span><span class="err">和</span><span class="n">ReferenceQueueThread</span><span class="err">，用来实现防止某些连接丢失的情况。至于是怎么做到丢失的连接能够回到</span><span class="n">ReferenceQueue</span><span class="err">，就是通过对</span><span class="n">HttpConnection</span><span class="err">进行加强得到的。</span>
+</span><span class='line'>
+</span><span class='line'><span class="err">实际上通过管理器得到的</span><span class="n">HttpConnection</span><span class="err">是经过层层代理的。层次是这样的</span><span class="o">:</span> <span class="n">HttpConnectionAdapter</span> <span class="o">-</span> <span class="n">HttpConnectionWithReference</span> <span class="o">-</span> <span class="n">HttpConnection</span>
+</span><span class='line'><span class="n">HttpConnectionWithReference</span><span class="err">就是通过一个</span><span class="n">WeakReference</span><span class="err">关联到</span><span class="n">ReferenceQueue</span><span class="err">，这样根据弱引用特性，一定可被回收就会进入</span><span class="n">ReferenceQueue</span><span class="err">从而被线程扫描到。</span>
+</span><span class='line'>
+</span><span class='line'><span class="err">为了实现闲时连接关闭的功能，使用了</span><span class="n">IdleConnectionHandler</span><span class="err">，它的内部结构是有个</span><span class="n">Map</span><span class="err">记录空闲连接</span><span class="o">(</span><span class="err">在</span><span class="n">releaseConnection</span><span class="err">的时候放入</span><span class="o">)</span><span class="err">和当时的时间。</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>代码就是围绕这些核心数据结构进行操作的。通过上面的基本结构，就可以实现以下特性:</p>
+
+<ol>
+<li>总连接数和每主机总连接数限制。连接数默认50，每host默认2连接(经常容易忽略，通常需要定制)</li>
+<li>能够防止连接丢失。如上面所说，拿出去的HttpConnection是加强过的，会关联到一个静态的ReferenceQueue,并使用一个线程ReferenceQueueThread不停监听并回收。</li>
+<li>实现了获取连接的超时限制。就是通过waitingThreads实现的。当找不到空闲连接的时候就添加进去，然后wait。如果有releaseConnection的时候，就会interupt等待的第一个线程。我个人认为线程有可能被interupt之后仍然占用不到连接，从而排到最后去，真是悲剧。</li>
+<li>能够支持连接闲时关闭。这个默认是需要主动触发，通过IdleConnectionHandler比较时间来实现的。</li>
+</ol>
+
+
+<p>最后，这个类是支持多线程的，主要是使用了同步机制，锁定ConnectionPool对象实现的。<br/>
+另外，HttpConnection对象实际上并不是一个正式的连接，要open之后才会真的建立连接。<br/>
+实际上也是一个lazy代理对象，可以避免整个连接管理操作不被阻塞，只有到实际操作时open的时候才连接。</p>
+
+<p><strong>========================华丽的分割线========================</strong></p>
+
+<p>关于第9点，以commons-httpclient为例，这当中涉及到哪些理论基础呢? 简单列举一下:</p>
+
+<ol>
+<li>java弱引用、克隆特性</li>
+<li>线程协调、中断机制</li>
+<li>网络编码、http协议</li>
+<li>tcp相关参数的含义</li>
+<li>常见对象池化技术</li>
+</ol>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/blog/20151226_commons-dbcp-source-view.html">从commons-dbcp源码学习设计思路</a></h1>
     
     
@@ -859,296 +1035,6 @@ org.tmatesoft.svn.core.SVNException: svn: &hellip;">
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20151023_weblogic-11g-classloader-prefer.html">Weblogic 11g类加载问题总结</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2015-10-23T00:00:00+08:00" pubdate data-updated="true">Oct 23<span>rd</span>, 2015</time>
-        
-         | <a href="/blog/20151023_weblogic-11g-classloader-prefer.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><strong>本人在此之前甚少接触weblogic，家里的weblogic也是第一次安装的。如果发现错误，敬请指正。</strong></p>
-
-<h2>问题描述</h2>
-
-<p>XX局点升级weblogic为11g，重新发包出错。现在记录一下处理的各种问题总结。</p>
-
-<h3>错误1: apache commons某些包的方法没有找到</h3>
-
-<p>这是最早出现的问题，会出现类似下面的错误信息。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='text'><span class='line'>&lt;2015-10-14 下午05时57分30秒 CST&gt; &lt;Error&gt; &lt;HTTP&gt; &lt;BEA-101017&gt; &lt;[ServletContext@1385406679[app:XXService module:XXService path:/XXService spec-version:2.5]] Root cause of ServletException.
-</span><span class='line'>java.lang.NoSuchMethodError: org.apache.commons.io.FileUtils.copyInputStreamToFile(Ljava/io/InputStream;Ljava/io/File;)V
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>原因分析</li>
-</ul>
-
-
-<p>这是weblogic部署最常见的问题，因为weblogic会自带I一些commons-*的包，这些包的版本还比较旧。具体可以见WEBLOGIC_HOME/modules目录的jar包。</p>
-
-<ul>
-<li>此次采用的处理方式</li>
-</ul>
-
-
-<p>添加weblogic.xml并设置prefer-web-inf-classes，即优先加载web应用下的类</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
-</span><span class='line'><span class="nt">&lt;weblogic-web-app&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;container-descriptor&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;prefer-web-inf-classes&gt;</span>true<span class="nt">&lt;/prefer-web-inf-classes&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;/container-descriptor&gt;</span>
-</span><span class='line'><span class="nt">&lt;/weblogic-web-app&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>错误2: jsp使用jstl时出现SAXParserFactory的ClassCastException</h3>
-
-<p>这是使用prefer-web-inf-classes为true之后出现的问题，会出现类似下面的错误信息。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='text'><span class='line'>The validator class: &quot;org.apache.taglibs.standard.tlv.JstlCoreTLV&quot; has failed with the following exception: &quot;java.lang.ClassCastException: weblogic.xml.jaxp.RegistrySAXParserFactory cannot be cast to javax.xml.parsers.SAXParserFactory&quot;.
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>原因分析</li>
-</ul>
-
-
-<p>这是weblogic部署很常见的问题，jstl会调用sax，sax是通过spi机制加载实现，获取是weblogic的实现，但它使用的是jdk自带的javax.xml.parsers.SAXParserFactory接口。
-刚好web应用下也带了jar包xml-apis-1.x.jar，它也有javax.xml.parsers.SAXParserFactory这个接口。根据prefer-web-inf-classes的设置，jstl代码中用的是这个接口。
-由此可知，使用classloader并不一样，无法转换。</p>
-
-<ul>
-<li>此次采用的处理方式</li>
-</ul>
-
-
-<p>删除WEB-INF/lib/xml-apis-1.x.jar后本地测试该问题恢复。</p>
-
-<h3>错误3: 出现QName的LinkageError</h3>
-
-<p>这是错误2解决后，继续解析spring时出现的问题。</p>
-
-<ul>
-<li>原因分析</li>
-</ul>
-
-
-<p>这个问题和上面的差不多，太细就不深究了。</p>
-
-<ul>
-<li>此次采用的处理方式</li>
-</ul>
-
-
-<p>这种情况下，如果使用prefer-web-inf-classes为true，则需要排除存在QName的jar包并删除，但最后没有采用(改动太大，得不偿失)。<br/>
-所以这次重新设置了prefer-web-inf-classes为false，但仍然优先加载commons，如下:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
-</span><span class='line'><span class="nt">&lt;weblogic-web-app&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;container-descriptor&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;prefer-web-inf-classes&gt;</span>false<span class="nt">&lt;/prefer-web-inf-classes&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;prefer-application-packages&gt;</span>
-</span><span class='line'>        <span class="nt">&lt;package-name&gt;</span>org.apache.commons.*<span class="nt">&lt;/package-name&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;/prefer-application-packages&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;/container-descriptor&gt;</span>
-</span><span class='line'><span class="nt">&lt;/weblogic-web-app&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>修改后本地测试ok，但发布到生产仍然失败。</p>
-
-<h3>错误4: MemCachedClient获取key失败(序列化问题)</h3>
-
-<p>错误3处理后，发布到生产仍然出错，报错信息如下:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='text'><span class='line'>18:44:57.337 [[ACTIVE] ExecuteThread: &#39;0&#39; for queue: &#39;weblogic.kernel.Default (self-tuning)&#39;] ERROR com.danga.MemCached.MemCachedClient - ++++ exception thrown while trying to get object from cache for key: init_error_key_0098
-</span><span class='line'>18:44:57.351 [[ACTIVE] ExecuteThread: &#39;0&#39; for queue: &#39;weblogic.kernel.Default (self-tuning)&#39;] ERROR com.danga.MemCached.MemCachedClient - com.xxx.hnxx.mybatis.entity.PlaterrorCodeBean
-</span><span class='line'>java.io.IOException: com.xxx.hnxx.mybatis.entity.PlaterrorCodeBean
-</span><span class='line'>  at com.schooner.MemCached.ObjectTransCoder.decode(Unknown Source) ~[MemCached-2.6.6.jar:na]
-</span><span class='line'>  at com.schooner.MemCached.AscIIClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
-</span><span class='line'>  at com.schooner.MemCached.AscIIClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
-</span><span class='line'>  at com.schooner.MemCached.AscIIClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
-</span><span class='line'>  at com.danga.MemCached.MemCachedClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
-</span><span class='line'>  at com.xxx.hnxx.cache.mencached.MemcacheManagerClient.get(MemcacheManagerClient.java:162) [MemcacheManagerClient.class:na]
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>上面的错误信息表示获取init_error_key_0098这个可以的时候失败，实际上这个key是在应用启动的时候就塞进去的。</p>
-
-<ul>
-<li>原因分析</li>
-</ul>
-
-
-<p>这里有很多意想不到的事情，所以详细解释一下。</p>
-
-<p>首先，这个出现了IOException让人联想到是否memcached服务器连接的问题。<br/>
-实际上是因为库在实现java对象放入memcached的时候，有一个序列化/反序列化的过程(就是java自带的那个)，在反序列化的时候找不到类会出现ClassNotFoundException，然后库将错误信息(就是一个类名)取出重新包装为IOException。<br/>
-所以，这实际上是一个类找不到的问题。</p>
-
-<p>再者，这个问题一开始在家里的weblogic没法重现。后来我重新检查了生产上weblogic的启动日志才发现了一些差异。<br/>
-关键信息如下所示，生产上的weblogic在domain的lib目录也是有jar包的，而家里的是没有的。尝试修改把jar包也拷贝一份，果然重现。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='text'><span class='line'>&lt;2015-10-14 下午06时44分36秒 CST&gt; &lt;Notice&gt; &lt;WebLogicServer&gt; &lt;BEA-000395&gt; &lt;Following extensions directory contents added to the end of the classpath:/weblogic/bea/user_projects/domains/PLATFORM_DOM/lib/MemCached-2.6.6.jar:/weblogic/bea/user_projects/domains/PLATFORM_DOM/lib/MyXMLSerializer-1.0.0.jar...
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>最后，这个问题就好解释多了。</p>
-
-<ol>
-<li>需要序列化/反序列化的类是在com.huawei下面的，这部分类指在web应用中存在。在system classloader是找不到的。</li>
-<li>序列化/反序列化时候，都是由web应用中的类，调用memcached库去实现的(虽然web应用中也有，但是根据prefer-web-inf-classes设置，加载的是domain中lib目录的)</li>
-<li><p>序列化只是没什么特别。但是反序列化需要加载类，很明显system classloader(memcached库的classloader)是加载不到web应用中的类的。</p></li>
-<li><p>此次采用的处理方式</p></li>
-</ol>
-
-
-<p>有好几种方式，都列举一下:</p>
-
-<ol>
-<li>删除domain中的jar包，这样就会加载到web应用中的类，让库和需要序列化的类都有web classloader加载</li>
-<li>让库也由web优先加载，如下所示</li>
-</ol>
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
-</span><span class='line'><span class="nt">&lt;weblogic-web-app&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;container-descriptor&gt;</span>
-</span><span class='line'>      <span class="nt">&lt;prefer-web-inf-classes&gt;</span>false<span class="nt">&lt;/prefer-web-inf-classes&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;prefer-application-packages&gt;</span>
-</span><span class='line'>        <span class="nt">&lt;package-name&gt;</span>org.apache.commons.*<span class="nt">&lt;/package-name&gt;</span>
-</span><span class='line'>        <span class="nt">&lt;package-name&gt;</span>com.danga.*<span class="nt">&lt;/package-name&gt;</span>
-</span><span class='line'>        <span class="nt">&lt;package-name&gt;</span>com.schooner.*<span class="nt">&lt;/package-name&gt;</span>
-</span><span class='line'>    <span class="nt">&lt;/prefer-application-packages&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;/container-descriptor&gt;</span>
-</span><span class='line'><span class="nt">&lt;/weblogic-web-app&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ol>
-<li>指定memcached库进行反序列化时的classloader，如下所示:</li>
-</ol>
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="n">ClassLoader</span> <span class="n">classLoader</span> <span class="o">=</span> <span class="n">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">().</span><span class="na">getContextClassLoader</span><span class="o">();</span>
-</span><span class='line'>    <span class="c1">// MemCachedClient实例化时，会持有SockIOPool.getInstance()单利的引用</span>
-</span><span class='line'>    <span class="n">cachedClient</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MemCachedClient</span><span class="o">((</span><span class="n">String</span><span class="o">)</span><span class="kc">null</span><span class="o">,</span> <span class="kc">true</span><span class="o">,</span> <span class="kc">false</span><span class="o">,</span> <span class="n">classLoader</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>个人推荐的优先级是2 - 3 - 1, 尽量做到容器无关，并少动全局的东西。<strong>由于目前生产上的weblogic版本已经回退，待后续上生产验证。</strong></p>
-
-<h2>weblogic的类加载器介绍</h2>
-
-<ul>
-<li>整体的类加载器层次如下(只关注war部分)，并采用标准的双亲委托加载机制</li>
-</ul>
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">WebLogic</span> <span class="n">Server</span> <span class="n">System</span> <span class="nf">classloader</span> <span class="o">(</span><span class="n">classpath</span><span class="err">、</span><span class="o">&lt;</span><span class="n">domain</span><span class="o">&gt;/</span><span class="n">lib</span><span class="o">)</span>
-</span><span class='line'><span class="n">Filtering</span> <span class="nf">classloader</span> <span class="o">(</span><span class="err">空</span><span class="o">)</span>
-</span><span class='line'><span class="n">Application</span> <span class="nf">classloader</span> <span class="o">(</span><span class="n">EJB</span> <span class="n">JARs</span><span class="err">、</span><span class="n">APP</span><span class="o">-</span><span class="n">INF</span><span class="o">/</span><span class="n">lib</span><span class="err">、</span><span class="n">APP</span><span class="o">-</span><span class="n">INF</span><span class="o">/</span><span class="n">classes</span><span class="err">、</span><span class="n">Manifest</span> <span class="n">Class</span><span class="o">-</span><span class="n">Path</span> <span class="n">in</span> <span class="n">EJB</span> <span class="n">JARs</span><span class="o">)</span>
-</span><span class='line'><span class="n">Web</span> <span class="n">application</span> <span class="nf">classloader</span> <span class="o">(</span><span class="n">WAR</span><span class="err">、</span><span class="n">Manifest</span> <span class="n">Class</span><span class="o">-</span><span class="n">Path</span> <span class="n">in</span> <span class="n">WAR</span><span class="o">)</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>Web application classloader可以通过weblogic.xml中的prefer-web-inf-classes优先加载war中的类，找不到才向上请求</li>
-<li>Filtering classloader并不会加载任何类，而是起到控制类加载优先级的作用。通过配置<prefer-application-packages>可以限制对于指定的类不再向上请求，也就是限制范围内加载</li>
-<li>配置prefer-application-packages/prefer-application-resources的话，prefer-web-inf-classes必须配置为false</li>
-<li>资源(resource)的加载顺序，在开启Filtering之后，顺序为App - Web - System(App、Web仍然是符合双亲委托的)</li>
-</ul>
-
-
-<h2>参考材料</h2>
-
-<ul>
-<li>http://docs.oracle.com/cd/E23943_01/web.1111/e13712/weblogic_xml.htm#WBAPP599</li>
-<li>http://docs.oracle.com/cd/E12839_01/web.1111/e13706/classloading.htm#WLPRG284</li>
-<li>http://tobato.iteye.com/blog/1845969</li>
-<li>http://tobato.iteye.com/blog/1483020</li>
-</ul>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -1165,6 +1051,10 @@ org.tmatesoft.svn.core.SVNException: svn: &hellip;">
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20160105_source-reading.html">源码阅读应该得到什么?</a>
       </li>
     
       <li class="post">
@@ -1197,10 +1087,6 @@ org.tmatesoft.svn.core.SVNException: svn: &hellip;">
     
       <li class="post">
         <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150114_java-charset-problem.html">java字符编码问题</a>
       </li>
     
   </ul>
