@@ -9,7 +9,7 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="经常在一些文本处理、字符串拆解的逻辑中，需要对字符串按照一定的分隔符进行拆解。这样的功能，大多数时候我们会求助于String的split方法。关于这个方法，有几个坑是需要注意的，而掉坑想象在代码中已经出现许多次，值得大家注意。 split的参数是正则表达式 一个很常见的问题， &hellip;">
+  <meta name="description" content="思路 数独游戏应该很多人都玩过，规则也很简单。以前写过数独的程序解法，最近考虑了一下数独的随机生成。毕竟，每个数独一开始都是残缺的，它是怎么生成的? 如果通过正向生成的话，还需要判断剩余的空格是否能够满足数独的问题。所以，我认为应该通过反向来创建，意思是通过一个完整的数独，然后随机从上面抠取， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +64,386 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130821_soduku-generate.html">数独随机生成探讨</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-21T00:00:00+08:00" pubdate data-updated="true">Aug 21<span>st</span>, 2013</time>
+        
+         | <a href="/blog/20130821_soduku-generate.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>思路</h3>
+
+<p>数独游戏应该很多人都玩过，规则也很简单。以前写过数独的程序解法，最近考虑了一下数独的随机生成。毕竟，每个数独一开始都是残缺的，它是怎么生成的?</p>
+
+<p>如果通过正向生成的话，还需要判断剩余的空格是否能够满足数独的问题。所以，我认为应该通过反向来创建，意思是通过一个完整的数独，然后随机从上面抠取，抠得越多，表明完成的难度越大。</p>
+
+<h3>具体方案</h3>
+
+<p>问题就变成，如何生成一个完整的随机的数独?根据数独的特点，我认为可以通过一个已有的数独来生成其他数独。方案如下:</p>
+
+<p><img src="/assets/images/2013/soduku/1.png" alt="row1" /></p>
+
+<ol>
+<li>首先看看上面的图案，对于一个完整的数独，1,2,3行调换次序，仍然可以保证变换后的数独是成立。
+同理，456,789也是同样的道理。行是如此，列也是可以成立的，abc,def,ghi的内部调换都是可以成立的。
+<img src="/assets/images/2013/soduku/2.png" alt="row2" /></li>
+<li>还有上图所示的情况，123和456整三行一起调换也是可以的。同样，在列上面也是一样的道理。</li>
+<li>还有其他一些思路，例如进行旋转操作，或者反过来的做法。</li>
+</ol>
+
+
+<h3>关于重复性</h3>
+
+<p>对于上述1,2两种方案，会不会出现重复的情况呢？我们进行下面的分析:</p>
+
+<p><img src="/assets/images/2013/soduku/3.png" alt="row3" /></p>
+
+<ol>
+<li>假设A1是x,B1是y,C1是z，我们想找到某个变化可以达到同样的效果。</li>
+<li>如果通过行变换的话，因为数独的限制，不可能有某一行在同样的列上有xyz存在，所以不能做到。</li>
+<li>同理，如果是列变化的话，在第一行的位置也不可能再有xyz存在，所以也是不能做到的。</li>
+</ol>
+
+
+<p>意思就是说，如果从某个变化开始，每做一次变换，都能得到一个新的数独，这样我们可以统计一下，一共可以有多少种变换方式。每三行中的行内的变化有6种排列，三行三行的也是有6中排列，计算上列的变换，就有
+6X6X6X6X6X6X6X6=1679616种。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130821_java-hell-stream-close.html">从流关闭说起</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-21T00:00:00+08:00" pubdate data-updated="true">Aug 21<span>st</span>, 2013</time>
+        
+         | <a href="/blog/20130821_java-hell-stream-close.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>基本原则: 谁生产谁销毁</h3>
+
+<p>这个是用来解决责任权的问题，例如你的方法接收一个InputStream作为参数，通常就不应该在方法内去关闭它，而由客户端代码去处理。如果要关闭，通常应该在方法签名上明确说明，具体样例参考commons-io的IOUtils类。</p>
+
+<p>还有另外一个例子，就是经常使用的Servlet的输入输出流，根据这个原则，也是不应该在代码中进行关闭的，这个工作是由Web容器负责的。</p>
+
+<h3>关闭的是什么?</h3>
+
+<p>java本身是带GC的，所以对象在消除引用之后，按正常是能够被回收的，那么为什么会有关闭操作?</p>
+
+<p>这是为了回收系统资源，主要是端口(网络IO),文件句柄(输入输出)等，通常涉及的场景也是操作文件，网络操作、数据库应用等。对于类unix系统，所有东西都是抽象成文件的，所以可以通过lsof来观察。</p>
+
+<p>为了更详细的说明这点，我们可以测试一下下面的代码:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Hello</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">FileInputStream</span> <span class="n">is</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FileInputStream</span><span class="o">(</span><span class="s">&quot;/tmp/data/data&quot;</span><span class="o">+</span><span class="n">i</span><span class="o">);</span>
+</span><span class='line'>            <span class="kt">byte</span><span class="o">[]</span> <span class="n">bs</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="mi">512</span><span class="o">];</span>
+</span><span class='line'>            <span class="kt">int</span> <span class="n">len</span><span class="o">;</span>
+</span><span class='line'>            <span class="k">while</span> <span class="o">((</span><span class="n">len</span> <span class="o">=</span> <span class="n">is</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">bs</span><span class="o">))</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">;</span>
+</span><span class='line'>            <span class="n">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="mi">1000L</span><span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>        <span class="n">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="mi">10000L</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>运行之后，通过losf或进程目录查看相关的文件句柄数量是不断增长的:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>lsof -p 25945 |grep /tmp/data | wc -l
+</span><span class='line'>88
+</span><span class='line'>
+</span><span class='line'>ls  /proc/25945/fd | wc -l
+</span><span class='line'>93
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>如果有关闭操作的话，就会发现打开文件数一直都处于很低的位置。如果持续出现未关闭的情况，积累到一定程度就可能超过系统限制，出现too many open files的错误。</p>
+
+<h3>如何确保关闭</h3>
+
+<p>关闭通常是调用close()方法来实现的，并且需要在finally来进行处理。另外，我们经常会遇到多个资源的关闭情况，因为IO库是采用修饰器模式的，所以基本原则是先关闭外层对象，再关闭内层对象，每个close调用都需要处理异常情况，例如:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">InputStream</span> <span class="n">is</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'><span class="n">OutputStream</span> <span class="n">os</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'><span class="k">try</span><span class="o">{</span>
+</span><span class='line'>   <span class="c1">// ...</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="k">finally</span><span class="o">{</span>
+</span><span class='line'>  <span class="k">if</span><span class="o">(</span><span class="n">is</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>     <span class="k">try</span><span class="o">{</span>
+</span><span class='line'>       <span class="n">is</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+</span><span class='line'>     <span class="o">}</span>
+</span><span class='line'>     <span class="k">catch</span><span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">){}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">if</span><span class="o">(</span><span class="n">os</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
+</span><span class='line'>     <span class="k">try</span><span class="o">{</span>
+</span><span class='line'>       <span class="n">os</span><span class="o">.</span><span class="na">close</span><span class="o">()</span>
+</span><span class='line'>     <span class="o">}</span>
+</span><span class='line'>     <span class="k">catch</span><span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">){}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>实践</h3>
+
+<ul>
+<li>上面的关闭处理的确是比较繁琐的，可以考虑进行封装或者直接使用IOUtils.closeQuietly方法，节约不少代码行。</li>
+<li>自从JDK5之后，需要进行关闭处理的对象可以考虑实现java.io.Closeable接口。这个可以让资源关闭使用同一套代码。</li>
+</ul>
+
+
+<h3>JDK7改进及其他思路</h3>
+
+<p>在JDK7里，你只需要将资源定义在try()里，Java7就会在readLine抛异常时，自动关闭资源。
+但是资源类必须实现java.lang.AutoCloseable接口，同时支持管理多个资源,释放次序与声明次序相反。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="k">try</span> <span class="o">(</span><span class="n">BufferedReader</span> <span class="n">br</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BufferedReader</span><span class="o">(</span><span class="k">new</span> <span class="n">FileReader</span><span class="o">(</span><span class="n">path</span><span class="o">))</span> <span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">br</span><span class="o">.</span><span class="na">readLine</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>虽然感觉总是很繁琐，语法糖味道重，但比以前倒是进步不少了。
+不过我们还是来看看Go中的做法，它提供了defer操作，用于在脱离方法作用域的时候自动调用，有点析构的味道。
+看下面的示例:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">files</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Open</span><span class="p">(</span><span class="s">&quot;testqq.txt&quot;</span><span class="p">)</span>
+</span><span class='line'>    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span><span class='line'>        <span class="nx">fmt</span><span class="p">.</span><span class="nx">Printf</span><span class="p">(</span><span class="s">&quot;Error is:%s&quot;</span><span class="p">,</span> <span class="s">&quot;Game Over!&quot;</span><span class="p">)</span>
+</span><span class='line'>        <span class="k">return</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="k">defer</span> <span class="nx">files</span><span class="p">.</span><span class="nx">Close</span><span class="p">()</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130809_java-hell-string-append.html">说说字符串拼接</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-09T00:00:00+08:00" pubdate data-updated="true">Aug 9<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130809_java-hell-string-append.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>String对象是无状态的</h3>
+
+<p>String的内部属性在初始化的时候就固定好了，也没有提供方法进行修改(反射等极端方法除外)，并且类被定义成final，所以String对象都是是实实在在的无状态对象，是不可变的。</p>
+
+<p>在通常的字符串拼接中，如果采用+运算符的话，通常会产生一个字符串对象，并把两个字符串的内部字符数组拷贝过去。
+因此，在一个常见的频繁修改字符串的场景中，字符数组的拷贝开销是很大的，随之字符串的加长会越到后面越慢,例如下面的代码。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">String</span> <span class="n">sb</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="k">for</span><span class="o">(</span><span class="n">String</span> <span class="n">str</span> <span class="o">:</span> <span class="n">strs</span><span class="o">){</span>
+</span><span class='line'>  <span class="n">sb</span> <span class="o">+=</span> <span class="n">str</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="k">return</span> <span class="n">sb</span><span class="o">;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>StringBuffer与StringBuilder</h3>
+
+<p>jdk早就考虑了这种场景，于是提供了StringBuffer，简单来说，就是一个可变的字符数组，开辟了一个字符数组缓冲区，增加(Append)时只是往缓冲区的空余地方写字符，当然也有可能缓冲区不够用，它的开销就集中在不够用的缓冲区扩展中(每次在现有基础上扩展一倍空间)。所以，最好能提前估计字符串的最终长度，减少扩展造成的消耗。不过，即便如此，通常也要把直接用String拼接的效率高许多，例如下面的代码。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">StringBuffer</span> <span class="n">sb</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringBuffer</span><span class="o">();</span>
+</span><span class='line'><span class="k">for</span><span class="o">(</span><span class="n">String</span> <span class="n">str</span> <span class="o">:</span> <span class="n">strs</span><span class="o">){</span>
+</span><span class='line'>  <span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">str</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'><span class="k">return</span> <span class="n">sb</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>到了jdk5，增加了StringBuilder，相对于StringBuffer来说，虽然它不是线程安全的，但在绝大多数场景下都是适用的，并且理论效率更佳(从oracle jdk的实现看，两个类除了是否同步这点，实现是一致的)。因此，习惯使用StringBuffer的童鞋，应该多关注一下StringBuilder。</p>
+
+<h3>字符串拼接的编译优化</h3>
+
+<p>再回到+操作符，本身java是没有运算符重载的，+只会对基本数学运算有效，而字符串，这么写只是语法糖而已，会变成StringBuilder操作(jdk5之前是StringBuffer)。例如下面的代码:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">String</span> <span class="nf">test</span><span class="o">(</span><span class="n">String</span> <span class="n">a</span><span class="o">){</span>
+</span><span class='line'>   <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="s">&quot;b&quot;</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>通过javap查看，可以看到是这样的(大意就是new一个StringBuilder对象然后用append进行连接);</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="nf">test</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">);</span>
+</span><span class='line'>  <span class="nl">Code:</span>
+</span><span class='line'>   <span class="n">Stack</span><span class="o">=</span><span class="mi">2</span><span class="o">,</span> <span class="n">Locals</span><span class="o">=</span><span class="mi">2</span><span class="o">,</span> <span class="n">Args_size</span><span class="o">=</span><span class="mi">2</span>
+</span><span class='line'>   <span class="mi">0</span><span class="o">:</span>   <span class="k">new</span>     <span class="err">#</span><span class="mi">2</span><span class="o">;</span> <span class="c1">//class java/lang/StringBuilder</span>
+</span><span class='line'>   <span class="mi">3</span><span class="o">:</span>   <span class="n">dup</span>
+</span><span class='line'>   <span class="mi">4</span><span class="o">:</span>   <span class="n">invokespecial</span>   <span class="err">#</span><span class="mi">3</span><span class="o">;</span> <span class="c1">//Method java/lang/StringBuilder.&quot;&lt;init&gt;&quot;:()V</span>
+</span><span class='line'>   <span class="mi">7</span><span class="o">:</span>   <span class="n">aload_1</span>
+</span><span class='line'>   <span class="mi">8</span><span class="o">:</span>   <span class="n">invokevirtual</span>   <span class="err">#</span><span class="mi">4</span><span class="o">;</span> <span class="c1">//Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;</span>
+</span><span class='line'>   <span class="mi">11</span><span class="o">:</span>  <span class="n">ldc</span>     <span class="err">#</span><span class="mi">5</span><span class="o">;</span> <span class="c1">//String b</span>
+</span><span class='line'>   <span class="mi">13</span><span class="o">:</span>  <span class="n">invokevirtual</span>   <span class="err">#</span><span class="mi">4</span><span class="o">;</span> <span class="c1">//Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;</span>
+</span><span class='line'>   <span class="mi">16</span><span class="o">:</span>  <span class="n">invokevirtual</span>   <span class="err">#</span><span class="mi">6</span><span class="o">;</span> <span class="c1">//Method java/lang/StringBuilder.toString:()Ljava/lang/String;</span>
+</span><span class='line'>   <span class="mi">19</span><span class="o">:</span>  <span class="n">areturn</span>
+</span><span class='line'>  <span class="nl">LineNumberTable:</span>
+</span><span class='line'>   <span class="n">line</span> <span class="mi">3</span><span class="o">:</span> <span class="mi">0</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>因此，如果是像上面的情况，直接用+是合理的，对于其他情况，得考虑StringBuilder，同时要避免无意生成多余字符串的情况，例如append(&#8221;s&#8221; + a)的写法，编译器是不会自动优化的，写代码的时候应该换成append(&#8221;s&#8221;).append(a)。</p>
+
+<p>更多关于字符串不变量的讨论，请见<a href="http://mccxj.github.io/blog/20130615_java-string-constant-pool.html">初探Java字符串</a></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -271,319 +651,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130809_java-hell-date.html">Java中的日期工具</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-08-09T00:00:00+08:00" pubdate data-updated="true">Aug 9<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130809_java-hell-date.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>蹩脚的日期API</h3>
-
-<p>众所周知，jdk自带的日期API用起来非常蹩脚，属于JDK中设计较差的典型。</p>
-
-<p>首先我们来看看常见类的分工：</p>
-
-<ul>
-<li>Calendar实现的是日期和时间之间的转换,其他就没什么用了</li>
-<li>DateFormat用来格式化和解析日期字符串</li>
-<li>Date用来表示日期和时间信息</li>
-</ul>
-
-
-<p>下面我们再看看其中很混淆的一些设计:</p>
-
-<ul>
-<li>有两个Date类，分别是java.sql.Date和java.util.Date，前一个继承后一个，不要搞混了，通常我们是使用后一个。*</li>
-<li>java.sql是用于数据库类型的，这个Date是一个单纯的日期类型，意思是没有时间的概念，如果要时间，应该选择java.sql.Timestamp。这是个很悲催的设计，把原来的Date功能阉割了。</li>
-<li>注意Date的构造方法参数是很神奇的，年份是减去1900的数，月份是从0到11来表示的。</li>
-<li>Date的getTime返回的时间是相对于“1970-01-01 00:00:00”的毫秒数差值</li>
-<li>日期的调整、差距计算非常麻烦</li>
-<li>这些类都不是线程安全的，特别是格式化功能，经常有人掉坑，是重灾区来的</li>
-</ul>
-
-
-<h3>API的替代品</h3>
-
-<p>日期API实在是太烂了，幸好有其他开源选择，例如著名的Joda-Time，有兴趣的可以去试试。</p>
-
-<p>另外，还有最新的关于日期API的规范:JSR-310。官方的描述叫做“This JSR will provide a new and improved date and time API for Java.”，JSR-310将解决许多现有Java日期API的设计问题。比如Date和Calendar目前是可变对象，你可以随意改变对象的日期或者时间，而Joda就将DateTime对象设计成String对象一样地不可变，能够带来线程安全等等的好处，因此这一点也将被JSR-310采纳。</p>
-
-<h3>时间的度量</h3>
-
-<p>有两个特殊的API是和计时有关的，就是System.currentTimeMillis和System.nanoTime。两个的区别和用法如下:</p>
-
-<p>currentTimeMillis的值是相对于“1970-01-01 00:00:00”的毫秒数差值，跟new Date().getTime是一样的，因为new Date()就调用currentTimeMillis作为参数。大家应该对这个是比较熟悉的。</p>
-
-<p>nanaTime是jdk5才增加的API，能够提供更为精确的时间度量(纳秒呀，精度太高了，应该是系统时钟的近似值)。不过，它返回的是一个相对时间，而不像currentTimeMillis是一直增长的。所以要让时间有意义，必须用上时间差，就是用两个nanaTime来相减。</p>
-
-<p>简单来说，currentTimeMillis表示的是精确时间点的概念，nanaTime表示的是相对时间差的概念。用来表示一段时间差的话，nanoTime可以提供更好的精度。</p>
-
-<p>顺便提一下，JDK没有度量微妙的API，需要的话只能自己模拟了。</p>
-
-<h3>更多时间工具</h3>
-
-<p>如果是多线程编程的话，就不能不忽视java.util.concurrent工具包。它也提供了一些时间方面的工具，如TimeUnit类，简单来说，它是一个单位转换的辅助类，可以用更加直观的时间单位来操作。例如休眠3s,可以用下面的代码:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">TimeUnit</span><span class="o">.</span><span class="na">SECONDS</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="mi">3</span><span class="n">d</span><span class="o">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>这个类也用于这个包里边许多带超时机制的API中，例如使用lock的API是这样使用的的:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">Lock</span> <span class="n">lock</span> <span class="o">=</span> <span class="o">...;</span>
-</span><span class='line'><span class="k">if</span> <span class="o">(</span><span class="n">lock</span><span class="o">.</span><span class="na">tryLock</span><span class="o">(</span><span class="mi">50L</span><span class="o">,</span> <span class="n">TimeUnit</span><span class="o">.</span><span class="na">MILLISECONDS</span><span class="o">))</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">try</span> <span class="o">{</span>
-</span><span class='line'>        <span class="c1">// manipulate protected state</span>
-</span><span class='line'>    <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
-</span><span class='line'>        <span class="n">lock</span><span class="o">.</span><span class="na">unlock</span><span class="o">();</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'><span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-</span><span class='line'>    <span class="c1">// perform alternative actions</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>关于这个并发工具包的内容，以后有机会再介绍。</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130807_dom-operation-is-not-sync.html">Dom操作和渲染并不是同步的</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-08-07T00:00:00+08:00" pubdate data-updated="true">Aug 7<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130807_dom-operation-is-not-sync.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>一个在ie6不兼容的线上问题</h3>
-
-<p>昨天，有同事找我看一个线上问题，说一个在ie8测试通过的功能，在ie6上不能正常使用。
-一开始，他用alert定位到是哪部分代码出问题，并认为后面有部分代码没有执行。奇怪的是，在这中间加上alert语句的话，
-在ie6上也是能够正常运行的。</p>
-
-<p>这部分代码简化后大概是这样的:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;select</span> <span class="na">onclick=</span><span class="s">&quot;javascript:selectbank(this);&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'><span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">&quot;&quot;</span><span class="nt">&gt;</span>--all--<span class="nt">&lt;/option&gt;</span>
-</span><span class='line'><span class="nt">&lt;/select&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">function</span><span class="p">(</span><span class="nx">obj</span><span class="p">){</span>
-</span><span class='line'>  <span class="c1">// get val and desc from a pop up page</span>
-</span><span class='line'>  <span class="kd">var</span> <span class="nx">opt</span> <span class="o">=</span> <span class="s2">&quot;&lt;option value=&#39;&quot;</span> <span class="o">+</span> <span class="nx">val</span> <span class="o">+</span> <span class="s2">&quot;&#39;&gt;&quot;</span> <span class="o">+</span> <span class="nx">desc</span> <span class="o">+</span> <span class="s2">&quot;&lt;/option&gt;&quot;</span><span class="p">;</span>
-</span><span class='line'>  <span class="nx">$</span><span class="p">(</span><span class="nx">obj</span><span class="p">).</span><span class="nx">append</span><span class="p">(</span><span class="nx">opt</span><span class="p">);</span>
-</span><span class='line'>  <span class="nx">$</span><span class="p">(</span><span class="nx">obj</span><span class="p">).</span><span class="nx">val</span><span class="p">(</span><span class="nx">val</span><span class="p">);</span>
-</span><span class='line'>  <span class="c1">// alert(&quot;test&quot;);</span>
-</span><span class='line'>  <span class="c1">// ...</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>我发现没有加alert的时候，页面会报js错误。并且，这种情况在ie8不会出现。</p>
-
-<h3>Dom操作和渲染并不是同步的</h3>
-
-<p>为什么会出现这种情况，这主要因为Dom操作比普通js操作的消耗大很多，因为它需要改变页面元素，
-导致页面出现重新渲染的情况，这取决于浏览器的实现。像ie8等比较高级的浏览器，渲染、js速度都要快许多，
-所以不会出现这种情况。而ie6太慢了，很可能还没反应过来。</p>
-
-<p>类似的情况是，在一个js调用过程中(某次事件)，如果你频繁修改dom，浏览器很可能不会逐个生效，
-而是几个操作一起生效，跟期望的有点不一样。在一些低端浏览器，可以做的优化是，让调用过程尽量快，
-减少Dom操作，或者中间使用setTimeout休息一下。</p>
-
-<p>而像上面的问题，修改成下面的代码就可以了:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='javascript'><span class='line'><span class="kd">function</span><span class="p">(</span><span class="nx">obj</span><span class="p">){</span>
-</span><span class='line'>  <span class="c1">// get val and desc from a pop up page</span>
-</span><span class='line'>  <span class="kd">var</span> <span class="nx">opt</span> <span class="o">=</span> <span class="s2">&quot;&lt;option selected value=&#39;&quot;</span> <span class="o">+</span> <span class="nx">val</span> <span class="o">+</span> <span class="s2">&quot;&#39;&gt;&quot;</span> <span class="o">+</span> <span class="nx">desc</span> <span class="o">+</span> <span class="s2">&quot;&lt;/option&gt;&quot;</span><span class="p">;</span>
-</span><span class='line'>  <span class="nx">$</span><span class="p">(</span><span class="nx">obj</span><span class="p">).</span><span class="nx">append</span><span class="p">(</span><span class="nx">opt</span><span class="p">);</span>
-</span><span class='line'>  <span class="c1">// alert(&quot;test&quot;);</span>
-</span><span class='line'>  <span class="c1">// ...</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130806_was-connection-close-fail.html">WebSphere数据源中的连接被意外关闭案例</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-08-06T00:00:00+08:00" pubdate data-updated="true">Aug 6<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130806_was-connection-close-fail.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>频繁创建连接的现象</h3>
-
-<p>前阵子维护反馈说，oracle数据库每秒创建连接数过高，而主要来源来自于WebSphere集群所在的主机。
-按理说，使用连接池的应用，连接是不会很频繁的。追溯一下所在主机的程序，发现可疑对象是一个使用jdbc轮子的应用。
-就是自己写了一套代码封装了jdbc操作，虽然连接是从数据源中获取的。</p>
-
-<p>但是，单纯看代码，的确没发现有什么问题，该关闭的地方也关闭，不存在泄露的情况。再说，这种现象也不是泄露的表现。
-另外，由于生产上的数据库连接串，开发人员是没有的，所以生成都是通过jndi的方式来处理的，不存在盗链的代码。</p>
-
-<p>不过，我们还是在日志里边发现一些问题。在SystemOut的日志里边，频繁出现类似下面的异常信息:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">[</span><span class="mi">12</span><span class="o">-</span><span class="mi">2</span><span class="o">-</span><span class="mi">27</span> <span class="mi">9</span><span class="o">:</span><span class="mi">01</span><span class="o">:</span><span class="mi">29</span><span class="o">:</span><span class="mi">262</span> <span class="n">GMT</span><span class="o">+</span><span class="mi">08</span><span class="o">:</span><span class="mi">00</span><span class="o">]</span> <span class="mi">00000038</span> <span class="n">MCWrapper</span>     <span class="n">E</span>   <span class="nl">J2CA0081E:</span>
-</span><span class='line'><span class="err">尝试对资源</span> <span class="n">ecareDB</span> <span class="err">的</span> <span class="n">ManagedConnection</span> <span class="n">WSRdbManagedConnectionImpl</span><span class="err">@</span><span class="mi">23</span><span class="n">f823f8</span> <span class="err">执行方法</span> <span class="n">cleanup</span> <span class="err">时，</span>
-</span><span class='line'><span class="err">方法</span> <span class="n">cleanup</span> <span class="err">失败。捕获的异常：</span><span class="n">com</span><span class="o">.</span><span class="na">ibm</span><span class="o">.</span><span class="na">ws</span><span class="o">.</span><span class="na">exception</span><span class="o">.</span><span class="na">WsException</span><span class="o">:</span> <span class="nl">DSRA0080E:</span>
-</span><span class='line'><span class="n">An</span> <span class="n">exception</span> <span class="n">was</span> <span class="n">received</span> <span class="n">by</span> <span class="n">the</span> <span class="n">Data</span> <span class="n">Store</span> <span class="n">Adapter</span><span class="o">.</span> <span class="n">See</span> <span class="n">original</span> <span class="n">exception</span> <span class="nl">message:</span>
-</span><span class='line'> <span class="n">Cannot</span> <span class="n">call</span> <span class="err">&#39;</span><span class="n">cleanup</span><span class="err">&#39;</span> <span class="n">on</span> <span class="n">a</span> <span class="n">ManagedConnection</span> <span class="k">while</span> <span class="n">it</span> <span class="n">is</span> <span class="n">still</span> <span class="n">in</span> <span class="n">a</span> <span class="n">transaction</span><span class="o">..</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>异常的来源，居然是连接的close方法。</p>
-
-<h3>为什么close会失败</h3>
-
-<p>在WebSphere的资料上没有找到相关的描述，但是我在ibatis的文档上找到了相关的描述(ibatis developer guide的12-13页)：</p>
-
-<p>The <transactionManager> element also allows an optional attribute commitRequired that can be true or
-false.  Normally iBATIS will not commit transactions unless an insert, update, or delete operation has been
-performed.  This is true even if you explicitly call the commitTransaction() method.  This behavior
-creates problems in some cases.  If you want iBATIS to always commit transactions, even if no insert,
-update, or delete operation has been performed, then set the value of the commitRequired attribute to true.
-Examples of where this attribute is useful include:</p>
-
-<ol>
-<li><p>If you call a stored procedures that updates data as well as returning rows.  In that case you would
-call the procedure with the queryForList() operation – so iBATIS would not normally commit the
-transaction.  But then the updates would be rolled back.</p></li>
-<li><p>In a WebSphere environment when you are using connection pooling and you use the JNDI
-<dataSource> and the JDBC or JTA transaction manager.  WebSphere requires all transactions on
-pooled connections to be committed or the connection will not be returned to the pool.</p></li>
-</ol>
-
-
-<p>Note that the commitRequired attribute has no effect when using the EXTERNAL transaction manager.</p>
-
-<h3>结论及对策</h3>
-
-<p>从上面的描述上看到，WebSphere环境的连接是需要提交事务的，否则会被意外关闭。
-并且，如果选择ibatis的事务管理机制，就应该设置commitRequired属性，要么就应该使用spring的事务解决方案。</p>
-
-<p>我们尝试给查询语句增加commit操作，果然异常信息不再出现，并且数据库连接数也大幅度减少了。
-看来，在生产系统中还是应该优先考虑成熟的解决方案，不要随便造轮子。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/10/">&larr; Older</a>
@@ -602,6 +669,10 @@ pooled connections to be committed or the connection will not be returned to the
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20160216_heapdump-intro.html">heapdump分析简单总结</a>
       </li>
     
       <li class="post">
@@ -634,10 +705,6 @@ pooled connections to be committed or the connection will not be returned to the
     
       <li class="post">
         <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
       </li>
     
   </ul>

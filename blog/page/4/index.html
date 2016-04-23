@@ -9,9 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="org.json库中提供一个xml和json进行转换的工具类，XML.java 使用方式如下：
-* xmlstr = XML.toString(jsonstr)
-* jsonstr = XML.toJSONObject(xmlstr).toString() 中间层原有代码使用这种方式进行格式转换， &hellip;">
+  <meta name="description" content="目前项目中常见的工具库有apache commons,google guava,再算上spring的话，需要自己从头开始写工具类的情况大大减少。
+为了给广大童鞋普及一下工具库用法，减少无用功(还可能因为实现的不好留后遗症的)，这里简单的介绍一下相关工具类。google guava大家应该比较陌生， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -72,6 +71,137 @@
       
   <header>
     
+      <h1 class="entry-title"><a href="/blog/20141225_java-common-util.html">Java常见工具库培训</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-12-25T00:00:00+08:00" pubdate data-updated="true">Dec 25<span>th</span>, 2014</time>
+        
+         | <a href="/blog/20141225_java-common-util.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>目前项目中常见的工具库有apache commons,google guava,再算上spring的话，需要自己从头开始写工具类的情况大大减少。
+为了给广大童鞋普及一下工具库用法，减少无用功(还可能因为实现的不好留后遗症的)，这里简单的介绍一下相关工具类。<strong>google guava大家应该比较陌生，这里先不介绍，:)</strong></p>
+
+<h2>apache commons</h2>
+
+<p>官方地址： http://commons.apache.org/</p>
+
+<p>apache commons历史悠久，涉及范围也是最广的，在官网上分了数十个模块，但有些模块是新开发的，就不要贸然使用啦。</p>
+
+<p>这里只是介绍最最常用的commons库，排名不分先后，如下：</p>
+
+<h3>commons-codec</h3>
+
+<p>包括常见的编码、解码算法，例如MD5,Base64，举例如下:</p>
+
+<ul>
+<li>Base64#encode 加密成base64串</li>
+<li>Base64#decode 解密base64串</li>
+<li>DigestUtils.md5Hex 进行MD5加密，注意得到的是小写的MD5(MD5标准不区分大小写),在比较的时候需要注意</li>
+<li>DigestUtils.shaHex 进行SHA1加密 SHA256,512之类也是支持的，可以自行查阅</li>
+</ul>
+
+
+<h3>commons-collections</h3>
+
+<p>包括一堆增强的集合类（我了解不多，大家可以自行学习），各种和集合类相关的工具类，举例如下：</p>
+
+<ul>
+<li>CollectionUtils.isEmpty 是否null或空集合，这一类的方法很多，看看有个大概印象</li>
+<li>MapUtils.isEmpty 是否null或空Map</li>
+<li>ListUtils.removeAll 从某个列表中删除存在于另外个列表的元素</li>
+</ul>
+
+
+<p>同类型的还有SetUtils、IteratorUtils等，大体上是集合相关的操作，如过滤、是否相等、交集、差集、转换(变同步、变不可变)等，其实这个用到的机会也不是很大。</p>
+
+<h3>commons-net</h3>
+
+<p>实现了一些常见的网络协议，可能关系最大的要数ftp、smtp的实现了。而jdk带的sun.net.ftp，这个尽量就少用拉。</p>
+
+<p>这套api的实现用法得google一下了，看<a href="http://commons.apache.org/proper/commons-net/">官方文档的例子</a>,
+又或者别人的经验代码，例如这个http://my.oschina.net/hly3825/blog/33657</p>
+
+<h3>commons-httpclient</h3>
+
+<p>http客户端实现，貌似已经从commons独立出去了。3.x版本和4.x版本变化比较大，大家要使用的时候自行查阅资料。
+尽量避免使用HttpURLConnection去直接搞。</p>
+
+<h3>commons-io</h3>
+
+<p>io方面的工具类，主要包括文件处理、流处理,常见的类有IOUtils、FileUtils、FilenameUtils。举例如下：</p>
+
+<ul>
+<li>IOUtils.closeQuietly 安静关闭输出输出流，常用于finally关闭流的时候</li>
+<li>IOUtils.copy 把某个输入流拷贝到某个输出流中去</li>
+<li>IOUtils.toString 把某个输入流、URI的内容转换成字符串</li>
+<li>IOUtils.readLines 按行读取流</li>
+<li>Charset.UTF_8 有一些常见的、系统都会支持的字符集，已经定义成常量</li>
+<li>FileUtils.readLines 按行读取文件</li>
+<li>FileUtils.readFileToString 读取文件保存在一个字符串中</li>
+</ul>
+
+
+<p>IOUtils针对的是stream，FileUtils针对的是File对象，相应的有文件拷贝、删除等操作。<br/>
+注意的是，<strong>使用字符流格式的时候，务必指定编码</strong></p>
+
+<h3>commons-lang</h3>
+
+<p>这个是使用最多的库了，有lang2.x和3.x版本，尽量使用3.x版本。</p>
+
+<p>常见的有StringUtils、SystemUtils、RandomStringUtils、DateFormatUtils、DateUtils、各种Builder、Validate，举例如下：</p>
+
+<ul>
+<li>StringUitls.isEmpty 判空，和isBlank的区别在于它不进行trim</li>
+<li>StringUtils.join 按分隔符合并，这个很常用</li>
+<li>StringUtils.repeat 重复某个字符或字符串，有些需要格式化的是会用到</li>
+<li>StringUtils.startsWith  和endsWith那样，是增强版本，还有endsWithAny、endsWithIgnoreCase等</li>
+<li>SystemUtils 主要是一些常见系统环境变量，如临时目录、用户目录、分隔符等</li>
+<li>RandomStringUtils 用来生成各种随即字符串，例如全字母、全数字或混合型的</li>
+<li>DateFormatUtils、DateUtils 一个是字符串变日期，一个是日期相关的操作</li>
+<li>各种Builder 主要用实现常见的toString、compareTo、equals、hashcode等常见类，例如ReflectionToStringBuilder就很方便实现toString方法。同理，CompareToBuilder、EqualsBuilder、HashCodeBuilder都很好理解。</li>
+<li>Validate 实现一些assert，例如Validate.notNull可以用来做前置校验，和spring的Assert类是类似的。</li>
+</ul>
+
+
+<h3>其他commons库</h3>
+
+<ul>
+<li>commons-fileupload 仅限于在文件上传的类中使用，虽然它也有一些工具类，但是就不要在其他地方使用啦。</li>
+<li>commons-dbcp 一个数据库连接池，现在就比较少用了</li>
+<li>commons-pool 一个java对象池实现，通常用来缓存一些耗时较大的对象，dbcp也是基于它的，一般也少直接用。</li>
+<li>commons-logging 日志包装实现，在开源项目中使用广泛，项目中一般直接用log4j等。</li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
       <h1 class="entry-title"><a href="/blog/20141126_org-json-and-xml.html">使用org.json库进行xml和json转换存在的问题</a></h1>
     
     
@@ -114,6 +244,212 @@
 <p>见https://github.com/mccxj/JSON-java</p>
 
 <p>经验教训: 以后引用第三方库的时候，要小心呀，避免触碰到一些特殊开关。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20140819_state-machine-dev.html">结合状态机的开发风格</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-19T00:00:00+08:00" pubdate data-updated="true">Aug 19<span>th</span>, 2014</time>
+        
+         | <a href="/blog/20140819_state-machine-dev.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>本文主要以XXX的html5版本为蓝本，讨论结合状态机开发的思路和实践方式。状态机选型使用<a href="https://github.com/burrows/statechart.js">statechart.js</a>。</p>
+
+<h3>起步知识</h3>
+
+<ul>
+<li>状态机介绍，请参考<a href="http://burrows.github.io/statechart-angular-pres">Statecharts and Angular.js</a></li>
+<li>statechart.js的基本使用方法，请参考<a href="https://github.com/burrows/statechart.js">statechart.js</a></li>
+</ul>
+
+
+<p>特别是状态机介绍，内容非常好，强烈推荐。</p>
+
+<h3>适用场景</h3>
+
+<ul>
+<li>主要用于某个具体业务的复杂页面流控制</li>
+<li>简单的业务流程是不需要的。例如只有一两个页面(列表+详情)</li>
+<li>适用于多步骤多页面(包括弹出框)、各种跳转的场景</li>
+</ul>
+
+
+<h3>如何定义状态?</h3>
+
+<p>根据页面流、步骤来定义状态。可以参考以下步骤：</p>
+
+<ul>
+<li><p>对照保真、流程图，划分每个独立页面
+以个人营销活动为例，主要页面包括活动页面、选档次页面、奖品页面、奖品包选择页面、缴费页面、发票页面。
+那么可以考虑定义为list、level、reward、giftpack、charge、invoice</p></li>
+<li><p>对于有多种弹出窗口的情况，可以考虑定义子状态
+以推荐业务为例，在菜单页面上，可能会弹出反馈窗口，或者产品订购窗口。
+那么可以考虑定义为menu/index、menu/feedback、menu/prod，这样的话，通过下面的页面控制，就可以让在值状态的情况下，菜单页面一直显示。</p></li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/menu&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/recommended/recommended_menu.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/menu/prod&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/recommended/recommended_orderprod.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/menu/feedback&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/recommended/recommended_feedback.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>对于页面显示，有较多共性的页面，可以考虑定义子状态，方便共享逻辑和事件处理
+以上述的个人营销活动为例，奖品页面、奖品包选择页面的页面很类似，功能操作也比较实现，可以定义成子状态，如order/reward、order/giftpack</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/list&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_list.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/level&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_level.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/order/reward&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_reward.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/order/giftpack&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_giftpack.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/invoice&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_invoice.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/charge&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_charge.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>如何控制页面的显示、如何响应页面操作?</h3>
+
+<ul>
+<li>页面显示与否，通过状态机的状态，而不是数据的状态。这里用的是isCurrent方法</li>
+<li>页面操作，通过状态机的事件发送，而不是直接使用绑定在$scope的方法。这里用的是send方法</li>
+<li>页面跳转，通过状态机的状态变化来驱动。这里用的是goto方法，是在send方法之后的event逻辑中处理的。</li>
+</ul>
+
+
+<p>页面显示与否，例子上面已经说了。而对于ng-click这种事件触发，直接用send方法即可。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;Feedback-btn&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;a</span> <span class="na">ng-click=</span><span class="s">&quot;fsm.send(&#39;feedback&#39;, &#39;hesitate&#39;)&quot;</span> <span class="na">class=</span><span class="s">&quot;accept-btn&quot;</span><span class="nt">&gt;&lt;span&gt;</span>考虑<span class="nt">&lt;/span&gt;&lt;/a&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;a</span> <span class="na">ng-click=</span><span class="s">&quot;fsm.send(&#39;feedback&#39;, &#39;refuse&#39;)&quot;</span> <span class="na">class=</span><span class="s">&quot;refuse-btn&quot;</span><span class="nt">&gt;&lt;span&gt;</span>拒绝<span class="nt">&lt;/span&gt;&lt;/a&gt;</span>
+</span><span class='line'><span class="nt">&lt;/div&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可以看到，事件也可以捎带参数的，这样可以在该状态的event中进行处理，如下：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='coffeescript'><span class='line'><span class="c1"># 反馈</span>
+</span><span class='line'><span class="nx">@state</span> <span class="s">&#39;feedback&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+</span><span class='line'>  <span class="c1"># 进行反馈操作</span>
+</span><span class='line'>  <span class="nx">@event</span> <span class="s">&#39;feedback&#39;</span><span class="p">,</span> <span class="nf">(operationtype) -&gt;</span>
+</span><span class='line'>    <span class="nv">product = </span><span class="nx">$scope</span><span class="p">.</span><span class="nx">viewModel</span><span class="p">.</span><span class="nx">product</span>
+</span><span class='line'>    <span class="k">if</span> <span class="nx">product</span><span class="p">.</span><span class="nx">opertype</span> <span class="o">==</span> <span class="s">&#39;1&#39;</span>
+</span><span class='line'>      <span class="k">new</span> <span class="nx">Toast</span><span class="p">(</span>
+</span><span class='line'>        <span class="nv">context: </span><span class="nx">$</span><span class="p">(</span><span class="s">&#39;body&#39;</span><span class="p">)</span>
+</span><span class='line'>        <span class="nv">message: </span><span class="s">&quot;该产品不可推荐&quot;</span>
+</span><span class='line'>      <span class="p">).</span><span class="nx">show</span><span class="p">();</span>
+</span><span class='line'>      <span class="k">return</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nx">qryfeedbackService</span><span class="p">.</span><span class="nx">event</span>
+</span><span class='line'>      <span class="s">&quot;userseq&quot;</span><span class="o">:</span> <span class="nx">$scope</span><span class="p">.</span><span class="nx">viewModel</span><span class="p">.</span><span class="nx">product</span><span class="p">.</span><span class="nx">userseq</span>
+</span><span class='line'>      <span class="s">&quot;servnumber&quot;</span><span class="o">:</span> <span class="nx">$scope</span><span class="p">.</span><span class="nx">telnum</span>
+</span><span class='line'>      <span class="s">&quot;operationtype&quot;</span><span class="o">:</span> <span class="nx">operationtype</span>
+</span><span class='line'>    <span class="p">.</span><span class="nx">then</span> <span class="nf">(ok) =&gt;</span>
+</span><span class='line'>        <span class="nx">@goto</span> <span class="s">&#39;/menu/index&#39;</span>
+</span><span class='line'>      <span class="p">,</span> <span class="nf">(err) -&gt;</span>
+</span><span class='line'>        <span class="k">new</span> <span class="nx">Toast</span><span class="p">(</span>
+</span><span class='line'>          <span class="nv">context: </span><span class="nx">$</span><span class="p">(</span><span class="s">&#39;body&#39;</span><span class="p">)</span>
+</span><span class='line'>          <span class="nv">message: </span><span class="nx">err</span>
+</span><span class='line'>        <span class="p">).</span><span class="nx">show</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>需要注意的是，event是挂靠在某个状态下的，如果你是子状态的话的，event会先在子状态中找，如果没有找到会在父状态上找。
+通过这种方式，就可以实现多个子状态共享event，例如奖品页面、奖品包页面都有选择功能，就可以把这个操作放到父状态的event中去。</p>
+
+<h3>更多状态机的细节</h3>
+
+<p>很多状态机都实现了某些特殊状态，如进入状态，退出状态这种事件。statechart也实现了，对应的是enter和exit，代码大体上是:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='coffeescript'><span class='line'><span class="nx">@state</span> <span class="s">&#39;menu&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+</span><span class='line'>  <span class="nx">@enter</span> <span class="nf">-&gt;</span>
+</span><span class='line'>    <span class="c1">#TODO</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nx">@exit</span> <span class="nf">-&gt;</span>
+</span><span class='line'>    <span class="c1">#TODO</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>但是需要注意的是，重复进入这个状态的话，是会重复执行的。所以对于A -> B -> C这样的业务流程，从A到B和C回退到B，都会执行这个enter，
+就无法区分这种情况了。因为通常，从A到B是进行初始化，而从C回到B得保留原来B的数据状态。所以实际上我很少使用这些特殊事件，除非：</p>
+
+<ul>
+<li>无需区分的情况，这样写会让代码风格更统一。</li>
+<li>没有接口交互，本地操作的话，因为这种消耗小很多。</li>
+<li>存在直接跳转到该状态的情况(例如由另外的业务跳转过来)，这种特殊情况下前面的步骤都被忽略。而且这种情况下，需要通常需要接口交互(例如补充某些必要信息)，而为了区分回退的情况，我通常会根据业务特性考虑一些数据缓存处理。</li>
+</ul>
+
 </div>
   
   
@@ -214,7 +550,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/20140814_xml-intro.html">Xml格式须知</a></h1>
+      <h1 class="entry-title"><a href="/blog/20140815_angular-dev.html">Angular开发总结</a></h1>
     
     
       <p class="meta">
@@ -230,221 +566,34 @@
   
 
 
-<time datetime="2014-08-14T00:00:00+08:00" pubdate data-updated="true">Aug 14<span>th</span>, 2014</time>
+<time datetime="2014-08-15T00:00:00+08:00" pubdate data-updated="true">Aug 15<span>th</span>, 2014</time>
         
-         | <a href="/blog/20140814_xml-intro.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>着重介绍与项目使用相关的xml知识</p>
-
-<h3>常见节点</h3>
-
-<ul>
-<li>虽然xml节点是可以带属性的，但是我们项目中使用的通常没有带属性。</li>
-<li>常见节点有带子节点的节点(非内容节点)、带文本的节点。</li>
-<li>协议中表示可选的节点，通常是指文本为空的节点，如<name></name>，而不能不带。</li>
-</ul>
-
-
-<h3>节点的顺序</h3>
-
-<ul>
-<li>非列表节点，通常是不需要限定顺序的，但不排除有一些SB系统处理不了，所以最好按协议顺序来。</li>
-<li>带列表节点，最好保证子节点按业务要求的顺序排列，即使有标示顺序的子节点。</li>
-</ul>
-
-
-<h3>命名空间</h3>
-
-<ul>
-<li>通常是有命名空间的话，所有节点都会带，不带通常是不对的。</li>
-<li>命名空间是通过xmlns:n0=&#8221;http://www.gmcc.net/ngcrm/&#8221; 来进行别名的，理论上应该认URI而不是别名，但实际使用却常用别名来识别。</li>
-<li>解析时可以考虑忽略命名空间处理，例如xpath，可以用doc.selectNodes(&#8220;//*[local-name()=&#8217;Service&#8217;]&#8221;)找到Service节点。</li>
-</ul>
-
-
-<h3>编码格式</h3>
-
-<ul>
-<li>xml是一种自编码文本，是由第一行决定整个xml的编码格式。</li>
-<li>上面只是规范，但像http一样，总有系统不是这么玩的，需要双方协商和确认。</li>
-<li>有的xml就是没有第一行的编码描述，更是应该协商确认。</li>
-</ul>
-
-
-<h3>合法的值</h3>
-
-<ul>
-<li>除了内置xml文本作为文本节点，或者明显可能特殊字符的文本(如密码，各种属性用某符号拼接)，大多数情况不需要关注。</li>
-<li>和html一样，某些特殊字符是需要转移的，见下面的转义列表。</li>
-<li>如果不想转义，需要用&lt;![CDATA[]]>括起来，需要注意的是，里边的内容需要保持不转义。</li>
-<li>&lt;![CDATA[]]>里边的内容是原封不动获取的，即使内容带了回车、空格，如果需要对内容二次处理的话，需要注意某些留空可能导致无法处理。</li>
-<li>&lt;![CDATA[]]>不能嵌套两次，只能用转义来规避。</li>
-</ul>
-
-
-<p>常见的特殊字符</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'>lt <span class="ni">&amp;lt;</span> <span class="err">&lt;</span>（小于号）
-</span><span class='line'>gt <span class="ni">&amp;gt;</span> &gt;（大于号）
-</span><span class='line'>amp <span class="err">&amp;</span>  <span class="err">&amp;</span>（“and”符）
-</span><span class='line'>apos &#39; &#39;（撇号或单引号）
-</span><span class='line'>quot &quot; &quot;（双引号）
-</span></code></pre></td></tr></table></div></figure>
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-04-10T00:00:00+08:00" pubdate data-updated="true">Apr 10<span>th</span>, 2014</time>
-        
-         | <a href="/blog/20140410_books-to-be-read.html#disqus_thread">Comments</a>
+         | <a href="/blog/20140815_angular-dev.html#disqus_thread">Comments</a>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><h3>ruby元编程</h3>
+  <div class="entry-content"><p>下面是XXX的HTML5版本开发总结。</p>
 
-<ul>
-<li>作者Paolo Perrotta</li>
-<li>阅读于2014-04-22,大约5天</li>
-<li>适合有一定ryby/rails开发经验的同学,对认识ruby魔法很有帮助</li>
-</ul>
+<h3>开发思路</h3>
 
+<p>说好是MVVM了，当然和以前也页面为中心进行DOM操作的方式很不一样。这方面可以参考文章：<a href="http://www.infoq.com/cn/news/2013/11/how-to-think-angularjs">StackOverFlow精彩问答赏析：有jQuery背景的开发者如何建立起AngularJS的思维模式？</a></p>
 
-<p>最近看这本书，主要是跟别人谈起这本书，一时兴起又阅读一下，主要是复习复习。毕竟自己搞ruby/rails有好几个年头了，虽然现在主要以java为主，但是ruby还是我工作以外的首选。说回这本书，是系统介绍ruby魔法的魔法书，如果想了解一下那些神奇的库是怎么实现的，又或者想用ruby构建自己的DSL，这本书可以给你足够的知识点。放马去吧！</p>
+<p>开发经验就是，以数据为中心来考虑。我通常是对着高保真，先把所需要的数据结构先构思了，看看接口是如何和数据进行对接的。</p>
 
-<h3>CSS实战手册</h3>
+<p>不过，即使是以数据为中心的开发模式，逻辑与视图的完全分开几乎是不可能完成的任务，只能尽量的分离。我们需要操作的数据模型，不是真正意义的业务模型，而是视图模型(业务数据和视图数据的混合体)。如果实现上需要更偏重业务模型的话，可能要更多借助于resource的概念(ng也有提供这个)，不过对于我们这种过程化的接口，意义不大。</p>
 
-<ul>
-<li>作者David Sawyer McFarland</li>
-<li>阅读于2014-04-18,大约7天</li>
-<li>适合想系统学习点CSS的童鞋，书籍出版了有些年头，不过的确经典，强力推荐</li>
-</ul>
+<h3>关于Service</h3>
 
+<p>因为接口的原因，现在有的Service文件，按规范是一个接口对应一个，而且文件内容除了接口参数和响应结果获取，其他基本上是一样的。</p>
 
-<p>最近在弄个网站，苦恼bootstrap水太深，想调整难度大，所以看看书找找感觉。
-这个The Missing Manual系列还是比较出名的，特别是这本CSS实战手册，难度也不是大，但讲解得很系统化。
-其实，这本书还出了新版，专注CSS3了。可惜的是，现在只有英文版，不是很适合我这种CSS初哥，不过下一阶段打算看看。
-那么多概念，还是浮云呀，终究还是看基础扎不扎实。</p>
+<p>根据接口数据的格式，我有时候会预先在service里边进行格式调整，例如一个带父子关系的列表数据，需要先整理为两层的数据结构，这个我会优先考虑在Service里处理。基本原则就是，如何让数据更贴近业务模型。</p>
 
-<h3>Go语言编程</h3>
+<h3>关于Controller</h3>
 
-<ul>
-<li>作者许式伟、吕桂华(七牛云存储团队)</li>
-<li>阅读于2014-04-09,大约3天</li>
-<li>适合对Go语言刚兴趣、想一窥究竟的童鞋,内容一般、比较浅显,不是很适应英文的童鞋可以优先考虑</li>
-</ul>
-
-
-<p>看这本书主要是冲着七牛云存储团队的名气去的，毕竟他们是国内第一个吃螃蟹的，据说90%以上的代码都是GO实现的。
-另外，我最近用Go在做点东西，看从中看到对Go实践方式的解读。阅读之后，感觉内容偏浅，不如看官方文档。
-不过里边有些例子还不错，适合有其他语言经验的童鞋阅读，可以通过对比其他语言的代码实现，加深印象。
-总结一下，这书适合快速浏览，剩下的还是老老实实编程吧。</p>
-
-<h3>代码的未来</h3>
-
-<ul>
-<li>作者松本行弘(Ruby之父)</li>
-<li>阅读于2014-04-06,大约3天</li>
-<li>适合轻松阅读、扩展知识面,不深入,可以读读</li>
-</ul>
-
-
-<p>这本书和作者另外一本书&#8221;松本行弘的程式世界&#8221;感觉有些类似，都是以发表在某专栏的文章集合为主。
-可能是由于篇幅问题，大多都是泛泛而谈，点到即止。阅读起来没有什么压力，如果有需要深入的话，就得自己去找资料了。
-总体来说，我对这类书还是挺感兴趣的，可以挑选一些自己感兴趣的话题进行阅读，有助于开阔视野。</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20140329_was-datasource.html">Websphere+spring+jndi数据源配置</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-03-29T00:00:00+08:00" pubdate data-updated="true">Mar 29<span>th</span>, 2014</time>
-        
-         | <a href="/blog/20140329_was-datasource.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>配置的步骤在下面简要说明:</p>
-
-<ol>
-<li>增加基于spring的jndi数据源配置</li>
-<li>在websphere上增加数据源配置</li>
-<li>链接iiop地址</li>
-</ol>
-
-
-<p>下面进行详细描述。</p>
-
-<ul>
-<li>基于spring的jndi配置文件</li>
-</ul>
-
-
-<p>注意:如果是第二种方式，可以忽略第三部分&#8221;链接iiop地址&#8221;</p>
-
-<p>第一种方式:</p>
+<p>因为Service是一个很薄的一层，所以大多的页面流程控制，都是在Controller里边完成的。对于Controller如何组织视图模型，我通常是定义一个总的viewModel，来挂载所有的视图模型，大体上就是:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -454,80 +603,83 @@
 <span class='line-number'>6</span>
 <span class='line-number'>7</span>
 <span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-</pre></td><td class='code'><pre><code class='diff'><span class='line'>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-</span><span class='line'>&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
-</span><span class='line'> xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
-</span><span class='line'> xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
-</span><span class='line'> xmlns:tx=&quot;http://www.springframework.org/schema/tx&quot;
-</span><span class='line'> xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd&quot;&gt;
-</span><span class='line'>
-</span><span class='line'><span class="gi">+    &lt;bean id=&quot;GlobalConfig&quot;</span>
-</span><span class='line'><span class="gi">+        class=&quot;org.springframework.beans.factory.config.PropertyPlaceholderConfigurer&quot;&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;property name=&quot;systemPropertiesMode&quot;&gt;</span>
-</span><span class='line'><span class="gi">+            &lt;value&gt;1&lt;/value&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;/property&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;property name=&quot;searchSystemEnvironment&quot;&gt;</span>
-</span><span class='line'><span class="gi">+            &lt;value&gt;true&lt;/value&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;/property&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;property name=&quot;ignoreUnresolvablePlaceholders&quot;&gt;</span>
-</span><span class='line'><span class="gi">+            &lt;value&gt;true&lt;/value&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;/property&gt;</span>
-</span><span class='line'><span class="gi">+    &lt;/bean&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="gi">+     &lt;bean id=&quot;jtaTransactionManager&quot; class=&quot;org.springframework.transaction.jta.WebSphereUowTransactionManager&quot; /&gt;</span>
-</span><span class='line'>   &lt;tx:annotation-driven transaction-manager=&quot;jtaTransactionManager&quot;  proxy-target-class=&quot;true&quot; /&gt;
-</span><span class='line'>   &lt;bean id=&quot;lobHandler&quot; class=&quot;org.springframework.jdbc.support.lob.DefaultLobHandler&quot;/&gt;
-</span><span class='line'>
-</span><span class='line'><span class="gi">+    &lt;bean id=&quot;dataSource&quot; class=&quot;org.springframework.jndi.JndiObjectFactoryBean&quot;&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;property name=&quot;jndiName&quot;&gt;&lt;value&gt;XXX&lt;/value&gt;&lt;/property&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;property name=&quot;resourceRef&quot;&gt;&lt;value&gt;true&lt;/value&gt;&lt;/property&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;property name=&quot;jndiEnvironment&quot;&gt;&lt;props&gt;&lt;prop key=&quot;java.naming.provider.url&quot;&gt;${java_naming_provider_url}&lt;/prop&gt;&lt;/props&gt;&lt;/property&gt;</span>
-</span><span class='line'><span class="gi">+    &lt;/bean&gt;  </span>
-</span><span class='line'>&lt;/beans&gt;
+</pre></td><td class='code'><pre><code class='coffeescript'><span class='line'><span class="c1"># 定义视图的数据模型</span>
+</span><span class='line'><span class="nv">$scope.viewModel =</span>
+</span><span class='line'>  <span class="nv">acttypes: </span><span class="kc">null</span> <span class="c1">#活动类型</span>
+</span><span class='line'>  <span class="nv">acts: </span><span class="p">{}</span> <span class="c1">#可选的活动列表数据</span>
+</span><span class='line'>  <span class="nv">act: </span><span class="kc">null</span> <span class="c1">#选择的活动</span>
+</span><span class='line'>  <span class="nv">levels: </span><span class="p">[]</span> <span class="c1">#可选的档次</span>
+</span><span class='line'>  <span class="nv">level: </span><span class="kc">null</span> <span class="c1">#选择的档次</span>
+</span><span class='line'>  <span class="nv">rewards: </span><span class="p">[]</span> <span class="c1">#可选的赠品、赠品包</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
+<p>这个做法，有个最明显的好处，就是不容易踩到ng-model的scope的坑，关于angular的scope,请参考文章 <a href="https://github.com/angular/angular.js/wiki/Understanding-Scopes">Understanding Scopes </a></p>
+
+<h3>关于ngmodel</h3>
+
+<p>像上面提到的，使用ngmodel,nginit这种会操作model的指令，需要注意scope的范围，一不小心就可能操作到不同的scope。具体原因请参考上述文章。有几个办法可以处理：
+* 使用$parent,但是对于多层次的scope无效。
+* 采用非原型类型的obj，可以避免scope的意外。如上述的viewModel</p>
+
+<p>大多数情况在我们都是用的单向绑定，如果涉及ng-model这种双向绑定的话，有另外一个文章推荐 <a href="http://www.chroder.com/2014/02/01/using-ngmodelcontroller-with-custom-directives/">Using NgModelController With Custom Directives</a>, 因为这篇文章很好的描述了angular对双向绑定的处理流程。</p>
+
+<p>另外，如果使用html5的验证或新类型，也会有些问题，例如你使用number类型，输入非number类型的内容的话，model获取到的值就无效了。</p>
+
+<h3>关于性能</h3>
+
+<p>可以参考一下这位UC童鞋的文章 <a href="http://atian25.github.io/2014/05/09/angular-performace/">angular性能优化心得</a></p>
+
+<p>基本上该说的都在上面的了。这里补充一下：</p>
+
 <ul>
-<li>在websphere上增加数据源配置</li>
+<li>bindonce可以减少一些无谓的watch，主要用于ng-repeat上，目前还没使用上，但试过是可用的。</li>
+<li>在watch方法里边不能操作dom，并及时unwatch。操作dom对性能影响很大。</li>
+<li>像$interval，$timeout虽然有个invokeApply这个参数，却是无效的，这个问题在1.3.0beta14才修复，如果不需要变更模型，建议用原生的。</li>
+<li>filter因为经常计算，所以要尽量的快，选择合适的数据结构很重要，例如对大列表进行筛选不如key/value的查找快。曾经做过字典结构的调整。</li>
+<li>目前项目没有lazy loading的问题，这迟早是需要考虑的，网上已有一些方案，借助了route的resolve特性来实现的。</li>
 </ul>
 
 
-<p><img src="/assets/images/2014/ds.png" alt="效果图" /></p>
+<h3>复杂页面流程</h3>
 
 <ul>
-<li>链接iiop地址</li>
+<li>是分单个route还是多个route，主要考虑是否需要独立入口，因为一个route对应一个url。这个主要参考URL的设计原则。</li>
+<li>跨页面参数传递，如果参数少建议用路径参数，如果共享数据多，可以使用服务来数据共享。</li>
 </ul>
 
 
-<p>在server的java进程定义里边配置jvm参数:  -Djava_naming_provider_url=iiop://localhost:port/,另外，修改启动参数需要重启server才能生效。</p>
+<p>复杂页面的处理，我主要考虑使用状态机来处理。现在使用<a href="https://github.com/burrows/statechart.js">statechart.js</a></p>
 
-<p><img src="/assets/images/2014/iiop.png" alt="效果图" /></p>
+<p>关于状态机的介绍，请参考<a href="http://burrows.github.io/statechart-angular-pres">Statecharts and Angular.js</a></p>
 
-<p>其中每个server的port都是不一样的，具体的端口通过Application servers - serverX - Communications -  Ports上查看，如下图:</p>
+<h3>开发工具支持</h3>
 
-<p><img src="/assets/images/2014/port.png" alt="效果图" /></p>
+<p>项目涉及多种工具、概念，需要掌握他们的应用场景：</p>
+
+<ul>
+<li>基础设施 node</li>
+<li>包管理 npm</li>
+<li>模块化，require，sea,amd,cmd</li>
+<li>资源依赖，bower</li>
+<li>打包自动化，grunt</li>
+<li>angular相关 插件batarang</li>
+<li>语言改进，coffeescript</li>
+</ul>
+
+
+<p>特别说明关于coffeescript的使用，上述关于viewModel的代码就是coffeescript，大体上可以减少1/3的代码行。</p>
+
+<h3>调试的支持</h3>
+
+<p>chrome的调试工具很强大，能够模拟手机操作，基本可以解决大多数问题。</p>
+
+<p>不过真机、webview之类的调试仍然是个大问题。当然方案也是有的，如google官方的android+chrome方案、weinre的方案。
+不过，我页面做的少，实在没什么经验可以发表的。</p>
+
+<h3>其他</h3>
+
+<p>自己对css并不熟悉，主要关注逻辑编写，个人认为和web打交道，还是得多理解http协议，浏览器原理。</p>
 </div>
   
   
@@ -553,6 +705,10 @@
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20160216_heapdump-intro.html">heapdump分析简单总结</a>
       </li>
     
       <li class="post">
@@ -585,10 +741,6 @@
     
       <li class="post">
         <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
       </li>
     
   </ul>

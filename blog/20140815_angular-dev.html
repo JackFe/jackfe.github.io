@@ -1,0 +1,384 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>angular开发总结 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="angular开发总结">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20140815_angular-dev.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Angular开发总结</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-15T00:00:00+08:00" pubdate data-updated="true">Aug 15<span>th</span>, 2014</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>下面是XXX的HTML5版本开发总结。</p>
+
+<h3>开发思路</h3>
+
+<p>说好是MVVM了，当然和以前也页面为中心进行DOM操作的方式很不一样。这方面可以参考文章：<a href="http://www.infoq.com/cn/news/2013/11/how-to-think-angularjs">StackOverFlow精彩问答赏析：有jQuery背景的开发者如何建立起AngularJS的思维模式？</a></p>
+
+<p>开发经验就是，以数据为中心来考虑。我通常是对着高保真，先把所需要的数据结构先构思了，看看接口是如何和数据进行对接的。</p>
+
+<p>不过，即使是以数据为中心的开发模式，逻辑与视图的完全分开几乎是不可能完成的任务，只能尽量的分离。我们需要操作的数据模型，不是真正意义的业务模型，而是视图模型(业务数据和视图数据的混合体)。如果实现上需要更偏重业务模型的话，可能要更多借助于resource的概念(ng也有提供这个)，不过对于我们这种过程化的接口，意义不大。</p>
+
+<h3>关于Service</h3>
+
+<p>因为接口的原因，现在有的Service文件，按规范是一个接口对应一个，而且文件内容除了接口参数和响应结果获取，其他基本上是一样的。</p>
+
+<p>根据接口数据的格式，我有时候会预先在service里边进行格式调整，例如一个带父子关系的列表数据，需要先整理为两层的数据结构，这个我会优先考虑在Service里处理。基本原则就是，如何让数据更贴近业务模型。</p>
+
+<h3>关于Controller</h3>
+
+<p>因为Service是一个很薄的一层，所以大多的页面流程控制，都是在Controller里边完成的。对于Controller如何组织视图模型，我通常是定义一个总的viewModel，来挂载所有的视图模型，大体上就是:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='coffeescript'><span class='line'><span class="c1"># 定义视图的数据模型</span>
+</span><span class='line'><span class="nv">$scope.viewModel =</span>
+</span><span class='line'>  <span class="nv">acttypes: </span><span class="kc">null</span> <span class="c1">#活动类型</span>
+</span><span class='line'>  <span class="nv">acts: </span><span class="p">{}</span> <span class="c1">#可选的活动列表数据</span>
+</span><span class='line'>  <span class="nv">act: </span><span class="kc">null</span> <span class="c1">#选择的活动</span>
+</span><span class='line'>  <span class="nv">levels: </span><span class="p">[]</span> <span class="c1">#可选的档次</span>
+</span><span class='line'>  <span class="nv">level: </span><span class="kc">null</span> <span class="c1">#选择的档次</span>
+</span><span class='line'>  <span class="nv">rewards: </span><span class="p">[]</span> <span class="c1">#可选的赠品、赠品包</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这个做法，有个最明显的好处，就是不容易踩到ng-model的scope的坑，关于angular的scope,请参考文章 <a href="https://github.com/angular/angular.js/wiki/Understanding-Scopes">Understanding Scopes </a></p>
+
+<h3>关于ngmodel</h3>
+
+<p>像上面提到的，使用ngmodel,nginit这种会操作model的指令，需要注意scope的范围，一不小心就可能操作到不同的scope。具体原因请参考上述文章。有几个办法可以处理：
+* 使用$parent,但是对于多层次的scope无效。
+* 采用非原型类型的obj，可以避免scope的意外。如上述的viewModel</p>
+
+<p>大多数情况在我们都是用的单向绑定，如果涉及ng-model这种双向绑定的话，有另外一个文章推荐 <a href="http://www.chroder.com/2014/02/01/using-ngmodelcontroller-with-custom-directives/">Using NgModelController With Custom Directives</a>, 因为这篇文章很好的描述了angular对双向绑定的处理流程。</p>
+
+<p>另外，如果使用html5的验证或新类型，也会有些问题，例如你使用number类型，输入非number类型的内容的话，model获取到的值就无效了。</p>
+
+<h3>关于性能</h3>
+
+<p>可以参考一下这位UC童鞋的文章 <a href="http://atian25.github.io/2014/05/09/angular-performace/">angular性能优化心得</a></p>
+
+<p>基本上该说的都在上面的了。这里补充一下：</p>
+
+<ul>
+<li>bindonce可以减少一些无谓的watch，主要用于ng-repeat上，目前还没使用上，但试过是可用的。</li>
+<li>在watch方法里边不能操作dom，并及时unwatch。操作dom对性能影响很大。</li>
+<li>像$interval，$timeout虽然有个invokeApply这个参数，却是无效的，这个问题在1.3.0beta14才修复，如果不需要变更模型，建议用原生的。</li>
+<li>filter因为经常计算，所以要尽量的快，选择合适的数据结构很重要，例如对大列表进行筛选不如key/value的查找快。曾经做过字典结构的调整。</li>
+<li>目前项目没有lazy loading的问题，这迟早是需要考虑的，网上已有一些方案，借助了route的resolve特性来实现的。</li>
+</ul>
+
+
+<h3>复杂页面流程</h3>
+
+<ul>
+<li>是分单个route还是多个route，主要考虑是否需要独立入口，因为一个route对应一个url。这个主要参考URL的设计原则。</li>
+<li>跨页面参数传递，如果参数少建议用路径参数，如果共享数据多，可以使用服务来数据共享。</li>
+</ul>
+
+
+<p>复杂页面的处理，我主要考虑使用状态机来处理。现在使用<a href="https://github.com/burrows/statechart.js">statechart.js</a></p>
+
+<p>关于状态机的介绍，请参考<a href="http://burrows.github.io/statechart-angular-pres">Statecharts and Angular.js</a></p>
+
+<h3>开发工具支持</h3>
+
+<p>项目涉及多种工具、概念，需要掌握他们的应用场景：</p>
+
+<ul>
+<li>基础设施 node</li>
+<li>包管理 npm</li>
+<li>模块化，require，sea,amd,cmd</li>
+<li>资源依赖，bower</li>
+<li>打包自动化，grunt</li>
+<li>angular相关 插件batarang</li>
+<li>语言改进，coffeescript</li>
+</ul>
+
+
+<p>特别说明关于coffeescript的使用，上述关于viewModel的代码就是coffeescript，大体上可以减少1/3的代码行。</p>
+
+<h3>调试的支持</h3>
+
+<p>chrome的调试工具很强大，能够模拟手机操作，基本可以解决大多数问题。</p>
+
+<p>不过真机、webview之类的调试仍然是个大问题。当然方案也是有的，如google官方的android+chrome方案、weinre的方案。
+不过，我页面做的少，实在没什么经验可以发表的。</p>
+
+<h3>其他</h3>
+
+<p>自己对css并不熟悉，主要关注逻辑编写，个人认为和web打交道，还是得多理解http协议，浏览器原理。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-15T00:00:00+08:00" pubdate data-updated="true">Aug 15<span>th</span>, 2014</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/mvvm/'>MVVM</a>, <a class='category' href='/blog/categories/angular/'>angular</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20140814_xml-intro.html" title="Previous Post: xml格式须知">&laquo; xml格式须知</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20140815_json-intro.html" title="Next Post: json格式须知">json格式须知 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20160216_heapdump-intro.html">heapdump分析简单总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20160105_source-reading.html">源码阅读应该得到什么?</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151226_commons-dbcp-source-view.html">从commons-dbcp源码学习设计思路</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151216_aes256-Illegal-key-size-or-default-parameters.html">AES256算法遇到 Illegal key size or default parameters的解决办法</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20140815_angular-dev.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20140815_angular-dev.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

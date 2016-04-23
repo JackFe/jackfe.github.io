@@ -9,9 +9,9 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="什么是codediff? 每日codediff是一项简单易用，行之有效的敏捷实践，可以保证项目进展，让项目中的新人得到学习的机会，让代码规范得到更有效贯彻。
-具体做法是，每天早上站立晨会之后，几个人围在一起，使用版本控制工具的diff功能，
-逐行浏览前一天提交的代码，提交者对修改的代码进行介绍， &hellip;">
+  <meta name="description" content="数独游戏 在9×9格的大九宫格中有9个3×3格的小九宫格，并提供17个以上的数字。
+根据这些数字，利用逻辑和推理，在其它的空格上填入1到9的数字。
+每个数字在每个小九宫格内只能出现一次，每个数字在每行、每列也只能出现一次。 思路与数据结构 使用回溯法来不断尝试就可以了，可以用一个二维数组来arr[ &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +66,265 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120710_sudoku.html">数独(sudoku)游戏</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-10T00:00:00+08:00" pubdate data-updated="true">Jul 10<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120710_sudoku.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>数独游戏</h3>
+
+<p>在9×9格的大九宫格中有9个3×3格的小九宫格，并提供17个以上的数字。
+根据这些数字，利用逻辑和推理，在其它的空格上填入1到9的数字。
+每个数字在每个小九宫格内只能出现一次，每个数字在每行、每列也只能出现一次。</p>
+
+<h3>思路与数据结构</h3>
+
+<p>使用回溯法来不断尝试就可以了，可以用一个二维数组来arr[9][9]表示整个数独，其中还没有填上的用0表示。
+我们还需要有个方法来判断能否在[i,j]这个格子上填入某个值。
+同样还需要一个变量来表示是否已经找到解。另外，我使用了mark(0~80)作为每个格子的序号，
+深度搜索的时候就从0开始处理，直到mark=80的时候出现一个解。</p>
+
+<h3>ruby代码示例</h3>
+
+<div class="highlight"><pre><code class="ruby"><span class="c1"># 判断能否在[i,j]上填入val</span>
+<span class="k">def</span> <span class="nf">is_ok?</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">val</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">m</span><span class="o">|</span>
+    <span class="k">return</span> <span class="kp">false</span> <span class="k">if</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">m</span><span class="o">]</span> <span class="o">==</span> <span class="n">val</span> <span class="o">&amp;&amp;</span> <span class="n">m!</span><span class="o">=</span><span class="n">j</span> <span class="c1">#判断行不重复</span>
+    <span class="k">return</span> <span class="kp">false</span> <span class="k">if</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">==</span> <span class="n">val</span> <span class="o">&amp;&amp;</span> <span class="n">m!</span><span class="o">=</span><span class="n">i</span> <span class="c1">#判断列不重复</span>
+  <span class="k">end</span>
+  <span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">i</span><span class="o">%</span><span class="mi">3</span><span class="o">.</span><span class="n">.i</span><span class="o">-</span><span class="n">i</span><span class="o">%</span><span class="mi">3</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">m</span><span class="o">|</span>
+    <span class="p">(</span><span class="n">j</span><span class="o">-</span><span class="n">j</span><span class="o">%</span><span class="mi">3</span><span class="o">.</span><span class="n">.j</span><span class="o">-</span><span class="n">j</span><span class="o">%</span><span class="mi">3</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">n</span><span class="o">|</span>
+      <span class="k">return</span> <span class="kp">false</span> <span class="k">if</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">n</span><span class="o">]</span> <span class="o">==</span> <span class="n">val</span> <span class="o">&amp;&amp;</span> <span class="n">i!</span><span class="o">=</span><span class="n">m</span> <span class="o">&amp;&amp;</span> <span class="n">j!</span><span class="o">=</span><span class="n">n</span> <span class="c1">#判断小九宫格不重复</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="kp">true</span>
+<span class="k">end</span>
+<span class="c1"># 用来输出数独</span>
+<span class="k">def</span> <span class="nf">print</span><span class="p">;</span> <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">m</span><span class="o">|</span> <span class="nb">p</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">]</span> <span class="p">};</span> <span class="k">end</span>
+
+<span class="c1"># 用来表示是否找到解</span>
+<span class="vi">@ok</span> <span class="o">=</span> <span class="kp">false</span>
+<span class="c1"># 处理序号为mark开始的格子</span>
+<span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span>
+  <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">mark</span><span class="o">/</span><span class="mi">9</span><span class="p">,</span> <span class="n">mark</span><span class="o">%</span><span class="mi">9</span>
+  <span class="n">val</span> <span class="o">=</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">n</span><span class="o">]</span>
+  <span class="c1"># 当前已经有初始值的情况</span>
+  <span class="k">if</span> <span class="n">val</span> <span class="o">!=</span> <span class="mi">0</span> 
+    <span class="n">mark</span> <span class="o">==</span> <span class="mi">80</span> <span class="o">?</span> <span class="vi">@ok</span> <span class="o">=</span> <span class="kp">true</span> <span class="p">:</span> <span class="n">walk</span><span class="p">(</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span>
+  <span class="k">end</span>
+
+  <span class="c1"># 没有初始值的情况</span>
+  <span class="p">(</span><span class="mi">1</span><span class="o">.</span><span class="n">.</span><span class="mi">9</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">v</span><span class="o">|</span>
+    <span class="k">if</span> <span class="n">is_ok?</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+      <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">n</span><span class="o">]</span> <span class="o">=</span> <span class="n">v</span>
+      <span class="vi">@ok</span> <span class="o">=</span> <span class="kp">true</span> <span class="ow">and</span> <span class="k">return</span> <span class="k">if</span> <span class="n">mark</span><span class="o">==</span><span class="mi">80</span> <span class="c1"># 找到一个解</span>
+      <span class="n">walk</span><span class="p">(</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="c1">#填好值之后，继续深度搜索</span>
+      <span class="k">return</span> <span class="k">if</span> <span class="vi">@ok</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="vi">@arr</span><span class="o">[</span><span class="n">m</span><span class="o">][</span><span class="n">n</span><span class="o">]=</span><span class="mi">0</span> <span class="c1"># 都处理完，没有找到就恢复</span>
+<span class="k">end</span>
+
+<span class="n">walk</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="vi">@ok</span> <span class="p">?</span> <span class="nb">print</span> <span class="p">:</span> <span class="p">(</span><span class="nb">p</span> <span class="s2">&quot;no solution&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+
+<h3>回溯法的基本步骤：</h3>
+
+<ol>
+<li>a定义问题的解空间</li>
+<li>a确定易于搜索的解空间结构</li>
+<li>a以深度优先搜索的策略搜索解空间，并在搜索过程中用剪枝函数避免无效搜索</li>
+</ol>
+
+
+<h3>回溯法的基本结构</h3>
+
+<p>我们考虑递归的方式(比较容易理解)，递推的以后再讨论。</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="c1"># init</span>
+<span class="n">flag</span> <span class="o">=</span> <span class="kp">false</span> <span class="c1"># 标记是否找到解</span>
+<span class="n">u</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># 已知解, 并假设(x1,x2....xn)为可选的解空间</span>
+
+<span class="k">def</span> <span class="nf">backtrack</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+  <span class="p">(</span><span class="n">x1</span><span class="o">.</span><span class="n">.xn</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span>
+    <span class="k">if</span> <span class="n">is_ok?</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="c1"># 过滤无效的解</span>
+      <span class="n">u</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="c1"># 把x加入已知解u</span>
+      <span class="n">backtrack</span><span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">is_part?</span> <span class="c1"># 部分解的情况，继续处理</span>
+      <span class="n">flag</span> <span class="o">=</span> <span class="kp">true</span> <span class="ow">and</span> <span class="nb">exit</span> <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">is_full?</span> <span class="c1"># 找到解并退出</span>
+      <span class="c1"># fail的时候有可能需要对u进行恢复</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="c1"># fail的时候有可能需要对u进行恢复</span>
+<span class="k">end</span>
+
+<span class="n">backtrack</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># 从1开始搜索</span>
+<span class="n">flag</span> <span class="p">?</span> <span class="nb">p</span> <span class="n">u</span> <span class="p">:</span> <span class="s2">&quot;no solution&quot;</span>
+</code></pre></div>
+
+
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120709_stair-walk.html">简单的楼梯问题</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-09T00:00:00+08:00" pubdate data-updated="true">Jul 9<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120709_stair-walk.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>问题描述</h2>
+
+<p>有个楼梯，一个人一次可以走1级或2级，那么走上一条100级的楼梯，有多少种不同的走法?</p>
+
+<h2>找到规律</h2>
+
+<p>先找到规律，从简单情况开始，设f(n)是n级楼梯的走法数量。那么就有:</p>
+
+<ol>
+<li>n=1,肯定只有一种走法,即f(1)=1</li>
+<li>n=2,可以一级级走或者一次两级,即f(2)=2</li>
+<li>对于n>2的情况，如果第一次走1级，剩下的楼梯有f(n-1)种走法，如果走2级，剩下的楼梯有f(n-2)种走法。
+那么总的走法是f(n)=f(n-1)+f(n-2)。</li>
+</ol>
+
+
+<h2>斐波纳契数列</h2>
+
+<p>说白了，这是个斐波纳契数列。计算的时候简单的动态规划即可。下面是简单的ruby源码:</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span>
+<span class="mi">98</span><span class="o">.</span><span class="n">times</span> <span class="p">{</span><span class="n">b</span><span class="p">,</span><span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="o">+</span><span class="n">b</span><span class="p">,</span><span class="n">b</span><span class="p">}</span>
+<span class="nb">p</span> <span class="n">b</span> <span class="c1">#=&gt; 573147844013817084101</span>
+</code></pre></div>
+
+
+<p>看，真的是一个天文数字来的。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120709_one-line-drawing-game.html">一笔画游戏</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-09T00:00:00+08:00" pubdate data-updated="true">Jul 9<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120709_one-line-drawing-game.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>在android上看过一个一笔画的小游戏，规则很简单，要连续一笔，不能重复。
+当然，到后面比较难的时候还会限制方向，有些线路必须走多次等等。并不是觉得这有游戏做得多么的好，或者很有创意。
+我只是从程序员的角度来看问题，用程序是怎么处理的。
+我们只需要尝试所有可能的路径就可以了，这里用了回朔法，是一种优化过的穷举，</p>
+
+<p>先来考虑一下数据结构。我们给所有的点加上编号1-n，所有的连线可以用二维数组表示a[n+1][n+1]，值为0表示不可联通，
+其他表示需要经过的次数(我实现的时候是采用类似稀疏矩阵的链表表示)。<br/>
+至于给矩阵增加多一列，主要是考虑处理方便，还考虑到起始点不好确定，所以加个虚拟点，<br/>
+同时增加虚拟点到其他n个点的连接，这样我们深度遍历的时候从虚拟点开始就可以了。<br/>
+另外我们需要一个链表来存放走过的路径，还需要一个标记来表示找到路径，无需继续尝试。</p>
+
+<p>初始化的伪代码如下，</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.n</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">k</span><span class="o">|</span> <span class="n">a</span><span class="o">[</span><span class="mi">0</span><span class="o">][</span><span class="n">k</span><span class="o">]=</span><span class="mi">1</span> <span class="k">end</span> <span class="c1">#虚拟点</span>
+<span class="vi">@path</span> <span class="o">=</span> <span class="o">[]</span> <span class="c1"># 走过的路径</span>
+<span class="vi">@ok</span><span class="o">=</span><span class="kp">false</span> <span class="c1"># 标记是否完成</span>
+</code></pre></div>
+
+
+<p>接下去我们需要一个回溯算法(参考<a href="20120710_sudoku.html">数独(sudoku)游戏</a>)，代码比较简单，这里就不展示代码示例了。</p>
+
+<p>需要注意的是，找到一个可走的路径时(例如从i到j,a[i][j]>0)，深度遍历的时候需要对这个值减1，回溯的时候加1就可以了。
+而对于走过的路径path，是否需要回退呢? 其实我们关心的是把刚刚走过的路径加入路径的正确位置，
+如果选择数组的话，在回溯的时候就不可以不回退了，而对于链表，回退则是必要的。</p>
+
+<p>总体来说，这个游戏的实现是比较简单的，有兴趣的同学可以自己实现一下。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -257,219 +516,6 @@ n表示a装满的次数。</p>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120629_problem-about-jekyll-and-markdown.html">使用jekyll和markdown遇到的问题</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-06-29T00:00:00+08:00" pubdate data-updated="true">Jun 29<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120629_problem-about-jekyll-and-markdown.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>不能正常生成页面</h3>
-
-<p>我是使用windows来弄的，在git shell里边操作。发现有时候页面根本不生成，
-即使我把_site下面的文件全部生成，还是没动静。后来发现，需要设置一下环境的字符编码，例如export LC_ALL=zh_CN.UTF-8
-可以在启动脚本里边修改,例如修改RUBY_HOME/bin/jekyll.bat，增加</p>
-
-<blockquote><p>SET LANG=zh_CN.UTF-8<br/>
-SET LC_ALL=zh_CN.UTF-8</p></blockquote>
-
-<h3>tags不能正常发布</h3>
-
-<p>tags如果列举多个的话，除了用逗号分割之外，必须在逗号之后加上空格，否则不能在github上正常发布。
-但奇怪的是，在本地却是没有问题的。</p>
-
-<h3><s>列表不能正常显示</s></h3>
-
-<p><s>这个也比较奇怪，无论是有序列表还是无序列表，只能有部分能正常显示。
-我试了很久，发现如果列表项里边没有数字或英文字符就不能显示。</s>
-<strong>这个问题已经解决了，原来在每个列表前面需要空行</strong></p>
-
-<h3>高亮代码有问题</h3>
-
-<p>高亮代码不容易呀，需要python支持，还有安装easy_install Pygments。
-但对于某些python版本来说，这样还不行，出现Liquid error: Bad file descriptor。
-需要修改<a href="https://gist.github.com/1185645">gems\albino-1.3.3\lib\albino.rb</a></p>
-
-<p>另外，有时候高亮不是很合适，可以选择引用，只要每行前面至少加4个空格或1个tab就可以了。我习惯在每个引用块前后加一个空行。</p>
-
-<h3>在段落中硬换行</h3>
-
-<p>我原来以为不能硬换行，原来markdown也支持，只需要在需要换行的地方后面加至少两个空格就可以了。</p>
-
-<h3>页面生成太慢</h3>
-
-<p>当你的文章越来越多的时候，页面生成的时间会变得非常夸张，jekyll没有提供参数来控制。
-为了解决这个问题，有个办法就是过滤某些没有变化的文件，因为大多数情况下，我们只是对特定的文件进行修改而已。
-摸索了很久，最后我直接拿jekyll源码开刀，见<a href="https://github.com/mccxj/jekyll/commit/44822a252e2ce1142e3293f91285e0ced3ba2fe1"><s>让include和exclude支持正则</s></a>和<a href="https://github.com/mojombo/jekyll/pull/743">add glob support to include,exclude option</a>。</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120628_how-to-play-go.html">围棋中气的判断</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-06-28T00:00:00+08:00" pubdate data-updated="true">Jun 28<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120628_how-to-play-go.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>围棋玩法</h2>
-
-<p>围棋本身的规则是非常简单的。判断一个子能不能落在某个点是最基本的问题。<br/>
-如果不能吃掉对方但这个子周围还有气(空点)的话，是可以落子的。<br/>
-如果能吃掉对方但不是打劫这种特殊情况的话，也是可以落子的。<br/>
-我们先不考虑打劫这种情况，问题就归结为如何判断某个子是否有气，而杀子就是判断四周的子是否有气。</p>
-
-<h2>用递归来判断</h2>
-
-<p>假设有个方法try2kill(r,c)，它可以用来判断r行c列的子是否有气，如果没气返回true，否则返回false。</p>
-
-<p>递归过程如下：</p>
-
-<ol>
-<li>判断四周是否存在一个气，就是有个空格(0)，如果有返回false。</li>
-<li>否则，给当前点记录为预杀状态(x)(表示自己周围没有明显的气)</li>
-<li>再依次判断四周的点，对每个点例如左边(left)：</li>
-<li>如果左边未出边界且和当前点是同一颜色(但并非预杀状态)，则调用try2kill进行判断</li>
-<li>如果其中一个点有气(try2kill返回false)，则直接返回false</li>
-<li>如果四周都判断完，没有发现明显的气，则返回true(这样所有预杀状态的都是没气的，都会被杀掉)</li>
-</ol>
-
-
-<h2>打劫处理</h2>
-
-<p>打劫有个特殊的地方就是不能立即回提，本质上是不能在对弈过程中出现同形。<br/>
-一个比较简单有效的办法就是，记录落子次序和每次的吃子数(通过上面的判断逻辑)。
-这两个记录都是很容易记录的。判断是否打劫违规就是当前手和上一手的吃子数是否都为1。
-且当前落子点对应上手的死子点，当前死子点对应上手的落子点。<br/>
-这些条件符合的话，这就是一次违规。</p>
-
-<h2>后续</h2>
-
-<p>有了这些判断逻辑，要实现整个走法已经不是问题了，有兴趣的可以试试。<br/>
-当然，围棋最复杂的地方还是人工智能领域，现阶段的电脑围棋还是比较弱的。</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120628_how-to-lianliankan.html">连连看中如何判断连通</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-06-28T00:00:00+08:00" pubdate data-updated="true">Jun 28<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120628_how-to-lianliankan.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>连连看基本玩法</h2>
-
-<p>连连看的玩法非常简单，判断两个块是否可以消除的规则是：必须是同一类型的块，可以通过至多
-三条直线相连，并且直线没有被其他的块所阻拦。</p>
-
-<h2>数据结构表示</h2>
-
-<p>可以用一个二维数组来表示整个界面，不同类型的点用不同的值k来表示，那么一个点可以用k和(x, y)来表示。
-空白处的值设置为0。另外为了方便处理只在边边上可以连通的情况，可以加上边界（二维数组加上两行两列，并设置为0）。
-判断点a和b是否可以连通，如果是不同类型的点很好判断，判断a.k==b.k即可。
-那么，问题就变成判断两个点a(a.x, a.y)和b(b.x, b.y)是否可连通。</p>
-
-<h2>简单的算法</h2>
-
-<p>我用的是一种比较直观的算法，当然还有其他很多算法(在网上资料搜一下就有很多了)。</p>
-
-<p>首先为了方便理解，先不考虑两个点在同一线上的情况。那么两个点能够连上的情况只有就是横竖横或竖横竖两个情况
-先考虑两个点是否可以横竖横连接的情况，参考下面的算法步骤:</p>
-
-<ol>
-<li>给整个边界加上一圈空点(0)（方便后面计算）。</li>
-<li>计算x轴上a，b两点左右两边的空点，这样可以算出两者公共的空点(x坐标相同)，只有通过这些空点才可能联通达到横竖横的情况。</li>
-<li>对每个公共的点，假设x坐标为c,那么就是点(c,a.y)和(c,b.y)，再判断这两个点能否联通。</li>
-<li>假设a.y小于b.y，那么就是看从(c,a.y+1)到(c,b.y-1)这些点是否都为空。</li>
-<li>如果是空(0)的，表示最初的两个点是可以联通的。</li>
-</ol>
-
-
-<p>到这里，一切已经ok了。另外一种情况跟这个是一样的，
-而在一条直线上的情况只是这种判断的特殊情况而已。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/25/">&larr; Older</a>
@@ -488,6 +534,10 @@ SET LC_ALL=zh_CN.UTF-8</p></blockquote>
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20160216_heapdump-intro.html">heapdump分析简单总结</a>
       </li>
     
       <li class="post">
@@ -520,10 +570,6 @@ SET LC_ALL=zh_CN.UTF-8</p></blockquote>
     
       <li class="post">
         <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
       </li>
     
   </ul>

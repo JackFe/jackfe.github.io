@@ -9,16 +9,9 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="过程 昨天在编译某个android项目的时候，发现dex打包出错。
-后来检查发现编译生成的SplashScreenActivity$1.class格式出错。 后来经常测试，发现jdk6正常，jdk7不正常，包括最新的u51版本。 bug分析 相关的代码如下: 1
-2
-3
-4
-5
-6
-7
-8
-9 &hellip;">
+  <meta name="description" content="着重介绍与项目使用相关的xml知识 常见节点 虽然xml节点是可以带属性的，但是我们项目中使用的通常没有带属性。
+常见节点有带子节点的节点(非内容节点)、带文本的节点。
+协议中表示可选的节点，通常是指文本为空的节点，如，而不能不带。 节点的顺序 非列表节点，通常是不需要限定顺序的， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -73,6 +66,332 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20140814_xml-intro.html">Xml格式须知</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-14T00:00:00+08:00" pubdate data-updated="true">Aug 14<span>th</span>, 2014</time>
+        
+         | <a href="/blog/20140814_xml-intro.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>着重介绍与项目使用相关的xml知识</p>
+
+<h3>常见节点</h3>
+
+<ul>
+<li>虽然xml节点是可以带属性的，但是我们项目中使用的通常没有带属性。</li>
+<li>常见节点有带子节点的节点(非内容节点)、带文本的节点。</li>
+<li>协议中表示可选的节点，通常是指文本为空的节点，如<name></name>，而不能不带。</li>
+</ul>
+
+
+<h3>节点的顺序</h3>
+
+<ul>
+<li>非列表节点，通常是不需要限定顺序的，但不排除有一些SB系统处理不了，所以最好按协议顺序来。</li>
+<li>带列表节点，最好保证子节点按业务要求的顺序排列，即使有标示顺序的子节点。</li>
+</ul>
+
+
+<h3>命名空间</h3>
+
+<ul>
+<li>通常是有命名空间的话，所有节点都会带，不带通常是不对的。</li>
+<li>命名空间是通过xmlns:n0=&#8221;http://www.gmcc.net/ngcrm/&#8221; 来进行别名的，理论上应该认URI而不是别名，但实际使用却常用别名来识别。</li>
+<li>解析时可以考虑忽略命名空间处理，例如xpath，可以用doc.selectNodes(&#8220;//*[local-name()=&#8217;Service&#8217;]&#8221;)找到Service节点。</li>
+</ul>
+
+
+<h3>编码格式</h3>
+
+<ul>
+<li>xml是一种自编码文本，是由第一行决定整个xml的编码格式。</li>
+<li>上面只是规范，但像http一样，总有系统不是这么玩的，需要双方协商和确认。</li>
+<li>有的xml就是没有第一行的编码描述，更是应该协商确认。</li>
+</ul>
+
+
+<h3>合法的值</h3>
+
+<ul>
+<li>除了内置xml文本作为文本节点，或者明显可能特殊字符的文本(如密码，各种属性用某符号拼接)，大多数情况不需要关注。</li>
+<li>和html一样，某些特殊字符是需要转移的，见下面的转义列表。</li>
+<li>如果不想转义，需要用&lt;![CDATA[]]>括起来，需要注意的是，里边的内容需要保持不转义。</li>
+<li>&lt;![CDATA[]]>里边的内容是原封不动获取的，即使内容带了回车、空格，如果需要对内容二次处理的话，需要注意某些留空可能导致无法处理。</li>
+<li>&lt;![CDATA[]]>不能嵌套两次，只能用转义来规避。</li>
+</ul>
+
+
+<p>常见的特殊字符</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>lt <span class="ni">&amp;lt;</span> <span class="err">&lt;</span>（小于号）
+</span><span class='line'>gt <span class="ni">&amp;gt;</span> &gt;（大于号）
+</span><span class='line'>amp <span class="err">&amp;</span>  <span class="err">&amp;</span>（“and”符）
+</span><span class='line'>apos &#39; &#39;（撇号或单引号）
+</span><span class='line'>quot &quot; &quot;（双引号）
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20140410_books-to-be-read.html">2014读书笔记</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-10T00:00:00+08:00" pubdate data-updated="true">Apr 10<span>th</span>, 2014</time>
+        
+         | <a href="/blog/20140410_books-to-be-read.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>ruby元编程</h3>
+
+<ul>
+<li>作者Paolo Perrotta</li>
+<li>阅读于2014-04-22,大约5天</li>
+<li>适合有一定ryby/rails开发经验的同学,对认识ruby魔法很有帮助</li>
+</ul>
+
+
+<p>最近看这本书，主要是跟别人谈起这本书，一时兴起又阅读一下，主要是复习复习。毕竟自己搞ruby/rails有好几个年头了，虽然现在主要以java为主，但是ruby还是我工作以外的首选。说回这本书，是系统介绍ruby魔法的魔法书，如果想了解一下那些神奇的库是怎么实现的，又或者想用ruby构建自己的DSL，这本书可以给你足够的知识点。放马去吧！</p>
+
+<h3>CSS实战手册</h3>
+
+<ul>
+<li>作者David Sawyer McFarland</li>
+<li>阅读于2014-04-18,大约7天</li>
+<li>适合想系统学习点CSS的童鞋，书籍出版了有些年头，不过的确经典，强力推荐</li>
+</ul>
+
+
+<p>最近在弄个网站，苦恼bootstrap水太深，想调整难度大，所以看看书找找感觉。
+这个The Missing Manual系列还是比较出名的，特别是这本CSS实战手册，难度也不是大，但讲解得很系统化。
+其实，这本书还出了新版，专注CSS3了。可惜的是，现在只有英文版，不是很适合我这种CSS初哥，不过下一阶段打算看看。
+那么多概念，还是浮云呀，终究还是看基础扎不扎实。</p>
+
+<h3>Go语言编程</h3>
+
+<ul>
+<li>作者许式伟、吕桂华(七牛云存储团队)</li>
+<li>阅读于2014-04-09,大约3天</li>
+<li>适合对Go语言刚兴趣、想一窥究竟的童鞋,内容一般、比较浅显,不是很适应英文的童鞋可以优先考虑</li>
+</ul>
+
+
+<p>看这本书主要是冲着七牛云存储团队的名气去的，毕竟他们是国内第一个吃螃蟹的，据说90%以上的代码都是GO实现的。
+另外，我最近用Go在做点东西，看从中看到对Go实践方式的解读。阅读之后，感觉内容偏浅，不如看官方文档。
+不过里边有些例子还不错，适合有其他语言经验的童鞋阅读，可以通过对比其他语言的代码实现，加深印象。
+总结一下，这书适合快速浏览，剩下的还是老老实实编程吧。</p>
+
+<h3>代码的未来</h3>
+
+<ul>
+<li>作者松本行弘(Ruby之父)</li>
+<li>阅读于2014-04-06,大约3天</li>
+<li>适合轻松阅读、扩展知识面,不深入,可以读读</li>
+</ul>
+
+
+<p>这本书和作者另外一本书&#8221;松本行弘的程式世界&#8221;感觉有些类似，都是以发表在某专栏的文章集合为主。
+可能是由于篇幅问题，大多都是泛泛而谈，点到即止。阅读起来没有什么压力，如果有需要深入的话，就得自己去找资料了。
+总体来说，我对这类书还是挺感兴趣的，可以挑选一些自己感兴趣的话题进行阅读，有助于开阔视野。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20140329_was-datasource.html">Websphere+spring+jndi数据源配置</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-29T00:00:00+08:00" pubdate data-updated="true">Mar 29<span>th</span>, 2014</time>
+        
+         | <a href="/blog/20140329_was-datasource.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>配置的步骤在下面简要说明:</p>
+
+<ol>
+<li>增加基于spring的jndi数据源配置</li>
+<li>在websphere上增加数据源配置</li>
+<li>链接iiop地址</li>
+</ol>
+
+
+<p>下面进行详细描述。</p>
+
+<ul>
+<li>基于spring的jndi配置文件</li>
+</ul>
+
+
+<p>注意:如果是第二种方式，可以忽略第三部分&#8221;链接iiop地址&#8221;</p>
+
+<p>第一种方式:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='diff'><span class='line'>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+</span><span class='line'>&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+</span><span class='line'> xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+</span><span class='line'> xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
+</span><span class='line'> xmlns:tx=&quot;http://www.springframework.org/schema/tx&quot;
+</span><span class='line'> xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd&quot;&gt;
+</span><span class='line'>
+</span><span class='line'><span class="gi">+    &lt;bean id=&quot;GlobalConfig&quot;</span>
+</span><span class='line'><span class="gi">+        class=&quot;org.springframework.beans.factory.config.PropertyPlaceholderConfigurer&quot;&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;property name=&quot;systemPropertiesMode&quot;&gt;</span>
+</span><span class='line'><span class="gi">+            &lt;value&gt;1&lt;/value&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;/property&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;property name=&quot;searchSystemEnvironment&quot;&gt;</span>
+</span><span class='line'><span class="gi">+            &lt;value&gt;true&lt;/value&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;/property&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;property name=&quot;ignoreUnresolvablePlaceholders&quot;&gt;</span>
+</span><span class='line'><span class="gi">+            &lt;value&gt;true&lt;/value&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;/property&gt;</span>
+</span><span class='line'><span class="gi">+    &lt;/bean&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="gi">+     &lt;bean id=&quot;jtaTransactionManager&quot; class=&quot;org.springframework.transaction.jta.WebSphereUowTransactionManager&quot; /&gt;</span>
+</span><span class='line'>   &lt;tx:annotation-driven transaction-manager=&quot;jtaTransactionManager&quot;  proxy-target-class=&quot;true&quot; /&gt;
+</span><span class='line'>   &lt;bean id=&quot;lobHandler&quot; class=&quot;org.springframework.jdbc.support.lob.DefaultLobHandler&quot;/&gt;
+</span><span class='line'>
+</span><span class='line'><span class="gi">+    &lt;bean id=&quot;dataSource&quot; class=&quot;org.springframework.jndi.JndiObjectFactoryBean&quot;&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;property name=&quot;jndiName&quot;&gt;&lt;value&gt;XXX&lt;/value&gt;&lt;/property&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;property name=&quot;resourceRef&quot;&gt;&lt;value&gt;true&lt;/value&gt;&lt;/property&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;property name=&quot;jndiEnvironment&quot;&gt;&lt;props&gt;&lt;prop key=&quot;java.naming.provider.url&quot;&gt;${java_naming_provider_url}&lt;/prop&gt;&lt;/props&gt;&lt;/property&gt;</span>
+</span><span class='line'><span class="gi">+    &lt;/bean&gt;  </span>
+</span><span class='line'>&lt;/beans&gt;
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>在websphere上增加数据源配置</li>
+</ul>
+
+
+<p><img src="/assets/images/2014/ds.png" alt="效果图" /></p>
+
+<ul>
+<li>链接iiop地址</li>
+</ul>
+
+
+<p>在server的java进程定义里边配置jvm参数:  -Djava_naming_provider_url=iiop://localhost:port/,另外，修改启动参数需要重启server才能生效。</p>
+
+<p><img src="/assets/images/2014/iiop.png" alt="效果图" /></p>
+
+<p>其中每个server的port都是不一样的，具体的端口通过Application servers - serverX - Communications -  Ports上查看，如下图:</p>
+
+<p><img src="/assets/images/2014/port.png" alt="效果图" /></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -606,504 +925,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-12-28T00:00:00+08:00" pubdate data-updated="true">Dec 28<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20131228_classloader-answer.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>独立进程篇</h2>
-
-<p>首先需要知道类加载器是怎么回事? 在Java里边，类加载器就是用来加载类的，然后才是执行代码。<br/>
-Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类加载器(app)。<br/>
-其中boot就是用来加载最开始的虚拟机和最基本的java类，ext是用来加载一些扩展类，默认是在jre/lib/ext目录下的。<br/>
-最后一个才是你真正会用到的。cp参数就是用来指定应用类加载器找类的地方，java.ext.dirs就是用来指定
-扩展类加载器找类的地方。
-这三种类加载器是有层级关系的，类似于继承关系(父子关系)。</p>
-
-<p>另外一个需要知道的概念是，类加载器在找类的时候，默认是采用双亲委派机制的。<br/>
-例如应用类加载器加载类的时候，会先叫ext去加载，ext就会叫boot去加载，只有加载不到才尝试自己去加载。<br/>
-这种做法是有个重要的因素，就是为了安全性考虑。</p>
-
-<p>最后需要知道的是，TestServlet.class.getClassLoader()获取到的时候，加载TestServlet类所使用的实际的类加载器。</p>
-
-<p>回到上面的问题。</p>
-
-<p>第一个很简单，指定了应用类加载器加载的路径，所以main方法能找到，TestServlet也能找到，config.properties也能被应用类加载器找到。
-启动是正常的。</p>
-
-<p>第二个问题，TestServlet是被扩展类加载器加载的，所以通过它来找config.properties会找不到(在应用类加载器中才能被加载到)。</p>
-
-<p>第三个问题，调整目录后，这个时候扩展类加载器的加载路径上也有config.properties，所以启动也会正常。</p>
-
-<p>现在调整了代码，换成了Thread.currentThread().getContextClassLoader()的实现。<br/>
-这个是有一点不一样的，上下文类加载器默认就是应用类加载器(如果通过代码进行修改的话)。
-上下文类加载器还是一个很有用的技术，
-可以用在JDBC这种SPI(Service Provider Interface)接口与实现分离的技术上，有兴趣可以去找找资料。</p>
-
-<p>在这种情况下，后面的三个命令都是能够正常的，因为config.properties能够被正常识别的。</p>
-
-<p>再说一点，用eclipse可以运行的程序，用命令行不一定可以，这点必须要认准最后的启动参数，通过这个来确认。
-我们这边写独立进程的时候，贪方便喜欢用java.ext.dirs这个虚拟机参数，但这个有时候会有奇怪的问题。
-大家要注意区分这个参数和cp参数的区别，这样就分析有思路，找问题很happy。</p>
-
-<h2>Web应用服务器篇</h2>
-
-<p>像tomcat这种应用服务器，本身也是一个java程序，但它可以把我们放上去的各个web应用隔离开来。
-你没法调用其他web应用中的类，看上去好像是完全不相干的。这种技巧就充分利用了自定义类加载器的功能。
-像tomcat会对每个应用单独定义一个类加载器(继承应用类加载器)，并且修改双亲委派机制。
-而是采用先从应用中的lib目录、classes目录尝试加载，没找到才到上面去找。(像was这种就跟复杂了，加载顺序也是可选的)</p>
-
-<p>所以通常我们会有共享库的概念，在tomcat中对应的就是tomcat_home/lib这个目录(老版本的话还有更多目录可选)。
-把一些第三方库放到这里，可以减少加载类的数量，从而减少内存占用。</p>
-
-<p>这里要说明的是，类可以被不同的类加载器加载，虽然是在同一个jvm里边，但是是被当成不同的类(唯一标识是类加载器+类名)。</p>
-
-<p>现在回到问题。虽然一开始就有人告诉我们，servlet是属于单例运行的。但是在这里有点小变化。</p>
-
-<p>第一个问题，这个应该最常规的做法了，appa和appb是不相干的，所以访问appb，输出的是&#8221;1 1&#8221;，因为两个类是通过不同的类加载器加载的(就是说不一样的类)，肯定生成的servlet实例是不一样的。</p>
-
-<p>第二个问题，这种是共享库的做法，所以实际上他们使用的是同一个类，但是对于不同的app，用的是不同的servlet实例。
-所以会出现静态变量有影响，当实例变量是独立的。所以最后会输出&#8221;3 1&#8221;。所以有维护静态变量的话，使用共享库是有不一样的。</p>
-
-<p>第三个问题，这种其实在生产中也很常见，上新程序的时候就可能变成这样了。其实这个跟第一种情况是一样的。
-不过，在was上加载顺序是可选的，所以情况也可能变成第二种情况。</p>
-
-<h2>后话</h2>
-
-<p>这里讲解的只是皮毛，有兴趣的童鞋，可以google更多资料和书籍，加以研究。</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-12-27T00:00:00+08:00" pubdate data-updated="true">Dec 27<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20131227_classloader-test.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>类加载和程序运行是有些关系的，不妨来测试一下。<br/>
-难度:中级</p>
-
-<h2>独立进程篇</h2>
-
-<p>假设有下面的类文件：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">// Main.java</span>
-</span><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">mccxj</span><span class="o">.</span><span class="na">test</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">){</span>
-</span><span class='line'>    <span class="k">new</span> <span class="nf">TestServlet</span><span class="o">().</span><span class="na">test</span><span class="o">();</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">// TestServlet.Java</span>
-</span><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">mccxj</span><span class="o">.</span><span class="na">test</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">TestServlet</span> <span class="o">{</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>    <span class="n">InputStream</span> <span class="n">is</span> <span class="o">=</span> <span class="n">TestServlet</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getClassLoader</span><span class="o">().</span><span class="na">getResourceAsStream</span><span class="o">(</span><span class="s">&quot;config.properties&quot;</span><span class="o">);</span>
-</span><span class='line'>    <span class="k">if</span><span class="o">(</span><span class="n">is</span> <span class="o">==</span> <span class="kc">null</span><span class="o">){</span>
-</span><span class='line'>      <span class="k">throw</span> <span class="k">new</span> <span class="nf">RuntimeException</span><span class="o">(</span><span class="s">&quot;couId not found config.properties&quot;</span><span class="o">);</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'>  <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>假设目录结构是这样的，其中jar下面的表示是在jar包里边的内容:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">test</span>
-</span><span class='line'>    -lib
-</span><span class='line'>        -test.jar
-</span><span class='line'>          -com/github/mccxj/test/Main.class
-</span><span class='line'>    -main.jar
-</span><span class='line'>        -com/github/mccxj/test/TestServlet.class
-</span><span class='line'>        -config.properties
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>请问：</p>
-
-<ol>
-<li>执行java -cp main.jar;lib/test.jar com.github.mccxj.test.Main会出错么？</li>
-<li>执行java -cp main.jar -Djava.ext.dirs=./lib com.github.mccxj.test.Main结果是怎样？</li>
-</ol>
-
-
-<p>继续调整目录结果如下：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">test</span>
-</span><span class='line'>    -lib
-</span><span class='line'>        -test.jar
-</span><span class='line'>            -com/github/mccxj/test/Main.class
-</span><span class='line'>        -main.jar
-</span><span class='line'>            -com/github/mccxj/test/TestServlet.class
-</span><span class='line'>            -config.properties
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>再请问</p>
-
-<ol>
-<li>执行java -Djava.ext.dirs=./lib com.github.mccxj.test.Main结果是怎样？</li>
-</ol>
-
-
-<p>继续调整一下TestServlet的代码：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='diff'><span class='line'>// TestServlet.Java
-</span><span class='line'>package com.github.mccxj.test;
-</span><span class='line'>
-</span><span class='line'>public class TestServlet {
-</span><span class='line'>  public void test() {
-</span><span class='line'><span class="gd">-    InputStream is = TestServlet.class.getClassLoader().getResourceAsStream(&quot;config.properties&quot;);</span>
-</span><span class='line'><span class="gi">+    InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(&quot;config.properties&quot;);</span>
-</span><span class='line'>    if(is == null){
-</span><span class='line'>      throw new RuntimeException(&quot;couId not found config.properties&quot;);
-</span><span class='line'>    }
-</span><span class='line'>  }
-</span><span class='line'>}
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>把目录结构恢复成：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">test</span>
-</span><span class='line'>    -lib
-</span><span class='line'>        -test.jar
-</span><span class='line'>          -com/github/mccxj/test/Main.class
-</span><span class='line'>    -main.jar
-</span><span class='line'>        -com/github/mccxj/test/TestServlet.class
-</span><span class='line'>        -config.properties
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>请问:</p>
-
-<ol>
-<li>执行java -cp   main.jar;lib/test.jar com.github.mccxj.test.Main会出错么？</li>
-<li>执行java   -cp main.jar -Djava.ext.dirs=./lib com.github.mccxj.test.Main结果又是怎样？</li>
-</ol>
-
-
-<p>最后调整目录结果如下：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">test</span>
-</span><span class='line'>    -lib
-</span><span class='line'>        -test.jar
-</span><span class='line'>            -com/github/mccxj/test/Main.class
-</span><span class='line'>        -main.jar
-</span><span class='line'>            -com/github/mccxj/test/TestServlet.class
-</span><span class='line'>            -config.properties
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ol>
-<li>执行java -Djava.ext.dirs=./lib com.github.mccxj.test.Main结果是怎样？</li>
-</ol>
-
-
-<h2>Web应用服务器篇</h2>
-
-<p>下面的例子，以tomcat为例。
-假设有下面的Servlet文件，并打包成test.jar:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">// TestServlet.java</span>
-</span><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">mccxj</span><span class="o">.</span><span class="na">test</span><span class="o">;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">TestServlet</span> <span class="kd">extends</span> <span class="n">HttpServlet</span> <span class="o">{</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="kd">static</span> <span class="n">Atomiclnteger</span> <span class="n">al</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AtomicInteger</span><span class="o">();</span>
-</span><span class='line'>    <span class="kd">private</span> <span class="n">Atomiclnteger</span> <span class="n">a2</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AtomicInteger</span><span class="o">();</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="nd">@Override</span>
-</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">service</span><span class="o">(</span><span class="n">ServletRequest</span> <span class="n">arg0</span><span class="o">,</span> <span class="n">ServletResponse</span> <span class="n">arg1</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Servlet</span> <span class="n">Exception</span><span class="o">,</span> <span class="n">IOException</span> <span class="o">{</span>
-</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printIn</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">al</span><span class="o">.</span><span class="na">incrementAndGet</span><span class="o">()));</span>
-</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printIn</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">a2</span><span class="o">.</span><span class="na">incrementAndGet</span><span class="o">()));</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>并部署两个应用程序appa、appb,在他们的WEB_INF/web.xml添加了下面的内容</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;servlet&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;servlet-name&gt;</span>test<span class="nt">&lt;/servlet-name&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;display-name&gt;</span>test servlet<span class="nt">&lt;/display-name&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;servlet-class&gt;</span>com.huawei.test.TestServlet<span class="nt">&lt;/servlet-class&gt;</span>
-</span><span class='line'><span class="nt">&lt;/servlet&gt;</span>
-</span><span class='line'><span class="nt">&lt;servlet-mapping&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;servlet-name&gt;</span>test<span class="nt">&lt;/servlet-name&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;url-pattern&gt;</span>/test<span class="nt">&lt;/url-pattern&gt;</span>
-</span><span class='line'><span class="nt">&lt;/servlet-mapping&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>大家应该听说过Servlet是单例的概念，也可能听过Web应用服务器有共享类的机制。那么，请问：</p>
-
-<ol>
-<li>现在把test.jar扔到appa和appb的WEB_INF/lib目录中，启动tomcat，先访问/appa/test两次，再访问/appb/test, 此时会输出什么？</li>
-<li>继续把test.jar都移除掉，只添加到TOMCAT_HOME/lib目录中，启动tomcat，先访问/appa/test两次，再访问/appb/test, 此时会输出什么？</li>
-<li>最后把test.jar拷贝一份到appa的WEB_INF/lib目录中，启动tomcat，先访问/appa/test两次，再访问/appb/test, 此时会输出什么？</li>
-</ol>
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-12-27T00:00:00+08:00" pubdate data-updated="true">Dec 27<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20131227_android-tcpdump-netcat-addon.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>补充的内容，主要是一些细节的问题，备忘.</p>
-
-<h2>编译netcat</h2>
-
-<p>android上自己好像带了一个，不过也可以自己编译一个。 我这里使用cygwin来编译的，首先去下载源码。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># cygwin</span>
-</span><span class='line'><span class="nb">cd</span> /cygdrive/d/
-</span><span class='line'>mkdir -p netcat/toolchain
-</span><span class='line'>
-</span><span class='line'><span class="nb">export </span><span class="nv">NDK</span><span class="o">=</span>/cygdrive/d/android-ndk-r8e
-</span><span class='line'>/cygdrive/d/android-ndk-r8e/build/tools/make-standalone-toolchain.sh --platform<span class="o">=</span>android-8 --install-dir<span class="o">=</span>netcat/toolchain
-</span><span class='line'><span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="s1">&#39;pwd&#39;</span>/netcat/toolchain/bin:<span class="nv">$PATH</span>
-</span><span class='line'><span class="nb">export </span><span class="nv">CC</span><span class="o">=</span>arm-linux-androideabi-gcc
-</span><span class='line'><span class="nb">export </span><span class="nv">RANLIB</span><span class="o">=</span>arm-linux-androideabi-ranlib
-</span><span class='line'><span class="nb">export </span><span class="nv">AR</span><span class="o">=</span>arm-linux-and roideabi-ar
-</span><span class='line'><span class="nb">export </span><span class="nv">LD</span><span class="o">=</span>arm-linux-androideabi-ld
-</span><span class='line'>
-</span><span class='line'><span class="c"># 开始编译源码</span>
-</span><span class='line'><span class="nb">cd </span>netcat-0.7.1/
-</span><span class='line'>./configure —host<span class="o">=</span>arm-linux
-</span><span class='line'>make
-</span><span class='line'>
-</span><span class='line'><span class="c"># 用file进行检测一下</span>
-</span><span class='line'>file src/netcat
-</span><span class='line'>src/netcat: ELF 32-bit LSB executable, ARM, version1 <span class="o">(</span>SYSV<span class="o">)</span>, ...
-</span><span class='line'>
-</span><span class='line'><span class="c"># 发到android上去</span>
-</span><span class='line'>adb push src/netcat /data/local/netcat
-</span><span class='line'>adb shell chmod 777 /data/local/netcat
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>tcpdump的使用</h2>
-
-<p>如果只是监听所有的包，可以用下面的：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>adb shell <span class="s2">&quot;tcpdump -n -s 0 -w - | nc -I -p 11233&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>如果先监听端口的话，又想转发的话，写法有点特别。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>adb shell <span class="s2">&quot;tcpdump -X -n -s 0 -w - port 5000 | nc -l -p 11233&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>另外，如果像我这样，有cygwin的话，就已经有nc命令了，可以像下面一样进行转发。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>adb forward tcp:11333 tcp:11233 <span class="o">&amp;&amp;</span> nc -v 127.0.0.1 | /cygdriver/d/Wireshark/Wireshark.exe -k -S -i -
-</span></code></pre></td></tr></table></div></figure>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/6/">&larr; Older</a>
@@ -1122,6 +943,10 @@ Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20160216_heapdump-intro.html">heapdump分析简单总结</a>
       </li>
     
       <li class="post">
@@ -1154,10 +979,6 @@ Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类
     
       <li class="post">
         <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
       </li>
     
   </ul>

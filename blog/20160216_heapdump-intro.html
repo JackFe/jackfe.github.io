@@ -1,0 +1,348 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>heapdump分析简单总结 - 小毛的胡思乱想</title>
+  <meta name="author" content="蔡晓建">
+
+  
+  <meta name="description" content="heapdump分析简单总结">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://mccxj.github.com/blog/20160216_heapdump-intro.html">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="小毛的胡思乱想" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="/javascripts/ender.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">小毛的胡思乱想</a></h1>
+  
+    <h2>凡走过,必留痕迹.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:mccxj.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Heapdump分析简单总结</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-02-16T00:00:00+08:00" pubdate data-updated="true">Feb 16<span>th</span>, 2016</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><ul>
+<li>详细的材料可以查看<a href="https://issuu.com/sadybaez/docs/heapanalyzer13wste0921">IBM的HeapAnalyzer胶片</a>。</li>
+<li>本文只是自己的一些简单总结(废话比较多)，<strong>重点还是大家基于实际dump文件去积累经验</strong>。</li>
+<li>就一个工具，大家都掌握好了就可以有更多时间研究其他东西。</li>
+</ul>
+
+
+<h2>heapdump是什么</h2>
+
+<ul>
+<li>通常的名字类似heapdump.20150919.162323.43385076.0055.phd，参考ppt的第12页</li>
+<li><strong>java堆内存快照(不包括jni，不是c/c++通常说的那个堆)</strong></li>
+<li>用来分析oom的原因</li>
+</ul>
+
+
+<h2>heapdump如何生成</h2>
+
+<ul>
+<li>参考ppt的第8~12页，通常维护/CMO都知道</li>
+<li>需要注意的是，大型中间件的dump是挺大的，需要有足够的硬盘空间，否则<strong>频繁的dump会导致空间不足引发其他问题</strong>。(频繁dump在生产上是可能的事情)</li>
+</ul>
+
+
+<h2>heapdump分析用什么工具</h2>
+
+<ul>
+<li>使用IBM HeapAnalyzer(目前最新ha456.jar, 比之前的版本有更多视图，性能更好)</li>
+<li>启动方式: <strong>java -jar -Xms512m -Xmx3g ha456.jar</strong></li>
+<li>通常要文件大小5倍+的内存, 而websphere之类的dump多在500m以上，所以需要64位的大内存机器，用64位的jdk，堆内存开2g以上</li>
+<li>工具需要界面，如果大内存64位机器如果只能找到服务器，可以采用远程运行(但受网速影响)。参考&#8221;export DISPLAY=192.168.88.71:0.0&#8221;设置xmanager的远程界面显示</li>
+</ul>
+
+
+<h2>ha概念要点</h2>
+
+<ul>
+<li>本质上是根据对象引用关系生成一个树结构(可以结合gc的原理加深理解)，参考ppt的第14页</li>
+<li>结合图例说明</li>
+</ul>
+
+
+<p><img src="/assets/images/2016/heapdump1.png" alt="图例说明" /></p>
+
+<h2>ha关注要点</h2>
+
+<ul>
+<li>关注Leak Suspect,这是检测出来的可能的问题点，有时候非常方便。参考ppt的第34~37页</li>
+<li>关注内存占用比例较大的对象，ha支持按TotalSize大小顺序排列(如上图)</li>
+<li>关注节点数众多的情况，而且基本上是挂靠在容器上的(不大可能一个对象有n多内部变量)，常见的有map,array,list</li>
+<li>关注自己的类，com.huawei开头的。ha支持查询，参考ppt的第54~59页。</li>
+<li>有多种维度的视图，多摸索，例如Type List就可以根据特定类型的对象数量进行排序，或许可以找到一些小的内存问题。</li>
+<li>如果能够拿到javacore,可以进行对比，定位是哪个功能引起的(单靠类名不一定能够识别哪个业务)。</li>
+</ul>
+
+
+<h2>常见的原因</h2>
+
+<p>常见的问题原因如下(有交集，并没有严格分类)：
+* 内存设置太低，不过这个几率比较小。一般的web应用内存分配2G还不够，调大也不是办法。
+* 大量的线程泄露(或者某种原因阻塞)，java的线程是系统线程，占用的资源还是可观的，相关的可以看Xss参数。生产一般看到的websphere也就300左右。
+* 查询/导出大量数据, 常见于SQL查询结果没有限制数量、或者在内存中集中写出。
+* 远程调用传输大量数据，常见于cics返回大量数据(其实和上面差不多是一个道理)
+* 上传并处理数据，没有分批分段处理或延后处理。
+* 数据没能及时释放，可能是处理较多的数据或较长的处理流程，不过需要显式释放对象引用的情况是比较少见的。</p>
+
+<p>不过，需要注意的是:
+* 像dbc这样的jni实现可能和这个没什么关系，原因在于64位机器进程空间很大。
+* 像数据库，远程调用等响应慢，是不一定会出现dump问题的。但它会导致线程数增多(同步)，数据(占用内存)未及时处理，从而导致dump。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">蔡晓建</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-02-16T00:00:00+08:00" pubdate data-updated="true">Feb 16<span>th</span>, 2016</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/heapdump/'>heapdump</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/20160105_source-reading.html" title="Previous Post: 源码阅读应该得到什么?">&laquo; 源码阅读应该得到什么?</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/20160416_svn-handshake-failure.html" title="Next Post: svn报文转发出现handshake_failure的问题">svn报文转发出现handshake_failure的问题 &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20160216_heapdump-intro.html">heapdump分析简单总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20160105_source-reading.html">源码阅读应该得到什么?</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151226_commons-dbcp-source-view.html">从commons-dbcp源码学习设计思路</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151216_aes256-Illegal-key-size-or-default-parameters.html">AES256算法遇到 Illegal key size or default parameters的解决办法</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+<iframe width="100%" height="550" class="share_self"  frameborder="0" scrolling="no" src="http://widget.weibo.com/weiboshow/index.php?language=&width=0&height=550&fansRow=2&ptype=1&speed=0&skin=8&isTitle=1&noborder=1&isWeibo=1&isFans=0&uid=1735848865&verifier=fa40be14&dpc=1"></iframe>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/mccxj">@mccxj</a> on GitHub
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'mccxj',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - 蔡晓建 -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+      var disqus_shortname = 'mccxj';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://mccxj.github.com/blog/20160216_heapdump-intro.html';
+        var disqus_url = 'http://mccxj.github.com/blog/20160216_heapdump-intro.html';
+        var disqus_script = 'embed.js';
+      
+    (function () {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>

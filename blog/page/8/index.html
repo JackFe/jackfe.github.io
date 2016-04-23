@@ -9,9 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="REmote DIctionary Server(Redis) 是一个由Salvatore Sanfilippo写的key-value存储系统，
-与memcached相比，redis支持更丰富的数据结构，特点是高性能、持久存储，适应高并发的应用场景。它起步较晚，发展迅速，
-目前已被许多大型机构采用 &hellip;">
+  <meta name="description" content="上周因为要处理一些数据的统计分析，没有自己写脚本分析，而是采用了excel进行处理。
+不过，我以前没用过excel的统计分析功能，于是找了本书来学习一下，现学现用。这本书的书名叫&lt;&lt;你早该这么学excel>>。 我想很多人学excel，都感觉需要好多技巧，外边大多数的书籍也是教技巧的。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +65,179 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20131025_how-to-excel.html">Excel读书心得</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-10-25T00:00:00+08:00" pubdate data-updated="true">Oct 25<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20131025_how-to-excel.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>上周因为要处理一些数据的统计分析，没有自己写脚本分析，而是采用了excel进行处理。
+不过，我以前没用过excel的统计分析功能，于是找了本书来学习一下，现学现用。这本书的书名叫&lt;&lt;你早该这么学excel>>。</p>
+
+<p>我想很多人学excel，都感觉需要好多技巧，外边大多数的书籍也是教技巧的。可惜这本书没介绍什么技巧，只是介绍了处理数据的一些原则。
+反正，我感觉效果挺好的，根据这本书学习了一下，也能完成我想做的事情，并且显得有模有样，这就行了。</p>
+
+<p>书里边介绍了作者伍昊的三大表理论。其中天下第一表，就是原始数据表，首要就是表格规范，数据格式化，无统计信息，表格列要齐全。
+所有的统计都是根据原始数据表，并通过透视表来做的。当然，对于稳定的数据，他使用参数表的概念，采用自动生成方式。</p>
+
+<p>这套原则很简单，并且有效。推荐大家看看，特别是经常接触excel的童鞋。</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130930_des.html">DES加解密总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-30T00:00:00+08:00" pubdate data-updated="true">Sep 30<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130930_des.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>DES是广泛使用的分组对称加密算法，它要求待加密数据要8位对齐，所以在数据不足8位时候会出现padding的情况，
+所以有可能因为padding不同，而出现加解密结果不一样，这种情况在异构系统间的数据通信特别容易出现，例如java和cpp系统之间的通信。
+如果在开发过程中，遇到不同语言加解密结果不一样的情况，应该关注一下补齐方式。
+关于补齐方式，请参考http://en.wikipedia.org/wiki/Padding_%28cryptography%29</p>
+
+<p>先说说java这里，java api已经集成了DES加解密算法，如果不指定补齐方式的话，默认的补齐方式是使用PKCS5Padding，
+这种情况下，长度不足8字节的部分，填充“0x01”—“0x08”，如不
+足1字节，则填充1个“0x01”，如不足2字节，则填充2个“0x02”，以此类推。更具
+体的描述，参考<a href="http://www.herongyang.com/Cryptography/DES-JDK-What-Is-PKCS5Padding.html">What Is PKCS5Padding?</a>
+如果我们指定补齐方式，如使用DES/ECB/NoPadding的话(其中ECB是加密的模式，也是默认的加密方式)，就需要自己手动补齐，例如补空格字符。
+现在的代码为了和后台的加解密结果一致，采用的是手动补齐的方式，即NoPadding方式。</p>
+
+<p>如果cpp实现的padding方式和java的不一致，就可能导致加解密失败。在我们的系统里边，cpp实现的padding是补\0的。
+这个字符在显示的时候就直接被当成结束符了，无需特殊处理。所以，如果使用java加密，cpp解密的话，
+java这边也要使用补\0的做法，如果使用java解密的话，就只能使用trim进行处理了。</p>
+
+<p>以我们这边使用的两个DES相关的接口为例，用户鉴权接口在配置里边有使用trim进行处理，而wlan密码认证接口没有使用trim处理。
+因此按现在使用补空格的方法，在用户鉴权接口是能成功的，但在wlan密码认证接口里边是会导致认证失败的。</p>
+
+<p>如果需要更多关于加密补齐的资料，可以参考<a href="http://www.di-mgt.com.au/cryptopad.html">Using Padding in Encryption</a></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130921_books.html">那些年，我读过的技术书</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-21T00:00:00+08:00" pubdate data-updated="true">Sep 21<span>st</span>, 2013</time>
+        
+         | <a href="/blog/20130921_books.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这几天发烧很反复，反而有点时间用来整理一下思路。想了很多以前的事情，回忆的感觉是很复杂的。
+突然想写写接触的技术书，现在工作的时间占据了大多数，看书的时间并不多，
+但是每年看的书是有点越来越多的感觉，只是很少有特别深刻的，大概是因为平时的读书习惯就是不求甚解，又或者是这种方式很适合我。</p>
+
+<p>C程序设计，谭浩强的教材估计是人手一册了。这也是我第一次接触编程语言，虽然我还是没学懂怎么写代码。
+回头来看，这本书的确写得不怎样，比起那本c语言传世之作差太远了，里边错误也不少。</p>
+
+<p>数据结构（用面向对象方法与C++语言描述），黄色皮的这本，应该是第一版。
+说起这本书，我当年也是没学明白，主要是我太懒了，还有就是这语言真有点复杂。
+这门课程每一两周就有一个课程设计，要编程的那种。我基本都是抄袭的，有一次我下决心想自己解决，
+结果就是整了一通宵，双向链表编译都没通过。不过还好老师手下留情，最后还是62分勉强通过。
+这门课程是到了毕业以后花3个月自学的，算是自己迄今为止看得最认真的一本书了，简直可以用改变我的职业生涯来形容。</p>
+
+<p>计算机网络，第四版，这也是大学的教材，纯英文版本，这本书是认识网络的通用书籍，是本很好的书，
+不过，并不是我从上面学到多少，我也是毕业以后才回去读的。我对这本书很有印象，主要是因为有一次我在图书馆，
+看到我同学的书已经翻烂了，而我的书还是新的，要知道这是一本大几百页的英文书。顿时觉着这个世界很可怕，
+别说自己不努力，即使你再努力，总有比你聪明的人比你还努力。难怪人家成绩如此的好。</p>
+
+<p>Linux系统管理技术手册，这是我毕业以后买的一本大部头英文书。我对linux有个比较系统的认识也源于这本书。
+不知有没有人在装系统的时候不小心把win也删除了没有？我就试过，后来在一次面试中被人当笑话了。
+虽然工作的时候也有接触这linux，但那一年春节放假的时候，我觉得我应该认真学习一下，而且我们还是有十几天假期的。
+于是到书店把这本书扛回去了，硬是在春节的时候看完。当然，只是看书很多是没概念的，于是我把家里的系统格了换成linux，公司也装上双系统，强迫自己适应。我对以前的公司环境还是心存感激的，很free的感觉。</p>
+
+<p>设计模式，四人帮的大作，我买了有好几年了，一直来来去去的翻，始终没有通读，而我也读过不少模式方面的书，
+但这本书一直保留在我的在读列表中，总感觉没读懂。直到最近这两年，有些开窍了，有时虽然不能想到利用哪种模式，
+或者是哪种模式，但直觉告诉我，就应该这么写。我想，我逐渐从这些设计模式上找到设计原则的味道了。</p>
+
+<p>其他书籍？没有第一时间在我脑子里边出现，即使我认同是一本好书，但也就仅仅是一本好书罢了。
+相对来说，我很少看java的专题书，我跟偏爱通用类。而数据库，即使毕业后一两年，
+我都是对数据库技术有点不屑的感觉，所以学得很少，直到最近这两年我才接触得多一些。</p>
+
+<p>娱乐而已，勿当真。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -902,386 +1074,6 @@ redis的所有功能就是将数据以其固有的几种结构保存，并提供
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130821_soduku-generate.html">数独随机生成探讨</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-08-21T00:00:00+08:00" pubdate data-updated="true">Aug 21<span>st</span>, 2013</time>
-        
-         | <a href="/blog/20130821_soduku-generate.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>思路</h3>
-
-<p>数独游戏应该很多人都玩过，规则也很简单。以前写过数独的程序解法，最近考虑了一下数独的随机生成。毕竟，每个数独一开始都是残缺的，它是怎么生成的?</p>
-
-<p>如果通过正向生成的话，还需要判断剩余的空格是否能够满足数独的问题。所以，我认为应该通过反向来创建，意思是通过一个完整的数独，然后随机从上面抠取，抠得越多，表明完成的难度越大。</p>
-
-<h3>具体方案</h3>
-
-<p>问题就变成，如何生成一个完整的随机的数独?根据数独的特点，我认为可以通过一个已有的数独来生成其他数独。方案如下:</p>
-
-<p><img src="/assets/images/2013/soduku/1.png" alt="row1" /></p>
-
-<ol>
-<li>首先看看上面的图案，对于一个完整的数独，1,2,3行调换次序，仍然可以保证变换后的数独是成立。
-同理，456,789也是同样的道理。行是如此，列也是可以成立的，abc,def,ghi的内部调换都是可以成立的。
-<img src="/assets/images/2013/soduku/2.png" alt="row2" /></li>
-<li>还有上图所示的情况，123和456整三行一起调换也是可以的。同样，在列上面也是一样的道理。</li>
-<li>还有其他一些思路，例如进行旋转操作，或者反过来的做法。</li>
-</ol>
-
-
-<h3>关于重复性</h3>
-
-<p>对于上述1,2两种方案，会不会出现重复的情况呢？我们进行下面的分析:</p>
-
-<p><img src="/assets/images/2013/soduku/3.png" alt="row3" /></p>
-
-<ol>
-<li>假设A1是x,B1是y,C1是z，我们想找到某个变化可以达到同样的效果。</li>
-<li>如果通过行变换的话，因为数独的限制，不可能有某一行在同样的列上有xyz存在，所以不能做到。</li>
-<li>同理，如果是列变化的话，在第一行的位置也不可能再有xyz存在，所以也是不能做到的。</li>
-</ol>
-
-
-<p>意思就是说，如果从某个变化开始，每做一次变换，都能得到一个新的数独，这样我们可以统计一下，一共可以有多少种变换方式。每三行中的行内的变化有6种排列，三行三行的也是有6中排列，计算上列的变换，就有
-6X6X6X6X6X6X6X6=1679616种。</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130821_java-hell-stream-close.html">从流关闭说起</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-08-21T00:00:00+08:00" pubdate data-updated="true">Aug 21<span>st</span>, 2013</time>
-        
-         | <a href="/blog/20130821_java-hell-stream-close.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>基本原则: 谁生产谁销毁</h3>
-
-<p>这个是用来解决责任权的问题，例如你的方法接收一个InputStream作为参数，通常就不应该在方法内去关闭它，而由客户端代码去处理。如果要关闭，通常应该在方法签名上明确说明，具体样例参考commons-io的IOUtils类。</p>
-
-<p>还有另外一个例子，就是经常使用的Servlet的输入输出流，根据这个原则，也是不应该在代码中进行关闭的，这个工作是由Web容器负责的。</p>
-
-<h3>关闭的是什么?</h3>
-
-<p>java本身是带GC的，所以对象在消除引用之后，按正常是能够被回收的，那么为什么会有关闭操作?</p>
-
-<p>这是为了回收系统资源，主要是端口(网络IO),文件句柄(输入输出)等，通常涉及的场景也是操作文件，网络操作、数据库应用等。对于类unix系统，所有东西都是抽象成文件的，所以可以通过lsof来观察。</p>
-
-<p>为了更详细的说明这点，我们可以测试一下下面的代码:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Hello</span> <span class="o">{</span>
-</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
-</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
-</span><span class='line'>            <span class="n">FileInputStream</span> <span class="n">is</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FileInputStream</span><span class="o">(</span><span class="s">&quot;/tmp/data/data&quot;</span><span class="o">+</span><span class="n">i</span><span class="o">);</span>
-</span><span class='line'>            <span class="kt">byte</span><span class="o">[]</span> <span class="n">bs</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="mi">512</span><span class="o">];</span>
-</span><span class='line'>            <span class="kt">int</span> <span class="n">len</span><span class="o">;</span>
-</span><span class='line'>            <span class="k">while</span> <span class="o">((</span><span class="n">len</span> <span class="o">=</span> <span class="n">is</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">bs</span><span class="o">))</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">;</span>
-</span><span class='line'>            <span class="n">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="mi">1000L</span><span class="o">);</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>        <span class="n">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="mi">10000L</span><span class="o">);</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>运行之后，通过losf或进程目录查看相关的文件句柄数量是不断增长的:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>lsof -p 25945 |grep /tmp/data | wc -l
-</span><span class='line'>88
-</span><span class='line'>
-</span><span class='line'>ls  /proc/25945/fd | wc -l
-</span><span class='line'>93
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>如果有关闭操作的话，就会发现打开文件数一直都处于很低的位置。如果持续出现未关闭的情况，积累到一定程度就可能超过系统限制，出现too many open files的错误。</p>
-
-<h3>如何确保关闭</h3>
-
-<p>关闭通常是调用close()方法来实现的，并且需要在finally来进行处理。另外，我们经常会遇到多个资源的关闭情况，因为IO库是采用修饰器模式的，所以基本原则是先关闭外层对象，再关闭内层对象，每个close调用都需要处理异常情况，例如:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">InputStream</span> <span class="n">is</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'><span class="n">OutputStream</span> <span class="n">os</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'><span class="k">try</span><span class="o">{</span>
-</span><span class='line'>   <span class="c1">// ...</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'><span class="k">finally</span><span class="o">{</span>
-</span><span class='line'>  <span class="k">if</span><span class="o">(</span><span class="n">is</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
-</span><span class='line'>     <span class="k">try</span><span class="o">{</span>
-</span><span class='line'>       <span class="n">is</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
-</span><span class='line'>     <span class="o">}</span>
-</span><span class='line'>     <span class="k">catch</span><span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">){}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">if</span><span class="o">(</span><span class="n">os</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
-</span><span class='line'>     <span class="k">try</span><span class="o">{</span>
-</span><span class='line'>       <span class="n">os</span><span class="o">.</span><span class="na">close</span><span class="o">()</span>
-</span><span class='line'>     <span class="o">}</span>
-</span><span class='line'>     <span class="k">catch</span><span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">){}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>实践</h3>
-
-<ul>
-<li>上面的关闭处理的确是比较繁琐的，可以考虑进行封装或者直接使用IOUtils.closeQuietly方法，节约不少代码行。</li>
-<li>自从JDK5之后，需要进行关闭处理的对象可以考虑实现java.io.Closeable接口。这个可以让资源关闭使用同一套代码。</li>
-</ul>
-
-
-<h3>JDK7改进及其他思路</h3>
-
-<p>在JDK7里，你只需要将资源定义在try()里，Java7就会在readLine抛异常时，自动关闭资源。
-但是资源类必须实现java.lang.AutoCloseable接口，同时支持管理多个资源,释放次序与声明次序相反。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="k">try</span> <span class="o">(</span><span class="n">BufferedReader</span> <span class="n">br</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BufferedReader</span><span class="o">(</span><span class="k">new</span> <span class="n">FileReader</span><span class="o">(</span><span class="n">path</span><span class="o">))</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">return</span> <span class="n">br</span><span class="o">.</span><span class="na">readLine</span><span class="o">();</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>虽然感觉总是很繁琐，语法糖味道重，但比以前倒是进步不少了。
-不过我们还是来看看Go中的做法，它提供了defer操作，用于在脱离方法作用域的时候自动调用，有点析构的味道。
-看下面的示例:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
-</span><span class='line'>    <span class="nx">files</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Open</span><span class="p">(</span><span class="s">&quot;testqq.txt&quot;</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span><span class='line'>        <span class="nx">fmt</span><span class="p">.</span><span class="nx">Printf</span><span class="p">(</span><span class="s">&quot;Error is:%s&quot;</span><span class="p">,</span> <span class="s">&quot;Game Over!&quot;</span><span class="p">)</span>
-</span><span class='line'>        <span class="k">return</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="k">defer</span> <span class="nx">files</span><span class="p">.</span><span class="nx">Close</span><span class="p">()</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130809_java-hell-string-append.html">说说字符串拼接</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-08-09T00:00:00+08:00" pubdate data-updated="true">Aug 9<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130809_java-hell-string-append.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>String对象是无状态的</h3>
-
-<p>String的内部属性在初始化的时候就固定好了，也没有提供方法进行修改(反射等极端方法除外)，并且类被定义成final，所以String对象都是是实实在在的无状态对象，是不可变的。</p>
-
-<p>在通常的字符串拼接中，如果采用+运算符的话，通常会产生一个字符串对象，并把两个字符串的内部字符数组拷贝过去。
-因此，在一个常见的频繁修改字符串的场景中，字符数组的拷贝开销是很大的，随之字符串的加长会越到后面越慢,例如下面的代码。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">String</span> <span class="n">sb</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="o">;</span>
-</span><span class='line'><span class="k">for</span><span class="o">(</span><span class="n">String</span> <span class="n">str</span> <span class="o">:</span> <span class="n">strs</span><span class="o">){</span>
-</span><span class='line'>  <span class="n">sb</span> <span class="o">+=</span> <span class="n">str</span><span class="o">;</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'><span class="k">return</span> <span class="n">sb</span><span class="o">;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>StringBuffer与StringBuilder</h3>
-
-<p>jdk早就考虑了这种场景，于是提供了StringBuffer，简单来说，就是一个可变的字符数组，开辟了一个字符数组缓冲区，增加(Append)时只是往缓冲区的空余地方写字符，当然也有可能缓冲区不够用，它的开销就集中在不够用的缓冲区扩展中(每次在现有基础上扩展一倍空间)。所以，最好能提前估计字符串的最终长度，减少扩展造成的消耗。不过，即便如此，通常也要把直接用String拼接的效率高许多，例如下面的代码。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">StringBuffer</span> <span class="n">sb</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringBuffer</span><span class="o">();</span>
-</span><span class='line'><span class="k">for</span><span class="o">(</span><span class="n">String</span> <span class="n">str</span> <span class="o">:</span> <span class="n">strs</span><span class="o">){</span>
-</span><span class='line'>  <span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">str</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'><span class="k">return</span> <span class="n">sb</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>到了jdk5，增加了StringBuilder，相对于StringBuffer来说，虽然它不是线程安全的，但在绝大多数场景下都是适用的，并且理论效率更佳(从oracle jdk的实现看，两个类除了是否同步这点，实现是一致的)。因此，习惯使用StringBuffer的童鞋，应该多关注一下StringBuilder。</p>
-
-<h3>字符串拼接的编译优化</h3>
-
-<p>再回到+操作符，本身java是没有运算符重载的，+只会对基本数学运算有效，而字符串，这么写只是语法糖而已，会变成StringBuilder操作(jdk5之前是StringBuffer)。例如下面的代码:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">String</span> <span class="nf">test</span><span class="o">(</span><span class="n">String</span> <span class="n">a</span><span class="o">){</span>
-</span><span class='line'>   <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="s">&quot;b&quot;</span><span class="o">;</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>通过javap查看，可以看到是这样的(大意就是new一个StringBuilder对象然后用append进行连接);</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span> <span class="nf">test</span><span class="o">(</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">String</span><span class="o">);</span>
-</span><span class='line'>  <span class="nl">Code:</span>
-</span><span class='line'>   <span class="n">Stack</span><span class="o">=</span><span class="mi">2</span><span class="o">,</span> <span class="n">Locals</span><span class="o">=</span><span class="mi">2</span><span class="o">,</span> <span class="n">Args_size</span><span class="o">=</span><span class="mi">2</span>
-</span><span class='line'>   <span class="mi">0</span><span class="o">:</span>   <span class="k">new</span>     <span class="err">#</span><span class="mi">2</span><span class="o">;</span> <span class="c1">//class java/lang/StringBuilder</span>
-</span><span class='line'>   <span class="mi">3</span><span class="o">:</span>   <span class="n">dup</span>
-</span><span class='line'>   <span class="mi">4</span><span class="o">:</span>   <span class="n">invokespecial</span>   <span class="err">#</span><span class="mi">3</span><span class="o">;</span> <span class="c1">//Method java/lang/StringBuilder.&quot;&lt;init&gt;&quot;:()V</span>
-</span><span class='line'>   <span class="mi">7</span><span class="o">:</span>   <span class="n">aload_1</span>
-</span><span class='line'>   <span class="mi">8</span><span class="o">:</span>   <span class="n">invokevirtual</span>   <span class="err">#</span><span class="mi">4</span><span class="o">;</span> <span class="c1">//Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;</span>
-</span><span class='line'>   <span class="mi">11</span><span class="o">:</span>  <span class="n">ldc</span>     <span class="err">#</span><span class="mi">5</span><span class="o">;</span> <span class="c1">//String b</span>
-</span><span class='line'>   <span class="mi">13</span><span class="o">:</span>  <span class="n">invokevirtual</span>   <span class="err">#</span><span class="mi">4</span><span class="o">;</span> <span class="c1">//Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;</span>
-</span><span class='line'>   <span class="mi">16</span><span class="o">:</span>  <span class="n">invokevirtual</span>   <span class="err">#</span><span class="mi">6</span><span class="o">;</span> <span class="c1">//Method java/lang/StringBuilder.toString:()Ljava/lang/String;</span>
-</span><span class='line'>   <span class="mi">19</span><span class="o">:</span>  <span class="n">areturn</span>
-</span><span class='line'>  <span class="nl">LineNumberTable:</span>
-</span><span class='line'>   <span class="n">line</span> <span class="mi">3</span><span class="o">:</span> <span class="mi">0</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>因此，如果是像上面的情况，直接用+是合理的，对于其他情况，得考虑StringBuilder，同时要避免无意生成多余字符串的情况，例如append(&#8221;s&#8221; + a)的写法，编译器是不会自动优化的，写代码的时候应该换成append(&#8221;s&#8221;).append(a)。</p>
-
-<p>更多关于字符串不变量的讨论，请见<a href="http://mccxj.github.io/blog/20130615_java-string-constant-pool.html">初探Java字符串</a></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/9/">&larr; Older</a>
@@ -1300,6 +1092,10 @@ redis的所有功能就是将数据以其固有的几种结构保存，并提供
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/20160216_heapdump-intro.html">heapdump分析简单总结</a>
       </li>
     
       <li class="post">
@@ -1332,10 +1128,6 @@ redis的所有功能就是将数据以其固有的几种结构保存，并提供
     
       <li class="post">
         <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150624_Android-Universal-Image-Loader-source-view.html">Android-Universal-Image-Loader源码快扫</a>
       </li>
     
   </ul>
