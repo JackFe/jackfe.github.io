@@ -9,8 +9,7 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="上周在京东商城买了一个HP的笔记本，没有带系统，本来以为装个系统不麻烦，没想到整了一天才装好。 事情是这样的，网上推荐使用USB安装，可是我手头上只有一个2G的USB，心想装个xp凑合使用着。我使用了老毛桃的装机工具，
-发现无论是使用ghost还是原版安装，都没法成功， &hellip;">
+  <meta name="description" content="前阵子，其他项目组里边有个某项目频繁出现获取不到连接的问题，基本上每一天都出现一次。 打出来的javacore里面，有大量的线程等待获取连接。并且现场反映，从数据库那边监控到大量的空闲连接没有释放。 事实上，这个系统会用到两个数据源，其中有个是正常的。有意思的是，这几个月都没有新版本上载。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +64,95 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-26T00:00:00+08:00" pubdate data-updated="true">Nov 26<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20131126_connection-leak.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>前阵子，其他项目组里边有个某项目频繁出现获取不到连接的问题，基本上每一天都出现一次。</p>
+
+<p>打出来的javacore里面，有大量的线程等待获取连接。并且现场反映，从数据库那边监控到大量的空闲连接没有释放。</p>
+
+<p>事实上，这个系统会用到两个数据源，其中有个是正常的。有意思的是，这几个月都没有新版本上载。</p>
+
+<p>走读了java里边的连接获取释放逻辑，虽然获取和关闭的调用到处都是(没封装好)，但最后还是调用一些静态方法来完成的，并且都在finally块中进行了处理，感觉不会存在泄露的问题。</p>
+
+<p>尝试看看能不能重现，运气还不错，在开发环境模拟生产的业务场景(业务功能不多，但逻辑处理流程比较长)进行了压力测试，也的确出现了这种情况。</p>
+
+<p>既然能够重现问题，定位就方便许多了。我知道有Btrace这类神器可以帮助定位，但我没有使用过(下次再尝试一下)。我是通过修改代码来定位的，基本原理就是在获取连接时记录堆栈信息，在关闭时清除，这样出问题的时候就可以找到哪些地方有问题。其实用工具也是类似的做法。</p>
+
+<p>大体上是这样的:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">// 用来存储堆栈信息</span>
+</span><span class='line'><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">Connection</span><span class="o">,</span> <span class="n">Exception</span><span class="o">&gt;</span> <span class="n">conns</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ConcurrentHashMap</span><span class="o">&lt;</span><span class="n">Connection</span><span class="o">,</span> <span class="n">Exception</span><span class="o">&gt;();</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 当获取链接的时候</span>
+</span><span class='line'><span class="kd">public</span> <span class="n">Connection</span> <span class="nf">getConnection</span><span class="o">(){</span>
+</span><span class='line'>  <span class="n">Connection</span> <span class="n">conn</span> <span class="o">=</span> <span class="n">dataSource</span><span class="o">.</span><span class="na">getConnection</span><span class="o">();</span>
+</span><span class='line'>  <span class="n">conns</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">conn</span><span class="o">,</span> <span class="k">new</span> <span class="n">Exception</span><span class="o">());</span>
+</span><span class='line'>  <span class="k">return</span> <span class="n">conn</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// 当释放链接的时候</span>
+</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">releaseConnection</span><span class="o">(</span><span class="n">Connection</span> <span class="n">conn</span><span class="o">){</span>
+</span><span class='line'>  <span class="n">conns</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">conn</span><span class="o">);</span>
+</span><span class='line'>  <span class="n">dataSource</span><span class="o">.</span><span class="na">close</span><span class="o">(</span><span class="n">conn</span><span class="o">);</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>修改后重新压力测试后，打开记录的堆栈一看，居然是在jsp里边获取的，真是顿时无语。</p>
+
+<p>后来，虽然听说这个问题是其他原因引起的，导致非正常情况下走到这段逻辑，但这个地雷还是以前埋进去的，也怨不了别人。</p>
+
+<p>其实，关于资源释放的逻辑封装，可以参考spring的jdbc封装(回调的方式)，又或许用ThreadLocal、拦截器等方式在整个应用上进行处理。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -338,62 +426,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20131029_youdao-note.html">有道云笔记使用感受</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-10-29T00:00:00+08:00" pubdate data-updated="true">Oct 29<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20131029_youdao-note.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>在笔记这个领域，网易的有道笔记的确是做得不错的。跟everynote相比，也不落下风，
-相对来说，我使用有道笔记的频率要高许多，下面就简单说说我的使用体验。</p>
-
-<p>pc版，ipad和Android版，我都有使用。在pc上我更倾向于网页收藏，但这个网页插件好像只有ie版，不是特别方便。
-当然，我在电脑上工作的时候，还是用来记录一些材料，快速想法等。总体来说，我觉得网页插件还是不如everynote的方便。
-不过，有道的空间要大不少，在保留网页的时候有很大优势。同时，智能提取正文也是很舒心的功能。</p>
-
-<p>对于ipad，输入其实是没有优势的，我很多是采用涂鸦，录音，照片等方式进行录入，语音识别？尝试过，但感觉综合的速度并不快，
-特别是出错的时候，容易打断思路，纠正成本很高。对于ipad来说，更多的时候是阅读，如果能从浏览器上直接保存到笔记上去就最好了，
-就像稍后阅读功能。所以ipad的使用体验感觉是要差一些的。</p>
-
-<p>手机Android版，大多数输入都是在这个版本上完成的，手机拼音的输入方式效率是不错的。在地铁上半小时，能完成好几百字的输入。
-只是屏幕太小了，阅读，涂鸦并不方便，主要以文字输入为主，有时候也做一下录音。</p>
-
-<p>对于我来说，每天在办公室的时间占据了大多数，不幸的是，公司不允许使用这一类工具。这大大的减少了我使用pc版的频率。
-所以我使用的场景基本是在地铁上，主要是用来记录一些想法，思路，用一些要点记录下来，便于以后整理发布。
-有需要的话，还可以通过邮件分享，不过pc上的邮件分享功能好像不能用。 总体来说，这个版本还是很好用的。</p>
-
-<p>上面就是我的使用感受。在这个产品的帮助下，我完成了数十篇的草稿，记录了很多思路和计划，有兴趣的童鞋都来试试吧！</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/8/">&larr; Older</a>
@@ -409,6 +441,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160426_commons-logging-source.html">commons-logging源码学习</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
@@ -444,10 +480,6 @@
     
       <li class="post">
         <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
       </li>
     
   </ul>

@@ -9,9 +9,9 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="独立进程篇 首先需要知道类加载器是怎么回事? 在Java里边，类加载器就是用来加载类的，然后才是执行代码。
-Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类加载器(app)。
-其中boot就是用来加载最开始的虚拟机和最基本的java类，ext是用来加载一些扩展类， &hellip;">
+  <meta name="description" content="参考材料 https://code.google.com/p/maven-android-plugin/wiki/GettingStarted
+http://books.sonatype.com/mvnref-book/reference/android-dev.html
+http://www. &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +66,369 @@ Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20140219_android-maven-problems.html">Android+maven问题记录</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-02-19T00:00:00+08:00" pubdate data-updated="true">Feb 19<span>th</span>, 2014</time>
+        
+         | <a href="/blog/20140219_android-maven-problems.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>参考材料</h2>
+
+<ul>
+<li>https://code.google.com/p/maven-android-plugin/wiki/GettingStarted</li>
+<li>http://books.sonatype.com/mvnref-book/reference/android-dev.html</li>
+<li>http://www.ikoding.com/build-android-project-with-maven/</li>
+<li>https://github.com/mosabua/maven-android-sdk-deployer</li>
+<li>http://rgladwell.github.io/m2e-android/</li>
+<li>http://wiki.eclipse.org/M2E_plugin_execution_not_covered</li>
+</ul>
+
+
+<h2>前提条件</h2>
+
+<ul>
+<li>JDK 1.6+</li>
+<li>Android SDK r21.1+</li>
+<li>Maven 3.1.1+</li>
+<li>Set environment variable ANDROID_HOME to the path of your installed Android SDK and add $ANDROID_HOME/tools as well as $ANDROID_HOME/platform-tools to your $PATH. (or on Windows %ANDROID_HOME%\tools and %ANDROID_HOME%\platform-tools)</li>
+</ul>
+
+
+<p>特别注意maven的版本号</p>
+
+<h2>maven配置</h2>
+
+<p>请设置环境变量M2_HOME，并把settings.xml放到M2_HOME/conf中去。</p>
+
+<h2>eclipse配置</h2>
+
+<p>对于eclipse来说，除了要maven插件，还需要<a href="http://rgladwell.github.io/m2e-android/">m2e-android</a>插件。</p>
+
+<h2>dependency中support-v4的版本号只有很旧r7</h2>
+
+<p>其实除了support-v4,像android也有类似的问题。有一种解决方案是采用<a href="https://github.com/mosabua/maven-android-sdk-deployer">maven-android-sdk-deployer</a>。
+我测试过之后，发现这个解决方案虽然可行，但实际上比较麻烦。我直接在公司内的代理仓库上安装了新版本的。</p>
+
+<h2>Plugin execution not covered by lifecycle configuration</h2>
+
+<p>pom.xml很可能出现下面的错误提示:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>Plugin execution not covered by lifecycle configuration:
+</span><span class='line'> com.jayway.maven.plugins.android.generation2:android-maven-plugin:3.8.2:consume-aar
+</span><span class='line'> <span class="o">(</span>execution: default-consume-aar, phase: compile<span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>虽然不影响编译，但是很怪，可以通过下面的配置进行排除:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;pluginManagement&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;plugins&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;plugin&gt;</span>
+</span><span class='line'>          <span class="nt">&lt;groupId&gt;</span>org.eclipse.m2e<span class="nt">&lt;/groupId&gt;</span>
+</span><span class='line'>          <span class="nt">&lt;artifactId&gt;</span>lifecycle-mapping<span class="nt">&lt;/artifactId&gt;</span>
+</span><span class='line'>          <span class="nt">&lt;version&gt;</span>1.0.0<span class="nt">&lt;/version&gt;</span>
+</span><span class='line'>          <span class="nt">&lt;configuration&gt;</span>
+</span><span class='line'>              <span class="nt">&lt;lifecycleMappingMetadata&gt;</span>
+</span><span class='line'>                  <span class="nt">&lt;pluginExecutions&gt;</span>
+</span><span class='line'>                      <span class="nt">&lt;pluginExecution&gt;</span>
+</span><span class='line'>                          <span class="nt">&lt;pluginExecutionFilter&gt;</span>
+</span><span class='line'>                              <span class="nt">&lt;groupId&gt;</span>com.jayway.maven.plugins.android.generation2<span class="nt">&lt;/groupId&gt;</span>
+</span><span class='line'>                              <span class="nt">&lt;artifactId&gt;</span>android-maven-plugin<span class="nt">&lt;/artifactId&gt;</span>
+</span><span class='line'>                              <span class="nt">&lt;versionRange&gt;</span>3.8.2<span class="nt">&lt;/versionRange&gt;</span>
+</span><span class='line'>                              <span class="nt">&lt;goals&gt;</span>
+</span><span class='line'>                                  <span class="nt">&lt;goal&gt;</span>manifest-update<span class="nt">&lt;/goal&gt;</span>
+</span><span class='line'>                                  <span class="nt">&lt;goal&gt;</span>generate-sources<span class="nt">&lt;/goal&gt;</span>
+</span><span class='line'>                                  <span class="nt">&lt;goal&gt;</span>proguard<span class="nt">&lt;/goal&gt;</span>
+</span><span class='line'>                                  <span class="nt">&lt;goal&gt;</span>consume-aar<span class="nt">&lt;/goal&gt;</span>
+</span><span class='line'>                              <span class="nt">&lt;/goals&gt;</span>
+</span><span class='line'>                          <span class="nt">&lt;/pluginExecutionFilter&gt;</span>
+</span><span class='line'>                          <span class="nt">&lt;action&gt;</span>
+</span><span class='line'>                              <span class="nt">&lt;ignore</span> <span class="nt">/&gt;</span>
+</span><span class='line'>                          <span class="nt">&lt;/action&gt;</span>
+</span><span class='line'>                      <span class="nt">&lt;/pluginExecution&gt;</span>
+</span><span class='line'>                  <span class="nt">&lt;/pluginExecutions&gt;</span>
+</span><span class='line'>              <span class="nt">&lt;/lifecycleMappingMetadata&gt;</span>
+</span><span class='line'>          <span class="nt">&lt;/configuration&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;/plugin&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/plugins&gt;</span>
+</span><span class='line'><span class="nt">&lt;/pluginManagement&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可以参考<a href="http://wiki.eclipse.org/M2E_plugin_execution_not_covered">M2E_plugin_execution_not_covered</a></p>
+
+<h2>OutOfMemory或创建不了虚拟机</h2>
+
+<p>有时候会出现内存溢出或创建不了虚拟机的错误。考虑设置内存大小</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;plugin&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;groupId&gt;</span>com.jayway.maven.plugins.android.generation2<span class="nt">&lt;/groupId&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;artifactId&gt;</span>android-maven-plugin<span class="nt">&lt;/artifactId&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;configuration&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;dex&gt;</span>
+</span><span class='line'>          <span class="nt">&lt;jvmArguments&gt;</span>
+</span><span class='line'>              <span class="nt">&lt;jvmArgument&gt;</span>-Xms256m<span class="nt">&lt;/jvmArgument&gt;</span>
+</span><span class='line'>              <span class="nt">&lt;jvmArgument&gt;</span>-Xmx512m<span class="nt">&lt;/jvmArgument&gt;</span>
+</span><span class='line'>          <span class="nt">&lt;/jvmArguments&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;/dex&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/configuration&gt;</span>
+</span><span class='line'><span class="nt">&lt;/plugin&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>出现maven打包太慢的情况</h2>
+
+<p>经过测量，在dex成classes.dex的阶段比较慢，dx工具有提供一些参数进行优化.</p>
+
+<ul>
+<li>incremental 增量打包，开发阶段可以开启，可以比较明显的缩短打包时间</li>
+<li>optimize 是否优化classes.dex，开发阶段可以关闭</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;dex&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;incremental&gt;</span>true<span class="nt">&lt;/incremental&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;optimize&gt;</span>false<span class="nt">&lt;/optimize&gt;</span>
+</span><span class='line'><span class="nt">&lt;/dex&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>libpng error: Not a PNG file</h2>
+
+<p>如果直接把jpg格式换个名字，变成png，编译会报下面的错误，导致后面编译的.9图片也出问题(混淆问题的原因)</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>INFO<span class="o">]</span> libpng error: Not a PNG file
+</span><span class='line'><span class="o">[</span>INFO<span class="o">]</span> ERROR: Failure processing PNG image E:<span class="se">\p</span>rojects<span class="se">\G</span>3ESOP<span class="se">\E</span>SOP-Hubei2<span class="se">\r</span>es<span class="se">\d</span>rawable-xhdpi<span class="se">\m</span>ore_about_pic1.png
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>&#8216;build.plugins.plugin.version&#8217; is missing</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>WARN<span class="o">]</span> <span class="s1">&#39;build.plugins.plugin.version&#39;</span> is missing fororg.apache.maven.plugins:maven.compiler.plugin
+</span><span class='line'>It is highly recommended to fix these problems because they threaten the stability of your build.
+</span><span class='line'>For this reason, future Maven versions might no longer support building such malformed projects.
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>很简单，给maven.compiler.plugin这个插件添加version属性。
+其实所有引用的插件都应该指定版本，不然都会有类似的提示。</p>
+
+<h2>关于编码</h2>
+
+<p>对于源码的编码格式和编译版本，应该进行指定:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;plugin&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;groupId&gt;</span>org.apache.maven.plugins<span class="nt">&lt;/groupId&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;artifactId&gt;</span>maven-compiler-plugin<span class="nt">&lt;/artifactId&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;version&gt;</span>3.1<span class="nt">&lt;/version&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;configuration&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;source&gt;</span>1.6<span class="nt">&lt;/source&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;target&gt;</span>1.6<span class="nt">&lt;/target&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;encoding&gt;</span>UTF8<span class="nt">&lt;/encoding&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/configuration&gt;</span>
+</span><span class='line'><span class="nt">&lt;/plugin&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>对于资源处理的话，可能出现下面的提示:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="o">[</span>WARNING<span class="o">]</span> Using platform encoding <span class="o">(</span>GBK actually<span class="o">)</span> to copy filtered resources, i.e. build is platform dependent!
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这个应该设置成UTF-8，如下所示:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>      <span class="nt">&lt;plugin&gt;</span>
+</span><span class='line'>          <span class="nt">&lt;groupId&gt;</span>org.apache.maven.plugins<span class="nt">&lt;/groupId&gt;</span>
+</span><span class='line'>          <span class="nt">&lt;artifactId&gt;</span>maven-resources-plugin<span class="nt">&lt;/artifactId&gt;</span>
+</span><span class='line'>          <span class="nt">&lt;version&gt;</span>2.6<span class="nt">&lt;/version&gt;</span>
+</span><span class='line'>          <span class="nt">&lt;configuration&gt;</span>
+</span><span class='line'>              <span class="nt">&lt;encoding&gt;</span>UTF-8<span class="nt">&lt;/encoding&gt;</span>
+</span><span class='line'>          <span class="nt">&lt;/configuration&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;/plugin&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>maven-jarsigner-plugin对带特殊字符的口令的处理</h2>
+
+<p>这个弄了好久，最后发现得把密码用引用引起来。切记切记。</p>
+
+<p>后来，发现在linux这样又不能支持。所以只能用profile解决。</p>
+
+<h2>部分代码在jdk7中编译后dex出错</h2>
+
+<p>参考<a href="/blog/20140225_android-jdk7-bug.html">jdk7编译的bug记录</a>,暂时只用jdk6编译</p>
+
+<h2>jdk6不支持android-19的proguard</h2>
+
+<p>原因是android-19的API实现了一些jdk7的特性，在proguard会找不到这些api。
+由于和上一个问题有些冲突，暂时不考虑proguard。后续考虑考虑上jdk7。</p>
+
+<h2>如何添加.so支持</h2>
+
+<p>例如下面的百度地图SDK，需要加入一个so文件，在百度SDK里边是这样调用的：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">loadLibrary</span><span class="o">(</span><span class="s">&quot;BaiduMapSDK_v2_3_1&quot;</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>如果要用maven集成的话，可以用下面的配置(已经部署到代理仓库):</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;dependency&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;groupId&gt;</span>com.baidu<span class="nt">&lt;/groupId&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;artifactId&gt;</span>libBaiduMapSDK_v2_3_1<span class="nt">&lt;/artifactId&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;version&gt;</span>2.3.1<span class="nt">&lt;/version&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;classifier&gt;</span>armeabi<span class="nt">&lt;/classifier&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;scope&gt;</span>runtime<span class="nt">&lt;/scope&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;type&gt;</span>so<span class="nt">&lt;/type&gt;</span>
+</span><span class='line'><span class="nt">&lt;/dependency&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>如何转换成eclipse项目</h2>
+
+<p>项目目录中只有pom.xml，如果要导入eclipse的话，可以考虑使用下面的命令生成.project和.classpath文件</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>mvn eclipse:eclipse
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>生成之后可能会有M2_REPO变量找不到的问题，可以在eclipse中通过window>Preferences>Maven>Installations>Add进行添加maven安装位置。</p>
+
+<p>否则的话，可以按以下方法添加M2_REPO: Window > Preferences > Java > Build Path > Classpath Variables
+新增一个M2_REPO变量指向你maven本地仓库。</p>
+
+<h2>常用命令</h2>
+
+<p>mvn clean package<br/>
+打包，但不部署。</p>
+
+<p>mvn clean install<br/>
+打包，部署并运行。</p>
+
+<p>mvn clean package android:redeploy android:run<br/>
+这个命令通常用于手机上已经安装了要部署的应用，但签名不同，所以我们打包的同时使用redeploy命令将现有应用删除并重新部署，最后使用run命令运行应用。</p>
+
+<p>mvn android:redeploy android:run<br/>
+不打包，将已生成的包重新部署并运行。</p>
+
+<p>mvn android:deploy android:run<br/>
+部署并运行已生成的包，与redeploy不同的是，deploy不会删除已有部署和应用数据</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -680,95 +1043,6 @@ Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20131126_connection-leak.html">连接池泄露定位案例</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-11-26T00:00:00+08:00" pubdate data-updated="true">Nov 26<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20131126_connection-leak.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>前阵子，其他项目组里边有个某项目频繁出现获取不到连接的问题，基本上每一天都出现一次。</p>
-
-<p>打出来的javacore里面，有大量的线程等待获取连接。并且现场反映，从数据库那边监控到大量的空闲连接没有释放。</p>
-
-<p>事实上，这个系统会用到两个数据源，其中有个是正常的。有意思的是，这几个月都没有新版本上载。</p>
-
-<p>走读了java里边的连接获取释放逻辑，虽然获取和关闭的调用到处都是(没封装好)，但最后还是调用一些静态方法来完成的，并且都在finally块中进行了处理，感觉不会存在泄露的问题。</p>
-
-<p>尝试看看能不能重现，运气还不错，在开发环境模拟生产的业务场景(业务功能不多，但逻辑处理流程比较长)进行了压力测试，也的确出现了这种情况。</p>
-
-<p>既然能够重现问题，定位就方便许多了。我知道有Btrace这类神器可以帮助定位，但我没有使用过(下次再尝试一下)。我是通过修改代码来定位的，基本原理就是在获取连接时记录堆栈信息，在关闭时清除，这样出问题的时候就可以找到哪些地方有问题。其实用工具也是类似的做法。</p>
-
-<p>大体上是这样的:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">// 用来存储堆栈信息</span>
-</span><span class='line'><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">Connection</span><span class="o">,</span> <span class="n">Exception</span><span class="o">&gt;</span> <span class="n">conns</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ConcurrentHashMap</span><span class="o">&lt;</span><span class="n">Connection</span><span class="o">,</span> <span class="n">Exception</span><span class="o">&gt;();</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">// 当获取链接的时候</span>
-</span><span class='line'><span class="kd">public</span> <span class="n">Connection</span> <span class="nf">getConnection</span><span class="o">(){</span>
-</span><span class='line'>  <span class="n">Connection</span> <span class="n">conn</span> <span class="o">=</span> <span class="n">dataSource</span><span class="o">.</span><span class="na">getConnection</span><span class="o">();</span>
-</span><span class='line'>  <span class="n">conns</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">conn</span><span class="o">,</span> <span class="k">new</span> <span class="n">Exception</span><span class="o">());</span>
-</span><span class='line'>  <span class="k">return</span> <span class="n">conn</span><span class="o">;</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="c1">// 当释放链接的时候</span>
-</span><span class='line'><span class="kd">public</span> <span class="kt">void</span> <span class="nf">releaseConnection</span><span class="o">(</span><span class="n">Connection</span> <span class="n">conn</span><span class="o">){</span>
-</span><span class='line'>  <span class="n">conns</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">conn</span><span class="o">);</span>
-</span><span class='line'>  <span class="n">dataSource</span><span class="o">.</span><span class="na">close</span><span class="o">(</span><span class="n">conn</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>修改后重新压力测试后，打开记录的堆栈一看，居然是在jsp里边获取的，真是顿时无语。</p>
-
-<p>后来，虽然听说这个问题是其他原因引起的，导致非正常情况下走到这段逻辑，但这个地雷还是以前埋进去的，也怨不了别人。</p>
-
-<p>其实，关于资源释放的逻辑封装，可以参考spring的jdbc封装(回调的方式)，又或许用ThreadLocal、拦截器等方式在整个应用上进行处理。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/7/">&larr; Older</a>
@@ -784,6 +1058,10 @@ Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160426_commons-logging-source.html">commons-logging源码学习</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
@@ -819,10 +1097,6 @@ Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类
     
       <li class="post">
         <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
       </li>
     
   </ul>

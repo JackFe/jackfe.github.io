@@ -9,9 +9,9 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="不能正常生成页面 我是使用windows来弄的，在git shell里边操作。发现有时候页面根本不生成，
-即使我把_site下面的文件全部生成，还是没动静。后来发现，需要设置一下环境的字符编码，例如export LC_ALL=zh_CN.UTF-8
-可以在启动脚本里边修改, &hellip;">
+  <meta name="description" content="量杯倒水 这个问题常见于趣味题和面试题，题意大概是这样的:有两个只有最大刻度的量杯(如10毫升，3毫升)，
+并且有无限量的水。求怎么倒出x毫升的水? 思路与猜想 首先我们来操作一下，例如倒出4毫升的水,同时把大小量杯表示为a,b b装满，倒入a(a有3ml,b有0ml)
+b再装满，倒入a( &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +66,98 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120706_the-cup-game.html">量杯倒水游戏</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-06T00:00:00+08:00" pubdate data-updated="true">Jul 6<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120706_the-cup-game.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/assets/images/the_cup_game.jpg" alt="量杯倒水" /></p>
+
+<h2>量杯倒水</h2>
+
+<p>这个问题常见于趣味题和面试题，题意大概是这样的:有两个只有最大刻度的量杯(如10毫升，3毫升)，
+并且有无限量的水。求怎么倒出x毫升的水?</p>
+
+<h2>思路与猜想</h2>
+
+<p>首先我们来操作一下，例如倒出4毫升的水,同时把大小量杯表示为a,b</p>
+
+<ol>
+<li>b装满，倒入a(a有3ml,b有0ml)</li>
+<li>b再装满，倒入a(a有6ml,b有0ml)</li>
+<li>b再装满，倒入a(a有9ml,b有0ml)</li>
+<li>b再装满，倒入a(a有10ml,b有2ml)</li>
+<li>a倒掉，b倒入a(a有2ml,b有0ml)</li>
+<li>重复2-4的动作(此时a有10ml,b有1ml)</li>
+<li>a倒掉，b倒入a(a有1ml,b有0ml)</li>
+<li>b装满，倒入a(a有4ml,b有0ml)</li>
+</ol>
+
+
+<p>假如我们再继续操作的话，还可以找到7ml,这样0ml~10ml的体积都是可以测量出来的。这是不是一般规律?</p>
+
+<p>虽然我们进行了许多次操作，但操作是有规律的:b总是往a倒水直到a装满，这时b会剩余一点。
+这样才能得到不同于a,b的体积。我们重复这个操作的过程，不考虑a装满的情况，
+在a中出现的水t可以用t=mb-na来表示(a>t>=0,m>=0,n>=0)。其中m可以表示为往a倒水的次数，
+n表示a装满的次数。</p>
+
+<p>首先考虑一下a,b不是互质的情况，假设他们的最大公约数为u,那么狠显然没法倒出t小于u的体积。
+这种情况可以归结为两边除去u的情况。</p>
+
+<p>现在再来考虑a,b互质的情况，我们需要考虑的是，对于t，是否都存在m,n使t=mb-na成立？</p>
+
+<h2>贝祖定理</h2>
+
+<p>我们从数学归纳法出发，很明显t=0的情况是满足要求的，假设t=1的要求也能够满足，
+那么有t=mb-na成立就可以推导出t+1=m1<em>b-n1</em>a+m2<em>b-n2</em>a也是符合mb-na的。</p>
+
+<p>如何证明存在m,n使得mb-na=1?这个倒不用自己动手，有个叫<a href="http://zh.wikipedia.org/wiki/%E8%B4%9D%E7%A5%96%E7%AD%89%E5%BC%8F">贝祖定理</a>的数学定理，可以很容易推导出这个结论。</p>
+
+<p>从wiki上看到的资料，贝祖定理可以证明a,b互质，存在xa+yb=1，其中x,y为整数
+不过好像跟我们的要求有点出入。不过没关系，很显然x,y如果没有不等于0的话，必须有个是负数，</p>
+
+<p>如果x是负数，显然符合要求，如果y是负数，那么总存在一个数k(k>0)使得y+ka>0,那么
+1=xa+yb=xa+yb-kab+kab=(x-ka)a+(y+ka)b,这样也是可以符合要求的。</p>
+
+<p>所以，按照我们的操作方式，假设a,b的最大公约数为u,就可以找到0ml,uml,2uml&#8230;aml的体积。</p>
+
+<h2>再思考</h2>
+
+<p>如果有多个量杯，情况会是怎样?</p>
+
+<p>要倒出一定量的水，上述操作是否是最快的?</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -337,78 +429,9 @@ SET LC_ALL=zh_CN.UTF-8</p></blockquote>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120622_new-blog-in-github.html">Blog in Github,新的开始</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-06-22T00:00:00+08:00" pubdate data-updated="true">Jun 22<span>nd</span>, 2012</time>
-        
-         | <a href="/blog/20120622_new-blog-in-github.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>老掉牙的故事</h2>
-
-<p>我写博客也不算新鲜事了，不过已经有2年没写过博客了。很早之前就有<a href="http://uptolife.blogspot.com" title="google blogspot">blogspot</a>和<a href="http://bonyfish.cn" title="blog">bonyfish.cn</a>，
-blogspot是我最初的博客地址，因为我比较喜欢blogspot那种简洁的风格，只是后来在天朝无法访问，所以把数据迁移出来。
-后来自己弄了个域名，用wordpress重新搭建了一个，又这样持续了一两天。
-前后加起来写过超过1000篇大大小小的博客，只是因为各种原因，后来没有坚持下来，回想起来，还是有些可惜的。
-不过，我手头上还是有一份完整的数据库备份，算是留个纪念。</p>
-
-<h2>why blog, why github</h2>
-
-<p>这两年的工作比较忙，这也是没坚持下来的原因之一，但同样也是这次想重新捡起来的主要动力。
-在这家公司里边，忙已经成为一种常态，常常没有时间停下来思考，把好的东西沉淀下来。
-这是一家感觉很特别的公司，有很多人很认真，却忙得一塌糊涂，没时间学习。
-不得不说，这真是很无奈的一件事。但我不想这样，我需要时常回顾一下做过的事情，希望能从中获取到一些东西。
-或许哪天我离开这家公司，我希望带走更多东西，而不只是一些钱和一个漂亮的工作简历。</p>
-
-<p>为什么选择github作为博客？我非常喜欢github，它给我的体验非常好，我在公司弄的code diff工具也借鉴了github的review功能。
-github的博客功能其实是一个只支持静态页面的page功能，相对于正式的博客来说，只能用简陋来形容，但它符合KISS原则，能够让我关注不至于过于分散。
-借助<a href="https://github.com/mojombo/jekyll" title="jekyll">jekyll</a>和markdown标记语言来生成静态页面也很简单，稍微试了一下，符合我的要求:足够简单。</p>
-
-<p>关于jekyll的更多内容，可以参考原作者的博文:<a href="http://tom.preston-werner.com/2008/11/17/blogging-like-a-hacker.html">像黑客一样写博客</a>(<a href="http://kyle.xlau.org/posts/blogging-like-a-hacker.html">中文版</a>)</p>
-
-<p>关于markdown的更多内容，可以参考这个教程:<a href="http://wowubuntu.com/markdown/">Markdown 语法说明</a>，你只要花半个小时到一个小时就差不多了。</p>
-
-<p>我还整理了一个<a href="/20120629_problem-about-jekyll-and-markdown.html">使用jekyll和markdown中遇到的问题</a></p>
-
-<h2>plan&#8230;and so on</h2>
-
-<p>我是使用<a href="http://jekyllbootstrap.com/" title="jekyll bootstrap">Jekyll Bootstrap</a>弄的，因为我对<a href="http://twitter.github.com/bootstrap/" title="twitter bootstrap">twitter bootstrap</a>这套简洁的css框架还算了解。同时，我相信你也是喜欢上这个风格的。</p>
-
-<p>我会争取一个星期至少更新一篇，这个频率虽然有点慢，但目标不要定太高，万事开头难嘛 :)
-另外，我会抽时间整理一下以前老的博客，把还有点用的东西重新分享一番，但愿这些年没有白过了。</p>
-
-<p>拭目以待吧!</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
+    
+      <a class="prev" href="/blog/page/26/">&larr; Older</a>
     
     <a href="/blog/archives">Blog Archives</a>
     
@@ -421,6 +444,10 @@ github的博客功能其实是一个只支持静态页面的page功能，相对�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160426_commons-logging-source.html">commons-logging源码学习</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
@@ -456,10 +483,6 @@ github的博客功能其实是一个只支持静态页面的page功能，相对�
     
       <li class="post">
         <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
       </li>
     
   </ul>

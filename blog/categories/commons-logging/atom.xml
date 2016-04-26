@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: commons-logging | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/commons-logging/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2016-04-26T21:50:43+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[commons-logging源码学习]]></title>
+    <link href="http://mccxj.github.com/blog/20160426_commons-logging-source.html"/>
+    <updated>2016-04-26T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/commons-logging-source</id>
+    <content type="html"><![CDATA[<p>commons-logging是一个流行的logging统一接口，代码非常简单，具体的logging可以使用不同的实现，如log4j，jdk log等，即使没有这些，它还是能在控制台上输出，它可以帮你选择一种合适的logging实现。</p>
+
+<p>commons-logging有LogFactory和Log两个主要接口，LogFactory实现了如何找到合适的Log，而Log是一个标准的logging接口。</p>
+
+<p>LogFactory是一个抽象类，它的具体实现通过以下顺序确定:</p>
+
+<ol>
+<li>系统属性org.apache.commons.logging.LogFactory</li>
+<li>META-INF/services/org.apache.commons.logging.LogFactory</li>
+<li>commons-logging.properties的org.apache.commons.logging.LogFactory</li>
+<li>org.apache.commons.logging.impl.LogFactoryImpl</li>
+</ol>
+
+
+<p>基本上，都会是LogFactoryImpl这个实现。</p>
+
+<p>另外，commons-logging可以采用SPI指定LogFactory实现，不过commons-logging并没有使用标准的ServiceLoader来处理，可能是由于commons-logging要兼容老的java版本吧。</p>
+
+<p>还有，commons-logging.properties是支持重新加载的，按道理classpath加载资源是有缓存的，
+见LogFactory中的getProperties，它不是直接使用getResourceAsStream，而是采用getResources/getResource,对得到的URL进行openConnection得到URLConnection对象，对它设置setUseCache为false，这的确是个小技巧。</p>
+
+<p>对于Log实现，如果没有通过commons-logging.properties的的org.apache.commons.logging.Log这个key指定的话，是按照下面的方式尝试获取的:</p>
+
+<ol>
+<li>org.apache.commons.logging.impl.Log4JLogger</li>
+<li>org.apache.commons.logging.impl.Jdk14Logger</li>
+<li>org.apache.commons.logging.impl.Jdk13LumberjackLogger</li>
+<li>org.apache.commons.logging.impl.SimpleLog</li>
+</ol>
+
+
+<p>很明显，只要有log4j的jar包就会选择log4j，否则就会选择jdk logging或者System.err。</p>
+
+<p>所以正常情况下，不需要设置这个commons-logging.properties里边的org.apache.commons.logging.Log对应的属性值(其实这个配置文件都是不需要的)。</p>
+
+<p>曾经就有项目，依赖一个自己写的jar包，就把commons-logging.properties打包进去，里边配置成SimpleLog，导致很多框架的日志不能输出到log4j指定的文件中去。</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -9,9 +9,10 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="练习重点 列表解析和高阶函数是erlang的基本用法之一，熟练掌握还是很有必要的。
-作为一个阶段的学习总结，按照书上的一个练习题，尝试实现列表模块中的一些方法。 后续学习计划 再找时间总结一下位匹配用法，然后就开始客户端服务器编程模型，
-网络和分布式方面的内容。 相关内容虽然都看过一下， &hellip;">
+  <meta name="description" content="想法 周五的时候去了趟图书馆，回来的时候已经2点了，又是组织参加每周的代码评审了。
+这项活动已经参加了很多次了，但还是经常会遇到相同的问题，即使每天codediff，
+也很难避免问题一次次的重复出现。代码基还是不可避免的膨胀，需求变化还是那么的频繁，
+人员流动还是那么快， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +67,119 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120721_improve-bitter-code.html">Improve Bitter Code</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-21T00:00:00+08:00" pubdate data-updated="true">Jul 21<span>st</span>, 2012</time>
+        
+         | <a href="/blog/20120721_improve-bitter-code.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>想法</h3>
+
+<p>周五的时候去了趟图书馆，回来的时候已经2点了，又是组织参加每周的代码评审了。
+这项活动已经参加了很多次了，但还是经常会遇到相同的问题，即使每天codediff，
+也很难避免问题一次次的重复出现。代码基还是不可避免的膨胀，需求变化还是那么的频繁，
+人员流动还是那么快，新人还是有那么多不成熟的编码风格。</p>
+
+<p>在这个开发团队里边，也没少唠叨编码规范，codediff也是经常再做，代码评审还是有弄，
+但最终的效果，体现在代码上，还远远没有那么乐观。我认为这有好些原因：一方面是历史原因，
+代码基庞大，复杂，每天对着这些代码，连好代码是怎样的都没有见过，还能真的无师自通?
+另外一方面是各种质量改进活动参与度都不是很高，毕竟目标是完成需求，时间久了热情一点点磨灭，
+对这个就更不重视了。</p>
+
+<p>相信很多人看过郑大的代码之丑，里边很多素材就出自我所在的项目组，所以这种代码我也看见不少了，
+正因为如此，我觉得我也能写一些相关的内容。在下班坐地铁回来的时候，
+我列了一些相关主题，更确信了还是有很多内容可以做文章的。大多数题材来自
+项目的代码，自己的想法思路则是来源于平时的实践，工作经历，还有开源代码和各种相关的书籍。</p>
+
+<h3>计划</h3>
+
+<p>整个系列围绕bitter code来说，毕竟维护现有代码是非常重要的工作。这么个系列名称灵感来源于
+代码之丑系列和一本叫bitter java的书籍。虽然我觉得代码之丑的名称不是很好，但内容形式会和
+这个系列类似，只是会多加一些上下文和背景。文章内容仍然以代码为主线，写出我对代码的改进意见，
+至于发布周期，大约是一个星期争取不少于两篇!!</p>
+
+<p>期待吧!!!</p>
+
+<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
+
+
+<ul>
+ 
+  
+  <li>2012-07-21 improve bitter code</li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-4.html">2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -711,141 +825,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120712_horse-riding-chessboard.html">马踏棋盘的算法思考</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-12T00:00:00+08:00" pubdate data-updated="true">Jul 12<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120712_horse-riding-chessboard.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>马踏棋盘</h3>
-
-<p>将马随机放在国际象棋的8×8棋盘的某个方格中，马按走棋规则进行移动。
-要求每个方格只进入一次，走遍棋盘上全部64个方格。</p>
-
-<h3>又是回溯?</h3>
-
-<p>这个做法和前面几个问题是差不多的(<a href="20120710_sudoku.html">数独(sudoku)游戏</a>)，所以这里就不做太多解释了。
-总体来说，就是可选的解空间是8个方向。回溯的代码就不多提了，需要说的是，这里简单的回溯
-效率不好，需要跑很久才出结果。我们有什么方式可以优化一下!</p>
-
-<h3>贪心是否有效?</h3>
-
-<p>首先，我们可以对可供选择的方向进行过滤，对于它相连的8个方向所在的点，
-在当前的局面下，假如存在两个点只有一条路可以到达，那么可以直接回溯，
-因为无论走哪个方向都不能走完整个棋盘。假如存在一个点，它只有一条路可以到达，
-那么下一步必须走这个方向。</p>
-
-<p>但是，即使我们过滤了一些路径，效率还是没有非常大的提升。我们需要考虑一种贪心的思路：
-在可选的方向中，优先选择出口最少的目标点。因为优先选择出口少的点,
-就可以让出口少的点尽量少，使得最后剩下的点有比较多的入口，这样最终达到目的的概率就会大些。</p>
-
-<p>虽然这个思路，我觉得不好直接证明，不过我修改了一些代码实现，的确效率得到非常大的提升。
-就我那个机器，ruby代码，不到1s，64个点的情况就全部处理完了。</p>
-
-<h3>代码示例</h3>
-
-<div class="highlight"><pre><code class="ruby"><span class="k">def</span> <span class="nf">init</span>
-  <span class="vi">@arr</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
-  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">7</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">end</span>
-  <span class="vi">@path</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span> 
-  <span class="vi">@ok</span> <span class="o">=</span> <span class="kp">false</span>
-  <span class="vi">@poss</span> <span class="o">=</span> <span class="o">[[-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">]</span><span class="p">,</span> <span class="o">[-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">]</span><span class="p">,</span> <span class="o">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span><span class="o">]]</span>
-<span class="k">end</span>
-<span class="c1"># 判断[x,y]是否在棋盘内并未走过</span>
-<span class="k">def</span> <span class="nf">valid?</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
-  <span class="n">x</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">x</span><span class="o">&lt;</span><span class="mi">8</span> <span class="o">&amp;&amp;</span> <span class="n">y</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">y</span><span class="o">&lt;</span><span class="mi">8</span> <span class="o">&amp;&amp;</span> <span class="vi">@arr</span><span class="o">[</span><span class="n">x</span><span class="o">][</span><span class="n">y</span><span class="o">]==</span><span class="mi">0</span>
-<span class="k">end</span>
-
-<span class="c1"># 判断当前点有哪些方向可以走</span>
-<span class="k">def</span> <span class="nf">filter</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span>
-  <span class="n">posz</span><span class="p">,</span> <span class="n">mustpos</span> <span class="o">=</span> <span class="p">{},</span> <span class="kp">nil</span>
-  <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="vi">@path</span><span class="o">[</span><span class="n">mark</span><span class="o">]</span>
-  <span class="vi">@poss</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">pos</span><span class="o">|</span>
-    <span class="n">axp</span><span class="p">,</span> <span class="n">bxp</span> <span class="o">=</span> <span class="n">a</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span>
-    <span class="k">if</span> <span class="n">valid?</span><span class="p">(</span><span class="n">axp</span><span class="p">,</span> <span class="n">bxp</span><span class="p">)</span>
-      <span class="n">sz</span> <span class="o">=</span> <span class="mi">0</span>
-      <span class="vi">@poss</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">ps</span><span class="o">|</span>
-        <span class="n">ap</span><span class="p">,</span> <span class="n">bp</span> <span class="o">=</span> <span class="n">axp</span><span class="o">+</span><span class="n">ps</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="p">,</span> <span class="n">bxp</span><span class="o">+</span><span class="n">ps</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span>
-        <span class="n">sz</span><span class="o">+=</span><span class="mi">1</span> <span class="k">if</span> <span class="n">valid?</span><span class="p">(</span><span class="n">ap</span><span class="p">,</span> <span class="n">bp</span><span class="p">)</span> <span class="c1"># 存在空点</span>
-      <span class="k">end</span>
-      <span class="k">if</span> <span class="n">sz</span><span class="o">&gt;</span><span class="mi">0</span>
-        <span class="n">posz</span><span class="o">[</span><span class="n">pos</span><span class="o">]</span> <span class="o">=</span> <span class="n">sz</span>
-      <span class="k">else</span>
-        <span class="n">mustpos</span><span class="o">.</span><span class="n">nil?</span> <span class="p">?</span> <span class="p">(</span><span class="n">mustpos</span> <span class="o">=</span> <span class="n">pos</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="k">return</span> <span class="o">[]</span><span class="p">)</span>
-      <span class="k">end</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-  <span class="c1"># 对目标点的方向多寡进行排序</span>
-  <span class="n">mustpos</span><span class="o">.</span><span class="n">nil?</span> <span class="p">?</span> <span class="n">posz</span><span class="o">.</span><span class="n">keys</span><span class="o">.</span><span class="n">sort</span> <span class="p">{</span><span class="o">|</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="o">|</span> <span class="n">posz</span><span class="o">[</span><span class="n">a</span><span class="o">]&lt;=&gt;</span><span class="n">posz</span><span class="o">[</span><span class="n">b</span><span class="o">]</span><span class="p">}</span> <span class="p">:</span> <span class="o">[</span><span class="n">mustpos</span><span class="o">]</span>
-<span class="k">end</span>
-
-<span class="k">def</span> <span class="nf">walk</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span>
-  <span class="k">if</span> <span class="n">mark</span><span class="o">==</span><span class="mi">63</span>
-    <span class="vi">@ok</span> <span class="o">=</span> <span class="kp">true</span>
-    <span class="k">return</span>
-  <span class="k">end</span>
-  <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="vi">@path</span><span class="o">[</span><span class="n">mark</span><span class="o">]</span>
-  <span class="n">filter</span><span class="p">(</span><span class="n">mark</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">pos</span><span class="o">|</span>
-    <span class="n">rp</span> <span class="o">=</span> <span class="o">[</span><span class="n">a</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="n">pos</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span>
-    <span class="vi">@path</span><span class="o">[</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="o">]</span> <span class="o">=</span> <span class="n">rp</span>
-    <span class="vi">@arr</span><span class="o">[</span><span class="n">rp</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">rp</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">walk</span><span class="p">(</span><span class="n">mark</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-    <span class="vi">@ok</span> <span class="p">?</span> <span class="k">return</span> <span class="p">:</span> <span class="p">(</span><span class="vi">@arr</span><span class="o">[</span><span class="n">rp</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">rp</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-
-<span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">7</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span>
-  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">7</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">j</span><span class="o">|</span>
-    <span class="n">init</span>
-    <span class="vi">@path</span><span class="o">[</span><span class="mi">0</span><span class="o">]</span> <span class="o">=</span> <span class="o">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="o">]</span>
-    <span class="vi">@arr</span><span class="o">[</span><span class="n">i</span><span class="o">][</span><span class="n">j</span><span class="o">]</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">walk</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-    <span class="k">if</span> <span class="vi">@ok</span>
-      <span class="vi">@path</span><span class="o">.</span><span class="n">each_with_index</span> <span class="k">do</span> <span class="o">|</span><span class="n">ps</span><span class="p">,</span> <span class="n">idx</span><span class="o">|</span>
-        <span class="vi">@arr</span><span class="o">[</span><span class="n">ps</span><span class="o">[</span><span class="mi">0</span><span class="o">]][</span><span class="n">ps</span><span class="o">[</span><span class="mi">1</span><span class="o">]]</span> <span class="o">=</span> <span class="n">idx</span>
-      <span class="k">end</span>
-      <span class="vi">@arr</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">ar</span><span class="o">|</span> <span class="nb">p</span> <span class="n">ar</span> <span class="k">end</span>
-      <span class="nb">puts</span>
-    <span class="k">else</span>
-      <span class="s2">&quot;no solution&quot;</span>
-    <span class="k">end</span>
-  <span class="k">end</span>
-<span class="k">end</span>
-</code></pre></div>
-
-
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/24/">&larr; Older</a>
@@ -861,6 +840,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160426_commons-logging-source.html">commons-logging源码学习</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160416_svn-handshake-failure.html">svn报文转发出现handshake_failure的问题</a>
@@ -896,10 +879,6 @@
     
       <li class="post">
         <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150702_httpclient-init-fail.html">初始化httpClient失败原因分析</a>
       </li>
     
   </ul>
