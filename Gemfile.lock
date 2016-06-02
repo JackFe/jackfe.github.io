@@ -1,5 +1,5 @@
 GEM
-  remote: https://ruby.taobao.org/
+  remote: http://gems.ruby-china.org/
   specs:
     RedCloth (4.2.9)
     RedCloth (4.2.9-x86-mingw32)
@@ -68,4 +68,4 @@ DEPENDENCIES
   stringex (~> 2.0.2)
 
 BUNDLED WITH
-   1.11.2
+   1.12.3
