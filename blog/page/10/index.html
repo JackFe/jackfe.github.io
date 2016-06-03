@@ -9,8 +9,7 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="Java参数传递只是传值 一开始学java，就有人告诉你，Java参数传递，只有传值，没有传引用。但是我在平时仍然发现，在面试时有不少人搞混，
-也见过有人写出问题代码，特别是许多习惯c++编程习惯的童鞋。为了让大家都能理解，我们还是再来复习一遍。 什么是传引用 首先我们来看看什么是传引用方式? &hellip;">
+  <meta name="description" content="经常在一些文本处理、字符串拆解的逻辑中，需要对字符串按照一定的分隔符进行拆解。这样的功能，大多数时候我们会求助于String的split方法。关于这个方法，有几个坑是需要注意的，而掉坑想象在代码中已经出现许多次，值得大家注意。 split的参数是正则表达式 一个很常见的问题， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +64,120 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130809_java-hell-split.html">关于split的坑</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-08-09T00:00:00+08:00" pubdate data-updated="true">Aug 9<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130809_java-hell-split.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>经常在一些文本处理、字符串拆解的逻辑中，需要对字符串按照一定的分隔符进行拆解。这样的功能，大多数时候我们会求助于String的split方法。关于这个方法，有几个坑是需要注意的，而掉坑想象在代码中已经出现许多次，值得大家注意。</p>
+
+<h3>split的参数是正则表达式</h3>
+
+<p>一个很常见的问题，就是忘记了split的参数不是普通的字符串，而是正则表达式，例如下面这么下是达不到预期目的的:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="s">&quot;a.b.c&quot;</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">&quot;.&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="s">&quot;a|b|c&quot;</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">&quot;|&quot;</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>因为.和|都是正则表达式里边的特殊字符，应该用转义字符先进行处理:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="s">&quot;a.b.c&quot;</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">&quot;\\.&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="s">&quot;a|b|c&quot;</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">&quot;\\|&quot;</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>类似的api在String类里边好几处出现了，例如replaceAll。</p>
+
+<p>还有没有其他办法处理这个问题呢，因为我不想手动转换或者分隔符本来就是动态的。
+这个的确没有直接的方法，但split的实现是调用Pattern的split方法，所以可以直接构造一个Pattern对象来调用，
+如下所示，其中LITERAL参数就是表示把字符串当成普通字符串，而不是当成正则表达式来构建。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">Pattern</span> <span class="n">pattern</span> <span class="o">=</span> <span class="n">Pattern</span><span class="o">.</span><span class="na">compile</span><span class="o">(</span><span class="s">&quot;.&quot;</span><span class="o">,</span> <span class="n">Pattern</span><span class="o">.</span><span class="na">LITERAL</span><span class="o">);</span>
+</span><span class='line'><span class="n">pattern</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">&quot;a.b.c&quot;</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>split可能会忽略分隔后的空串</h3>
+
+<p>很多人只是用带一个参数的split方法，但是一个参数的split方法只会匹配到最后一个有值的地方，后面的会忽略，例如:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="s">&quot;a_b_c_d&quot;</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">&quot;_&quot;</span><span class="o">);</span> <span class="c1">// [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;]</span>
+</span><span class='line'><span class="s">&quot;a_b__&quot;</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">&quot;_&quot;</span><span class="o">);</span> <span class="c1">// [&quot;a&quot;, &quot;b&quot;]</span>
+</span><span class='line'><span class="s">&quot;a__c_&quot;</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">&quot;_&quot;</span><span class="o">);</span> <span class="c1">// [&quot;a&quot;, &quot;&quot;, &quot;c&quot;]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这样其实是有点反常识的，因为像文件上传，有些字段可能是允许为空的，这样在程序处理上就会造成麻烦。</p>
+
+<p>其实，split是有带两个参数的重载方法的。第二个参数是整形，代表最多匹配上多少个，用0表示只匹配到最后一个有值的地方(就是上述split真正调用的参数)，要强制全部匹配，用个负数吧(我通常选择-1)。换成下面的写法，代码就更期望的结果是一样了。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="s">&quot;a_b__&quot;</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">&quot;_&quot;</span><span class="o">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">);</span> <span class="c1">// [&quot;a&quot;, &quot;b&quot;, &quot;&quot;, &quot;&quot;]</span>
+</span><span class='line'><span class="s">&quot;a__c_&quot;</span><span class="o">.</span><span class="na">split</span><span class="o">(</span><span class="s">&quot;_&quot;</span><span class="o">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">);</span> <span class="c1">// [&quot;a&quot;, &quot;&quot;, &quot;c&quot;, &quot;&quot;]</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>关于字符串切割的其他API</h3>
+
+<p>对于字符串切割，早在jdk1.0就存在一个叫StringTokenizer的类，大概的用法如下所示(同样有带分隔符的构造方法):</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">StringTokenizer</span> <span class="n">st</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringTokenizer</span><span class="o">(</span><span class="s">&quot;this is a test&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="k">while</span> <span class="o">(</span><span class="n">st</span><span class="o">.</span><span class="na">hasMoreTokens</span><span class="o">())</span> <span class="o">{</span>
+</span><span class='line'>  <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">st</span><span class="o">.</span><span class="na">nextToken</span><span class="o">());</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>不过，这个类是历史产物，属于遗留类来的，javadoc上已经说明了这一点，并且推荐使用String的split方法。</p>
+
+<p>另外，如果对字符拼接有兴趣，请移步<a href="/blog/20130809_java-hell-string-append.html">说说字符串拼接</a></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -471,62 +584,6 @@ pooled connections to be committed or the connection will not be returned to the
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130630_object-balance-pool.html">带平衡的对象池设计</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-06-30T00:00:00+08:00" pubdate data-updated="true">Jun 30<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130630_object-balance-pool.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>最近有个需求，是关于一个Socket连接池的功能改造，要求实现下面的需求:</p>
-
-<ol>
-<li>可配置多个服务器地址</li>
-<li>服务器地址可以配置权重(比如3:2:1)</li>
-<li>连接池可以设置最小连接和最大连接</li>
-<li>某服务器从崩溃中恢复后，连接池中的连接数可以自动恢复到服务器之间的权重比。</li>
-<li>连接可设置最大空闲释放时间</li>
-</ol>
-
-
-<p>一开始有同事自定义了一个链表来做取数和归还的操作，在线程安全方面操作感觉还是有点麻烦。
-后来我采用PriorityBlockingQueue来实现，其实就是内部变成了堆的结构。见下面的图:</p>
-
-<p><img src="/assets/images/2013/pool/1.png" alt="数据结构" /></p>
-
-<p><img src="/assets/images/2013/pool/2.png" alt="类图" /></p>
-
-<p><img src="/assets/images/2013/pool/3.png" alt="状态图" /></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/11/">&larr; Older</a>
@@ -542,6 +599,10 @@ pooled connections to be committed or the connection will not be returned to the
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160602_java-object-unknown-state.html">避免对象未知状态</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160426_commons-logging-source.html">commons-logging源码学习</a>
@@ -577,10 +638,6 @@ pooled connections to be committed or the connection will not be returned to the
     
       <li class="post">
         <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
       </li>
     
   </ul>

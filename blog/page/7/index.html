@@ -9,7 +9,14 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="前阵子，其他项目组里边有个某项目频繁出现获取不到连接的问题，基本上每一天都出现一次。 打出来的javacore里面，有大量的线程等待获取连接。并且现场反映，从数据库那边监控到大量的空闲连接没有释放。 事实上，这个系统会用到两个数据源，其中有个是正常的。有意思的是，这几个月都没有新版本上载。 &hellip;">
+  <meta name="description" content="昨晚发现某个jar程序启动不了，包类没找到。
+这个是由于我增加了一个新的jar包，并且依赖于xwork.jar。
+所以在build.xml里边增加这个jar包。 1
+2
+3
+4
+5
+6 &lt;fatjar.build output=&quot;ibossproc.jar&quot;&gt &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +71,121 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20131226_manifest.html">由于MANIFEST.MF不规范导致程序无法启动的问题</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-12-26T00:00:00+08:00" pubdate data-updated="true">Dec 26<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20131226_manifest.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>昨晚发现某个jar程序启动不了，包类没找到。
+这个是由于我增加了一个新的jar包，并且依赖于xwork.jar。
+所以在build.xml里边增加这个jar包。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>  <span class="nt">&lt;fatjar.build</span> <span class="na">output=</span><span class="s">&quot;ibossproc.jar&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  ...
+</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/jsse.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/cipher14.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/xwork-2.0.4.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'><span class="nt">&lt;/fatjar.build&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>不过还是出错，出错信息挺诡异的(用星号对某些信息进行屏蔽)：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">mccxj</span><span class="nd">@XXX</span><span class="o">:/</span><span class="n">work</span><span class="o">/</span><span class="n">procs</span><span class="o">/</span><span class="n">log</span><span class="o">&gt;</span> <span class="n">cat</span> <span class="o">*</span>
+</span><span class='line'><span class="err">线程</span> <span class="s">&quot;main&quot;</span> <span class="err">中发生异常</span><span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">NoClassDefFoundError</span><span class="o">:</span> <span class="n">com</span><span class="o">.*.*.*.*</span><span class="n">Entry</span>
+</span><span class='line'><span class="n">Caused</span> <span class="nl">by:</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">ClassNotFoundException</span><span class="o">:</span> <span class="n">com</span><span class="o">.*.*.*.*</span><span class="n">Entry</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">java</span><span class="o">.</span><span class="na">net</span><span class="o">.</span><span class="na">URLClassLoader</span><span class="o">.</span><span class="na">findClass</span><span class="o">(</span><span class="n">URLClassLoader</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">421</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">ClassLoader</span><span class="o">.</span><span class="na">loadClass</span><span class="o">(</span><span class="n">ClassLoader</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">652</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">sun</span><span class="o">.</span><span class="na">misc</span><span class="o">.</span><span class="na">Launcher</span><span class="n">$AppClassLoader</span><span class="o">.</span><span class="na">loadClass</span><span class="o">(</span><span class="n">Launcher</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">346</span><span class="o">)</span>
+</span><span class='line'>        <span class="n">at</span> <span class="n">java</span><span class="o">.</span><span class="na">lang</span><span class="o">.</span><span class="na">ClassLoader</span><span class="o">.</span><span class="na">loadClass</span><span class="o">(</span><span class="n">ClassLoader</span><span class="o">.</span><span class="na">java</span><span class="o">:</span><span class="mi">618</span><span class="o">)</span>
+</span><span class='line'><span class="n">Could</span> <span class="n">not</span> <span class="n">find</span> <span class="n">the</span> <span class="n">main</span> <span class="nl">class:</span> <span class="n">com</span><span class="o">.*.*.*.*</span><span class="n">Entry</span><span class="o">.</span>  <span class="n">Program</span> <span class="n">will</span> <span class="n">exit</span><span class="o">.</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>这个类是程序里边的代码，应该是存在的。把jar解压了，也的确看到jar包里边有这个类。</p>
+
+<p>于是把以前能跑的jar拿来进行对比，发现META-INF/MANIFEST.MF稍稍有点不同，新的在最后多了2个空行。
+简单调整了一下打包脚本（用的一个fatjar.jar的工具）,最后两行进行调整顺序，发现就可以了。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>  <span class="nt">&lt;fatjar.build</span> <span class="na">output=</span><span class="s">&quot;xx.jar&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  ...
+</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/jsse.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/xwork-2.0.4.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;fatjar.jarsource</span> <span class="na">file=</span><span class="s">&quot;${buildlib}/cipher14.jar&quot;</span> <span class="na">relpath=</span><span class="s">&quot;&quot;</span><span class="nt">/&gt;</span>
+</span><span class='line'><span class="nt">&lt;/fatjar.build&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>一开始感觉是fatjar.jar的bug，不过回过头来看，其实是cipher14.jar这个包的问题。<br/>
+因为这个包的META-INF/MANIFEST.MF的最后一样是个问号，根据<a href="http://docs.oracle.com/javase/7/docs/technotes/guides/jar/jar.html#JAR%20Manifest">规范文档</a>,
+这个是不规范的。如：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">Manifest</span><span class="o">-</span><span class="nl">Version:</span> <span class="mf">1.0</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">?</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>而fatjar会把所有的MANIFEST.MF进行合并，但是奇怪的地方就在这里了。如果问号是在最后一样，能够正常启动。 <br/>
+如果问号后面还有内容，就启动不了。所以调整顺序之后，能够正常启动。<br/>
+后来，我把cipher14.jar的MANIFEST.MF中的问号去掉，不需要调整顺序也是可以正常的。</p>
+
+<p>这个包应该是第三方厂商提供的，又踩地雷了。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -364,68 +486,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20131103_word-contact.html">单词接龙问题</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-11-03T00:00:00+08:00" pubdate data-updated="true">Nov 3<span>rd</span>, 2013</time>
-        
-         | <a href="/blog/20131103_word-contact.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>昨天看到其他部门的技能鉴定题目，相对我们部门偏应用的题目，他们的相对更加偏重算法。题目描述如下：</p>
-
-<p>有一种单词接龙的游戏，就是连续的两个单词，第一个单词的尾要和第二个单词的头是一样的。<br/>
-例如: cat tell log google就是一个单词接龙。</p>
-
-<p>定义最少单词接龙是单词个数最少的接龙，定义最短单词接龙是单词字母个数总和最少的接龙。
-假设所有单词都是由小写字母组成，现在给定一堆单词，给定龙头和龙尾，求出最少单词接龙和最短单词接龙。</p>
-
-<p>当时在招聘，一时也没反应过来。下午回来的时候，仔细一想，这不就是最短路径问题么?</p>
-
-<p>把26个小写字母看成是结点，那么每个单词就是从某个结点到另外一个结点的单向路径。<br/>
-上面的接龙如果在加上单词gc, cookie，就是下面的图表示:<br/>
-<img src="/assets/images/2013/dijkstra.png" alt="单词接龙" /></p>
-
-<p>最少单词接龙，就是每条路径的权值为1，求两个结点之间的最短路径。<br/>
-最短单词接龙，就是每条路径的权值为单词的长度，求两个结点之间的最短路径。</p>
-
-<p>另外，关于一些特殊情况和注意点:</p>
-
-<p>对于存在多个单词，他们的首尾字母相同的话，只记录长度最短的为路径的权值即可。</p>
-
-<p>结点的存储可以不用链接表，因为只有26个字母，用二维数组即可，实时增加单词也容易处理。</p>
-
-<p>求最短路径的算法，参考经典的Dijkstra最短路径算法，这里就不详述了。
-关于Dijkstra，可以参考<a href="http://baike.baidu.com/link?url=YCo_VIMdyckLPW9FuF6ZWnYwDangwdpze7JBVjoKc0AylbBp0Y3PILhRQ2p_QX6ssgCP0hFqMMdHhvUdQtd5Wa">百度百科中的条目</a></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/8/">&larr; Older</a>
@@ -441,6 +501,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160602_java-object-unknown-state.html">避免对象未知状态</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160426_commons-logging-source.html">commons-logging源码学习</a>
@@ -476,10 +540,6 @@
     
       <li class="post">
         <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
       </li>
     
   </ul>

@@ -9,8 +9,11 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="我感觉maven这东西比ant容易上手(ant每个项目规则都不一样),看那个100页的迷你书+例子(推荐basecrm或spring3.0)基本就ok了~~
-哎，本来想写的很多，发现写出来的却很少。多多包涵! maven是一个项目管理工具，跟ant相比亮点在于它遵守了COC规则，只要遵守就好处多多 &hellip;">
+  <meta name="description" content="10年时接触activemq和drools时收集的一些资料 activeMQ资料 activeMQ官方网站
+JMS消息类型模型
+实战activeMQ
+ActiveMQ4.1 +Spring2.0的POJO JMS方案(上)整理版
+ActiveMQ4.1 +Spring2.0的POJO JMS方案( &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +68,119 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121202_avtivemq-and-rule-engine.html">Avtivemq和规则引擎资料(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-02T00:00:00+08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2012</time>
+        
+         | <a href="/blog/20121202_avtivemq-and-rule-engine.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>10年时接触activemq和drools时收集的一些资料</p>
+
+<h2>activeMQ资料</h2>
+
+<p><a href="http://activemq.apache.org/">activeMQ官方网站</a><br/>
+<a href="http://andyao.javaeye.com/blog/153173">JMS消息类型模型</a><br/>
+<a href="http://www.javaeye.com/topic/275045">实战activeMQ</a><br/>
+<a href="http://wiki.springside.org.cn/display/springside/ActiveMQ">ActiveMQ4.1 +Spring2.0的POJO JMS方案(上)整理版</a><br/>
+<a href="http://wiki.springside.org.cn/display/springside/ActiveMQ-part2">ActiveMQ4.1 +Spring2.0的POJO JMS方案(下)整理版</a><br/>
+<a href="http://www.javaeye.com/topic/153171">ActiveMQ5.0实战一: 安装配置ActiveMQ5.0</a><br/>
+<a href="http://www.javaeye.com/topic/154092">ActiveMQ5.0实战二: 基本配置</a><br/>
+<a href="http://www.javaeye.com/topic/234101">ActiveMQ5.0实战三:使用Spring发送,消费topic和queue消息</a><br/>
+<a href="http://sdh5724.javaeye.com/blog/318376">ActiveMQ测试报告</a>,这是一个很棒的报告<br/>
+<a href="http://www.javaeye.com/topic/397902">ActiveMQ 高级特性</a><br/>
+<a href="http://activemq.apache.org/articles.html">Articles on ActiveMQ, Messaging and JMS</a> 来自官网的文章集锦</p>
+
+<h4>客户端</h4>
+
+<p>关于客户端都可以在相应的官网上找到，这里要说的一个客户端是openamq-jms，简单来说，这是针对java JMS的客户端，
+可用于OpenAMQ和其他AMQP服务器。还有一个是StompConnect，当然这是走stomp协议的，特色就是把JMS弄成一个Stomp Broker，
+具体是怎样的，还没实践过。不过，要跨语言消息交互，更好的选择是使用已经提供的本地Stomp支持。另外，关于stomp的erlang客户端可以选择gigix推荐的stomperl</p>
+
+<h4>书籍</h4>
+
+<p>其实官方文档已经非常丰富，书籍的意义并没有那么大<del>~另一方面，关于ActiveMQ的书籍暂时还没有上市，只有本期书(activeMQ in action)，
+现在可以在网上找到这本书的手稿版</del>确实找不到的话，可以找我要，呵</p>
+
+<h4>activemq和rabbitmq</h4>
+
+<p>activemq和rabbitmq都是非常有名的开源消息队列。activemq是java写的，而rabbitmq是erlang写的。
+activemq支持的是stomp和openwire，xmpp等协议，而rabbitmq支持的是amqp(Advanced Message Queuing Protocol)。
+stomp是一个简单的容易实现的基于文本的协议，openwire是一种快速的二进制协议，activemq计划在amqp协议1.0版本完成的时候提供amqp协议的支持。
+通过这些协议，activemq可以支持多种客户端，如C, C++, C#, Ruby, Python, Perl, PHP等等。而amqp同时定义了消息中间件的语意层面和协议层面，
+并且是语言中立的，它可以让MQ成为一个可编程的消息中间件，可以想象这样的场景：
+你使用java写的消息通过Erlang编写的中间件来和一个C编写的遗留系统进行消息交互。所以amqp前途是光明的～～</p>
+
+<h4>2009-01-15附加</h4>
+
+<p>activemq的failover功能配置很简单~例如简单修改brokerURL为&#8221;failover:(tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0)&#8221;，正常情况是会出现下面的信息：</p>
+
+<div class="highlight"><pre><code class="properties"><span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:43,672 DEBUG [failover.FailoverTransport]-802 Waiting 5120 ms before attempting connection.</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,569 DEBUG [failover.FailoverTransport]-593 urlList connectionList:[tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0]</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,569 DEBUG [failover.FailoverTransport]-712 Attempting connect to: tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,570 DEBUG [failover.FailoverTransport]-753 Connect fail to: tcp://caixiaojian.hnjk.com:61616?wireFormat.maxInactivityDuration=0, reason: java.net.ConnectException: Connection refused</span>
+<span class="na">ActiveMQ Task 15/01 16</span><span class="o">:</span><span class="s">52:45,570 DEBUG [ tcp.TcpTransport]-458 Stopping transport tcp://null:0</span>
+</code></pre></div>
+
+
+<h4>2009-01-16附加</h4>
+
+<p>结合spring和activemq的时候，发现启动挺慢的。因为老是会去网上寻找xsd文件，把xml里边的schemaLocation换成下面这个样子就可以了：
+http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd
+ActiveMQ的Virtual Destinations和Mirrored Queues非常有价值，5.3新增的Message Groups也是很有用的特性来的</p>
+
+<h2>规则引擎资料</h2>
+
+<p><a href="http://www.ibm.com/developerworks/cn/java/j-java-rules/">Java规则引擎与其API(JSR-94)</a> 介绍jsr94标准<br/>
+<a href="http://www.ibm.com/developerworks/cn/java/j-drools/">使用 Drools 规则引擎实现业务逻辑</a> 一个简单的例子<br/>
+<a href="http://javahy.javaeye.com/blog/384538">在你的企业级java应用中使用Drools</a> 提供web层和dao层的简单继承，不过rule用的xml格式～<br/>
+<a href="http://blog.csdn.net/nimeimei/archive/2005/12/23/560379.aspx">drools和spring的集成</a> 集成spring好像是必备功能似的<br/>
+<a href="http://www.javaeye.com/topic/25215">规则引擎实现探讨</a> 一个小讨论，还看到一段Erlang代码<br/>
+<a href="http://www.javaeye.com/topic/18198">应用规则引擎组织业务规则的注意要点</a> 里边提到一些建议和规范<br/>
+看惯中文的，感觉<a href="http://www.blogjava.net/guangnian0412/">这个blog</a>还行,但是内容是基于drools3的<br/>
+<a href="http://www.javaeye.com/topic/257039">一个小学题目的解: 采用规则引擎Drools实现</a> 一个喝汽水的智力题,一个比较不错的例子<br/>
+<a href="http://wiki.springside.org.cn/display/springside/JBossRules">springside里边用的jboss rules</a><br/>
+另外还有drools官方文档，关于最重要的rule language和example部分是在Drools Expert上</p>
+
+<h4>其他想法</h4>
+
+<p>我对规则引擎理解不深，从drools的例子可以看到一些AI,workflow,专家系统的影子，看似用途很广很强大，可是规则引擎不是这么个用法的把<br/>
+按照我的想法，规则引擎应该用在局部复杂的流程控制上(局部复杂的if else&#8230;),应该是基于业务走向的判断。<br/>
+如上面<a href="http://yimlin.javaeye.com/">yimlin</a>提到的，我觉得规则引擎是来简化工作的，所以要避免任何具有实际意义的业务操作，很容易让人混淆。<br/>
+怎么说这些规则也不大可能是客户来维护的了，因为可能涉及事实库的修改，dsl顶多也是对程序员友好的方式。<br/>
+<strong>哪些业务规则适合抽象出来由规则引擎处理，规则引擎和业务系统的交互方式是主要问题。</strong></p>
+
+<p>引入规则引擎真的会带来很多好处么？对很多系统来说，这种<a href="http://ivan.javaeye.com/blog/373237">java应用中嵌入groovy</a>的方案还算满经济的。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -572,48 +688,6 @@ typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20121120_oracle-explain-plan.html">Oracle执行计划思维导图</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-11-20T00:00:00+08:00" pubdate data-updated="true">Nov 20<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20121120_oracle-explain-plan.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2><strong>这是为了oracle培训而编制的思维导图</strong></h2>
-
-<h2>可以在Dropbox上下载到这个<a href="https://www.dropbox.com/s/8l53i0h3hphm5bz/%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92.xmind">xmind文件</a></h2>
-
-<p><img src="/assets/images/explain_plan.png" alt="oracle执行计划思维导图" /></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/19/">&larr; Older</a>
@@ -629,6 +703,10 @@ typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160602_java-object-unknown-state.html">避免对象未知状态</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160426_commons-logging-source.html">commons-logging源码学习</a>
@@ -664,10 +742,6 @@ typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择
     
       <li class="post">
         <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
       </li>
     
   </ul>

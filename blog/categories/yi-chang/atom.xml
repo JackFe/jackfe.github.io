@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: 异常 | 小毛的胡思乱想]]></title>
+  <link href="http://mccxj.github.com/blog/categories/yi-chang/atom.xml" rel="self"/>
+  <link href="http://mccxj.github.com/"/>
+  <updated>2016-06-03T22:34:28+08:00</updated>
+  <id>http://mccxj.github.com/</id>
+  <author>
+    <name><![CDATA[蔡晓建]]></name>
+    <email><![CDATA[mc02cxj@gmail.com]]></email>
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[避免对象未知状态]]></title>
+    <link href="http://mccxj.github.com/blog/20160602_java-object-unknown-state.html"/>
+    <updated>2016-06-02T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/java-object-unknown-state</id>
+    <content type="html"><![CDATA[<p>今天在使用一个库的时候就遇到一个很纠结的问题。</p>
+
+<p>通常我们应该避免对象new的时候出错，一种常见的设计方案是采用初始化方法。不过也有new出异常的情况，这种情况应该确保对象占用的资源能够被释放。</p>
+
+<p>不过今天遇到的这个情况，是一个链接短信网关的库，假设是Proxy对象，它在初始化的时候，生成2个线程，一个是心跳线程，一个是接受消息的线程。
+在链接不上的情况下，初始化会抛出异常，但是仍然会尝试重连。</p>
+
+<p>```java
+public class MyProxy extends SMProxy {</p>
+
+<pre><code>private final RecvMsgHandler handler;
+public MyProxy(Map props, RecvMsgHandler handler){
+    super(props);
+this.handler = handler;
+}
+
+@override
+public void onRecvMsg(Message msg){
+    handler.recvMsg(msg);
+}
+</code></pre>
+
+<p>}
+```</p>
+
+<p>上面是我想实现的构造方法，打算给他注入一个回调方法，让它在特定事件可以通知到我。
+由于可能出异常，导致这个对象只是构造了一部分，一旦出现回调的时候，会存在指针异常。</p>
+
+<p>另外一个问题是，本来我想管控一下所有的链接，这样可以随时控制数量。
+不过由于出异常的时候，我没法拿到这个对象，所以管控不到这个可能重连的对象，相当于漏掉了这个连接。</p>
+
+<p>这2个问题，特别是第二个，还真的没有什么好的解决方案。</p>
+
+<p>总而言之，这个SMProxy的设计缺陷太明显，看来要绕过这个类的实现才行。</p>
+]]></content>
+  </entry>
+  
+</feed>

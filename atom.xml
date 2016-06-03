@@ -4,7 +4,7 @@
   <title><![CDATA[小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-04-26T21:56:16+08:00</updated>
+  <updated>2016-06-03T22:34:28+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -12,6 +12,57 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[避免对象未知状态]]></title>
+    <link href="http://mccxj.github.com/blog/20160602_java-object-unknown-state.html"/>
+    <updated>2016-06-02T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/java-object-unknown-state</id>
+    <content type="html"><![CDATA[<p>今天在使用一个库的时候就遇到一个很纠结的问题。</p>
+
+<p>通常我们应该避免对象new的时候出错，一种常见的设计方案是采用初始化方法。不过也有new出异常的情况，这种情况应该确保对象占用的资源能够被释放。</p>
+
+<p>不过今天遇到的这个情况，是一个链接短信网关的库，假设是Proxy对象，它在初始化的时候，生成2个线程，一个是心跳线程，一个是接受消息的线程。
+在链接不上的情况下，初始化会抛出异常，但是仍然会尝试重连。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MyProxy</span> <span class="kd">extends</span> <span class="n">SMProxy</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kd">final</span> <span class="n">RecvMsgHandler</span> <span class="n">handler</span><span class="o">;</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="nf">MyProxy</span><span class="o">(</span><span class="n">Map</span> <span class="n">props</span><span class="o">,</span> <span class="n">RecvMsgHandler</span> <span class="n">handler</span><span class="o">){</span>
+</span><span class='line'>        <span class="kd">super</span><span class="o">(</span><span class="n">props</span><span class="o">);</span>
+</span><span class='line'>  <span class="k">this</span><span class="o">.</span><span class="na">handler</span> <span class="o">=</span> <span class="n">handler</span><span class="o">;</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nd">@override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onRecvMsg</span><span class="o">(</span><span class="n">Message</span> <span class="n">msg</span><span class="o">){</span>
+</span><span class='line'>        <span class="n">handler</span><span class="o">.</span><span class="na">recvMsg</span><span class="o">(</span><span class="n">msg</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>上面是我想实现的构造方法，打算给他注入一个回调方法，让它在特定事件可以通知到我。
+由于可能出异常，导致这个对象只是构造了一部分，一旦出现回调的时候，会存在指针异常。</p>
+
+<p>另外一个问题是，本来我想管控一下所有的链接，这样可以随时控制数量。
+不过由于出异常的时候，我没法拿到这个对象，所以管控不到这个可能重连的对象，相当于漏掉了这个连接。</p>
+
+<p>这2个问题，特别是第二个，还真的没有什么好的解决方案。</p>
+
+<p>总而言之，这个SMProxy的设计缺陷太明显，看来要绕过这个类的实现才行。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[commons-logging源码学习]]></title>
@@ -3002,65 +3053,6 @@ XX设计模式不要硬套，从过程式演变出来更加自然(经验性的�
 <li>无需区分的情况，这样写会让代码风格更统一。</li>
 <li>没有接口交互，本地操作的话，因为这种消耗小很多。</li>
 <li>存在直接跳转到该状态的情况(例如由另外的业务跳转过来)，这种特殊情况下前面的步骤都被忽略。而且这种情况下，需要通常需要接口交互(例如补充某些必要信息)，而为了区分回退的情况，我通常会根据业务特性考虑一些数据缓存处理。</li>
-</ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[json格式须知]]></title>
-    <link href="http://mccxj.github.com/blog/20140815_json-intro.html"/>
-    <updated>2014-08-15T00:00:00+08:00</updated>
-    <id>http://mccxj.github.com/blog/json-intro</id>
-    <content type="html"><![CDATA[<p>着重介绍与项目使用相关的json知识。如果没有特别说明，环境是指Javascript下的json。</p>
-
-<h3>区分类型</h3>
-
-<ul>
-<li>首先需要区分json字符串和json对象，不过通常根据上下文可以区分。</li>
-<li>协议关注的是json字符串，而代码中处理的是json对象，两者通过序列化(JSON.stringify)和反序列化相互转换(JSON.parse)。</li>
-</ul>
-
-
-<h3>常见格式</h3>
-
-<ul>
-<li>主要有数组和key/value形式的object</li>
-<li>数组是有顺序的，可以不同类型，常用于顺序遍历操作。</li>
-<li>object是无顺序的，key只能是字符串，常用于快速随机查找。</li>
-<li>null是可以被序列化的，而undefined不可以(会消失)。</li>
-<li>其他的一些特殊值，如Nan，Infinity，会被序列化为null。</li>
-</ul>
-
-
-<h3>关于数组</h3>
-
-<ul>
-<li>对于数组对象，虽然支持key/value的操作，但是序列化的时候设置的值会丢失。</li>
-<li>数组序列化的长度是根据length属性来的，没有赋值的位置是null。</li>
-<li>对数组遍历不应该采用for in语句，因为通过key/value设置的值也会被输出。</li>
-</ul>
-
-
-<h3>关于Object</h3>
-
-<ul>
-<li>规范上规定key是带双引号的字符串()，但实际上很多反序列化工具能够支持数值、单引号字符串、字符串字面量(没有引号的字符串)。</li>
-<li>如果是一普通浮点数值，可以通过相应的数值作为key获取，或者通过对应的字符串来获取。如用2.2的话，可以用2.2或&#8221;2.2&#8221;。</li>
-<li>如果是一整型数值，可以用数值，但用字符串只能用整型的，如用2.0的话，可以用2.0或2或&#8221;2&#8221;,但&#8221;2.0&#8221;就不可以。</li>
-<li>如果使用字符串字面量的话，需要避免一些关键字使用。如delete</li>
-<li>key不应该重复，如果重复的话，通常结果是后面的会覆盖前面的。</li>
-<li>可以用.后面加key来取值，或者用[]这样的操作符来获取，第一种方式更推荐，但只能支持非数字开头的字符串，unicode也是可以。</li>
-<li>对object遍历可以采用for in语句。</li>
-</ul>
-
-
-<h3>协议转换</h3>
-
-<ul>
-<li>协议传输的是json字符串，但通常里边的类型都是字符串，不区分数值，因此做数值运算需要先转换。</li>
-<li>和xml一样，需要注意特殊字符如引号、回车、unicode等，尽量避免手动拼接，采用序列化工具。</li>
-<li>object类型的json序列化/序列化的时候，都不应该预期他是有顺序的，虽然很多库都有带默认顺序，应该使用数组。</li>
 </ul>
 
 ]]></content>

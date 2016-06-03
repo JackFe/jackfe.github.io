@@ -9,9 +9,10 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="马踏棋盘 将马随机放在国际象棋的8×8棋盘的某个方格中，马按走棋规则进行移动。
-要求每个方格只进入一次，走遍棋盘上全部64个方格。 又是回溯? 这个做法和前面几个问题是差不多的(数独(sudoku)游戏)，所以这里就不做太多解释了。
-总体来说，就是可选的解空间是8个方向。回溯的代码就不多提了， &hellip;">
+  <meta name="description" content="练习重点 erlang是单赋值的，就好像都经过java里边的final修饰过
+erlang没有内置的循环结构，这个和大多数语言是不一样的
+erlang是函数式语言，需要理解模式匹配编程方式
+erlang经常会遇到递归, 并且支持尾递归函数调用 练习1:数据库demo &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +67,147 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120714_hello-erlang-1.html">Hello Erlang, Part 1</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-14T00:00:00+08:00" pubdate data-updated="true">Jul 14<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120714_hello-erlang-1.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h3>练习重点</h3>
+
+<ol>
+<li>erlang是单赋值的，就好像都经过java里边的final修饰过</li>
+<li>erlang没有内置的循环结构，这个和大多数语言是不一样的</li>
+<li>erlang是函数式语言，需要理解模式匹配编程方式</li>
+<li>erlang经常会遇到递归, 并且支持尾递归函数调用</li>
+</ol>
+
+
+<h3>练习1:数据库demo</h3>
+
+<p>作为学习erlang里边的模式匹配，熟悉语法。
+编写一个数据库模块db.erl，它能够存储、检索、删除元素。我们需要实现的接口有:</p>
+
+<div class="highlight"><pre><code class="erlang"><span class="nn">db</span><span class="p">:</span><span class="nf">new</span><span class="p">()</span>                   <span class="c">%% Db.</span>
+<span class="nn">db</span><span class="p">:</span><span class="nf">destroy</span><span class="p">(</span><span class="nv">Db</span><span class="p">)</span>             <span class="c">%% ok.</span>
+<span class="nn">db</span><span class="p">:</span><span class="nf">write</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Element</span><span class="p">,</span> <span class="nv">Db</span><span class="p">)</span> <span class="c">%% NewDb.</span>
+<span class="nn">db</span><span class="p">:</span><span class="nf">delete</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Db</span><span class="p">)</span>         <span class="c">%% NewDb.</span>
+<span class="nn">db</span><span class="p">:</span><span class="nf">read</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Db</span><span class="p">)</span>           <span class="c">%% {ok, Element} | {error, instance}.</span>
+<span class="nn">db</span><span class="p">:</span><span class="nf">match</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">Db</span><span class="p">)</span>      <span class="c">%% [Key1, ..., KeyN].</span>
+</code></pre></div>
+
+
+<h3>实现代码</h3>
+
+<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">db</span><span class="p">).</span>
+
+<span class="c">%% Exported Functions</span>
+<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">new</span><span class="o">/</span><span class="mi">0</span><span class="p">,</span> <span class="n">write</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="n">read</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">match</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">delete</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">destroy</span><span class="o">/</span><span class="mi">1</span><span class="p">]).</span>
+
+<span class="c">%% API Functions</span>
+<span class="nf">new</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">[].</span>
+<span class="nf">destroy</span><span class="p">(_)</span> <span class="o">-&gt;</span> <span class="n">ok</span><span class="p">.</span>
+<span class="nf">write</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Element</span><span class="p">,</span> <span class="nv">DB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[{</span><span class="nv">Key</span><span class="p">,</span><span class="nv">Element</span><span class="p">}|</span><span class="nv">DB</span><span class="p">].</span>
+<span class="nf">delete</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">DB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">DB</span><span class="p">,</span> <span class="p">[]).</span>
+<span class="nf">read</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">DB</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="k">case</span> <span class="nv">DB</span> <span class="k">of</span>
+        <span class="p">[{</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Element</span><span class="p">}|_]</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="n">oKey</span><span class="p">,</span> <span class="nv">Element</span><span class="p">};</span>
+        <span class="p">[_|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">read</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">);</span>
+        <span class="p">_</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="n">error</span><span class="p">,</span> <span class="n">instance</span><span class="p">}</span>
+    <span class="k">end</span><span class="p">.</span>
+<span class="nf">match</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">DB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">match_local</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">DB</span><span class="p">,</span> <span class="p">[]).</span>
+
+<span class="c">%% Local Functions</span>
+<span class="nf">match_local</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">DB</span><span class="p">,</span> <span class="nv">LIST</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="k">case</span> <span class="nv">DB</span> <span class="k">of</span>
+        <span class="p">[{</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">Element</span><span class="p">}|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">match_local</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="p">[</span><span class="nv">Key</span><span class="p">|</span><span class="nv">LIST</span><span class="p">]);</span>
+        <span class="p">[_|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">match_local</span><span class="p">(</span><span class="nv">Element</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="nv">LIST</span><span class="p">);</span>
+        <span class="p">_</span> <span class="o">-&gt;</span> <span class="nv">LIST</span>
+    <span class="k">end</span><span class="p">.</span>
+
+<span class="nf">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">DB</span><span class="p">,</span> <span class="nv">NDB</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="k">case</span> <span class="nv">DB</span> <span class="k">of</span>
+        <span class="p">[{</span><span class="nv">Key</span><span class="p">,</span> <span class="p">_}|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="nv">NDB</span><span class="p">);</span>
+        <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">ODB</span><span class="p">]</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">NDB</span><span class="p">]);</span>
+        <span class="p">_</span> <span class="o">-&gt;</span> <span class="nv">NDB</span>
+    <span class="k">end</span><span class="p">.</span>
+</code></pre></div>
+
+
+<p>当然，case语句同样可以用如下代码替代：其中第三行的Key因为没有使用就换成_,
+不然会提示警告variable &#8216;Key&#8217; is unused。</p>
+
+<div class="highlight"><pre><code class="erlang"><span class="nf">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="p">[{</span><span class="n">key</span><span class="p">,</span> <span class="p">_}|</span><span class="nv">ODB</span><span class="p">],</span> <span class="nv">NDB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="nv">NDB</span><span class="p">);</span>
+<span class="nf">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">ODB</span><span class="p">],</span> <span class="nv">NDB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">delete_local</span><span class="p">(</span><span class="nv">Key</span><span class="p">,</span> <span class="nv">ODB</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">NDB</span><span class="p">]);</span>
+<span class="nf">delete_local</span><span class="p">(_,</span> <span class="p">_,</span> <span class="nv">NDB</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">NDB</span><span class="p">;</span>
+</code></pre></div>
+
+
+<h3>练习2:排序算法</h3>
+
+<p>下面练习一下快速排序和归并排序，再熟悉一下模式匹配和递归的写法。</p>
+
+<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">sort</span><span class="p">).</span>
+<span class="p">-</span><span class="ni">export</span><span class="p">([</span><span class="n">quicksort</span><span class="o">/</span><span class="mi">1</span><span class="p">,</span> <span class="n">mergesort</span><span class="o">/</span><span class="mi">1</span><span class="p">]).</span>
+
+<span class="c">%% 快速排序</span>
+<span class="nf">quicksort</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">Tail</span><span class="p">])</span> <span class="o">-&gt;</span>
+    <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="n">quicksort</span><span class="p">(</span><span class="nn">lists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">X</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">X</span> <span class="o">&lt;</span> <span class="nv">H</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Tail</span><span class="p">)),</span> 
+                  <span class="p">[</span><span class="nv">H</span><span class="p">],</span> 
+                  <span class="n">quicksort</span><span class="p">(</span><span class="nn">lists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">X</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">X</span> <span class="o">&gt;=</span> <span class="nv">H</span> <span class="k">end</span><span class="p">,</span> <span class="nv">Tail</span><span class="p">))]);</span>
+<span class="nf">quicksort</span><span class="p">(</span><span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">L</span><span class="p">.</span>
+
+<span class="c">%% 归并排序</span>
+<span class="nf">mergesort</span><span class="p">(</span><span class="nv">A</span><span class="p">)</span> <span class="o">-&gt;</span>
+    <span class="k">case</span> <span class="nb">length</span><span class="p">(</span><span class="nv">A</span><span class="p">)</span> <span class="k">of</span>
+        <span class="mi">0</span> <span class="o">-&gt;</span> <span class="p">[];</span>
+        <span class="mi">1</span> <span class="o">-&gt;</span> <span class="nv">A</span><span class="p">;</span>
+        <span class="nv">LEN</span> <span class="o">-&gt;</span> <span class="nv">M</span> <span class="o">=</span> <span class="nb">length</span><span class="p">(</span><span class="nv">A</span><span class="p">)</span> <span class="ow">div</span> <span class="mi">2</span><span class="p">,</span>
+               <span class="n">merge</span><span class="p">(</span><span class="n">mergesort</span><span class="p">(</span><span class="nn">lists</span><span class="p">:</span><span class="nf">sublist</span><span class="p">(</span><span class="nv">A</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">M</span><span class="p">)),</span> 
+                     <span class="n">mergesort</span><span class="p">(</span><span class="nn">lists</span><span class="p">:</span><span class="nf">sublist</span><span class="p">(</span><span class="nv">A</span><span class="p">,</span> <span class="nv">M</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nv">LEN</span> <span class="o">-</span> <span class="nv">M</span><span class="p">)),</span> <span class="p">[])</span>
+    <span class="k">end</span><span class="p">.</span>
+<span class="nf">merge</span><span class="p">(</span><span class="nv">A</span><span class="p">,</span> <span class="p">[],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="nv">L</span><span class="p">,</span> <span class="nv">A</span><span class="p">]);</span>
+<span class="nf">merge</span><span class="p">([],</span> <span class="nv">B</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="nv">L</span><span class="p">,</span> <span class="nv">B</span><span class="p">]);</span>
+<span class="nf">merge</span><span class="p">([</span><span class="nv">HA</span><span class="p">|</span><span class="nv">TA</span><span class="p">],</span> <span class="p">[</span><span class="nv">HB</span><span class="p">|</span><span class="nv">TB</span><span class="p">],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span> 
+    <span class="k">if</span>
+        <span class="nv">HA</span> <span class="o">&gt;</span> <span class="nv">HB</span> <span class="o">-&gt;</span> <span class="n">merge</span><span class="p">([</span><span class="nv">HA</span><span class="p">|</span><span class="nv">TA</span><span class="p">],</span> <span class="nv">TB</span><span class="p">,</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="nv">L</span><span class="p">,</span> <span class="p">[</span><span class="nv">HB</span><span class="p">]]));</span>
+        <span class="n">true</span> <span class="o">-&gt;</span> <span class="n">merge</span><span class="p">(</span><span class="nv">TA</span><span class="p">,</span> <span class="p">[</span><span class="nv">HB</span><span class="p">|</span><span class="nv">TB</span><span class="p">],</span> <span class="nn">lists</span><span class="p">:</span><span class="nf">append</span><span class="p">([</span><span class="nv">L</span><span class="p">,</span> <span class="p">[</span><span class="nv">HA</span><span class="p">]]))</span>
+    <span class="k">end</span><span class="p">.</span>
+</code></pre></div>
+
+
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -461,104 +603,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120707_everyday-codediff-tool-with-svn-cmd.html">使用svn命令进行每日codediff</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-07T00:00:00+08:00" pubdate data-updated="true">Jul 7<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120707_everyday-codediff-tool-with-svn-cmd.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>什么是codediff?</h2>
-
-<p>每日codediff是一项简单易用，行之有效的敏捷实践，可以保证项目进展，让项目中的新人得到学习的机会，让代码规范得到更有效贯彻。
-具体做法是，每天早上站立晨会之后，几个人围在一起，使用版本控制工具的diff功能，
-逐行浏览前一天提交的代码，提交者对修改的代码进行介绍，讲讲代码是什么功能，为什么要做这样的修改。
-当然其他人可以提出异议，并且通常会记录评审意见，以便后续跟踪。</p>
-
-<p>和每周的代码评审相比，每日codediff虽然局限于每个代码片段，但时效性更强，两者互补不足，都是保证代码质量的有效手段。</p>
-
-<h2>better svn, better codediff</h2>
-
-<p>在我们的项目团队里边，一直也是使用这种方式进行处理。
-公司使用的是svn，不过由于环境的限制，svn性能并不是特别理想。
-经常把大量时间用在svn log,diff的等待过程中，整个codediff也因此需要比较多时间，有时需要1个多小时。
-长此以往，很多人对每日codediff不重视，参与度不高，对于我来说，评审问题也很不好跟踪。</p>
-
-<p>后来我想找一专门为codediff服务的工具，考察了一些开源项目，但总觉得不是特别合适我们团队的需求。
-我的要求也很简单，为svn服务，操作简单，便于跟踪，而不需要正规的评审流程。后来，我决定自己开发一个。</p>
-
-<p>我的做法也很简单: 定时从svn上取出最新提交记录，并把相关文件记录到数据库中去。
-再弄个网页展示出来，codediff和评审通过网页来进行，</p>
-
-<p>原型一出来，就在团队中试用了一段时间，效果挺好的，通常只需要10来分钟就可以了，大大提高了效率。
-现在几个同事还把这东西推广到其他项目中去，反应都还不错，让我着实感到非常有面子:)。</p>
-
-<h2>更多细节</h2>
-
-<p>后来，有些同事比较感兴趣提交记录是怎么弄出来的。
-因为很多人平时只是使用海龟来操作，命令行基本没使用过，所以不清楚也不奇怪。所以解释一下是怎么做的，也是我写这篇博客的重要原因。</p>
-
-<p>整个工程主要使用<a href="http://rubyonrails.org/">ruby on rails</a>和<a href="http://twitter.github.com/bootstrap/">twitter bootstrap</a>做页面.
-通过<a href="http://jruby.org/">jruby</a>来跑，定时任务使用<a href="https://github.com/mccxj/quartz-jruby">quartz-jruby</a>来做，提交记录通过svn命令来获取，我这里主要说说svn命令。</p>
-
-<p>当然首先需要安装svn命令行客户端，然后通过<a href="http://docs.oracle.com/javase/6/docs/api/java/lang/Runtime.html#exec(java.lang.String)">Runtime.exec()</a>来获取输出信息，解析这些信息入库即可。</p>
-
-<div class="highlight"><pre><code class="bash"><span class="c"># 获取最新版本号,使用正则/Last Changed Rev: (\d+)/得到最新版本</span>
-svn info http://hustoj.googlecode.com/svn/trunk
-<span class="c"># 获取svn log，这个解析比较麻烦，需要用正则分组</span>
-svn log -l 1 -v http://hustoj.googlecode.com/svn/trunk
-<span class="c"># 获取diff文件，对于更新(M)的文件</span>
-svn diff -c 1659 http://hustoj.googlecode.com/svn/trunk/web/admin/contest_list.php
-<span class="c"># 获取完整文件，对于增加(A)删除(D)的文件，需要直接取版本</span>
-svn cat http://hustoj.googlecode.com/svn/trunk/web/admin/contest_list.php@1655
-</code></pre></div>
-
-
-<p>不过在实际处理的时候，默认的diff取出来的上下文太少，所以我使用了外部diff工具:</p>
-
-<div class="highlight"><pre><code class="bash">svn diff -c 1659 --diff-cmd /usr/bin/diff -x <span class="s2">&quot;-U20&quot;</span> http://hustoj.googlecode.com/svn/trunk/web/admin/contest_list.php                    
-</code></pre></div>
-
-
-<p>不过通过程序执行命令获取数据时还存在一点问题:获取不到diff数据。
-为了解决这个问题，我再封装了一个shell文件来调用。</p>
-
-<div class="highlight"><pre><code class="bash"><span class="c">#!/bin/bash</span>
-svn diff -c <span class="nv">$1</span> --diff-cmd /usr/bin/diff -x <span class="s2">&quot;-U$2&quot;</span> <span class="nv">$3</span>
-</code></pre></div>
-
-
-<p>总的来说，实现的难度并不大，只是遇到了一些小问题，能够把一个想法化成现实，并且确实提高了效率，还是挺满意的。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/25/">&larr; Older</a>
@@ -574,6 +618,10 @@ svn diff -c <span class="nv">$1</span> --diff-cmd /usr/bin/diff -x <span class="
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160602_java-object-unknown-state.html">避免对象未知状态</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160426_commons-logging-source.html">commons-logging源码学习</a>
@@ -609,10 +657,6 @@ svn diff -c <span class="nv">$1</span> --diff-cmd /usr/bin/diff -x <span class="
     
       <li class="post">
         <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
       </li>
     
   </ul>

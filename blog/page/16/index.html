@@ -9,8 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="很早的记录了，以前瞎整过很多东西，还好很多资料有整理，所以看上去还有点小用的就迁移过来吧。:) 因为184解压一个oracle dmp文件的时候出错，导致数据无法同步。今天尝试解决这个问题，在日志中看到是解压的时候，
-出现write error (disk full?).continue?(y/m &hellip;">
+  <meta name="description" content="周五下午的时候，花了大半个小时在团队里边介绍了CoffeeScript，使用的是Sam Stephenson的ppt。
+这里再把相关的内容总结一下。 Why CoffeeScript CoffeeScript关注的是Good Part Of Javascript,可以和javascript无缝结合 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +65,98 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121215_hello-coffeescript.html">Hello,coffeescript</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-15T00:00:00+08:00" pubdate data-updated="true">Dec 15<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20121215_hello-coffeescript.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>周五下午的时候，花了大半个小时在团队里边介绍了CoffeeScript，使用的是<a href="http://sstephenson.s3.amazonaws.com/presentations/fowa-2011-coffeescript.pdf">Sam Stephenson的ppt</a>。
+这里再把相关的内容总结一下。</p>
+
+<h2>Why CoffeeScript</h2>
+
+<p><a href="http://coffeescript.org/">CoffeeScript</a>关注的是Good Part Of Javascript,可以和javascript无缝结合。
+CoffeeScript借鉴了ruby的语法，参考python的缩进规范，让代码更为简洁，规范性更强，适合以javascript为主的应用,如Node应用。
+<em>以我的经历(弄个html5 canvas+node的应用)，语法入门很简单(如果熟悉ruby，简直就似曾相识)，代码量可以少30%~50%，但对像Extjs这样的巨无霸UI代码，由于嵌套太深，不是很合适。</em></p>
+
+<h2>JavaScript’s Good Parts</h2>
+
+<p><strong>It’s private by default. </strong><br/>
+所有编译后的代码都会在一个自执行的闭包中，所以不会渗漏出全局变量。还记得在js文件中定义的变量在外边还能访问到吧? 在coffeescript中，全局变量必须要显示指出。</p>
+
+<p><strong>No more “var” keyword.</strong><br/>
+在js中变量只有在全局或函数内有效，没有局部变量这种，而且没有声明var的话，就会变成全局的。在coffeescript中遵循了这套规则，给所有变量加上var，并在全局开头或方法开始全部声明。
+这样可以减少一些粗心导致的bug。</p>
+
+<p><strong>Strict comparisons.</strong><br/>
+严格相等有了专门的语法is。对于javascript来说，相等这东西让不少初学者踩地雷，特别是对false这东西的理解。</p>
+
+<h2>有趣的语法</h2>
+
+<p>对着ppt或者coffeescript的官方指南看看就行了。我挑一些自己特别喜欢的：</p>
+
+<ul>
+<li>Significant white space 空白是有意义的，纠结于编码格式规范真是扯淡的事，这下好了不用争了</li>
+<li>Comprehensions 这是非常有用的语法糖</li>
+<li>Classes and Inheritance 内置的类和继承，不用纠结与用什么方式实现类比较好</li>
+<li>Bound functions 解决this应用的内置方案</li>
+<li>Conditionals 写过ruby的童鞋就知道了，后置的if和unless语句爽呆了，对可能为undefined和null的对象调用方法也优雅许多了</li>
+<li>String Syntax 多行字符串，可内嵌参数的字符串，拼接字符串的时代过去了</li>
+</ul>
+
+
+<h2>How to Use</h2>
+
+<ul>
+<li>CoffeeScript.org有一个<a href="http://coffeescript.org/#try:1">实时编译成js的工具</a>(页面)</li>
+<li>Rails3.1已经支持CoffeeScript</li>
+<li>使用<a href="http://coffeescript.org/extras/coffee-script.js">js版的编译器</a>,并使用type为text/coffeescript的script标签，嵌入CoffeeScript代码或文件</li>
+<li>使用Node.js,可以用npm install -g coffee-script,然后使用coffee命令编译成js文件</li>
+<li>可以使用监控工具来实时编译js文件，例如使用watchr</li>
+</ul>
+
+
+<div class="highlight"><pre><code class="bash">gem install watchr
+watchr project.watchr
+
+<span class="c"># project.watchr</span>
+watch<span class="o">(</span><span class="s1">&#39;src\/.*\.coffee&#39;</span><span class="o">)</span> <span class="o">{</span>|match| system <span class="s2">&quot;coffee --compile --output js/ src/&quot;</span><span class="o">}</span>
+</code></pre></div>
+
+
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -448,330 +540,6 @@ SingleThreadModel，因为Servlet并非线程安全，所以才有这么个东�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20121202_sinatra.html">Sinatra分析(旧)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-12-02T00:00:00+08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2012</time>
-        
-         | <a href="/blog/20121202_sinatra.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>这是10年初写的了:)</p>
-
-<h2>sinatra简介</h2>
-
-<ul>
-<li>Sinatra is a DSL for quickly creating web applications in Ruby with minimal。</li>
-<li>Fewer classes, less inheritance</li>
-<li>controller object mapping &amp; routes vs. URLs&#8212;Dont&#8217;s fear the URLs</li>
-<li>Exposed Simplicity instead of hidden complexity</li>
-<li>Small things, loosely joined, written fast</li>
-</ul>
-
-
-<h2>sinatra分析</h2>
-
-<h3>Rack机制</h3>
-
-<p>sinatra 作为一个web框架，是基于rack规范的。rack规范和Java的servlet规范有点类似，Rack中间件和filter机制有些类似，
-都是能够拦截request/response做一些事情。所谓的rack兼容的中间件无非是一个可以执行 call(env) 的对象，详细关于rack的内容可以参考rack官网，还有这个rack入门文档也很好。
-在源码中可以看到，sinatra的Request和Response都是基于rack扩展的，并对Rack::Request和Rack::Response分别做了一些调整。
-sinatra是通过Application.run!来启动服务器的</p>
-
-<div class="highlight"><pre><code class="ruby">         <span class="k">def</span> <span class="nf">run!</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="p">{})</span>
-            <span class="n">set</span> <span class="n">options</span>
-            <span class="n">handler</span>      <span class="o">=</span> <span class="n">detect_rack_handler</span>
-            <span class="n">handler_name</span> <span class="o">=</span> <span class="n">handler</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">gsub</span><span class="p">(</span><span class="sr">/.*::/</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
-            <span class="nb">puts</span> <span class="s2">&quot;== Sinatra/</span><span class="si">#{</span><span class="ss">Sinatra</span><span class="p">:</span><span class="ss">:VERSION</span><span class="si">}</span><span class="s2"> has taken the stage &quot;</span> <span class="o">+</span>
-              <span class="s2">&quot;on </span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2"> for </span><span class="si">#{</span><span class="n">environment</span><span class="si">}</span><span class="s2"> with backup from </span><span class="si">#{</span><span class="n">handler_name</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">unless</span> <span class="n">handler_name</span> <span class="o">=~</span><span class="sr">/cgi/i</span>
-            <span class="n">handler</span><span class="o">.</span><span class="n">run</span> <span class="nb">self</span><span class="p">,</span> <span class="ss">:Host</span> <span class="o">=&gt;</span> <span class="n">bind</span><span class="p">,</span> <span class="ss">:Port</span> <span class="o">=&gt;</span> <span class="n">port</span> <span class="k">do</span> <span class="o">|</span><span class="n">server</span><span class="o">|</span>
-              <span class="nb">trap</span><span class="p">(</span><span class="ss">:INT</span><span class="p">)</span> <span class="k">do</span>
-                <span class="c1">## Use thins&#39; hard #stop! if available, otherwise just #stop</span>
-                <span class="n">server</span><span class="o">.</span><span class="n">respond_to?</span><span class="p">(</span><span class="ss">:stop!</span><span class="p">)</span> <span class="p">?</span> <span class="n">server</span><span class="o">.</span><span class="n">stop!</span> <span class="p">:</span> <span class="n">server</span><span class="o">.</span><span class="n">stop</span>
-                <span class="nb">puts</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">== Sinatra has ended his set (crowd applauds)&quot;</span> <span class="k">unless</span> <span class="n">handler_name</span> <span class="o">=~</span><span class="sr">/cgi/i</span>
-              <span class="k">end</span>
-              <span class="n">set</span> <span class="ss">:running</span><span class="p">,</span> <span class="kp">true</span>
-            <span class="k">end</span>
-          <span class="k">rescue</span> <span class="ss">Errno</span><span class="p">:</span><span class="ss">:EADDRINUSE</span> <span class="o">=&gt;</span> <span class="n">e</span>
-            <span class="nb">puts</span> <span class="s2">&quot;== Someone is already performing on port </span><span class="si">#{</span><span class="n">port</span><span class="si">}</span><span class="s2">!&quot;</span>
-          <span class="k">end</span>
-</code></pre></div>
-
-
-<p>其中detect_rack_handler是通过 Rack::Handler.get来检测rack处理器的，默认的server有thin/mongrel/webrick,绑定的地址是 0.0.0.0，端口是4567</p>
-
-<div class="highlight"><pre><code class="ruby">    <span class="k">module</span> <span class="nn">Sinatra</span>
-        <span class="k">class</span> <span class="nc">Base</span>
-            <span class="n">set</span> <span class="ss">:server</span><span class="p">,</span> <span class="sx">%w[thin mongrel webrick]</span>
-            <span class="n">set</span> <span class="ss">:bind</span><span class="p">,</span> <span class="s1">&#39;0.0.0.0&#39;</span>
-            <span class="n">set</span> <span class="ss">:port</span><span class="p">,</span> <span class="mi">4567</span>
-        <span class="k">end</span>
-    <span class="k">end</span>
-</code></pre></div>
-
-
-<p>注意到handler.run self, :Host =&gt; bind, :Port =&gt; port do |server|,这个self指的是Sinatra::Base，根据rack规范，最终的请求的入口就是 Sinatra::Base.call(env)方法</p>
-
-<div class="highlight"><pre><code class="ruby">          <span class="k">def</span> <span class="nf">prototype</span>
-            <span class="vi">@prototype</span> <span class="o">||=</span> <span class="kp">new</span>
-          <span class="k">end</span>
-
-          <span class="c1"># Create a new instance of the class fronted by its middleware</span>
-          <span class="c1"># pipeline. The object is guaranteed to respond to #call but may not be</span>
-          <span class="c1"># an instance of the class new was called on.</span>
-          <span class="k">def</span> <span class="nf">new</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">bk</span><span class="p">)</span>
-            <span class="n">builder</span> <span class="o">=</span> <span class="ss">Rack</span><span class="p">:</span><span class="ss">:Builder</span><span class="o">.</span><span class="n">new</span>
-            <span class="n">builder</span><span class="o">.</span><span class="n">use</span> <span class="ss">Rack</span><span class="p">:</span><span class="ss">:Session</span><span class="o">::</span><span class="no">Cookie</span> <span class="k">if</span> <span class="n">sessions?</span>
-            <span class="n">builder</span><span class="o">.</span><span class="n">use</span> <span class="ss">Rack</span><span class="p">:</span><span class="ss">:CommonLogger</span>    <span class="k">if</span> <span class="n">logging?</span>
-            <span class="n">builder</span><span class="o">.</span><span class="n">use</span> <span class="ss">Rack</span><span class="p">:</span><span class="ss">:MethodOverride</span>  <span class="k">if</span> <span class="n">method_override?</span>
-            <span class="n">builder</span><span class="o">.</span><span class="n">use</span> <span class="no">ShowExceptions</span>        <span class="k">if</span> <span class="n">show_exceptions?</span>
-            <span class="n">middleware</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">c</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="o">|</span> <span class="n">builder</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">b</span><span class="p">)</span> <span class="p">}</span>
-
-            <span class="n">builder</span><span class="o">.</span><span class="n">run</span> <span class="k">super</span>
-            <span class="n">builder</span><span class="o">.</span><span class="n">to_app</span>
-          <span class="k">end</span>
-
-          <span class="k">def</span> <span class="nf">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
-            <span class="n">synchronize</span> <span class="p">{</span> <span class="n">prototype</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">env</span><span class="p">)</span> <span class="p">}</span>
-          <span class="k">end</span>
-</code></pre></div>
-
-
-<p>从call方法可以看到，是通过生成一个Sinatra::Base实例对象来运行的，最终会调用的是call(env) -> call!(env)，
-接下去的工作就是等客户端发送请求过来就可以了。在生成这个实例对象@prototype的时候,直接引入rack中间件机制，
-同样，sinatra允许你使用use方法来增加新的中间件(use只是把中间件加入@middleware变量中去而已)。这样sinatra就已经启动起来了。</p>
-
-<h3>路由机制</h3>
-
-<p>sinatra 的路由机制和rails不大一样，sinatra是在controller里边用get/post path这样来指定的。
-而rails是把controller和map分开处理，通过map来找到对应的controller和action。
-rails当初这么搞主要是为了兼容controller和路由不匹配的情况,个人觉得sinatra的写法是非常直观的，也非常的灵活。</p>
-
-<div class="highlight"><pre><code class="ruby">    <span class="n">delegate</span> <span class="ss">:get</span><span class="p">,</span> <span class="ss">:put</span><span class="p">,</span> <span class="ss">:post</span><span class="p">,</span> <span class="ss">:delete</span><span class="p">,</span> <span class="ss">:head</span><span class="p">,</span> <span class="ss">:template</span><span class="p">,</span> <span class="ss">:layout</span><span class="p">,</span>
-                 <span class="ss">:before</span><span class="p">,</span> <span class="ss">:after</span><span class="p">,</span> <span class="ss">:error</span><span class="p">,</span> <span class="ss">:not_found</span><span class="p">,</span> <span class="ss">:configure</span><span class="p">,</span> <span class="ss">:set</span><span class="p">,</span> <span class="ss">:mime_type</span><span class="p">,</span>
-                 <span class="ss">:enable</span><span class="p">,</span> <span class="ss">:disable</span><span class="p">,</span> <span class="ss">:use</span><span class="p">,</span> <span class="ss">:development?</span><span class="p">,</span> <span class="ss">:test?</span><span class="p">,</span> <span class="ss">:production?</span><span class="p">,</span>
-                 <span class="ss">:helpers</span><span class="p">,</span> <span class="ss">:settings</span>
-</code></pre></div>
-
-
-<p>看 main.rb可以看到include Sinatra::Delegator，可以把get/post等众多方法代理给Sinatra::Application去执行，
-在后面使用get &#8216;/&#8217; do xxx end的时候其实会调用Sinatra::Application(即Sinatra::Base)的get方法。</p>
-
-<div class="highlight"><pre><code class="ruby">      <span class="nb">require</span> <span class="s1">&#39;rubygems&#39;</span>
-      <span class="nb">require</span> <span class="s1">&#39;sinatra&#39;</span>
-      <span class="n">get</span> <span class="s1">&#39;/&#39;</span> <span class="k">do</span>
-        <span class="s1">&#39;Hello world!&#39;</span>
-      <span class="k">end</span>
-</code></pre></div>
-
-
-<p>例如这样一个简单的web应用就可以响应&#8217;/&#8217;的请求路径，那么Sinatra::Base是怎么识别到这个路由的呢?我们继续来看看上面的get方法做了什么事情，
-可以看到最终是调用route方法的(同时，从代码可以看到sinatra支持get/post/put/post/delete/head几种method的请求)。
-按照我们的大概思路，在看到某个请求方法的时候，sinatra会把{请求类型<em>路径 => 代码块}放到一个专门放路由的地方上去，然后在每一次请求调用call(env)的时候，
-根据“请求类型</em>路径”来获得需要执行的代码块。好，继续看看 route的代码是怎么实现的?</p>
-
-<div class="highlight"><pre><code class="ruby">          <span class="k">def</span> <span class="nf">route</span><span class="p">(</span><span class="n">verb</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{},</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
-            <span class="c1"># Because of self.options.host</span>
-            <span class="n">host_name</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="ss">:bind</span><span class="p">))</span> <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">key?</span><span class="p">(</span><span class="ss">:host</span><span class="p">)</span>
-            <span class="n">options</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span><span class="o">|</span><span class="n">option</span><span class="p">,</span> <span class="n">args</span><span class="o">|</span> <span class="nb">send</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)}</span>
-
-            <span class="n">pattern</span><span class="p">,</span> <span class="n">keys</span> <span class="o">=</span> <span class="n">compile</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-            <span class="n">conditions</span><span class="p">,</span> <span class="vi">@conditions</span> <span class="o">=</span> <span class="vi">@conditions</span><span class="p">,</span> <span class="o">[]</span>
-
-           <span class="n">define_method</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">verb</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span>
-            <span class="n">unbound_method</span> <span class="o">=</span> <span class="nb">instance_method</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">verb</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">block</span> <span class="o">=</span>
-              <span class="k">if</span> <span class="n">block</span><span class="o">.</span><span class="n">arity</span> <span class="o">!=</span> <span class="mi">0</span>
-                <span class="nb">proc</span> <span class="p">{</span> <span class="n">unbound_method</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="o">*</span><span class="vi">@block_params</span><span class="p">)</span> <span class="p">}</span>
-              <span class="k">else</span>
-                <span class="nb">proc</span> <span class="p">{</span> <span class="n">unbound_method</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span><span class="o">.</span><span class="n">call</span> <span class="p">}</span>
-              <span class="k">end</span>
-
-            <span class="n">invoke_hook</span><span class="p">(</span><span class="ss">:route_added</span><span class="p">,</span> <span class="n">verb</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">block</span><span class="p">)</span>
-
-            <span class="p">(</span><span class="vi">@routes</span><span class="o">[</span><span class="n">verb</span><span class="o">]</span> <span class="o">||=</span> <span class="o">[]</span><span class="p">)</span><span class="o">.</span>
-              <span class="n">push</span><span class="p">(</span><span class="o">[</span><span class="n">pattern</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">conditions</span><span class="p">,</span> <span class="n">block</span><span class="o">]</span><span class="p">)</span><span class="o">.</span><span class="n">last</span>
-          <span class="k">end</span>
-</code></pre></div>
-
-
-<p>这个代码处理的事情比较多，我们来仔细分析分析，前面两句代码是用来记录能够处理的请求的约束(例如特定的host_name,user_agent),
-然后compile(path)的工作是把path换成一个正则表达式(这样通过match就可以获得匹配的组)，还有提取keys(例如*的就变成 splat，:name就变成name)。
-重要的是把get &#8216;/&#8217; do xxx end动态生成一个&#8221;#{verb} #{path}&#8221;的方法并最终封装成一个带有上下文状态的proc对象，
-最终是把[pattern, keys, conditions, block]加入@routes[verb]里边去。而call(env)能够处理请求就得靠这个@routes来实现。</p>
-
-<p>先来看看call(env) -&gt; call!(env)，最重要的部分是invoke { dispatch! }，可以看到dispatch!的整个流程是
-判断并处理static文件 -&gt; before_filter! -&gt; route! -&gt; after_filter!，主要的处理过程是route!方法</p>
-
-<div class="highlight"><pre><code class="ruby">       <span class="k">def</span> <span class="nf">route!</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="nb">self</span><span class="o">.</span><span class="n">class</span><span class="p">,</span> <span class="n">pass_block</span><span class="o">=</span><span class="kp">nil</span><span class="p">)</span>
-          <span class="k">if</span> <span class="n">routes</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">routes</span><span class="o">[</span><span class="vi">@request</span><span class="o">.</span><span class="n">request_method</span><span class="o">]</span>
-            <span class="n">original_params</span> <span class="o">=</span> <span class="vi">@params</span>
-            <span class="n">path</span>            <span class="o">=</span> <span class="n">unescape</span><span class="p">(</span><span class="vi">@request</span><span class="o">.</span><span class="n">path_info</span><span class="p">)</span>
-
-            <span class="n">routes</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">pattern</span><span class="p">,</span> <span class="n">keys</span><span class="p">,</span> <span class="n">conditions</span><span class="p">,</span> <span class="n">block</span><span class="o">|</span>
-              <span class="k">if</span> <span class="n">match</span> <span class="o">=</span> <span class="n">pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-                <span class="n">values</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">captures</span><span class="o">.</span><span class="n">to_a</span>
-                <span class="n">params</span> <span class="o">=</span>
-                  <span class="k">if</span> <span class="n">keys</span><span class="o">.</span><span class="n">any?</span>
-                    <span class="n">keys</span><span class="o">.</span><span class="n">zip</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">inject</span><span class="p">({})</span> <span class="k">do</span> <span class="o">|</span><span class="nb">hash</span><span class="p">,(</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">)</span><span class="o">|</span>
-                      <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;splat&#39;</span>
-                        <span class="p">(</span><span class="nb">hash</span><span class="o">[</span><span class="n">k</span><span class="o">]</span> <span class="o">||=</span> <span class="o">[]</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">values</span><span class="p">}</span>
-                  <span class="k">else</span>
-                    <span class="p">{}</span>
-                  <span class="k">end</span>
-                <span class="vi">@params</span> <span class="o">=</span> <span class="n">original_params</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
-                <span class="vi">@block_params</span> <span class="o">=</span> <span class="n">values</span>
-
-                <span class="n">pass_block</span> <span class="o">=</span> <span class="kp">catch</span><span class="p">(</span><span class="ss">:pass</span><span class="p">)</span> <span class="k">do</span>
-                  <span class="n">conditions</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">cond</span><span class="o">|</span>
-                    <span class="kp">throw</span> <span class="ss">:pass</span> <span class="k">if</span> <span class="nb">instance_eval</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cond</span><span class="p">)</span> <span class="o">==</span> <span class="kp">false</span> <span class="p">}</span>
-                  <span class="n">route_eval</span><span class="p">(</span><span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
-                <span class="k">end</span>
-              <span class="k">end</span>
-            <span class="k">end</span>
-
-            <span class="vi">@params</span> <span class="o">=</span> <span class="n">original_params</span>
-          <span class="k">end</span>
-</code></pre></div>
-
-
-<p>首先sinatra先从＠routes里边取得符合请求类型的[pattern, keys, conditions, block]列表，然后逐个扫描，
-通过pattern来match路径，如果符合的话，取得通配符，命名参数的值并封装到params去(得益于 compile(path)的工作)。
-接下去判断conditions是否符合，如果都符合，则执行业务，即block。整个流程处理完之后，把 params恢复为原本的状态。</p>
-
-<h3>拦截器</h3>
-
-<p>在上面已经提到，sinatra的拦截器是通过before_filter!和after_filter!来执行的，如下所示:</p>
-
-<div class="highlight"><pre><code class="ruby">        <span class="k">def</span> <span class="nf">before_filter!</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="nb">self</span><span class="o">.</span><span class="n">class</span><span class="p">)</span>
-          <span class="n">before_filter!</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">superclass</span><span class="p">)</span> <span class="k">if</span> <span class="n">base</span><span class="o">.</span><span class="n">superclass</span><span class="o">.</span><span class="n">respond_to?</span><span class="p">(</span><span class="ss">:before_filters</span><span class="p">)</span>
-          <span class="n">base</span><span class="o">.</span><span class="n">before_filters</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">block</span><span class="o">|</span> <span class="nb">instance_eval</span><span class="p">(</span><span class="o">&amp;</span><span class="n">block</span><span class="p">)</span> <span class="p">}</span>
-        <span class="k">end</span>
-</code></pre></div>
-
-
-<p>配置过滤器也非常简单，定义一个前置过滤器，例如</p>
-
-<div class="highlight"><pre><code class="ruby">      <span class="n">before</span> <span class="k">do</span>
-        <span class="vi">@note</span> <span class="o">=</span> <span class="s1">&#39;Hi!&#39;</span>
-        <span class="n">request</span><span class="o">.</span><span class="n">path_info</span> <span class="o">=</span> <span class="s1">&#39;/foo/bar/baz&#39;</span>
-      <span class="k">end</span>
-</code></pre></div>
-
-
-<p>sinatra通过Sinatra::Base的before把block加入到@before_filters中去，这个应该很容易明白的。
-不过，这个拦截器功能比起rails那个显得简陋了，毕竟不能直接针对某些路径进行拦截处理。</p>
-
-<h3>模板渲染</h3>
-
-<p>sinatra通过Tilt实现多模板的渲染机制，生成页面的过程是在业务代码块那里注明的，例如</p>
-
-<div class="highlight"><pre><code class="ruby">      <span class="nb">require</span> <span class="s1">&#39;erb&#39;</span>
-      <span class="n">get</span> <span class="s1">&#39;/&#39;</span> <span class="k">do</span>
-        <span class="n">erb</span> <span class="ss">:index</span>
-      <span class="k">end</span>
-</code></pre></div>
-
-
-<p>sinatra的模板方法是在Sinatra::Templates模块里边定义的，能够支持erb,erubis,haml,sass,less,builder,具体的实现如下：</p>
-
-<div class="highlight"><pre><code class="ruby">        <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{},</span> <span class="n">locals</span><span class="o">=</span><span class="p">{},</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
-          <span class="c1"># merge app-level options</span>
-          <span class="n">options</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">options</span><span class="p">)</span> <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">respond_to?</span><span class="p">(</span><span class="n">engine</span><span class="p">)</span>
-
-          <span class="c1"># extract generic options</span>
-          <span class="n">locals</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="ss">:locals</span><span class="p">)</span> <span class="o">||</span> <span class="n">locals</span> <span class="o">||</span> <span class="p">{}</span>
-          <span class="n">views</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="ss">:views</span><span class="p">)</span> <span class="o">||</span> <span class="n">settings</span><span class="o">.</span><span class="n">views</span> <span class="o">||</span> <span class="s2">&quot;./views&quot;</span>
-          <span class="n">layout</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="ss">:layout</span><span class="p">)</span>
-          <span class="n">layout</span> <span class="o">=</span> <span class="ss">:layout</span> <span class="k">if</span> <span class="n">layout</span><span class="o">.</span><span class="n">nil?</span> <span class="o">||</span> <span class="n">layout</span> <span class="o">==</span> <span class="kp">true</span>
-
-          <span class="c1"># compile and render template</span>
-          <span class="n">template</span> <span class="o">=</span> <span class="n">compile_template</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">views</span><span class="p">)</span>
-          <span class="n">output</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="nb">self</span><span class="p">,</span> <span class="n">locals</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
-
-          <span class="c1"># render layout</span>
-          <span class="k">if</span> <span class="n">layout</span>
-            <span class="k">begin</span>
-              <span class="n">options</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="ss">:views</span> <span class="o">=&gt;</span> <span class="n">views</span><span class="p">,</span> <span class="ss">:layout</span> <span class="o">=&gt;</span> <span class="kp">false</span><span class="p">)</span>
-              <span class="n">output</span> <span class="o">=</span> <span class="n">render</span><span class="p">(</span><span class="n">engine</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">locals</span><span class="p">)</span> <span class="p">{</span> <span class="n">output</span> <span class="p">}</span>
-            <span class="k">rescue</span> <span class="ss">Errno</span><span class="p">:</span><span class="ss">:ENOENT</span>
-            <span class="k">end</span>
-          <span class="k">end</span>
-
-          <span class="n">output</span>
-        <span class="k">end</span>
-</code></pre></div>
-
-
-<p>具体的流程是先找到template engine，通过template的render方法渲染子页面，然后在把子页面的内容作为一个block参数放到渲染layout的render方法上去，
-这样在父页面里边的yield就会被子页面的内容所取代，从而实现整体页面的渲染。</p>
-
-<h3>错误及状态处理</h3>
-
-<p>sinatra在这方面的处理，我觉得非常巧妙，还认识了一些从来没用过的api。几个重要的特性：</p>
-
-<div class="highlight"><pre><code class="ruby"><span class="ss">halt</span><span class="p">:</span>
-
-      <span class="n">halt</span> <span class="mi">410</span>
-      <span class="n">halt</span> <span class="s1">&#39;this will be the body&#39;</span>
-      <span class="n">halt</span> <span class="mi">401</span><span class="p">,</span> <span class="s1">&#39;go away!&#39;</span>
-<span class="ss">error</span><span class="p">:</span>
-
-      <span class="n">error</span> <span class="k">do</span>
-        <span class="s1">&#39;Sorry there was a nasty error - &#39;</span> <span class="o">+</span> <span class="n">env</span><span class="o">[</span><span class="s1">&#39;sinatra.error&#39;</span><span class="o">].</span><span class="n">name</span>
-      <span class="k">end</span>
-      <span class="n">error</span> <span class="no">MyCustomError</span> <span class="k">do</span>
-        <span class="s1">&#39;So what happened was...&#39;</span> <span class="o">+</span> <span class="n">request</span><span class="o">.</span><span class="n">env</span><span class="o">[</span><span class="s1">&#39;sinatra.error&#39;</span><span class="o">].</span><span class="n">message</span>
-      <span class="k">end</span>
-      <span class="n">error</span> <span class="mi">400</span><span class="o">.</span><span class="n">.</span><span class="mi">510</span> <span class="k">do</span>
-        <span class="s1">&#39;Boom&#39;</span>
-      <span class="k">end</span>
-</code></pre></div>
-
-
-<p>error的实现很简单，只是把error code和block记录到＠errors上去，而not_found其实就是404的error了。halt从代码实现上看，它是throw一个halt的异常。
-这些处理方式在sinatra最终是怎么处理的呢？我们先回到dispatch!这个主方法，从源码中可以看到如果是静态页面，会抛出halt(line 173),到了route!方法的时候，如下</p>
-
-<div class="highlight"><pre><code class="ruby">                <span class="n">pass_block</span> <span class="o">=</span> <span class="kp">catch</span><span class="p">(</span><span class="ss">:pass</span><span class="p">)</span> <span class="k">do</span>
-                  <span class="n">conditions</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">cond</span><span class="o">|</span>
-                    <span class="kp">throw</span> <span class="ss">:pass</span> <span class="k">if</span> <span class="nb">instance_eval</span><span class="p">(</span><span class="o">&amp;</span><span class="n">cond</span><span class="p">)</span> <span class="o">==</span> <span class="kp">false</span> <span class="p">}</span>
-                    <span class="n">route_eval</span><span class="p">(</span><span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
-                <span class="k">end</span>
-</code></pre></div>
-
-
-<p>catch(args,&amp;block) 这个方法是会忽视在遇到pass异常的时候忽略异常并跳出block的运行，所以conditions验证不通过的时候，
-就会转入下一个pattern验证，而在验证通过后到了route_eval(&amp;block) 就会抛出halt从而跳出循环，表示已经匹配成功。
-抛出异常之后会在dispatch!通过rescue来处理。error_block!(*keys) 就是用来处理error的，＠errors根据error code来获取block，这样就可以输出自定义的错误页面了。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/17/">&larr; Older</a>
@@ -787,6 +555,10 @@ rails当初这么搞主要是为了兼容controller和路由不匹配的情况,�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160602_java-object-unknown-state.html">避免对象未知状态</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160426_commons-logging-source.html">commons-logging源码学习</a>
@@ -822,10 +594,6 @@ rails当初这么搞主要是为了兼容controller和路由不匹配的情况,�
     
       <li class="post">
         <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
       </li>
     
   </ul>

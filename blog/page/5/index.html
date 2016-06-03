@@ -9,7 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="下面是XXX的HTML5版本开发总结。 开发思路 说好是MVVM了，当然和以前也页面为中心进行DOM操作的方式很不一样。这方面可以参考文章：StackOverFlow精彩问答赏析：有jQuery背景的开发者如何建立起AngularJS的思维模式？ 开发经验就是，以数据为中心来考虑。 &hellip;">
+  <meta name="description" content="着重介绍与项目使用相关的json知识。如果没有特别说明，环境是指Javascript下的json。 区分类型 首先需要区分json字符串和json对象，不过通常根据上下文可以区分。
+协议关注的是json字符串，而代码中处理的是json对象，两者通过序列化(JSON.stringify) &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +65,94 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20140815_json-intro.html">Json格式须知</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-15T00:00:00+08:00" pubdate data-updated="true">Aug 15<span>th</span>, 2014</time>
+        
+         | <a href="/blog/20140815_json-intro.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>着重介绍与项目使用相关的json知识。如果没有特别说明，环境是指Javascript下的json。</p>
+
+<h3>区分类型</h3>
+
+<ul>
+<li>首先需要区分json字符串和json对象，不过通常根据上下文可以区分。</li>
+<li>协议关注的是json字符串，而代码中处理的是json对象，两者通过序列化(JSON.stringify)和反序列化相互转换(JSON.parse)。</li>
+</ul>
+
+
+<h3>常见格式</h3>
+
+<ul>
+<li>主要有数组和key/value形式的object</li>
+<li>数组是有顺序的，可以不同类型，常用于顺序遍历操作。</li>
+<li>object是无顺序的，key只能是字符串，常用于快速随机查找。</li>
+<li>null是可以被序列化的，而undefined不可以(会消失)。</li>
+<li>其他的一些特殊值，如Nan，Infinity，会被序列化为null。</li>
+</ul>
+
+
+<h3>关于数组</h3>
+
+<ul>
+<li>对于数组对象，虽然支持key/value的操作，但是序列化的时候设置的值会丢失。</li>
+<li>数组序列化的长度是根据length属性来的，没有赋值的位置是null。</li>
+<li>对数组遍历不应该采用for in语句，因为通过key/value设置的值也会被输出。</li>
+</ul>
+
+
+<h3>关于Object</h3>
+
+<ul>
+<li>规范上规定key是带双引号的字符串()，但实际上很多反序列化工具能够支持数值、单引号字符串、字符串字面量(没有引号的字符串)。</li>
+<li>如果是一普通浮点数值，可以通过相应的数值作为key获取，或者通过对应的字符串来获取。如用2.2的话，可以用2.2或&#8221;2.2&#8221;。</li>
+<li>如果是一整型数值，可以用数值，但用字符串只能用整型的，如用2.0的话，可以用2.0或2或&#8221;2&#8221;,但&#8221;2.0&#8221;就不可以。</li>
+<li>如果使用字符串字面量的话，需要避免一些关键字使用。如delete</li>
+<li>key不应该重复，如果重复的话，通常结果是后面的会覆盖前面的。</li>
+<li>可以用.后面加key来取值，或者用[]这样的操作符来获取，第一种方式更推荐，但只能支持非数字开头的字符串，unicode也是可以。</li>
+<li>对object遍历可以采用for in语句。</li>
+</ul>
+
+
+<h3>协议转换</h3>
+
+<ul>
+<li>协议传输的是json字符串，但通常里边的类型都是字符串，不区分数值，因此做数值运算需要先转换。</li>
+<li>和xml一样，需要注意特殊字符如引号、回车、unicode等，尽量避免手动拼接，采用序列化工具。</li>
+<li>object类型的json序列化/序列化的时候，都不应该预期他是有顺序的，虽然很多库都有带默认顺序，应该使用数组。</li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -533,175 +622,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20140225_android-jdk7-bug.html">Jdk7编译的bug记录</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-02-25T00:00:00+08:00" pubdate data-updated="true">Feb 25<span>th</span>, 2014</time>
-        
-         | <a href="/blog/20140225_android-jdk7-bug.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>过程</h2>
-
-<p>昨天在编译某个android项目的时候，发现dex打包出错。
-后来检查发现编译生成的SplashScreenActivity$1.class格式出错。</p>
-
-<p>后来经常测试，发现jdk6正常，jdk7不正常，包括最新的u51版本。</p>
-
-<h2>bug分析</h2>
-
-<p>相关的代码如下:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">private</span> <span class="kt">void</span> <span class="nf">checkUpdate</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">UpgradeInfo</span><span class="o">.</span><span class="na">isApkLocalExist</span><span class="o">(</span><span class="n">SplashScreenActivity</span><span class="o">.</span><span class="na">this</span><span class="o">,</span> <span class="n">UpgradeInfo</span><span class="o">.</span><span class="na">getFilePath</span><span class="o">()))</span> <span class="o">{</span>
-</span><span class='line'>        <span class="n">updateInstall</span><span class="o">();</span>
-</span><span class='line'>    <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">AUTO_UPDATE</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>        <span class="n">initDialog</span><span class="o">();</span>
-</span><span class='line'>        <span class="n">mUpgradeInfo</span> <span class="o">=</span> <span class="k">new</span> <span class="n">UpgradeInfo</span><span class="o">();</span>
-</span><span class='line'>        <span class="n">mGetVersionConfig</span> <span class="o">=</span> <span class="k">new</span> <span class="n">GetVersionConfig</span><span class="o">(</span><span class="n">SplashScreenActivity</span><span class="o">.</span><span class="na">this</span><span class="o">,</span>
-</span><span class='line'>                <span class="k">new</span> <span class="nf">CheckUpgradeHandler</span><span class="o">(),</span> <span class="n">mUpgradeInfo</span><span class="o">,</span> <span class="n">getUpgradeRequestParam</span><span class="o">());</span>
-</span><span class='line'>        <span class="n">mGetVersionConfig</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
-</span><span class='line'>    <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-</span><span class='line'>        <span class="c1">// /没版本且不升级</span>
-</span><span class='line'>        <span class="k">new</span> <span class="nf">Handler</span><span class="o">().</span><span class="na">postDelayed</span><span class="o">(</span><span class="k">new</span> <span class="n">Runnable</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>            <span class="nd">@Override</span>
-</span><span class='line'>            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>                <span class="n">Intent</span> <span class="n">i</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Intent</span><span class="o">(</span><span class="n">SplashScreenActivity</span><span class="o">.</span><span class="na">this</span><span class="o">,</span> <span class="n">LoginActivity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</span><span class='line'>                <span class="n">startActivity</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
-</span><span class='line'>                <span class="n">finish</span><span class="o">();</span>
-</span><span class='line'>            <span class="o">}</span>
-</span><span class='line'>        <span class="o">},</span> <span class="n">LOADING_TIME</span><span class="o">);</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>正常情况下，Runnable匿名类会生成一个class，但是这里的AUTO_UPDATE被定义为static final，并且设置为true。
-在这种情况下，jdk会优化掉后面的分支，但是jdk6不会生成class，但是jdk7会生成一个格式有误的class，反编译后如下：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">class</span> <span class="nc">SplashScreenActivity</span><span class="n">$1</span>
-</span><span class='line'>  <span class="kd">implements</span> <span class="n">Runnable</span>
-</span><span class='line'><span class="o">{</span>
-</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">();</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>所以，在进行dex打包的时候，就会检测到不规范的class，进行报错。
-我想，如果在web应用上的话，应该是不会有问题的，因为这个类没有机会被使用。</p>
-
-<p>后来，我发现在其他項目中也有类似写法，但是编译不会有问题。如下所示：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="k">if</span> <span class="o">(</span><span class="n">UpgradeInfo</span><span class="o">.</span><span class="na">isApkLocalExist</span><span class="o">(</span><span class="n">LogoActivity</span><span class="o">.</span><span class="na">this</span><span class="o">,</span><span class="n">UpgradeInfo</span><span class="o">.</span><span class="na">getFilePath</span><span class="o">()))</span> <span class="o">{</span>
-</span><span class='line'>    <span class="c1">// /检测到有新版本可以安装</span>
-</span><span class='line'>    <span class="n">String</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">getString</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">string</span><span class="o">.</span><span class="na">dialog_check_version</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">DialogUtil</span><span class="o">.</span><span class="na">dialogForTwoButton</span><span class="o">(...</span> <span class="o">,</span> <span class="k">new</span> <span class="n">OnClickListener</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>                <span class="nd">@Override</span>
-</span><span class='line'>                <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onClick</span><span class="o">(</span><span class="n">DialogInterface</span> <span class="n">dialog</span><span class="o">,</span> <span class="kt">int</span> <span class="n">which</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>                    <span class="c1">//..</span>
-</span><span class='line'>                <span class="o">}</span>
-</span><span class='line'>            <span class="o">});</span>
-</span><span class='line'><span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">AUTO_UPDATE</span><span class="o">)</span> <span class="o">{</span>
-</span><span class='line'>    <span class="c1">// ....</span>
-</span><span class='line'><span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
-</span><span class='line'>    <span class="c1">///没版本且不升级</span>
-</span><span class='line'>    <span class="k">new</span> <span class="nf">Handler</span><span class="o">().</span><span class="na">postDelayed</span><span class="o">(</span><span class="k">new</span> <span class="n">Runnable</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>
-</span><span class='line'>        <span class="nd">@Override</span>
-</span><span class='line'>        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>            <span class="n">Intent</span> <span class="n">i</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Intent</span><span class="o">(</span><span class="n">LogoActivity</span><span class="o">.</span><span class="na">this</span><span class="o">,</span> <span class="n">OperatorLoginActivity</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
-</span><span class='line'>            <span class="n">startActivity</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
-</span><span class='line'>            <span class="n">finish</span><span class="o">();</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>    <span class="o">},</span> <span class="n">LOADING_TIME</span><span class="o">);</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>故猜测，这个bug只出现在第一个不被使用匿名类身上(因为这个类前面还有个OnClickListener的匿名类)。
-经过测试，发现也的确是存在这样的情况。</p>
-
-<h2>规避方式</h2>
-
-<p>乖乖使用jdk6，不要使用jdk7。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/6/">&larr; Older</a>
@@ -717,6 +637,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160602_java-object-unknown-state.html">避免对象未知状态</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160426_commons-logging-source.html">commons-logging源码学习</a>
@@ -752,10 +676,6 @@
     
       <li class="post">
         <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
       </li>
     
   </ul>

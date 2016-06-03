@@ -9,10 +9,9 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="gist是gtihub的一个代码块功能，用来粘贴一些比较长的代码还是挺有用的。
-github page可以直接嵌入gist，并且能显示高亮。
-不过我不想太依赖gist，所以修改成使用pygments高亮的方式。
-看看下面gist_tag.rb这个插件的效果: require &#39;cgi&# &hellip;">
+  <meta name="description" content="github page不支持.htaccess功能(参考Blogging on Jekyll: URL Redirects)，
+所以发生URL调整的时候，无法让原有路径自动跳转到新路径。
+Alias generator这个插件提供了一个解决方案，就是生成多一个页面，采用auto &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -67,6 +66,150 @@ github page可以直接嵌入gist，并且能显示高亮。
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130127_jekyll-alias-generator.html">jekyll插件:支持URL跳转</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-27T00:00:00+08:00" pubdate data-updated="true">Jan 27<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130127_jekyll-alias-generator.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/assets/images/2013/jekyll-alias-generator.png" alt="jekyll插件:支持URL跳转" /></p>
+
+<p>github page不支持.htaccess功能(参考<a href="http://rawsyntax.com/blog/blogging-on-jekyll-url-redirects/">Blogging on Jekyll: URL Redirects</a>)，
+所以发生URL调整的时候，无法让原有路径自动跳转到新路径。
+<a href="http://github.com/tsmango/jekyll_alias_generator">Alias generator</a>这个插件提供了一个解决方案，就是生成多一个页面，采用auto refresh的方式跳转到新路径。</p>
+
+<p>这次我也调整了一些博客的路径，我也采用了这个方式。不过我只对当前已有的页面生成一次，以后的就不用这个插件了。
+另外，我不想去修改每个页面的alias标签，所以我调整了代码，只对我的url规则进行处理。下面是我使用的版本。</p>
+
+<div><script src='https://gist.github.com/4645990.js?file=alias_generator.rb'></script>
+<noscript><pre><code># Alias Generator for Posts.
+#
+# Example:
+#   alias /20121010_hello.html to /blog/20121010_hello.html
+#   alias /hello.html to /pages/20121010_hello.html
+#
+# Place the full path of the alias (place to redirect from) inside the
+# destination post&#39;s YAML Front Matter. One or more aliases may be given.
+#
+# Forked from Thomas Mango &#39;s jekyll_alias_generator
+# At http://github.com/tsmango/jekyll_alias_generator
+# PLugin License: MIT
+
+module Jekyll
+
+  class AliasGenerator &lt; Generator
+
+    def generate(site)
+      @site = site
+
+      process_posts
+      process_pages
+    end
+
+    def process_posts
+      # alias /20121010_hello.html to /blog/20121010_hello.html
+      @site.posts.each do |post|
+        generate_aliases(post.url, &quot;\/#{$1}&quot;) if /^\/blog\/(.+)$/ =~ post.url
+      end
+    end
+
+    def process_pages
+      # alias /hello.html to /pages/20121010_hello.html
+      @site.pages.each do |page|
+        dest = page.destination(&#39;&#39;)
+        generate_aliases(dest, &quot;\/#{$1}&quot;)  if /^\/pages\/(.+)$/ =~ dest
+      end
+    end
+
+    def generate_aliases(destination_path, aliases)
+      alias_paths ||= Array.new
+      alias_paths &lt;&lt; aliases
+      alias_paths.compact!
+
+      alias_paths.flatten.each do |alias_path|
+        alias_path = alias_path.to_s
+
+        alias_dir  = File.extname(alias_path).empty? ? alias_path : File.dirname(alias_path)
+        alias_file = File.extname(alias_path).empty? ? &quot;index.html&quot; : File.basename(alias_path)
+        fs_path_to_dir   = File.join(@site.dest, alias_dir)
+        alias_index_path = File.join(alias_dir, alias_file)
+
+        FileUtils.mkdir_p(fs_path_to_dir)
+
+        File.open(File.join(fs_path_to_dir, alias_file), &#39;w&#39;) do |file|
+          file.write(alias_template(destination_path))
+        end
+
+        (alias_index_path.split(&#39;/&#39;).size + 1).times do |sections|
+          @site.static_files &lt;&lt; Jekyll::AliasFile.new(@site, @site.dest, alias_index_path.split(&#39;/&#39;)[0, sections].join(&#39;/&#39;), nil)
+        end
+      end
+    end
+
+    def alias_template(destination_path)
+      &lt;&lt;-EOF
+      &lt;!DOCTYPE html&gt;
+      &lt;html&gt;
+      &lt;head&gt;
+      &lt;link rel=&quot;canonical&quot; href=&quot;#{destination_path}&quot;/&gt;
+      &lt;meta http-equiv=&quot;content-type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;
+      &lt;meta http-equiv=&quot;refresh&quot; content=&quot;0;url=#{destination_path}&quot; /&gt;
+      &lt;/head&gt;
+      &lt;/html&gt;
+      EOF
+    end
+  end
+
+  class AliasFile &lt; StaticFile
+    require &#39;set&#39;
+
+    def destination(dest)
+      File.join(dest, @dir)
+    end
+
+    def modified?
+      return false
+    end
+
+    def write(dest)
+      return true
+    end
+  end
+end</code></pre></noscript></div>
+
+
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -508,66 +651,6 @@ async在有些插件化的js时async可能可以用到，其他就很难用到�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130113_to-be-times-friend.html">把时间当作朋友读书笔记</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-01-13T00:00:00+08:00" pubdate data-updated="true">Jan 13<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130113_to-be-times-friend.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/assets/images/2013/tobe-times-friend.gif" alt="把时间当作朋友" /></p>
-
-<p>刚读到这本书的时候，有种相见恨晚的感觉。不同于一般的时间管理类书籍，无病呻吟式的洗脑不见了，例子也少了强加因果关系的痕迹，有些观点印象比较深，值得一读。下面是一些比较有感觉的部分，和大家分享一下。</p>
-
-<h3>欲望</h3>
-
-<p>人希望欲望尽快得到满足。这是人性，所以衍生了速成，不劳而获，学习浮于表面这些浮躁的社会现象。在这之前，我真的没有意识到这是人性本质的的一种表现，对于有些新同事急于求成的想法，甚至是自己，也经常有难以理解的感觉。没能理解到这点，就很难说感同身受了。</p>
-
-<h3>成功学</h3>
-
-<p>虽然我也读过一些成功人士的经验之谈，我向来对成功学理论不大感冒，因为多读几本就会发现，他们经常夸大某一方面对结果的影响，很多例子也很牵强，再加上环境的不同，这些经历基本是不可复制的。李老师在书中也反复强调，要警惕成功学，要有自己的独立思考。独立思考，成熟心智，管理自我，才是书中强调的思想。</p>
-
-<h3>时间管理</h3>
-
-<p>读书，除了希望能找到不同的观点，还希望能有些支持这些观点的可操作性方案。其实关于时间管理方面的著作，我也知道一些，例如使用TODO，GTD等工具，番茄工作法。 李老师也有类似的一些做法，例如代办列表，下一阶段代办列表，每日事项回顾。关于每天晚上回顾做了那些事，这个在其他书上没有特别指出，不过李老师提到的回顾发现没什么可以写的尴尬，我也经常遇到。让我产生这些做法不可靠的感觉，后来才发现，这个和代办事项的优先级与难度有关。自己经常会倾向于先完成熟悉的，简单的，感兴趣的，而不是重要的，困难的。这样即使看上去完成很多东西，回顾的时候发现没什么可以值得一提的事情。</p>
-
-<h3>计划</h3>
-
-<p>计划不如变化快，但我们还是需要计划的。关于计划，我发现自己经常高估自己的能力，这个需要多考虑意外，给自己心理估计时间多加一段时间，并且把计划细分，对于不熟悉不感兴趣的事情，更应该如此，把时间分为多个时间片，不断接近目标。书中关于这部分的内容和番茄工作法的理论有交叉，个人感觉番茄工作的理论更详细和有针对性些吧！</p>
-
-<h3>有趣言语</h3>
-
-<p>李老师常说的一句话是，相信我，你并不孤单。并引用了正态分布的理论，使得这句话特别的深刻。整本书妙语连珠，读起来比较轻松。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/15/">&larr; Older</a>
@@ -583,6 +666,10 @@ async在有些插件化的js时async可能可以用到，其他就很难用到�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160602_java-object-unknown-state.html">避免对象未知状态</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160426_commons-logging-source.html">commons-logging源码学习</a>
@@ -618,10 +705,6 @@ async在有些插件化的js时async可能可以用到，其他就很难用到�
     
       <li class="post">
         <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20150808_ibm-jdk-char-encoding-diff.html">was中奇怪的生僻字乱码案例</a>
       </li>
     
   </ul>
