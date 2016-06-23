@@ -4,7 +4,7 @@
   <title><![CDATA[小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-06-03T22:34:28+08:00</updated>
+  <updated>2016-06-23T13:28:42+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -12,6 +12,275 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[log4j源码心得]]></title>
+    <link href="http://mccxj.github.com/blog/20160607_log4j-source-study.html"/>
+    <updated>2016-06-07T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/log4j-source-study</id>
+    <content type="html"><![CDATA[<p>log4j是一个非常流行的日志框架，最近研究了一下log4j的源代码，这里记录一下心得体会。</p>
+
+<h3>Logger、Appender、Layout之间的结构关系?</h3>
+
+<p>这是log4j的基本数据结构，之间的关系还是很好理解的。首先，一个Logger都要一个名字(通常是类名或包名),它是有父子结构的，相关的实现是Hierarchy。<br/>
+一个Logger会对应多个Appender，表示可以日志输出的地方。<br/>
+Appender的输出格式是通过Layout来实现的，Logger在输出的时候是包装一个LogEvent对象，有Layout来格式化成一个字符串。</p>
+
+<p>简单点:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>Logger 1--* Appender 1--* Layout
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>加载log4j的配置文件</h3>
+
+<p>先考虑加载的是log4j.xml, 然后才是log4j.properties。我平时主要使用log4j.properties.</p>
+
+<h3>log4j果然是年代久远</h3>
+
+<p>以前都说log4j在jdk1.1版本就存在了，现在从源码的细节上看，的确是这样的。例如:</p>
+
+<ol>
+<li>加载配置文件的时候，使用context class loader，它不是用标准的api，而是采用反射。</li>
+<li>处理FileAppender的时候，针对父级目录不存在的时候需要创建目录，如果是我就直接使用mkdirs，它确是手工处理。</li>
+<li>Logger的名字是通过CategoryKey作为key存储到HashTable的，按理说用String作为key就可以了，估计是很早之前String的hashcode是不带缓存实现的吧。</li>
+<li></li>
+</ol>
+
+
+<h3>其他细节</h3>
+
+<h4>没有配置文件的时候，如何优雅处理?</h4>
+
+<p>正常的时候，会在static初始化的时候得到LogRepositorySelector，如果失败的话，这个值就是空的。<br/>
+然后就生成一个repositorySelector = new DefaultRepositorySelector(new NOPLoggerRepository());，这个处理方式就是进行空输出。</p>
+
+<h4>log4j配置中的占位符处理</h4>
+
+<p>log4j配置中的占位符处理是在OptionConverter的substVars方法处理。优先使用系统变量，然后才是properties配置的定义
+log4j.threshold用来配置log level的阀值，就是最低级别。默认是不设置。</p>
+
+<h4>log4j在重复加载文件时的处理</h4>
+
+<p>log4j在重复加载的时候，有个做法可以学习一下。这个做法和commons-logging的方式是一样的。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>  void doConfigure(java.net.URL configURL, LoggerRepository hierarchy) {
+</span><span class='line'>    Properties props = new Properties();
+</span><span class='line'>    LogLog.debug(&quot;Reading configuration from URL &quot; + configURL);
+</span><span class='line'>    InputStream istream = null;
+</span><span class='line'>    URLConnection uConn = null;
+</span><span class='line'>    try {
+</span><span class='line'>      uConn = configURL.openConnection();
+</span><span class='line'>      uConn.setUseCaches(false);
+</span><span class='line'>      istream = uConn.getInputStream();
+</span><span class='line'>      props.load(istream);
+</span><span class='line'>    }
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>layout或者appender的参数设置</h4>
+
+<p>log4j配置中的有时候组成一个layout或者appender，都是可以设置参数的，这些是怎么对应到类中的变量的? 实现在</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'> PropertySetter.setProperties(layout, props, layoutPrefix + &quot;.&quot;);
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>通常还需要实现OptionHandler来做一些后续的初始化动作.</p>
+
+<h4>appender filter如何排序?</h4>
+
+<p>log4j的appender filter是可以配置多个的，处理顺序是按照对应的key的排序来的</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>// sort filters by IDs, insantiate filters, set filter options,
+</span><span class='line'>// add filters to the appender
+</span><span class='line'>Enumeration g = new SortedKeyEnumeration(filters);
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>但是它为什么不使用内置的Arrays sort或者Collections sort呢?</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>  public SortedKeyEnumeration(Hashtable ht) {
+</span><span class='line'>    Enumeration f = ht.keys();
+</span><span class='line'>    Vector keys = new Vector(ht.size());
+</span><span class='line'>    for (int i, last = 0; f.hasMoreElements(); ++last) {
+</span><span class='line'>      String key = (String) f.nextElement();
+</span><span class='line'>      for (i = 0; i <span class="nt">&lt; last</span><span class="err">;</span> <span class="err">++i)</span> <span class="err">{</span>
+</span><span class='line'>        <span class="err">String</span> <span class="na">s =</span> <span class="s">(String)</span> <span class="err">keys.get(i);</span>
+</span><span class='line'>        <span class="err">if</span> <span class="err">(key.compareTo(s)</span> <span class="err">&lt;=</span> <span class="err">0)</span> <span class="err">break;</span>
+</span><span class='line'>      <span class="err">}</span>
+</span><span class='line'>      <span class="err">keys.add(i,</span> <span class="err">key);</span>
+</span><span class='line'>    <span class="err">}</span>
+</span><span class='line'>    <span class="na">e =</span> <span class="s">keys.elements();</span>
+</span><span class='line'>  <span class="err">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>输出编码没有设置会有什么问题?</h4>
+
+<p>如果默认编码不支持中文，可能就乱码。其他不会乱码，只是写的文件是不同编码。编码这块参考WriterAppender</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>  protected
+</span><span class='line'>  OutputStreamWriter createWriter(OutputStream os) {
+</span><span class='line'>    OutputStreamWriter retval = null;
+</span><span class='line'>
+</span><span class='line'>    String enc = getEncoding();
+</span><span class='line'>    if(enc != null) {
+</span><span class='line'>      try {
+</span><span class='line'>  retval = new OutputStreamWriter(os, enc);
+</span><span class='line'>      } catch(IOException e) {
+</span><span class='line'>          if (e instanceof InterruptedIOException) {
+</span><span class='line'>              Thread.currentThread().interrupt();
+</span><span class='line'>          }
+</span><span class='line'>        LogLog.warn(&quot;Error initializing output writer.&quot;);
+</span><span class='line'>        LogLog.warn(&quot;Unsupported encoding?&quot;);
+</span><span class='line'>      }
+</span><span class='line'>    }
+</span><span class='line'>    if(retval == null) {
+</span><span class='line'>      retval = new OutputStreamWriter(os);
+</span><span class='line'>    }
+</span><span class='line'>    return retval;
+</span><span class='line'>  }
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>bufferedIO和bufferSize、immediateFlush有什么关联?</h4>
+
+<p>bufferSize只有在bufferIO开启的时候才生效，对应的是BufferedWriter对象。<br/>
+如果开启了bufferIO那么immediateFlush就会重置成false。</p>
+
+<h4>RollingFileAppender多进程写的情况?</h4>
+
+<p>RollingFileAppender存在一个rollOver的操作，如果文件大小超过限制，就会进行切换。<br/>
+如果存在多个进程写的时候，就很可能出现文件大小明显超过限制的情况。<br/>
+原因在于RollingFileAppender初始化的时候就记录当前文件的大小，每次比较的依据是文件大小+曾经写入的文件大小。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>  protected
+</span><span class='line'>  void subAppend(LoggingEvent event) {
+</span><span class='line'>    super.subAppend(event);
+</span><span class='line'>    if(fileName != null <span class="err">&amp;&amp;</span> qw != null) {
+</span><span class='line'>        long size = ((CountingQuietWriter) qw).getCount();
+</span><span class='line'>        if (size &gt;= maxFileSize <span class="err">&amp;&amp;</span> size &gt;= nextRollover) {
+</span><span class='line'>            rollOver();
+</span><span class='line'>        }
+</span><span class='line'>    }
+</span><span class='line'>   }
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>另外，这里的文件大小限制是字节，但统计大小的时候，用的是字符串的长度，两者是有些区别的。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>  public
+</span><span class='line'>  void write(String string) {
+</span><span class='line'>    try {
+</span><span class='line'>      out.write(string);
+</span><span class='line'>      count += string.length();
+</span><span class='line'>    }
+</span><span class='line'>    catch(IOException e) {
+</span><span class='line'>      errorHandler.error(&quot;Write failure.&quot;, e, ErrorCode.WRITE_FAILURE);
+</span><span class='line'>    }
+</span><span class='line'>  }
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>DailyRollingFileAppender切换</h4>
+
+<p>基于一种时间窗口的算法。<br/>
+首先，如何知道是按分钟、小时还是天数来切换呢？就是靠猜，例如猜测是否是小时，那么就是给一个时间去格式化，再加上一小时去格式化。
+如果两个格式化的字符串一样，那么说明不是。按时间间隔，从小到大判断就可以做到。<br/>
+接下来，根据日期格式，就可以计算下次切换的时间点(文件名)。<br/>
+最后，判断切换的时候，根据当前时间去格式化，看看是不是不一样了，如果是，那么就开始切换了。</p>
+
+<p>不过，如果多个进程写的话，就很容易出现问题。因为下面的renameTo很容易失败，然后就会继续写到原来的文件。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>File file = new File(fileName);
+</span><span class='line'>boolean result = file.renameTo(target);
+</span><span class='line'>if(result) {
+</span><span class='line'>  LogLog.debug(fileName +&quot; -&gt; &quot;+ scheduledFilename);
+</span><span class='line'>} else {
+</span><span class='line'>  LogLog.error(&quot;Failed to rename [&quot;+fileName+&quot;] to [&quot;+scheduledFilename+&quot;].&quot;);
+</span><span class='line'>}
+</span></code></pre></td></tr></table></div></figure>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[避免对象未知状态]]></title>
@@ -2878,183 +3147,6 @@ XX设计模式不要硬套，从过程式演变出来更加自然(经验性的�
 <p>见https://github.com/mccxj/JSON-java</p>
 
 <p>经验教训: 以后引用第三方库的时候，要小心呀，避免触碰到一些特殊开关。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[结合状态机的开发风格]]></title>
-    <link href="http://mccxj.github.com/blog/20140819_state-machine-dev.html"/>
-    <updated>2014-08-19T00:00:00+08:00</updated>
-    <id>http://mccxj.github.com/blog/state-machine-dev</id>
-    <content type="html"><![CDATA[<p>本文主要以XXX的html5版本为蓝本，讨论结合状态机开发的思路和实践方式。状态机选型使用<a href="https://github.com/burrows/statechart.js">statechart.js</a>。</p>
-
-<h3>起步知识</h3>
-
-<ul>
-<li>状态机介绍，请参考<a href="http://burrows.github.io/statechart-angular-pres">Statecharts and Angular.js</a></li>
-<li>statechart.js的基本使用方法，请参考<a href="https://github.com/burrows/statechart.js">statechart.js</a></li>
-</ul>
-
-
-<p>特别是状态机介绍，内容非常好，强烈推荐。</p>
-
-<h3>适用场景</h3>
-
-<ul>
-<li>主要用于某个具体业务的复杂页面流控制</li>
-<li>简单的业务流程是不需要的。例如只有一两个页面(列表+详情)</li>
-<li>适用于多步骤多页面(包括弹出框)、各种跳转的场景</li>
-</ul>
-
-
-<h3>如何定义状态?</h3>
-
-<p>根据页面流、步骤来定义状态。可以参考以下步骤：</p>
-
-<ul>
-<li><p>对照保真、流程图，划分每个独立页面
-以个人营销活动为例，主要页面包括活动页面、选档次页面、奖品页面、奖品包选择页面、缴费页面、发票页面。
-那么可以考虑定义为list、level、reward、giftpack、charge、invoice</p></li>
-<li><p>对于有多种弹出窗口的情况，可以考虑定义子状态
-以推荐业务为例，在菜单页面上，可能会弹出反馈窗口，或者产品订购窗口。
-那么可以考虑定义为menu/index、menu/feedback、menu/prod，这样的话，通过下面的页面控制，就可以让在值状态的情况下，菜单页面一直显示。</p></li>
-</ul>
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/menu&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/recommended/recommended_menu.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
-</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/menu/prod&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/recommended/recommended_orderprod.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
-</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/menu/feedback&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/recommended/recommended_feedback.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>对于页面显示，有较多共性的页面，可以考虑定义子状态，方便共享逻辑和事件处理
-以上述的个人营销活动为例，奖品页面、奖品包选择页面的页面很类似，功能操作也比较实现，可以定义成子状态，如order/reward、order/giftpack</li>
-</ul>
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/list&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_list.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
-</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/level&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_level.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
-</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/order/reward&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_reward.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
-</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/order/giftpack&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_giftpack.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
-</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/invoice&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_invoice.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
-</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/charge&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_charge.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>如何控制页面的显示、如何响应页面操作?</h3>
-
-<ul>
-<li>页面显示与否，通过状态机的状态，而不是数据的状态。这里用的是isCurrent方法</li>
-<li>页面操作，通过状态机的事件发送，而不是直接使用绑定在$scope的方法。这里用的是send方法</li>
-<li>页面跳转，通过状态机的状态变化来驱动。这里用的是goto方法，是在send方法之后的event逻辑中处理的。</li>
-</ul>
-
-
-<p>页面显示与否，例子上面已经说了。而对于ng-click这种事件触发，直接用send方法即可。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;Feedback-btn&quot;</span><span class="nt">&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;a</span> <span class="na">ng-click=</span><span class="s">&quot;fsm.send(&#39;feedback&#39;, &#39;hesitate&#39;)&quot;</span> <span class="na">class=</span><span class="s">&quot;accept-btn&quot;</span><span class="nt">&gt;&lt;span&gt;</span>考虑<span class="nt">&lt;/span&gt;&lt;/a&gt;</span>
-</span><span class='line'>  <span class="nt">&lt;a</span> <span class="na">ng-click=</span><span class="s">&quot;fsm.send(&#39;feedback&#39;, &#39;refuse&#39;)&quot;</span> <span class="na">class=</span><span class="s">&quot;refuse-btn&quot;</span><span class="nt">&gt;&lt;span&gt;</span>拒绝<span class="nt">&lt;/span&gt;&lt;/a&gt;</span>
-</span><span class='line'><span class="nt">&lt;/div&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>可以看到，事件也可以捎带参数的，这样可以在该状态的event中进行处理，如下：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-</pre></td><td class='code'><pre><code class='coffeescript'><span class='line'><span class="c1"># 反馈</span>
-</span><span class='line'><span class="nx">@state</span> <span class="s">&#39;feedback&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
-</span><span class='line'>  <span class="c1"># 进行反馈操作</span>
-</span><span class='line'>  <span class="nx">@event</span> <span class="s">&#39;feedback&#39;</span><span class="p">,</span> <span class="nf">(operationtype) -&gt;</span>
-</span><span class='line'>    <span class="nv">product = </span><span class="nx">$scope</span><span class="p">.</span><span class="nx">viewModel</span><span class="p">.</span><span class="nx">product</span>
-</span><span class='line'>    <span class="k">if</span> <span class="nx">product</span><span class="p">.</span><span class="nx">opertype</span> <span class="o">==</span> <span class="s">&#39;1&#39;</span>
-</span><span class='line'>      <span class="k">new</span> <span class="nx">Toast</span><span class="p">(</span>
-</span><span class='line'>        <span class="nv">context: </span><span class="nx">$</span><span class="p">(</span><span class="s">&#39;body&#39;</span><span class="p">)</span>
-</span><span class='line'>        <span class="nv">message: </span><span class="s">&quot;该产品不可推荐&quot;</span>
-</span><span class='line'>      <span class="p">).</span><span class="nx">show</span><span class="p">();</span>
-</span><span class='line'>      <span class="k">return</span>
-</span><span class='line'>
-</span><span class='line'>    <span class="nx">qryfeedbackService</span><span class="p">.</span><span class="nx">event</span>
-</span><span class='line'>      <span class="s">&quot;userseq&quot;</span><span class="o">:</span> <span class="nx">$scope</span><span class="p">.</span><span class="nx">viewModel</span><span class="p">.</span><span class="nx">product</span><span class="p">.</span><span class="nx">userseq</span>
-</span><span class='line'>      <span class="s">&quot;servnumber&quot;</span><span class="o">:</span> <span class="nx">$scope</span><span class="p">.</span><span class="nx">telnum</span>
-</span><span class='line'>      <span class="s">&quot;operationtype&quot;</span><span class="o">:</span> <span class="nx">operationtype</span>
-</span><span class='line'>    <span class="p">.</span><span class="nx">then</span> <span class="nf">(ok) =&gt;</span>
-</span><span class='line'>        <span class="nx">@goto</span> <span class="s">&#39;/menu/index&#39;</span>
-</span><span class='line'>      <span class="p">,</span> <span class="nf">(err) -&gt;</span>
-</span><span class='line'>        <span class="k">new</span> <span class="nx">Toast</span><span class="p">(</span>
-</span><span class='line'>          <span class="nv">context: </span><span class="nx">$</span><span class="p">(</span><span class="s">&#39;body&#39;</span><span class="p">)</span>
-</span><span class='line'>          <span class="nv">message: </span><span class="nx">err</span>
-</span><span class='line'>        <span class="p">).</span><span class="nx">show</span><span class="p">()</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>需要注意的是，event是挂靠在某个状态下的，如果你是子状态的话的，event会先在子状态中找，如果没有找到会在父状态上找。
-通过这种方式，就可以实现多个子状态共享event，例如奖品页面、奖品包页面都有选择功能，就可以把这个操作放到父状态的event中去。</p>
-
-<h3>更多状态机的细节</h3>
-
-<p>很多状态机都实现了某些特殊状态，如进入状态，退出状态这种事件。statechart也实现了，对应的是enter和exit，代码大体上是:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='coffeescript'><span class='line'><span class="nx">@state</span> <span class="s">&#39;menu&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
-</span><span class='line'>  <span class="nx">@enter</span> <span class="nf">-&gt;</span>
-</span><span class='line'>    <span class="c1">#TODO</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="nx">@exit</span> <span class="nf">-&gt;</span>
-</span><span class='line'>    <span class="c1">#TODO</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>但是需要注意的是，重复进入这个状态的话，是会重复执行的。所以对于A -> B -> C这样的业务流程，从A到B和C回退到B，都会执行这个enter，
-就无法区分这种情况了。因为通常，从A到B是进行初始化，而从C回到B得保留原来B的数据状态。所以实际上我很少使用这些特殊事件，除非：</p>
-
-<ul>
-<li>无需区分的情况，这样写会让代码风格更统一。</li>
-<li>没有接口交互，本地操作的话，因为这种消耗小很多。</li>
-<li>存在直接跳转到该状态的情况(例如由另外的业务跳转过来)，这种特殊情况下前面的步骤都被忽略。而且这种情况下，需要通常需要接口交互(例如补充某些必要信息)，而为了区分回退的情况，我通常会根据业务特性考虑一些数据缓存处理。</li>
-</ul>
-
 ]]></content>
   </entry>
   

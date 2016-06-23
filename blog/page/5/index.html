@@ -9,8 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="着重介绍与项目使用相关的json知识。如果没有特别说明，环境是指Javascript下的json。 区分类型 首先需要区分json字符串和json对象，不过通常根据上下文可以区分。
-协议关注的是json字符串，而代码中处理的是json对象，两者通过序列化(JSON.stringify) &hellip;">
+  <meta name="description" content="本文主要以XXX的html5版本为蓝本，讨论结合状态机开发的思路和实践方式。状态机选型使用statechart.js。 起步知识 状态机介绍，请参考Statecharts and Angular.js
+statechart.js的基本使用方法，请参考statechart.js 特别是状态机介绍， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +65,212 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20140819_state-machine-dev.html">结合状态机的开发风格</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-19T00:00:00+08:00" pubdate data-updated="true">Aug 19<span>th</span>, 2014</time>
+        
+         | <a href="/blog/20140819_state-machine-dev.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>本文主要以XXX的html5版本为蓝本，讨论结合状态机开发的思路和实践方式。状态机选型使用<a href="https://github.com/burrows/statechart.js">statechart.js</a>。</p>
+
+<h3>起步知识</h3>
+
+<ul>
+<li>状态机介绍，请参考<a href="http://burrows.github.io/statechart-angular-pres">Statecharts and Angular.js</a></li>
+<li>statechart.js的基本使用方法，请参考<a href="https://github.com/burrows/statechart.js">statechart.js</a></li>
+</ul>
+
+
+<p>特别是状态机介绍，内容非常好，强烈推荐。</p>
+
+<h3>适用场景</h3>
+
+<ul>
+<li>主要用于某个具体业务的复杂页面流控制</li>
+<li>简单的业务流程是不需要的。例如只有一两个页面(列表+详情)</li>
+<li>适用于多步骤多页面(包括弹出框)、各种跳转的场景</li>
+</ul>
+
+
+<h3>如何定义状态?</h3>
+
+<p>根据页面流、步骤来定义状态。可以参考以下步骤：</p>
+
+<ul>
+<li><p>对照保真、流程图，划分每个独立页面
+以个人营销活动为例，主要页面包括活动页面、选档次页面、奖品页面、奖品包选择页面、缴费页面、发票页面。
+那么可以考虑定义为list、level、reward、giftpack、charge、invoice</p></li>
+<li><p>对于有多种弹出窗口的情况，可以考虑定义子状态
+以推荐业务为例，在菜单页面上，可能会弹出反馈窗口，或者产品订购窗口。
+那么可以考虑定义为menu/index、menu/feedback、menu/prod，这样的话，通过下面的页面控制，就可以让在值状态的情况下，菜单页面一直显示。</p></li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/menu&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/recommended/recommended_menu.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/menu/prod&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/recommended/recommended_orderprod.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/menu/feedback&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/recommended/recommended_feedback.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>对于页面显示，有较多共性的页面，可以考虑定义子状态，方便共享逻辑和事件处理
+以上述的个人营销活动为例，奖品页面、奖品包选择页面的页面很类似，功能操作也比较实现，可以定义成子状态，如order/reward、order/giftpack</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/list&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_list.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/level&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_level.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/order/reward&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_reward.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/order/giftpack&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_giftpack.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/invoice&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_invoice.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span><span class='line'><span class="nt">&lt;div</span> <span class="na">ng-show=</span><span class="s">&quot;fsm.isCurrent(&#39;/charge&#39;)&quot;</span> <span class="na">ng-include=</span><span class="s">&quot;&#39;app/partials/personalMarketCamp/personalMarketCamp_charge.html&#39;&quot;</span><span class="nt">&gt;&lt;/div&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>如何控制页面的显示、如何响应页面操作?</h3>
+
+<ul>
+<li>页面显示与否，通过状态机的状态，而不是数据的状态。这里用的是isCurrent方法</li>
+<li>页面操作，通过状态机的事件发送，而不是直接使用绑定在$scope的方法。这里用的是send方法</li>
+<li>页面跳转，通过状态机的状态变化来驱动。这里用的是goto方法，是在send方法之后的event逻辑中处理的。</li>
+</ul>
+
+
+<p>页面显示与否，例子上面已经说了。而对于ng-click这种事件触发，直接用send方法即可。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">&quot;Feedback-btn&quot;</span><span class="nt">&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;a</span> <span class="na">ng-click=</span><span class="s">&quot;fsm.send(&#39;feedback&#39;, &#39;hesitate&#39;)&quot;</span> <span class="na">class=</span><span class="s">&quot;accept-btn&quot;</span><span class="nt">&gt;&lt;span&gt;</span>考虑<span class="nt">&lt;/span&gt;&lt;/a&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;a</span> <span class="na">ng-click=</span><span class="s">&quot;fsm.send(&#39;feedback&#39;, &#39;refuse&#39;)&quot;</span> <span class="na">class=</span><span class="s">&quot;refuse-btn&quot;</span><span class="nt">&gt;&lt;span&gt;</span>拒绝<span class="nt">&lt;/span&gt;&lt;/a&gt;</span>
+</span><span class='line'><span class="nt">&lt;/div&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可以看到，事件也可以捎带参数的，这样可以在该状态的event中进行处理，如下：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='coffeescript'><span class='line'><span class="c1"># 反馈</span>
+</span><span class='line'><span class="nx">@state</span> <span class="s">&#39;feedback&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+</span><span class='line'>  <span class="c1"># 进行反馈操作</span>
+</span><span class='line'>  <span class="nx">@event</span> <span class="s">&#39;feedback&#39;</span><span class="p">,</span> <span class="nf">(operationtype) -&gt;</span>
+</span><span class='line'>    <span class="nv">product = </span><span class="nx">$scope</span><span class="p">.</span><span class="nx">viewModel</span><span class="p">.</span><span class="nx">product</span>
+</span><span class='line'>    <span class="k">if</span> <span class="nx">product</span><span class="p">.</span><span class="nx">opertype</span> <span class="o">==</span> <span class="s">&#39;1&#39;</span>
+</span><span class='line'>      <span class="k">new</span> <span class="nx">Toast</span><span class="p">(</span>
+</span><span class='line'>        <span class="nv">context: </span><span class="nx">$</span><span class="p">(</span><span class="s">&#39;body&#39;</span><span class="p">)</span>
+</span><span class='line'>        <span class="nv">message: </span><span class="s">&quot;该产品不可推荐&quot;</span>
+</span><span class='line'>      <span class="p">).</span><span class="nx">show</span><span class="p">();</span>
+</span><span class='line'>      <span class="k">return</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nx">qryfeedbackService</span><span class="p">.</span><span class="nx">event</span>
+</span><span class='line'>      <span class="s">&quot;userseq&quot;</span><span class="o">:</span> <span class="nx">$scope</span><span class="p">.</span><span class="nx">viewModel</span><span class="p">.</span><span class="nx">product</span><span class="p">.</span><span class="nx">userseq</span>
+</span><span class='line'>      <span class="s">&quot;servnumber&quot;</span><span class="o">:</span> <span class="nx">$scope</span><span class="p">.</span><span class="nx">telnum</span>
+</span><span class='line'>      <span class="s">&quot;operationtype&quot;</span><span class="o">:</span> <span class="nx">operationtype</span>
+</span><span class='line'>    <span class="p">.</span><span class="nx">then</span> <span class="nf">(ok) =&gt;</span>
+</span><span class='line'>        <span class="nx">@goto</span> <span class="s">&#39;/menu/index&#39;</span>
+</span><span class='line'>      <span class="p">,</span> <span class="nf">(err) -&gt;</span>
+</span><span class='line'>        <span class="k">new</span> <span class="nx">Toast</span><span class="p">(</span>
+</span><span class='line'>          <span class="nv">context: </span><span class="nx">$</span><span class="p">(</span><span class="s">&#39;body&#39;</span><span class="p">)</span>
+</span><span class='line'>          <span class="nv">message: </span><span class="nx">err</span>
+</span><span class='line'>        <span class="p">).</span><span class="nx">show</span><span class="p">()</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>需要注意的是，event是挂靠在某个状态下的，如果你是子状态的话的，event会先在子状态中找，如果没有找到会在父状态上找。
+通过这种方式，就可以实现多个子状态共享event，例如奖品页面、奖品包页面都有选择功能，就可以把这个操作放到父状态的event中去。</p>
+
+<h3>更多状态机的细节</h3>
+
+<p>很多状态机都实现了某些特殊状态，如进入状态，退出状态这种事件。statechart也实现了，对应的是enter和exit，代码大体上是:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='coffeescript'><span class='line'><span class="nx">@state</span> <span class="s">&#39;menu&#39;</span><span class="p">,</span> <span class="nf">-&gt;</span>
+</span><span class='line'>  <span class="nx">@enter</span> <span class="nf">-&gt;</span>
+</span><span class='line'>    <span class="c1">#TODO</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nx">@exit</span> <span class="nf">-&gt;</span>
+</span><span class='line'>    <span class="c1">#TODO</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>但是需要注意的是，重复进入这个状态的话，是会重复执行的。所以对于A -> B -> C这样的业务流程，从A到B和C回退到B，都会执行这个enter，
+就无法区分这种情况了。因为通常，从A到B是进行初始化，而从C回到B得保留原来B的数据状态。所以实际上我很少使用这些特殊事件，除非：</p>
+
+<ul>
+<li>无需区分的情况，这样写会让代码风格更统一。</li>
+<li>没有接口交互，本地操作的话，因为这种消耗小很多。</li>
+<li>存在直接跳转到该状态的情况(例如由另外的业务跳转过来)，这种特殊情况下前面的步骤都被忽略。而且这种情况下，需要通常需要接口交互(例如补充某些必要信息)，而为了区分回退的情况，我通常会根据业务特性考虑一些数据缓存处理。</li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -483,145 +689,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20140329_was-datasource.html">Websphere+spring+jndi数据源配置</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-03-29T00:00:00+08:00" pubdate data-updated="true">Mar 29<span>th</span>, 2014</time>
-        
-         | <a href="/blog/20140329_was-datasource.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>配置的步骤在下面简要说明:</p>
-
-<ol>
-<li>增加基于spring的jndi数据源配置</li>
-<li>在websphere上增加数据源配置</li>
-<li>链接iiop地址</li>
-</ol>
-
-
-<p>下面进行详细描述。</p>
-
-<ul>
-<li>基于spring的jndi配置文件</li>
-</ul>
-
-
-<p>注意:如果是第二种方式，可以忽略第三部分&#8221;链接iiop地址&#8221;</p>
-
-<p>第一种方式:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-</pre></td><td class='code'><pre><code class='diff'><span class='line'>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
-</span><span class='line'>&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
-</span><span class='line'> xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
-</span><span class='line'> xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
-</span><span class='line'> xmlns:tx=&quot;http://www.springframework.org/schema/tx&quot;
-</span><span class='line'> xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd&quot;&gt;
-</span><span class='line'>
-</span><span class='line'><span class="gi">+    &lt;bean id=&quot;GlobalConfig&quot;</span>
-</span><span class='line'><span class="gi">+        class=&quot;org.springframework.beans.factory.config.PropertyPlaceholderConfigurer&quot;&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;property name=&quot;systemPropertiesMode&quot;&gt;</span>
-</span><span class='line'><span class="gi">+            &lt;value&gt;1&lt;/value&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;/property&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;property name=&quot;searchSystemEnvironment&quot;&gt;</span>
-</span><span class='line'><span class="gi">+            &lt;value&gt;true&lt;/value&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;/property&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;property name=&quot;ignoreUnresolvablePlaceholders&quot;&gt;</span>
-</span><span class='line'><span class="gi">+            &lt;value&gt;true&lt;/value&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;/property&gt;</span>
-</span><span class='line'><span class="gi">+    &lt;/bean&gt;</span>
-</span><span class='line'>
-</span><span class='line'><span class="gi">+     &lt;bean id=&quot;jtaTransactionManager&quot; class=&quot;org.springframework.transaction.jta.WebSphereUowTransactionManager&quot; /&gt;</span>
-</span><span class='line'>   &lt;tx:annotation-driven transaction-manager=&quot;jtaTransactionManager&quot;  proxy-target-class=&quot;true&quot; /&gt;
-</span><span class='line'>   &lt;bean id=&quot;lobHandler&quot; class=&quot;org.springframework.jdbc.support.lob.DefaultLobHandler&quot;/&gt;
-</span><span class='line'>
-</span><span class='line'><span class="gi">+    &lt;bean id=&quot;dataSource&quot; class=&quot;org.springframework.jndi.JndiObjectFactoryBean&quot;&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;property name=&quot;jndiName&quot;&gt;&lt;value&gt;XXX&lt;/value&gt;&lt;/property&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;property name=&quot;resourceRef&quot;&gt;&lt;value&gt;true&lt;/value&gt;&lt;/property&gt;</span>
-</span><span class='line'><span class="gi">+        &lt;property name=&quot;jndiEnvironment&quot;&gt;&lt;props&gt;&lt;prop key=&quot;java.naming.provider.url&quot;&gt;${java_naming_provider_url}&lt;/prop&gt;&lt;/props&gt;&lt;/property&gt;</span>
-</span><span class='line'><span class="gi">+    &lt;/bean&gt;  </span>
-</span><span class='line'>&lt;/beans&gt;
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>在websphere上增加数据源配置</li>
-</ul>
-
-
-<p><img src="/assets/images/2014/ds.png" alt="效果图" /></p>
-
-<ul>
-<li>链接iiop地址</li>
-</ul>
-
-
-<p>在server的java进程定义里边配置jvm参数:  -Djava_naming_provider_url=iiop://localhost:port/,另外，修改启动参数需要重启server才能生效。</p>
-
-<p><img src="/assets/images/2014/iiop.png" alt="效果图" /></p>
-
-<p>其中每个server的port都是不一样的，具体的端口通过Application servers - serverX - Communications -  Ports上查看，如下图:</p>
-
-<p><img src="/assets/images/2014/port.png" alt="效果图" /></p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/6/">&larr; Older</a>
@@ -637,6 +704,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160607_log4j-source-study.html">log4j源码心得</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160602_java-object-unknown-state.html">避免对象未知状态</a>
@@ -672,10 +743,6 @@
     
       <li class="post">
         <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
       </li>
     
   </ul>

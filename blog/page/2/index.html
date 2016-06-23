@@ -9,8 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="由于整个连接池的性能是由commons-pool决定的，有空再讲解一下commons-pool的实现，特别是1.x和2.x的区别。
-此次分析的是commons-dbcp 1.x源码，对应commons-pool 1.x版本。 commons-dbcp怎样与commons-pool集成? <img &hellip;">
+  <meta name="description" content="我们平时会接触到不少开源项目, 很多人都期望能够通过阅读源码理解更多东西，把从中学到的东西用于平时的框架使用，设计和编码实现过程。 不过，浩瀚的代码量，应该关注什么? 作为一个屌丝程序员，分享一下屌丝经验: 首先，你应该有一定的使用经验。从使用中，去找相关特性是如何实现的。
+最好阅读一下官方文档， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +65,182 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20160105_source-reading.html">源码阅读应该得到什么?</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-01-05T00:00:00+08:00" pubdate data-updated="true">Jan 5<span>th</span>, 2016</time>
+        
+         | <a href="/blog/20160105_source-reading.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>我们平时会接触到不少开源项目, 很多人都期望能够通过阅读源码理解更多东西，把从中学到的东西用于平时的框架使用，设计和编码实现过程。</p>
+
+<p>不过，浩瀚的代码量，应该关注什么? 作为一个屌丝程序员，分享一下屌丝经验:</p>
+
+<ol>
+<li>首先，你应该有一定的使用经验。从使用中，去找相关特性是如何实现的。</li>
+<li>最好阅读一下官方文档，了解使用的场景，高层设计、特性介绍。做到心中有数。</li>
+<li>关于设计模式。提前学习一下还是有用的，学习源码的时候就不用揪着设计模式不放，会崩溃的。</li>
+<li>同上，很多源码书会画很庞大的类图，时序图等。这些看上去很高大上，然并卯。</li>
+<li>还是要带的问题去跟踪，一次跟踪一小部分，就是一次要有一个关注点，集中分析。别走马观花。</li>
+<li>建议使用maven等高大上工具关联源码，应该多调试调试，但是单步调试帮助不大。</li>
+<li>同上，应该提高代码&#8221;猜想&#8221;能力,大步调试过去，验证自己的猜测。</li>
+<li>linus说: 烂程序员关心的是代码。好程序员关心的是数据结构和它们之间的关系。</li>
+<li>多补充理论知识。虽然很花时间。</li>
+<li>凑数的，找个感兴趣的开始吧。</li>
+</ol>
+
+
+<p>上面废话很多，下面来个事例。</p>
+
+<p>commons httpclinet 3.x 这是一个很超好用的库，实际上也是比较容易理解的。</p>
+
+<p>我阅读的时候，列了一下自己的关注点或者问题列表。</p>
+
+<ul>
+<li>如何打开HttpClient库的详细日志</li>
+<li>httpclient默认参数有哪些?如User Agent、Charset怎么进行定制?</li>
+<li>httpclient的连接是怎样管理的? 内部是连接池还是什么? HttpClient能用于多线程环境么?如何应用?</li>
+<li>关于MultiThreadedHttpConnectionManager的数据结构是怎样的?</li>
+<li>uri和content中的字符编码是怎么处理的? 例如像处理带中文的路径。</li>
+<li>HttpClient#executeMethod实现细节，为什么hostconfig要克隆一份?为什么不能直接设置?</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">hostconfig</span> <span class="o">==</span> <span class="n">defaulthostconfig</span> <span class="o">||</span> <span class="n">uri</span><span class="o">.</span><span class="na">isAbsoluteURI</span><span class="o">())</span> <span class="o">{</span>
+</span><span class='line'>        <span class="c1">// make a deep copy of the host defaults</span>
+</span><span class='line'>        <span class="n">hostconfig</span> <span class="o">=</span> <span class="o">(</span><span class="n">HostConfiguration</span><span class="o">)</span> <span class="n">hostconfig</span><span class="o">.</span><span class="na">clone</span><span class="o">();</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">uri</span><span class="o">.</span><span class="na">isAbsoluteURI</span><span class="o">())</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">hostconfig</span><span class="o">.</span><span class="na">setHost</span><span class="o">(</span><span class="n">uri</span><span class="o">);</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>HttpClient、HttpMethod(GetMethod、PostMethod)、HostConfiguration、HttpConnectionManager、HttpClientParams、HttpConnection、HttpState、AuthChallengeProcessor主要负责什么?</li>
+<li>命令行参数、HttpClient、HttpMethod、HostConfiguration都可以设置params，有区别? 参数在框架中是怎样存储的?</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="n">HttpClient</span> <span class="n">httpClient</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HttpClient</span><span class="o">();</span>
+</span><span class='line'>    <span class="n">httpClient</span><span class="o">.</span><span class="na">getParams</span><span class="o">().</span><span class="na">setConnectionManagerTimeout</span><span class="o">(</span><span class="mi">30000L</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">httpClient</span><span class="o">.</span><span class="na">getHostConfiguration</span><span class="o">().</span><span class="na">getParams</span><span class="o">().</span><span class="na">setLongParameter</span><span class="o">(</span>
+</span><span class='line'>            <span class="n">HttpClientParams</span><span class="o">.</span><span class="na">CONNECTION_MANAGER_TIMEOUT</span><span class="o">,</span> <span class="mi">30000L</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">GetMethod</span> <span class="n">post</span> <span class="o">=</span> <span class="k">new</span> <span class="n">GetMethod</span><span class="o">(</span><span class="s">&quot;http://10.132.10.59:4567&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="n">post</span><span class="o">.</span><span class="na">getParams</span><span class="o">().</span><span class="na">setHttpElementCharset</span><span class="o">(</span><span class="s">&quot;UTF-8&quot;</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>HttpClient会自动处理请求跳转? 会不会出现死循环? 怎样的响应才会自动跳转? 如何关闭这个特性</li>
+<li>HttpClient的自动重试功能是怎样? 怎么进行定制?</li>
+<li>HttpClient是使用java自带的HttpUrlConnection实现的么? 报文是怎么组装和解析的?</li>
+<li>连接超时、读取超时、读写缓冲区、还有禁用Nagle等常见属性如何设置?</li>
+<li>多次调用之间的cookie怎么管理的?</li>
+<li>chunked模式是怎么实现的? 多大刷一次?</li>
+</ul>
+
+
+<p>大家可以参考这个，在阅读的时候，列出问题列表，然后从源码中找找答案。</p>
+
+<p><strong>细节是魔鬼:)</strong></p>
+
+<p><strong>========================华丽的分割线========================</strong></p>
+
+<p>关于第8点，以MultiThreadedHttpConnectionManager为例，如何分析数据结构? (昨晚分析的，时间有限，不保证正确性)</p>
+
+<p>从本质来说，整个链接管理的结构是:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="err">维护一个</span><span class="n">connectionPool</span><span class="o">,</span> <span class="err">内部维护一个</span><span class="n">mapHosts</span><span class="err">，它的结构是</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">HostConfiguration</span><span class="o">,</span> <span class="n">HostConnectionPool</span><span class="o">&gt;</span>
+</span><span class='line'><span class="n">HostConnectionPool</span><span class="err">的内部结构是两个链表，</span><span class="n">freeConnections</span><span class="err">维护空闲连接，</span><span class="n">waitingThreads</span><span class="err">维护正在等待连接的线程</span>
+</span><span class='line'>
+</span><span class='line'><span class="err">还有一个静态的</span><span class="n">ReferenceQueue</span><span class="err">和</span><span class="n">ReferenceQueueThread</span><span class="err">，用来实现防止某些连接丢失的情况。至于是怎么做到丢失的连接能够回到</span><span class="n">ReferenceQueue</span><span class="err">，就是通过对</span><span class="n">HttpConnection</span><span class="err">进行加强得到的。</span>
+</span><span class='line'>
+</span><span class='line'><span class="err">实际上通过管理器得到的</span><span class="n">HttpConnection</span><span class="err">是经过层层代理的。层次是这样的</span><span class="o">:</span> <span class="n">HttpConnectionAdapter</span> <span class="o">-</span> <span class="n">HttpConnectionWithReference</span> <span class="o">-</span> <span class="n">HttpConnection</span>
+</span><span class='line'><span class="n">HttpConnectionWithReference</span><span class="err">就是通过一个</span><span class="n">WeakReference</span><span class="err">关联到</span><span class="n">ReferenceQueue</span><span class="err">，这样根据弱引用特性，一定可被回收就会进入</span><span class="n">ReferenceQueue</span><span class="err">从而被线程扫描到。</span>
+</span><span class='line'>
+</span><span class='line'><span class="err">为了实现闲时连接关闭的功能，使用了</span><span class="n">IdleConnectionHandler</span><span class="err">，它的内部结构是有个</span><span class="n">Map</span><span class="err">记录空闲连接</span><span class="o">(</span><span class="err">在</span><span class="n">releaseConnection</span><span class="err">的时候放入</span><span class="o">)</span><span class="err">和当时的时间。</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>代码就是围绕这些核心数据结构进行操作的。通过上面的基本结构，就可以实现以下特性:</p>
+
+<ol>
+<li>总连接数和每主机总连接数限制。连接数默认50，每host默认2连接(经常容易忽略，通常需要定制)</li>
+<li>能够防止连接丢失。如上面所说，拿出去的HttpConnection是加强过的，会关联到一个静态的ReferenceQueue,并使用一个线程ReferenceQueueThread不停监听并回收。</li>
+<li>实现了获取连接的超时限制。就是通过waitingThreads实现的。当找不到空闲连接的时候就添加进去，然后wait。如果有releaseConnection的时候，就会interupt等待的第一个线程。我个人认为线程有可能被interupt之后仍然占用不到连接，从而排到最后去，真是悲剧。</li>
+<li>能够支持连接闲时关闭。这个默认是需要主动触发，通过IdleConnectionHandler比较时间来实现的。</li>
+</ol>
+
+
+<p>最后，这个类是支持多线程的，主要是使用了同步机制，锁定ConnectionPool对象实现的。<br/>
+另外，HttpConnection对象实际上并不是一个正式的连接，要open之后才会真的建立连接。<br/>
+实际上也是一个lazy代理对象，可以避免整个连接管理操作不被阻塞，只有到实际操作时open的时候才连接。</p>
+
+<p><strong>========================华丽的分割线========================</strong></p>
+
+<p>关于第9点，以commons-httpclient为例，这当中涉及到哪些理论基础呢? 简单列举一下:</p>
+
+<ol>
+<li>java弱引用、克隆特性</li>
+<li>线程协调、中断机制</li>
+<li>网络编码、http协议</li>
+<li>tcp相关参数的含义</li>
+<li>常见对象池化技术</li>
+</ol>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -913,131 +1089,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2015-10-11T00:00:00+08:00" pubdate data-updated="true">Oct 11<span>th</span>, 2015</time>
-        
-         | <a href="/blog/20151011_websphere-sharelib-loading.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>问题描述</h2>
-
-<p>昨天收到有个童鞋发来的一个问题咨询，如下图所示。</p>
-
-<p><img src="/assets/images/2015/was-sharelib1.png" alt="问题截图" /></p>
-
-<p>提到几个疑问:</p>
-
-<ol>
-<li>配置如图所示,然后共享库和项目自身lib下都有一个“xxxx-common.jar”，如果项目用到jar包里面的一个类，将会是共享库的还是自身lib的呢？发现是用的lib里边的。</li>
-<li>现网情况也是xxlib和lib下都有那jar包，但是根据日志来看，是用共享库的。</li>
-</ol>
-
-
-<h2>我的疑惑</h2>
-
-<p>现网的配置如何，暂时没查明。不过就开发环境的配置来看，我一直认为Parent First应该会走共享库的，目前的现象和我掌握的知识不匹配。</p>
-
-<p>于是，我上网搜索了一下Websphere关于共享库的资料，主要的链接如下：</p>
-
-<ul>
-<li>http://www.ibm.com/developerworks/cn/websphere/library/techarticles/haoaili/0512/</li>
-<li>http://www-01.ibm.com/support/knowledgecenter/SSAW57_8.5.5/com.ibm.websphere.nd.doc/ae/tcws_sharedlib_nativelib.html?lang=zh</li>
-<li>https://10.132.10.69:9043/ibm/help/index.jsp?topic=/com.ibm.ws.console.environment/ucws_rsharedlib_inst.html</li>
-</ul>
-
-
-<p>通过这些链接资料的描述(不得不说，这些中文翻译很隐晦)，但的确是可以解释目前的情况的。</p>
-
-<h2>关于Websphere共享库的理解</h2>
-
-<p>首先，Websphere的共享库和tomcat的共享库差别很大，而我却一直以为是差不多的。<br/>
-tomcat的共享库是一个独立的类加载器，并且在多个Web应用中共享。好处是明显的，共享加载的类，优化内存使用。</p>
-
-<p>其次，Webshpere的共享库非常灵(fu)活(za)，有多种配置组合可以影响结果。具体如下:</p>
-
-<h4>共享库是可以选择和服务器关联或者和应用关联的</h4>
-
-<ul>
-<li>和服务器关联，参考http://www-01.ibm.com/support/knowledgecenter/SSAW57_8.5.5/com.ibm.websphere.nd.doc/ae/tcws_sharedlib_server.html?lang=zh</li>
-<li>和应用关联，参考http://www-01.ibm.com/support/knowledgecenter/SSAW57_8.5.5/com.ibm.websphere.nd.doc/ae/tcws_sharedlib_app.html?lang=zh</li>
-</ul>
-
-
-<h4>共享库是可以选择是否使用隔离的类装入器(就是独立的类加载器)</h4>
-
-<p>设置参考下图所示:</p>
-
-<p><img src="/assets/images/2015/was-sharelib2.png" alt="请对此共享库使用隔离的类装入器" /></p>
-
-<h4>和共享库相关的类加载策略如下:</h4>
-
-<ul>
-<li>如果选择和服务器关联，那么将忽略&#8221;请对此共享库使用隔离的类装入器&#8221;的选项，此时共享库路径将会添加到应用程序服务器(application server)类装入器加载路径上。</li>
-<li>如果选择和应用关联，并且没有设置&#8221;请对此共享库使用隔离的类装入器&#8221;,那么共享库路径将会添加到应用的类加载器加载路径上。此时共享库只有优化管理类库的作用，并不能减少重复加载类造成的内存占用。</li>
-<li>如果选择和应用关联，并且设置&#8221;请对此共享库使用隔离的类装入器&#8221;,那么共享库将作为独立的类加载器，并且各个应用之间共享这个共享库。此时共享库和tomcat的共享库类似，可以减少重复加载类造成的内存占用。</li>
-</ul>
-
-
-<p>对于第三种情况，它的类加载顺序如下：</p>
-
-<p>如果应用的类载入顺序选择“父类装入器装入的类最先”,即Parent First，那么顺序如下:</p>
-
-<ul>
-<li>检查相关联的库类装入器是否可以装入类。(共享库)</li>
-<li>检查它的父代类装入器是否可以装入类。(应用服务器及更高)</li>
-<li>检查应用程序或 WAR 模块类装入器是否可以装入类。(应用)</li>
-</ul>
-
-
-<p>如果应用的类载入顺序选择“本地类装入器装入的类最先”,即Parent Last，那么顺序如下:</p>
-
-<ul>
-<li>检查应用程序或 WAR 模块类装入器是否可以装入类。(应用)</li>
-<li>检查相关联的库类装入器是否可以装入类。(共享库)</li>
-<li>检查它的父代类装入器是否可以装入类。(应用服务器及更高)</li>
-</ul>
-
-
-<h2>现象解释</h2>
-
-<ul>
-<li>开发环境中，共享库和应用关联，并且没有设置&#8221;请对此共享库使用隔离的类装入器&#8221;，所以共享库路径将会添加到应用的类加载器加载路径上，相当于在一个类加载路径上存在同样的类，所以使用到lib中的是可能的。</li>
-<li>生产环境中配置尚未查明，如果共享库和应用关联，并且设置&#8221;请对此共享库使用隔离的类装入器&#8221;，按同样的载入顺序设置，即Parent First，那么是会加载到共享库的。</li>
-<li>如果同样是没有设置&#8221;请对此共享库使用隔离的类装入器&#8221;，那么情况如开发环境情况，使用到共享库中的也是可能的。</li>
-<li>对于同一个类加载路径上存在同样的类，具体会加载哪个是不确定的，所以上述情况都是合理的。所以应该把应用中重复的jar包移除。</li>
-</ul>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/3/">&larr; Older</a>
@@ -1053,6 +1104,10 @@ tomcat的共享库是一个独立的类加载器，并且在多个Web应用中�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160607_log4j-source-study.html">log4j源码心得</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160602_java-object-unknown-state.html">避免对象未知状态</a>
@@ -1088,10 +1143,6 @@ tomcat的共享库是一个独立的类加载器，并且在多个Web应用中�
     
       <li class="post">
         <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
       </li>
     
   </ul>

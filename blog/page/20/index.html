@@ -9,10 +9,7 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="这是09年写的一篇入门文章，内容简单得有点傻瓜了。
-以后再写些实用点的内容，这里只是留个纪念。 正文 今天是2009年4月11日，在家听范玮琪的歌，番禺之行再次搁浅。心血来潮，随便写写关于linux的东西。
-想想linux的博大精深，对于自己是否找到门还不敢保证，
-这次就不自量力，写点简单的， &hellip;">
+  <meta name="description" content="这个文章大约是08年的时候写的了，jforum是java中还算比较有名的开源论坛系统，我上一家公司拿它来做二次开发。jforum2是内部自己实现的mvc，到了jforum3的时候全部重写了，都使用开源框架来做，现在不知发展到什么情况了。所以，这里特指jforum2. 正文 怎么才算好的源码分析呢？ &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -67,6 +64,356 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120903_jforum2-source-analytics.html">小毛的jforum2源码分析(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-09-03T00:00:00+08:00" pubdate data-updated="true">Sep 3<span>rd</span>, 2012</time>
+        
+         | <a href="/blog/20120903_jforum2-source-analytics.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这个文章大约是08年的时候写的了，jforum是java中还算比较有名的开源论坛系统，我上一家公司拿它来做二次开发。jforum2是内部自己实现的mvc，到了jforum3的时候全部重写了，都使用开源框架来做，现在不知发展到什么情况了。所以，这里特指jforum2.</p>
+
+<h2>正文</h2>
+
+<p>怎么才算好的源码分析呢？当然我这个肯定不算。我想大概分为几个层面吧，写写注释那算最基本的了，
+写写要点思路和难点，算是还不错拉，再难的就是跳出源码举一反三，形成自己的一套思路吧。好好努力吧。</p>
+
+<p>这次针对的是jforum2.1.8,大概jforum团队已经没心情理这个版本了，都冲着jforum3去了。选择这个版本，
+主要是因为jforum在java论坛类应用中算是佼佼者了，很多人都拿这个来做二次开发，而jforum3使用的是另外一套架构了，
+而且还没完全release，所以斟酌一下，还是选择这个经典的版本。</p>
+
+<p>关于jforum的介绍网上已经很多了，这里也简单抄录一段：JForum 是一个功能强大 ，易于管理的论坛。
+它的设计完全遵从MVC设计模式，能够在任何Servlet容器与EJB服务器上运行。而且可以轻松的定制与扩展JForum论坛。
+上面这段简述还是中肯的。另外，jforum是模仿phpbb写的，使用的是classic-blue风格，但不能自己选择风格，要的话只能自己修改了。
+再说几句，说jforum比较优秀是因为java开源的论坛系列精品少，而且jforum的bug也真的不少，不信试试就知道了。
+不过作为一个成型的组件，功能强大并且适合二次开发，还是应该列入考虑范围的。</p>
+
+<p>不管怎样，jforum是个不错的学习范本，至少让你觉得写个山寨框架不是什么难事，
+而事实也的确是这样的。重要的一点是，不要轻易拿出来害人就是了：)这里先列举出可能一些分析点：</p>
+
+<p>● web.xml<br/>
+● 初始化流程<br/>
+● 处理请求流程(mvc)<br/>
+● 文件监控<br/>
+● 缓存实现<br/>
+● 数据库访问实现<br/>
+● 权限控制</p>
+
+<p>首先了解一个web应用，首要的就是知道处理流程。首先来看看入口web.xml，里边的内容还是挺清晰的，
+可以看到里边有个监听器ForumSessionListener，*.page的过滤器ClickstreamFilter，还有2个*.page的处理器，
+其中InstallServlet是安装相关的，JForum则是前端处理器。</p>
+
+<p>基本上<strong>整个流程</strong>就是</p>
+
+<pre><code>client request -&gt; ForumSessionListener -&gt; ClickstreamFilter -&gt; JForum -&gt; server response.
+</code></pre>
+
+<p>ForumSessionListener实现了HttpSessionListener接口，但是只是对session destory做了处理，
+在这个过程中，保存session的历史记录到DB，并清除用户信息和相关的security信息。
+ClickstreamFilter实现了Filter接口，主要的任务就交给BotChecker了，是用来检测client是不是一个robot来的。
+主要的工作还是在JForum上面，不过先来看看jforum是怎么检测robot的？</p>
+
+<p>BotChecker只有一个静态工具方法isBot，首先是检测是否请求robot.txt(这是标准的robot协议文件),
+接下去判断User－Agent头部，最后是判断remotehost。而已知的robot都是写在文件clickstream-jforum.xml
+里边的(包括agent和host)，并通过ConfigLoader加载进来的(SAX方式)。</p>
+
+<p>可以看到JForum和InstallServlet都继承了JForumBaseServlet这个HttpServlet，而JForumBaseServlet包括2个重要的方法init和startApplication。众所周知，init是servlet初始化时调用的方法，JForumBaseServlet里边的init方法的流程是：</p>
+
+<pre><code>调用父类的init(正常情况这是必须调用的)  -&gt; 配置log4j -&gt; startSystemglobals(加载全局参数配置SystemGlobals.properties -&gt; 加载数据库配置database.driver.config(如mysql就是WEB-INF/config/database/mysql/mysql.properties)  -&gt; 加载自定义配置(默认的是jforum-custom.conf)) -&gt; 配置缓存引擎 -&gt; 配置freemarker模板引擎 -&gt; 加载模块配置modulesMapping.properties -&gt; 加载url映射配置urlPattern.properties -&gt; 加载I18n配置(languages/*) -&gt; 加载页面映射配置(templatesMapping.properties) -&gt; 加载BBcode配置bb_config.xml -&gt; 结束
+</code></pre>
+
+<p>jforum实现了自己的mvc，整个mvc的脉络就是</p>
+
+<pre><code>client request -&gt; 解析url(urlPattern.properties),获取module/action/param -&gt; 通过module获取相应的module class，并通过action识别并调用相应的方法(modulesMapping.properties) -&gt; 使用dao完成业务逻辑 -&gt; 调用template进行渲染(templatesMapping.properties)
+</code></pre>
+
+<p>其实整个mvc和struts没什么两样的，具体的流程以后再提。</p>
+
+<p>JForumBaseServlet里边的startApplication方法的流程是：</p>
+
+<pre><code>加载通用sql文件sql.queries.driver(就是/database/generic/generic_queries.sql) -&gt; 加载特定sql文件(如mysql就是/database/mysql/mysql.sql) -&gt; 加载Quartz定时任务配置 -&gt; 加载登录验证器(验证方式) -&gt; 加载Dao实现方式 -&gt; 加载文件修改监听器 -&gt; 加载查询索引管理器 -&gt; 加载定时统计任务
+</code></pre>
+
+<p>jforum实现了自己的orm，当然不是hibernate那种，是类似ibatis的那种sql mapping，并提供了多套的sql文件来实现数据库无关的特性，
+整个流程也是比较清晰的:</p>
+
+<pre><code>加载数据库配置 -&gt; 加载sql mapping file -&gt; 设置DAO实现 -&gt; 通过named sql找到对应的sql(在*.sql里边对应着) -&gt; 运行出数据
+</code></pre>
+
+<p>继续重点。JForum的init流程如下：</p>
+
+<pre><code>JForumBaseServlet.init -&gt; JForumBaseServlet.startApplication -&gt; 启动数据库 -&gt; 预加载一些数据到缓存中(ForumRepository[Categories,Forums,同时在线最大人数，最后登录用户，注册用户数等等],用户等级,表情数据，屏蔽列表) -&gt; 结束
+</code></pre>
+
+<p>上面简单提到了<strong>Jforum处理请求的过程</strong>，现在在来看看这个过程，就是service方法，这次采用代码概要的方式展示：</p>
+
+<div class="highlight"><pre><code class="java"> <span class="c1">// 初始化JForumExecutionContext</span>
+<span class="n">JForumExecutionContext</span> <span class="n">ex</span> <span class="o">=</span> <span class="n">JForumExecutionContext</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+<span class="c1">// 包装request和response</span>
+<span class="n">request</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WebRequestContext</span><span class="o">(</span><span class="n">req</span><span class="o">);</span>
+<span class="n">response</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WebResponseContext</span><span class="o">(</span><span class="n">res</span><span class="o">);</span>
+<span class="c1">// 检查数据库状态</span>
+<span class="k">this</span><span class="o">.</span><span class="na">checkDatabaseStatus</span><span class="o">();</span>
+<span class="c1">// 创建JForumContext并设置到JForumExecutionContext中去</span>
+<span class="o">.......</span>
+<span class="n">JForumExecutionContext</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="n">ex</span><span class="o">);</span>
+<span class="c1">// 刷新session          </span>
+<span class="n">utils</span><span class="o">.</span><span class="na">refreshSession</span><span class="o">();</span>
+<span class="c1">// 加载用户权限        </span>
+<span class="n">SecurityRepository</span><span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="n">SessionFacade</span><span class="o">.</span><span class="na">getUserSession</span><span class="o">().</span><span class="na">getUserId</span><span class="o">());</span>
+<span class="c1">// 预加载模板需要的上下文</span>
+<span class="n">utils</span><span class="o">.</span><span class="na">prepareTemplateContext</span><span class="o">(</span><span class="n">context</span><span class="o">,</span> <span class="n">forumContext</span><span class="o">);</span>
+<span class="c1">// 从request中解析module name</span>
+<span class="n">String</span> <span class="n">module</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="na">getModule</span><span class="o">();</span>
+<span class="c1">// module name  -&gt; module class</span>
+<span class="n">String</span> <span class="n">moduleClass</span> <span class="o">=</span> <span class="n">module</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">?</span> <span class="n">ModulesRepository</span><span class="o">.</span><span class="na">getModuleClass</span><span class="o">(</span><span class="n">module</span><span class="o">)</span> <span class="o">:</span> <span class="kc">null</span><span class="o">;</span>
+<span class="c1">// 判断是否在ban list里边</span>
+<span class="o">......</span>
+<span class="kt">boolean</span> <span class="n">shouldBan</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">shouldBan</span><span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getRemoteAddr</span><span class="o">());</span>
+<span class="c1">// 主角出场</span>
+<span class="n">out</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">processCommand</span><span class="o">(</span><span class="n">out</span><span class="o">,</span> <span class="n">request</span><span class="o">,</span> <span class="n">response</span><span class="o">,</span> <span class="n">encoding</span><span class="o">,</span> <span class="n">context</span><span class="o">,</span> <span class="n">moduleClass</span><span class="o">);</span>
+<span class="c1">// 扫尾工作,例如db的rollback</span>
+<span class="k">this</span><span class="o">.</span><span class="na">handleFinally</span><span class="o">(</span><span class="n">out</span><span class="o">,</span> <span class="n">forumContext</span><span class="o">,</span> <span class="n">response</span><span class="o">);</span>
+</code></pre></div>
+
+
+<p>processCommand会调用Command的process方法：</p>
+
+<div class="highlight"><pre><code class="java"><span class="c1">// 获取一个module实例(继承了Command)</span>
+<span class="n">Command</span> <span class="n">c</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">retrieveCommand</span><span class="o">(</span><span class="n">moduleClass</span><span class="o">);</span>
+<span class="c1">// 进入process</span>
+<span class="n">Template</span> <span class="n">template</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="na">process</span><span class="o">(</span><span class="n">request</span><span class="o">,</span> <span class="n">response</span><span class="o">,</span> <span class="n">context</span><span class="o">);</span>
+<span class="c1">// 这里开始是process方法</span>
+<span class="c1">//获取action</span>
+<span class="n">String</span> <span class="n">action</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">request</span><span class="o">.</span><span class="na">getAction</span><span class="o">();</span>
+<span class="c1">//如果不是ignore的，就调用这个action</span>
+<span class="k">if</span> <span class="o">(!</span><span class="k">this</span><span class="o">.</span><span class="na">ignoreAction</span><span class="o">)</span> <span class="o">{</span><span class="k">this</span><span class="o">.</span><span class="na">getClass</span><span class="o">().</span><span class="na">getMethod</span><span class="o">(</span><span class="n">action</span><span class="o">,</span> <span class="n">NO_ARGS_CLASS</span><span class="o">).</span><span class="na">invoke</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">NO_ARGS_OBJECT</span><span class="o">);}</span>
+<span class="c1">//如果是转发的，就把TemplateName清空</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">JForumExecutionContext</span><span class="o">.</span><span class="na">getRedirectTo</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span><span class="k">this</span><span class="o">.</span><span class="na">setTemplateName</span><span class="o">(</span><span class="n">TemplateKeys</span><span class="o">.</span><span class="na">EMPTY</span><span class="o">);}</span>
+<span class="c1">//不是转发且attribute里边存在template，则设置为templateName</span>
+<span class="k">else</span> <span class="nf">if</span> <span class="o">(</span><span class="n">request</span><span class="o">.</span><span class="na">getAttribute</span><span class="o">(</span><span class="s">&quot;template&quot;</span><span class="o">)</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span><span class="k">this</span><span class="o">.</span><span class="na">setTemplateName</span><span class="o">((</span><span class="n">String</span><span class="o">)</span><span class="n">request</span><span class="o">.</span><span class="na">getAttribute</span><span class="o">(</span><span class="s">&quot;template&quot;</span><span class="o">));}</span>
+<span class="c1">//是否coustomContent？例如下载，验证码子类的不需要页面的操作</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">JForumExecutionContext</span><span class="o">.</span><span class="na">isCustomContent</span><span class="o">())</span> <span class="o">{</span><span class="k">return</span> <span class="kc">null</span><span class="o">;}</span>
+<span class="c1">//返回一个template</span>
+<span class="k">return</span> <span class="n">JForumExecutionContext</span><span class="o">.</span><span class="na">templateConfig</span><span class="o">().</span><span class="na">getTemplate</span><span class="o">(</span>
+                <span class="k">new</span> <span class="nf">StringBuffer</span><span class="o">(</span><span class="n">SystemGlobals</span><span class="o">.</span><span class="na">getValue</span><span class="o">(</span><span class="n">ConfigKeys</span><span class="o">.</span><span class="na">TEMPLATE_DIR</span><span class="o">)).</span>
+                <span class="n">append</span><span class="o">(</span><span class="sc">&#39;/&#39;</span><span class="o">).</span><span class="na">append</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">templateName</span><span class="o">).</span><span class="na">toString</span><span class="o">());</span>
+        <span class="o">}</span>
+<span class="c1">// 从process出来，回到processCommand</span>
+<span class="c1">// 设置content type</span>
+<span class="n">response</span><span class="o">.</span><span class="na">setContentType</span><span class="o">(</span><span class="n">contentType</span><span class="o">);</span>
+<span class="c1">//生成页面并flush</span>
+<span class="k">if</span> <span class="o">(!</span><span class="n">JForumExecutionContext</span><span class="o">.</span><span class="na">isCustomContent</span><span class="o">())</span> <span class="o">{</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BufferedWriter</span><span class="o">(</span><span class="k">new</span> <span class="n">OutputStreamWriter</span><span class="o">(</span><span class="n">response</span><span class="o">.</span><span class="na">getOutputStream</span><span class="o">(),</span> <span class="n">encoding</span><span class="o">));</span>
+                <span class="n">template</span><span class="o">.</span><span class="na">process</span><span class="o">(</span><span class="n">JForumExecutionContext</span><span class="o">.</span><span class="na">getTemplateContext</span><span class="o">(),</span> <span class="n">out</span><span class="o">);</span>
+                <span class="n">out</span><span class="o">.</span><span class="na">flush</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+</code></pre></div>
+
+
+<p>这是一般的流程，就像上面提到的customContent，就是要自己处理了，可以参考CaptchaAction.generate().</p>
+
+<p>这样的话，如果我们要增加一些action进行<strong>二次开发</strong>的话，大体的流程就是，增加一个继承了Command的类，
+例如叫ExampleAction,定义一个方法，例如叫test()，在urlPattern.properties中定义一个映射,
+例如为example.test.1 = forum_id，再在modulesMapping.properties中定义module class的映射，
+如example = ExampleAction，最后我们在templatesMapping.properties定义个模板的映射，
+如：example.test = example_test.htm。现在假设我们的请求url是/example/test/1,再来看看test里边的一些方法：</p>
+
+<div class="highlight"><pre><code class="java"><span class="k">this</span><span class="o">.</span><span class="na">request</span><span class="o">.</span><span class="na">getIntParameter</span><span class="o">(</span><span class="s">&quot;forum_id&quot;</span><span class="o">))</span>  <span class="c1">//获取参数，得到1</span>
+<span class="k">this</span><span class="o">.</span><span class="na">context</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;obj&quot;</span><span class="o">,</span> <span class="n">obj</span><span class="o">);</span> <span class="c1">//把结果写入context，这样可以在template中获取到</span>
+<span class="k">this</span><span class="o">.</span><span class="na">setTemplateName</span><span class="o">(</span><span class="s">&quot;example.test&quot;</span><span class="o">);</span><span class="c1">//设置template的名字</span>
+</code></pre></div>
+
+
+<p>这样的简单流程应该还比较好理解吧?</p>
+
+<p>另外，还可以看出，jforum使用了自己的一套映射机制，这是通过urlPattern.properties来定义的
+(参考上面JForumBaseServlet的init流程)，这是在JForumBaseServlet的loadConfigStuff方法的第一行实现的，
+并加载到UrlPatternCollection中去，如下所示：</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">Properties</span> <span class="n">p</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Properties</span><span class="o">();</span>
+<span class="n">fis</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FileInputStream</span><span class="o">(</span><span class="n">SystemGlobals</span><span class="o">.</span><span class="na">getValue</span><span class="o">(</span><span class="n">ConfigKeys</span><span class="o">.</span><span class="na">CONFIG_DIR</span><span class="o">)</span> <span class="o">+</span> <span class="s">&quot;/urlPattern.properties&quot;</span><span class="o">);</span>
+<span class="n">p</span><span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="n">fis</span><span class="o">);</span>
+
+<span class="k">for</span> <span class="o">(</span><span class="n">Iterator</span> <span class="n">iter</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="na">entrySet</span><span class="o">().</span><span class="na">iterator</span><span class="o">();</span> <span class="n">iter</span><span class="o">.</span><span class="na">hasNext</span><span class="o">();</span> <span class="o">)</span> <span class="o">{</span>
+   <span class="n">Map</span><span class="o">.</span><span class="na">Entry</span> <span class="n">entry</span> <span class="o">=</span> <span class="o">(</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">)</span> <span class="n">iter</span><span class="o">.</span><span class="na">next</span><span class="o">();</span>
+   <span class="n">UrlPatternCollection</span><span class="o">.</span><span class="na">addPattern</span><span class="o">((</span><span class="n">String</span><span class="o">)</span><span class="n">entry</span><span class="o">.</span><span class="na">getKey</span><span class="o">(),</span> <span class="o">(</span><span class="n">String</span><span class="o">)</span><span class="n">entry</span><span class="o">.</span><span class="na">getValue</span><span class="o">());</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>可以知道这里的key和value都是String来的</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">UrlPatternCollection</span><span class="o">.</span><span class="na">patternsMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="k">new</span> <span class="n">UrlPattern</span><span class="o">(</span><span class="n">name</span><span class="o">,</span> <span class="n">value</span><span class="o">));</span>
+</code></pre></div>
+
+
+<p>但在addPattern方法里边其实是生成一个UrlPattern作为value，如何<strong>构造一个UrlPattern</strong>可以看看代码，
+举例来说把，对于example.hello.2=a,b,这样会生成一个UrlPattern,里边的内容是name为example.hello.2,value为a,b.
+而size和vars是用a,b解析出来的，用来表示一共有多少个参数，参数名组成的数组。
+所以UrlPattern存储的就是一个url格式的定义，而放在UrlPatternCollection里边的一系列的url映射格式是在请求的url解析的时候用到的。</p>
+
+<p>现在再分析一下jforum怎么使用这个UrlPatternCollection的?按照我们不严格的思路，应该是service中处理url，
+获取.page前面的一部分,如/example/hello/2/1，用/做一下split，获取module name，action name,
+把最后的作为参数，用module,action,参数个数组成一个key(example.hello.2),通过UrlPatternCollection找到对应的UrlPattern，
+通过里边的格式对应(vars里边的参数名和url的参数值)就可以把参数添加到request的parameters里边去。
+实际的情况也差不多就这个样。在说到jforum中的service方法的时候，简单提到过request和response是经过包装的:</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">request</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WebRequestContext</span><span class="o">(</span><span class="n">req</span><span class="o">);</span>
+<span class="n">response</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WebResponseContext</span><span class="o">(</span><span class="n">res</span><span class="o">);</span>
+</code></pre></div>
+
+
+<p>WebResponseContext只是简单的delegate给HttpServletResponse(这样做的好处是全部方法都限制在ResponseContext中)，
+而WebRequestContext是继承了HttpServletRequestWrapper并实现了RequestContext接口。
+所以WebRequestContext是一个HttpRequest，但是通过RequestContext接口实现了一些特定的方法就是了，
+例如getModule/getAction，而这个解析url的过程是在构建WebRequestContext对象的过程中实现的。
+可以看看WebResponseContext的构造方法，这里就不详细说了。注意的是，所有的parameters最后都保存到query(一个私有的map)里边去的。
+还有就是上面说到的jforum的特定url映射机制，这是通过WebRequestContext的parseFriendlyURL方法实现的，
+原理就和上面提到的那样，也不详说了。</p>
+
+<p>到这里，基本上整个处理流程就差不多了。现在来说说jforum里边的文件修改监听器(JForumBaseServer的startApplication流程)，
+如果你在使用jforum的过程中，修改了某些文件如*.sql，jforum就会重新加载修改后的配置。
+我原来以为是用quartz框架来实现的，后来才知道是用jdk的TimerTask类来实现的。
+请看ConfigLoader的listenForChanges方法：</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">FileMonitor</span><span class="o">.</span><span class="na">getInstance</span><span class="o">().</span><span class="na">addFileChangeListener</span><span class="o">(</span><span class="k">new</span> <span class="n">QueriesFileListener</span><span class="o">(),</span>
+                <span class="n">SystemGlobals</span><span class="o">.</span><span class="na">getValue</span><span class="o">(</span><span class="n">ConfigKeys</span><span class="o">.</span><span class="na">SQL_QUERIES_GENERIC</span><span class="o">),</span> <span class="n">fileChangesDelay</span><span class="o">);</span>
+</code></pre></div>
+
+
+<p>这里给各个部分分一下责任，FileMonitor是大管家，负责管理所有的文件监听器；FileChangeListener是一个监听器接口，
+只有一个方法，就是fileChanged(String filename)，意思就是对某个filename的修改作出怎样的反应。
+使用的方法也很简单，就是实现一个FileChangeListener，并和监控的文件名，检查间隔作为参数传入就可以生效了。
+FileMonitor里边的实现原理就是，通过一个map(timerEntries)来保存(文件名/timertask),
+每次加入一个监听器的时候，会根据文件名先移出原来的文件监听器(缺点是只能能对一个文件添加一个监听器)，
+然后构建一个TimerTask并加入到timerEntries中去。关于TimerTask的具体用法，可以参考api。</p>
+
+<p>作为一个论坛，应用层缓存这样的东西似乎必不可少，jforum也提供了缓存配置(上面也提到一些)。
+jforum提供了数种<strong>缓存实现</strong>(JForumBaseServlet的init流程)，分别是DefaultCacheEngine(简单的内存实现),
+JBossCacheEngine，EhCacheEngine。，请看ConfigLoader的startCacheEngine方法，
+流程大概就是得到cacheEngine的实现配置(SystemGlobals.properties中配置cache.engine.implementation)，
+然后产生CacheEngine的实例，调用它的init方法进行初始化，然后找到所有的可缓存类(实现了Cacheable接口，并在SystemGlobals.properties中配置cacheable.objects)，最后把cacheEngine注入进去获得cache的能力。
+虽然jforum自己实现了许多这样的注入(除了cacheEngine，还有db，dao等等)，
+虽然达到了一定的的目的，可是怎么说还是到处充满了Singleton的实现(参考spring2.5文档3.9. 粘合代码和可怕的singleton)，
+为了寻求更好的组织方式(例如使用ioc来管理对象，使用成熟的orm来隔离数据库)和获得更多的用户群(选择更广泛使用的框架帮助)，
+大概才会萌发jforum3的想法吧。</p>
+
+<p>顺便提一下jforum的<strong>Dao实现方式</strong>(参考JForumBaseServlet的startApplication流程)，
+参考ConfigLoader的loadDaoImplementation方法，原理就是通过配置dao.driver(在特定的数据库配置里边如mysql.properties):</p>
+
+<pre><code>获取到DataAccessDriver的实现 -&gt; 初始化DataAccessDriver -&gt; 获取到所有的Dao实现。
+</code></pre>
+
+<p>可以这么理解，实现一个DataAccessDriver就获得一整套Dao的实现方式，对于dao里边的实现方法，给个范例：</p>
+
+<div class="highlight"><pre><code class="java"><span class="c1">//例行公事</span>
+<span class="n">PreparedStatement</span> <span class="n">p</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+<span class="n">ResultSet</span> <span class="n">rs</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+<span class="c1">//获得connect，并执行named sql</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">JForumExecutionContext</span><span class="o">.</span><span class="na">getConnection</span><span class="o">().</span><span class="na">prepareStatement</span><span class="o">(</span><span class="n">SystemGlobals</span><span class="o">.</span><span class="na">getSql</span><span class="o">(</span><span class="s">&quot;GroupModel.selectById&quot;</span><span class="o">));</span>
+<span class="n">p</span><span class="o">.</span><span class="na">setInt</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="n">groupId</span><span class="o">);</span>
+<span class="n">rs</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="na">executeQuery</span><span class="o">();</span>
+<span class="n">Group</span> <span class="n">g</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Group</span><span class="o">();</span>
+<span class="c1">//循环resultset进行处理</span>
+<span class="k">if</span> <span class="o">(</span><span class="n">rs</span><span class="o">.</span><span class="na">next</span><span class="o">())</span> <span class="o">{</span><span class="n">g</span> <span class="o">=</span> <span class="k">this</span><span class="o">.</span><span class="na">getGroup</span><span class="o">(</span><span class="n">rs</span><span class="o">);}</span>
+</code></pre></div>
+
+
+<p>整个实现很直白，就是一个jdbc实现方式来的。对于如何获取connection，查看JForumExecutionContext的getConnection(),可以注意到这么一句：</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">c</span> <span class="o">=</span> <span class="n">DBConnection</span><span class="o">.</span><span class="na">getImplementation</span><span class="o">().</span><span class="na">getConnection</span><span class="o">();</span>
+</code></pre></div>
+
+
+<p>也是比较清晰的，另外可以知道的是，在每次请求的过程中，connection只会获取一次，
+并在第一次获取到以后放到ThreadLocal里边去,这样在每个线程中保留一份数据(正确理解TheradLocal )，
+在请求请求结束以后才释放connection(service流程中的handleFinally方法)。</p>
+
+<p>JForumExecutionContext，如字面意，就是请求执行的上下文，例如上面提到的数据库连接，
+还有ForumContext(放着和request，response相关的信息)，context(freemarker的上下文变量)，
+redirectTo(转发地址)，contentType(响应内容格式)，isCustomContent(不使用默认渲染，上面有提到)，
+enableRollback(db是否会滚)。</p>
+
+<p>jforum是可以配置权限的，可控制的权限类型放在SecurityConstants里边，
+对应的配置界面是根据permissions.xml生成的(参考GroupAction的permissions)。而每个用户的权限(PermissionControl)是通过SecurityRepository来管理的</p>
+
+<pre><code>最用形成的权限系统是role(权限)－group(用户组,可以多级)－用户这样的结构图。
+</code></pre>
+
+<p>如何判断权限?
+对于一个用户来说，为了获取用户的权限(PermissionControl)，流程是这样的(详细看SecurityRepository的load方法)：</p>
+
+<pre><code>获取用户信息 -&gt; 获取用户的所有groupid并组成一个用逗号隔开的字符串groupids  -&gt; 根据groupids获取所有的name/role_value -&gt; 组装成RoleValueCollection －&gt; 生成RoleCollection -&gt; 最后生成PermissionControl
+</code></pre>
+
+<p>判断权限是使用SecurityRepository的canAccess(int userId, String roleName, String value)方法：</p>
+
+<pre><code>根据userid获取PermissionControl-&gt; 如果value参数为空的话，就判断是否拥有该roleName(通过内部的RoleCollection对象的keys),就是是否含有该权限 -&gt; 如果value参数不为空的话，除了需要含有该权限，还要拥有相应的rolevalue(通过内部的RoleCollection对象的values)。参数中的value指数可以为论坛分类id，论坛id之类，随业务而定。
+</code></pre>
+
+<p>总体上jforum还算清晰，大部分的业务代码没有细看(那些Command类)，有兴趣可以对照着写，
+大体分为三个包(admin是管理，jforum是公共页面，install是安装页面)。</p>
+
+<p>既然说到验证，就顺便要说说jforum的<strong>sso验证机制</strong>
+官方文档:</p>
+
+<pre><code>http://www.jforum.net/doc/SSO
+http://www.jforum.net/doc/ImplementSSO
+http://www.jforum.net/doc/SSOcookies
+http://www.jforum.net/doc/SSOremote
+</code></pre>
+
+<p>有上面这些文档基本可以自己实现一个，主要就是实现net.jforum.sso接口就是了。</p>
+
+<p>在Jforum的service方法里边有段(service流程中的刷新session)：</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">ControllerUtils</span> <span class="n">utils</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ControllerUtils</span><span class="o">()</span>
+<span class="n">utils</span><span class="o">.</span><span class="na">refreshSession</span><span class="o">();</span><span class="c1">//重点</span>
+</code></pre></div>
+
+
+<p>里边提到，在没有usersession的情况下，如果配置的验证类型是sso(authentication.type)：</p>
+
+<pre><code>调用checkSSO(UserSession userSession)的方法 -&gt; 生成SSO实例(使用sso.implementation来配置) -&gt; 调用authenticateUser(RequestContext request)返回username -&gt; 假如取不到的username，就设为匿名 -&gt; 否则，如果不存在该用户(utils.userExists(username)则注册一个(utils.register(password, email)) -&gt; 假如已经存在,则让用户登录(configureUserSession(userSession, utils.getUser()))
+</code></pre>
+
+<p>当已经存在usersession的时候，并且验证方式是sso的时候，就是验证是否有效(sso.isSessionValid(userSession, request))。
+所以，整个过程和官方文档提到的流程是一样的，如果要实现自己的sso，这是实现SSO接口，
+使用authenticateUser来验证不存在usersession的情况，并返回username or null，
+而使用isSessionValid来判断一个已经存在的usersession是否有效。
+参考上面几个连接文档，实现和已有系统的sso集成，还是比较清晰明了的。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1891,85 +2238,6 @@ findbugs，checkstyle, cppunit等测试项，这样代码质量问题可以得�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120815_thought-read-node-web-development.html">书评-Node Web开发</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-08-15T00:00:00+08:00" pubdate data-updated="true">Aug 15<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20120815_thought-read-node-web-development.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/assets/images/node_web_development.jpg" alt="Node Web开发" /></p>
-
-<p><strong>2012-05-10@oschina.net</strong>
-<a href="http://www.oschina.net/question/244461_53105?sort=default&amp;p=2#answers">书评链接</a></p>
-
-<p>这本书，其实我是看的英文版的。算是一本不错的入门书，相对于官网上那硬邦邦的api手册，
-的确是很不错了，里边有些内容有点旧了(例如npm介绍中关于require.path的说法)。
-书里边关于node的模块系统的描述是比较好的，非常清晰，是我觉得写得最好的一章，
-另外关于node的异步编程模型的介绍也比较好(例如有个关于Fibonacci数列的例子)，
-因为最重要就是理解编程模型，即使很多人熟悉客户端javascript编程，
-但是刚刚开始node的javascript编程，就会感到非常纠结。</p>
-
-<p>书里边也引用了一些现有比较出名的开源库，例如express和connect，用来构建web应用。
-关于这个，我觉得没什么必要，因为这两个库的在线帮助文档是做得非常好的。
-我更感兴趣的是书里边一些step by step的demo，可以比较清晰得看到关键的代码是如何实现的。</p>
-
-<p>总体来说，这书是一本不错的入门书，内容少不是问题，
-比较现在还没有关于node的更多最佳实践的资料，而且node关注的就是高访问量，小请求，
-业务逻辑较少，快响应的特殊场景，需要关注的领域并不是很多，
-写得太多反而会埋没重点。有兴趣的同学，真的值得一看。</p>
-
-<h2>&#8220;书评&#8221;系列文章:</h2>
-
-
-<ul>
- 
-  
-  <li><a href="/blog/20120815_thought-read-javascript-idea.html">2012-08-15 书评-JavaScript语言精髓与编程实践</a></li>
-  
- 
-  
-  <li>2012-08-15 书评-Node Web开发</li>
-  
- 
-  
-  <li><a href="/blog/20120818_thought-read-jolt-book.html">2012-08-18 书评-Jolt大奖精选丛书</a></li>
-  
-
-</ul>
-
-
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/21/">&larr; Older</a>
@@ -1985,6 +2253,10 @@ findbugs，checkstyle, cppunit等测试项，这样代码质量问题可以得�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160607_log4j-source-study.html">log4j源码心得</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160602_java-object-unknown-state.html">避免对象未知状态</a>
@@ -2020,10 +2292,6 @@ findbugs，checkstyle, cppunit等测试项，这样代码质量问题可以得�
     
       <li class="post">
         <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
       </li>
     
   </ul>

@@ -9,16 +9,12 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="过程 昨天在编译某个android项目的时候，发现dex打包出错。
-后来检查发现编译生成的SplashScreenActivity$1.class格式出错。 后来经常测试，发现jdk6正常，jdk7不正常，包括最新的u51版本。 bug分析 相关的代码如下: 1
+  <meta name="description" content="配置的步骤在下面简要说明: 增加基于spring的jndi数据源配置
+在websphere上增加数据源配置
+链接iiop地址 下面进行详细描述。 基于spring的jndi配置文件 注意:如果是第二种方式，可以忽略第三部分&#8221;链接iiop地址&#8221; 第一种方式: 1
 2
 3
-4
-5
-6
-7
-8
-9 &hellip;">
+4 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -73,6 +69,145 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20140329_was-datasource.html">Websphere+spring+jndi数据源配置</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-29T00:00:00+08:00" pubdate data-updated="true">Mar 29<span>th</span>, 2014</time>
+        
+         | <a href="/blog/20140329_was-datasource.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>配置的步骤在下面简要说明:</p>
+
+<ol>
+<li>增加基于spring的jndi数据源配置</li>
+<li>在websphere上增加数据源配置</li>
+<li>链接iiop地址</li>
+</ol>
+
+
+<p>下面进行详细描述。</p>
+
+<ul>
+<li>基于spring的jndi配置文件</li>
+</ul>
+
+
+<p>注意:如果是第二种方式，可以忽略第三部分&#8221;链接iiop地址&#8221;</p>
+
+<p>第一种方式:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='diff'><span class='line'>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+</span><span class='line'>&lt;beans xmlns=&quot;http://www.springframework.org/schema/beans&quot;
+</span><span class='line'> xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+</span><span class='line'> xmlns:aop=&quot;http://www.springframework.org/schema/aop&quot;
+</span><span class='line'> xmlns:tx=&quot;http://www.springframework.org/schema/tx&quot;
+</span><span class='line'> xsi:schemaLocation=&quot;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.0.xsd&quot;&gt;
+</span><span class='line'>
+</span><span class='line'><span class="gi">+    &lt;bean id=&quot;GlobalConfig&quot;</span>
+</span><span class='line'><span class="gi">+        class=&quot;org.springframework.beans.factory.config.PropertyPlaceholderConfigurer&quot;&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;property name=&quot;systemPropertiesMode&quot;&gt;</span>
+</span><span class='line'><span class="gi">+            &lt;value&gt;1&lt;/value&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;/property&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;property name=&quot;searchSystemEnvironment&quot;&gt;</span>
+</span><span class='line'><span class="gi">+            &lt;value&gt;true&lt;/value&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;/property&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;property name=&quot;ignoreUnresolvablePlaceholders&quot;&gt;</span>
+</span><span class='line'><span class="gi">+            &lt;value&gt;true&lt;/value&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;/property&gt;</span>
+</span><span class='line'><span class="gi">+    &lt;/bean&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="gi">+     &lt;bean id=&quot;jtaTransactionManager&quot; class=&quot;org.springframework.transaction.jta.WebSphereUowTransactionManager&quot; /&gt;</span>
+</span><span class='line'>   &lt;tx:annotation-driven transaction-manager=&quot;jtaTransactionManager&quot;  proxy-target-class=&quot;true&quot; /&gt;
+</span><span class='line'>   &lt;bean id=&quot;lobHandler&quot; class=&quot;org.springframework.jdbc.support.lob.DefaultLobHandler&quot;/&gt;
+</span><span class='line'>
+</span><span class='line'><span class="gi">+    &lt;bean id=&quot;dataSource&quot; class=&quot;org.springframework.jndi.JndiObjectFactoryBean&quot;&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;property name=&quot;jndiName&quot;&gt;&lt;value&gt;XXX&lt;/value&gt;&lt;/property&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;property name=&quot;resourceRef&quot;&gt;&lt;value&gt;true&lt;/value&gt;&lt;/property&gt;</span>
+</span><span class='line'><span class="gi">+        &lt;property name=&quot;jndiEnvironment&quot;&gt;&lt;props&gt;&lt;prop key=&quot;java.naming.provider.url&quot;&gt;${java_naming_provider_url}&lt;/prop&gt;&lt;/props&gt;&lt;/property&gt;</span>
+</span><span class='line'><span class="gi">+    &lt;/bean&gt;  </span>
+</span><span class='line'>&lt;/beans&gt;
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>在websphere上增加数据源配置</li>
+</ul>
+
+
+<p><img src="/assets/images/2014/ds.png" alt="效果图" /></p>
+
+<ul>
+<li>链接iiop地址</li>
+</ul>
+
+
+<p>在server的java进程定义里边配置jvm参数:  -Djava_naming_provider_url=iiop://localhost:port/,另外，修改启动参数需要重启server才能生效。</p>
+
+<p><img src="/assets/images/2014/iiop.png" alt="效果图" /></p>
+
+<p>其中每个server的port都是不一样的，具体的端口通过Application servers - serverX - Communications -  Ports上查看，如下图:</p>
+
+<p><img src="/assets/images/2014/port.png" alt="效果图" /></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -988,122 +1123,6 @@ Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20131227_android-tcpdump-netcat-addon.html">对UC文章《实时监控Android设备网络包》的补充</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-12-27T00:00:00+08:00" pubdate data-updated="true">Dec 27<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20131227_android-tcpdump-netcat-addon.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>补充的内容，主要是一些细节的问题，备忘.</p>
-
-<h2>编译netcat</h2>
-
-<p>android上自己好像带了一个，不过也可以自己编译一个。 我这里使用cygwin来编译的，首先去下载源码。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># cygwin</span>
-</span><span class='line'><span class="nb">cd</span> /cygdrive/d/
-</span><span class='line'>mkdir -p netcat/toolchain
-</span><span class='line'>
-</span><span class='line'><span class="nb">export </span><span class="nv">NDK</span><span class="o">=</span>/cygdrive/d/android-ndk-r8e
-</span><span class='line'>/cygdrive/d/android-ndk-r8e/build/tools/make-standalone-toolchain.sh --platform<span class="o">=</span>android-8 --install-dir<span class="o">=</span>netcat/toolchain
-</span><span class='line'><span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="s1">&#39;pwd&#39;</span>/netcat/toolchain/bin:<span class="nv">$PATH</span>
-</span><span class='line'><span class="nb">export </span><span class="nv">CC</span><span class="o">=</span>arm-linux-androideabi-gcc
-</span><span class='line'><span class="nb">export </span><span class="nv">RANLIB</span><span class="o">=</span>arm-linux-androideabi-ranlib
-</span><span class='line'><span class="nb">export </span><span class="nv">AR</span><span class="o">=</span>arm-linux-and roideabi-ar
-</span><span class='line'><span class="nb">export </span><span class="nv">LD</span><span class="o">=</span>arm-linux-androideabi-ld
-</span><span class='line'>
-</span><span class='line'><span class="c"># 开始编译源码</span>
-</span><span class='line'><span class="nb">cd </span>netcat-0.7.1/
-</span><span class='line'>./configure —host<span class="o">=</span>arm-linux
-</span><span class='line'>make
-</span><span class='line'>
-</span><span class='line'><span class="c"># 用file进行检测一下</span>
-</span><span class='line'>file src/netcat
-</span><span class='line'>src/netcat: ELF 32-bit LSB executable, ARM, version1 <span class="o">(</span>SYSV<span class="o">)</span>, ...
-</span><span class='line'>
-</span><span class='line'><span class="c"># 发到android上去</span>
-</span><span class='line'>adb push src/netcat /data/local/netcat
-</span><span class='line'>adb shell chmod 777 /data/local/netcat
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>tcpdump的使用</h2>
-
-<p>如果只是监听所有的包，可以用下面的：</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>adb shell <span class="s2">&quot;tcpdump -n -s 0 -w - | nc -I -p 11233&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>如果先监听端口的话，又想转发的话，写法有点特别。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>adb shell <span class="s2">&quot;tcpdump -X -n -s 0 -w - port 5000 | nc -l -p 11233&quot;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>另外，如果像我这样，有cygwin的话，就已经有nc命令了，可以像下面一样进行转发。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>adb forward tcp:11333 tcp:11233 <span class="o">&amp;&amp;</span> nc -v 127.0.0.1 | /cygdriver/d/Wireshark/Wireshark.exe -k -S -i -
-</span></code></pre></td></tr></table></div></figure>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/7/">&larr; Older</a>
@@ -1119,6 +1138,10 @@ Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160607_log4j-source-study.html">log4j源码心得</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160602_java-object-unknown-state.html">避免对象未知状态</a>
@@ -1154,10 +1177,6 @@ Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类
     
       <li class="post">
         <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
       </li>
     
   </ul>

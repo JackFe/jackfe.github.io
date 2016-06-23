@@ -9,7 +9,7 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="今天在使用一个库的时候就遇到一个很纠结的问题。 通常我们应该避免对象new的时候出错，一种常见的设计方案是采用初始化方法。不过也有new出异常的情况，这种情况应该确保对象占用的资源能够被释放。 不过今天遇到的这个情况，是一个链接短信网关的库，假设是Proxy对象，它在初始化的时候，生成2个线程， &hellip;">
+  <meta name="description" content="log4j是一个非常流行的日志框架，最近研究了一下log4j的源代码，这里记录一下心得体会。 Logger、Appender、Layout之间的结构关系? 这是log4j的基本数据结构，之间的关系还是很好理解的。首先，一个Logger都要一个名字(通常是类名或包名),它是有父子结构的， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +64,304 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20160607_log4j-source-study.html">Log4j源码心得</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2016-06-07T00:00:00+08:00" pubdate data-updated="true">Jun 7<span>th</span>, 2016</time>
+        
+         | <a href="/blog/20160607_log4j-source-study.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>log4j是一个非常流行的日志框架，最近研究了一下log4j的源代码，这里记录一下心得体会。</p>
+
+<h3>Logger、Appender、Layout之间的结构关系?</h3>
+
+<p>这是log4j的基本数据结构，之间的关系还是很好理解的。首先，一个Logger都要一个名字(通常是类名或包名),它是有父子结构的，相关的实现是Hierarchy。<br/>
+一个Logger会对应多个Appender，表示可以日志输出的地方。<br/>
+Appender的输出格式是通过Layout来实现的，Logger在输出的时候是包装一个LogEvent对象，有Layout来格式化成一个字符串。</p>
+
+<p>简单点:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>Logger 1--* Appender 1--* Layout
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>加载log4j的配置文件</h3>
+
+<p>先考虑加载的是log4j.xml, 然后才是log4j.properties。我平时主要使用log4j.properties.</p>
+
+<h3>log4j果然是年代久远</h3>
+
+<p>以前都说log4j在jdk1.1版本就存在了，现在从源码的细节上看，的确是这样的。例如:</p>
+
+<ol>
+<li>加载配置文件的时候，使用context class loader，它不是用标准的api，而是采用反射。</li>
+<li>处理FileAppender的时候，针对父级目录不存在的时候需要创建目录，如果是我就直接使用mkdirs，它确是手工处理。</li>
+<li>Logger的名字是通过CategoryKey作为key存储到HashTable的，按理说用String作为key就可以了，估计是很早之前String的hashcode是不带缓存实现的吧。</li>
+<li></li>
+</ol>
+
+
+<h3>其他细节</h3>
+
+<h4>没有配置文件的时候，如何优雅处理?</h4>
+
+<p>正常的时候，会在static初始化的时候得到LogRepositorySelector，如果失败的话，这个值就是空的。<br/>
+然后就生成一个repositorySelector = new DefaultRepositorySelector(new NOPLoggerRepository());，这个处理方式就是进行空输出。</p>
+
+<h4>log4j配置中的占位符处理</h4>
+
+<p>log4j配置中的占位符处理是在OptionConverter的substVars方法处理。优先使用系统变量，然后才是properties配置的定义
+log4j.threshold用来配置log level的阀值，就是最低级别。默认是不设置。</p>
+
+<h4>log4j在重复加载文件时的处理</h4>
+
+<p>log4j在重复加载的时候，有个做法可以学习一下。这个做法和commons-logging的方式是一样的。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>  void doConfigure(java.net.URL configURL, LoggerRepository hierarchy) {
+</span><span class='line'>    Properties props = new Properties();
+</span><span class='line'>    LogLog.debug(&quot;Reading configuration from URL &quot; + configURL);
+</span><span class='line'>    InputStream istream = null;
+</span><span class='line'>    URLConnection uConn = null;
+</span><span class='line'>    try {
+</span><span class='line'>      uConn = configURL.openConnection();
+</span><span class='line'>      uConn.setUseCaches(false);
+</span><span class='line'>      istream = uConn.getInputStream();
+</span><span class='line'>      props.load(istream);
+</span><span class='line'>    }
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>layout或者appender的参数设置</h4>
+
+<p>log4j配置中的有时候组成一个layout或者appender，都是可以设置参数的，这些是怎么对应到类中的变量的? 实现在</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'> PropertySetter.setProperties(layout, props, layoutPrefix + &quot;.&quot;);
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>通常还需要实现OptionHandler来做一些后续的初始化动作.</p>
+
+<h4>appender filter如何排序?</h4>
+
+<p>log4j的appender filter是可以配置多个的，处理顺序是按照对应的key的排序来的</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>// sort filters by IDs, insantiate filters, set filter options,
+</span><span class='line'>// add filters to the appender
+</span><span class='line'>Enumeration g = new SortedKeyEnumeration(filters);
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>但是它为什么不使用内置的Arrays sort或者Collections sort呢?</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>  public SortedKeyEnumeration(Hashtable ht) {
+</span><span class='line'>    Enumeration f = ht.keys();
+</span><span class='line'>    Vector keys = new Vector(ht.size());
+</span><span class='line'>    for (int i, last = 0; f.hasMoreElements(); ++last) {
+</span><span class='line'>      String key = (String) f.nextElement();
+</span><span class='line'>      for (i = 0; i <span class="nt">&lt; last</span><span class="err">;</span> <span class="err">++i)</span> <span class="err">{</span>
+</span><span class='line'>        <span class="err">String</span> <span class="na">s =</span> <span class="s">(String)</span> <span class="err">keys.get(i);</span>
+</span><span class='line'>        <span class="err">if</span> <span class="err">(key.compareTo(s)</span> <span class="err">&lt;=</span> <span class="err">0)</span> <span class="err">break;</span>
+</span><span class='line'>      <span class="err">}</span>
+</span><span class='line'>      <span class="err">keys.add(i,</span> <span class="err">key);</span>
+</span><span class='line'>    <span class="err">}</span>
+</span><span class='line'>    <span class="na">e =</span> <span class="s">keys.elements();</span>
+</span><span class='line'>  <span class="err">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>输出编码没有设置会有什么问题?</h4>
+
+<p>如果默认编码不支持中文，可能就乱码。其他不会乱码，只是写的文件是不同编码。编码这块参考WriterAppender</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>  protected
+</span><span class='line'>  OutputStreamWriter createWriter(OutputStream os) {
+</span><span class='line'>    OutputStreamWriter retval = null;
+</span><span class='line'>
+</span><span class='line'>    String enc = getEncoding();
+</span><span class='line'>    if(enc != null) {
+</span><span class='line'>      try {
+</span><span class='line'>  retval = new OutputStreamWriter(os, enc);
+</span><span class='line'>      } catch(IOException e) {
+</span><span class='line'>          if (e instanceof InterruptedIOException) {
+</span><span class='line'>              Thread.currentThread().interrupt();
+</span><span class='line'>          }
+</span><span class='line'>        LogLog.warn(&quot;Error initializing output writer.&quot;);
+</span><span class='line'>        LogLog.warn(&quot;Unsupported encoding?&quot;);
+</span><span class='line'>      }
+</span><span class='line'>    }
+</span><span class='line'>    if(retval == null) {
+</span><span class='line'>      retval = new OutputStreamWriter(os);
+</span><span class='line'>    }
+</span><span class='line'>    return retval;
+</span><span class='line'>  }
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>bufferedIO和bufferSize、immediateFlush有什么关联?</h4>
+
+<p>bufferSize只有在bufferIO开启的时候才生效，对应的是BufferedWriter对象。<br/>
+如果开启了bufferIO那么immediateFlush就会重置成false。</p>
+
+<h4>RollingFileAppender多进程写的情况?</h4>
+
+<p>RollingFileAppender存在一个rollOver的操作，如果文件大小超过限制，就会进行切换。<br/>
+如果存在多个进程写的时候，就很可能出现文件大小明显超过限制的情况。<br/>
+原因在于RollingFileAppender初始化的时候就记录当前文件的大小，每次比较的依据是文件大小+曾经写入的文件大小。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>  protected
+</span><span class='line'>  void subAppend(LoggingEvent event) {
+</span><span class='line'>    super.subAppend(event);
+</span><span class='line'>    if(fileName != null <span class="err">&amp;&amp;</span> qw != null) {
+</span><span class='line'>        long size = ((CountingQuietWriter) qw).getCount();
+</span><span class='line'>        if (size &gt;= maxFileSize <span class="err">&amp;&amp;</span> size &gt;= nextRollover) {
+</span><span class='line'>            rollOver();
+</span><span class='line'>        }
+</span><span class='line'>    }
+</span><span class='line'>   }
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>另外，这里的文件大小限制是字节，但统计大小的时候，用的是字符串的长度，两者是有些区别的。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>  public
+</span><span class='line'>  void write(String string) {
+</span><span class='line'>    try {
+</span><span class='line'>      out.write(string);
+</span><span class='line'>      count += string.length();
+</span><span class='line'>    }
+</span><span class='line'>    catch(IOException e) {
+</span><span class='line'>      errorHandler.error(&quot;Write failure.&quot;, e, ErrorCode.WRITE_FAILURE);
+</span><span class='line'>    }
+</span><span class='line'>  }
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h4>DailyRollingFileAppender切换</h4>
+
+<p>基于一种时间窗口的算法。<br/>
+首先，如何知道是按分钟、小时还是天数来切换呢？就是靠猜，例如猜测是否是小时，那么就是给一个时间去格式化，再加上一小时去格式化。
+如果两个格式化的字符串一样，那么说明不是。按时间间隔，从小到大判断就可以做到。<br/>
+接下来，根据日期格式，就可以计算下次切换的时间点(文件名)。<br/>
+最后，判断切换的时候，根据当前时间去格式化，看看是不是不一样了，如果是，那么就开始切换了。</p>
+
+<p>不过，如果多个进程写的话，就很容易出现问题。因为下面的renameTo很容易失败，然后就会继续写到原来的文件。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>File file = new File(fileName);
+</span><span class='line'>boolean result = file.renameTo(target);
+</span><span class='line'>if(result) {
+</span><span class='line'>  LogLog.debug(fileName +&quot; -&gt; &quot;+ scheduledFilename);
+</span><span class='line'>} else {
+</span><span class='line'>  LogLog.error(&quot;Failed to rename [&quot;+fileName+&quot;] to [&quot;+scheduledFilename+&quot;].&quot;);
+</span><span class='line'>}
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -545,182 +843,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20160105_source-reading.html">源码阅读应该得到什么?</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2016-01-05T00:00:00+08:00" pubdate data-updated="true">Jan 5<span>th</span>, 2016</time>
-        
-         | <a href="/blog/20160105_source-reading.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>我们平时会接触到不少开源项目, 很多人都期望能够通过阅读源码理解更多东西，把从中学到的东西用于平时的框架使用，设计和编码实现过程。</p>
-
-<p>不过，浩瀚的代码量，应该关注什么? 作为一个屌丝程序员，分享一下屌丝经验:</p>
-
-<ol>
-<li>首先，你应该有一定的使用经验。从使用中，去找相关特性是如何实现的。</li>
-<li>最好阅读一下官方文档，了解使用的场景，高层设计、特性介绍。做到心中有数。</li>
-<li>关于设计模式。提前学习一下还是有用的，学习源码的时候就不用揪着设计模式不放，会崩溃的。</li>
-<li>同上，很多源码书会画很庞大的类图，时序图等。这些看上去很高大上，然并卯。</li>
-<li>还是要带的问题去跟踪，一次跟踪一小部分，就是一次要有一个关注点，集中分析。别走马观花。</li>
-<li>建议使用maven等高大上工具关联源码，应该多调试调试，但是单步调试帮助不大。</li>
-<li>同上，应该提高代码&#8221;猜想&#8221;能力,大步调试过去，验证自己的猜测。</li>
-<li>linus说: 烂程序员关心的是代码。好程序员关心的是数据结构和它们之间的关系。</li>
-<li>多补充理论知识。虽然很花时间。</li>
-<li>凑数的，找个感兴趣的开始吧。</li>
-</ol>
-
-
-<p>上面废话很多，下面来个事例。</p>
-
-<p>commons httpclinet 3.x 这是一个很超好用的库，实际上也是比较容易理解的。</p>
-
-<p>我阅读的时候，列了一下自己的关注点或者问题列表。</p>
-
-<ul>
-<li>如何打开HttpClient库的详细日志</li>
-<li>httpclient默认参数有哪些?如User Agent、Charset怎么进行定制?</li>
-<li>httpclient的连接是怎样管理的? 内部是连接池还是什么? HttpClient能用于多线程环境么?如何应用?</li>
-<li>关于MultiThreadedHttpConnectionManager的数据结构是怎样的?</li>
-<li>uri和content中的字符编码是怎么处理的? 例如像处理带中文的路径。</li>
-<li>HttpClient#executeMethod实现细节，为什么hostconfig要克隆一份?为什么不能直接设置?</li>
-</ul>
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">hostconfig</span> <span class="o">==</span> <span class="n">defaulthostconfig</span> <span class="o">||</span> <span class="n">uri</span><span class="o">.</span><span class="na">isAbsoluteURI</span><span class="o">())</span> <span class="o">{</span>
-</span><span class='line'>        <span class="c1">// make a deep copy of the host defaults</span>
-</span><span class='line'>        <span class="n">hostconfig</span> <span class="o">=</span> <span class="o">(</span><span class="n">HostConfiguration</span><span class="o">)</span> <span class="n">hostconfig</span><span class="o">.</span><span class="na">clone</span><span class="o">();</span>
-</span><span class='line'>        <span class="k">if</span> <span class="o">(</span><span class="n">uri</span><span class="o">.</span><span class="na">isAbsoluteURI</span><span class="o">())</span> <span class="o">{</span>
-</span><span class='line'>            <span class="n">hostconfig</span><span class="o">.</span><span class="na">setHost</span><span class="o">(</span><span class="n">uri</span><span class="o">);</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>    <span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>HttpClient、HttpMethod(GetMethod、PostMethod)、HostConfiguration、HttpConnectionManager、HttpClientParams、HttpConnection、HttpState、AuthChallengeProcessor主要负责什么?</li>
-<li>命令行参数、HttpClient、HttpMethod、HostConfiguration都可以设置params，有区别? 参数在框架中是怎样存储的?</li>
-</ul>
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="n">HttpClient</span> <span class="n">httpClient</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HttpClient</span><span class="o">();</span>
-</span><span class='line'>    <span class="n">httpClient</span><span class="o">.</span><span class="na">getParams</span><span class="o">().</span><span class="na">setConnectionManagerTimeout</span><span class="o">(</span><span class="mi">30000L</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">httpClient</span><span class="o">.</span><span class="na">getHostConfiguration</span><span class="o">().</span><span class="na">getParams</span><span class="o">().</span><span class="na">setLongParameter</span><span class="o">(</span>
-</span><span class='line'>            <span class="n">HttpClientParams</span><span class="o">.</span><span class="na">CONNECTION_MANAGER_TIMEOUT</span><span class="o">,</span> <span class="mi">30000L</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">GetMethod</span> <span class="n">post</span> <span class="o">=</span> <span class="k">new</span> <span class="n">GetMethod</span><span class="o">(</span><span class="s">&quot;http://10.132.10.59:4567&quot;</span><span class="o">);</span>
-</span><span class='line'>    <span class="n">post</span><span class="o">.</span><span class="na">getParams</span><span class="o">().</span><span class="na">setHttpElementCharset</span><span class="o">(</span><span class="s">&quot;UTF-8&quot;</span><span class="o">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>HttpClient会自动处理请求跳转? 会不会出现死循环? 怎样的响应才会自动跳转? 如何关闭这个特性</li>
-<li>HttpClient的自动重试功能是怎样? 怎么进行定制?</li>
-<li>HttpClient是使用java自带的HttpUrlConnection实现的么? 报文是怎么组装和解析的?</li>
-<li>连接超时、读取超时、读写缓冲区、还有禁用Nagle等常见属性如何设置?</li>
-<li>多次调用之间的cookie怎么管理的?</li>
-<li>chunked模式是怎么实现的? 多大刷一次?</li>
-</ul>
-
-
-<p>大家可以参考这个，在阅读的时候，列出问题列表，然后从源码中找找答案。</p>
-
-<p><strong>细节是魔鬼:)</strong></p>
-
-<p><strong>========================华丽的分割线========================</strong></p>
-
-<p>关于第8点，以MultiThreadedHttpConnectionManager为例，如何分析数据结构? (昨晚分析的，时间有限，不保证正确性)</p>
-
-<p>从本质来说，整个链接管理的结构是:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="err">维护一个</span><span class="n">connectionPool</span><span class="o">,</span> <span class="err">内部维护一个</span><span class="n">mapHosts</span><span class="err">，它的结构是</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">HostConfiguration</span><span class="o">,</span> <span class="n">HostConnectionPool</span><span class="o">&gt;</span>
-</span><span class='line'><span class="n">HostConnectionPool</span><span class="err">的内部结构是两个链表，</span><span class="n">freeConnections</span><span class="err">维护空闲连接，</span><span class="n">waitingThreads</span><span class="err">维护正在等待连接的线程</span>
-</span><span class='line'>
-</span><span class='line'><span class="err">还有一个静态的</span><span class="n">ReferenceQueue</span><span class="err">和</span><span class="n">ReferenceQueueThread</span><span class="err">，用来实现防止某些连接丢失的情况。至于是怎么做到丢失的连接能够回到</span><span class="n">ReferenceQueue</span><span class="err">，就是通过对</span><span class="n">HttpConnection</span><span class="err">进行加强得到的。</span>
-</span><span class='line'>
-</span><span class='line'><span class="err">实际上通过管理器得到的</span><span class="n">HttpConnection</span><span class="err">是经过层层代理的。层次是这样的</span><span class="o">:</span> <span class="n">HttpConnectionAdapter</span> <span class="o">-</span> <span class="n">HttpConnectionWithReference</span> <span class="o">-</span> <span class="n">HttpConnection</span>
-</span><span class='line'><span class="n">HttpConnectionWithReference</span><span class="err">就是通过一个</span><span class="n">WeakReference</span><span class="err">关联到</span><span class="n">ReferenceQueue</span><span class="err">，这样根据弱引用特性，一定可被回收就会进入</span><span class="n">ReferenceQueue</span><span class="err">从而被线程扫描到。</span>
-</span><span class='line'>
-</span><span class='line'><span class="err">为了实现闲时连接关闭的功能，使用了</span><span class="n">IdleConnectionHandler</span><span class="err">，它的内部结构是有个</span><span class="n">Map</span><span class="err">记录空闲连接</span><span class="o">(</span><span class="err">在</span><span class="n">releaseConnection</span><span class="err">的时候放入</span><span class="o">)</span><span class="err">和当时的时间。</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>代码就是围绕这些核心数据结构进行操作的。通过上面的基本结构，就可以实现以下特性:</p>
-
-<ol>
-<li>总连接数和每主机总连接数限制。连接数默认50，每host默认2连接(经常容易忽略，通常需要定制)</li>
-<li>能够防止连接丢失。如上面所说，拿出去的HttpConnection是加强过的，会关联到一个静态的ReferenceQueue,并使用一个线程ReferenceQueueThread不停监听并回收。</li>
-<li>实现了获取连接的超时限制。就是通过waitingThreads实现的。当找不到空闲连接的时候就添加进去，然后wait。如果有releaseConnection的时候，就会interupt等待的第一个线程。我个人认为线程有可能被interupt之后仍然占用不到连接，从而排到最后去，真是悲剧。</li>
-<li>能够支持连接闲时关闭。这个默认是需要主动触发，通过IdleConnectionHandler比较时间来实现的。</li>
-</ol>
-
-
-<p>最后，这个类是支持多线程的，主要是使用了同步机制，锁定ConnectionPool对象实现的。<br/>
-另外，HttpConnection对象实际上并不是一个正式的连接，要open之后才会真的建立连接。<br/>
-实际上也是一个lazy代理对象，可以避免整个连接管理操作不被阻塞，只有到实际操作时open的时候才连接。</p>
-
-<p><strong>========================华丽的分割线========================</strong></p>
-
-<p>关于第9点，以commons-httpclient为例，这当中涉及到哪些理论基础呢? 简单列举一下:</p>
-
-<ol>
-<li>java弱引用、克隆特性</li>
-<li>线程协调、中断机制</li>
-<li>网络编码、http协议</li>
-<li>tcp相关参数的含义</li>
-<li>常见对象池化技术</li>
-</ol>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -734,6 +856,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160607_log4j-source-study.html">log4j源码心得</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160602_java-object-unknown-state.html">避免对象未知状态</a>
@@ -769,10 +895,6 @@
     
       <li class="post">
         <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
       </li>
     
   </ul>

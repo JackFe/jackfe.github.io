@@ -9,9 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="这是10年初写的了:) sinatra简介 Sinatra is a DSL for quickly creating web applications in Ruby with minimal。
-Fewer classes, less inheritance
-controller object &hellip;">
+  <meta name="description" content="这个是09年底写的。这几年更多看到关于html5、css3、javascript的图形展现显示，效果更好，功能也很强大，
+随着html5、css3的普及，以后会有更多的应用出现。例如淘宝团队可视化JavaScript库[Datav.js][2]，在数据分析展示方面效果就很不错。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +65,78 @@ controller object &hellip;">
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121208_graph-report.html">话说图形报表(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-08T00:00:00+08:00" pubdate data-updated="true">Dec 8<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20121208_graph-report.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p class="lead">
+这个是09年底写的。这几年更多看到关于html5、css3、javascript的图形展现显示，效果更好，功能也很强大，
+随着html5、css3的普及，以后会有更多的应用出现。例如淘宝团队可视化JavaScript库[Datav.js][2]，在数据分析展示方面效果就很不错。
+</p>
+
+
+<p>在javaeye上看到有个新闻<a href="http://www.javaeye.com/news/12109-highcharts-charting-api">Highcharts:非常漂亮的图表API</a>，自己也做过图形报表相关的工作，就此对图形报表发表一点自己的想法：</p>
+
+<h2>图形报表非常醒目</h2>
+
+<p>图形报表是一种富格式，粗粒度的报表表现方式。表格样式的报表容纳的信息比较细，没法像图形那样直观。
+在一些不需要非常详细统计的情况下，图形报表的优势是非常明显的。在业务系统中融合图形报表，几乎就变成了一个必备需求。
+一个普遍的可以想象的场景是，能够简单明了的展现统计信息趋势等，又能在必要的时候得到详细的统计数据，这就使得系统拥有混合多种报表表现形式的能力。</p>
+
+<h2>服务端与客户端的图形报表</h2>
+
+<p>我认为图形报表可以分成两部分，数据和渲染引擎。渲染引擎就主要是提供接口接受数据并把数据显示出来，或许还提供了一些接口让用户参与交互。
+现在这个引擎的实现方式可谓多种多样，有些是语言相关的，例如birt，jreport等，他们大体上是通过数据源定制描述文件(例如通用的xml格式)，然后自己解析并展现。
+这种方式的通用性不是很强，因为他比较依赖于服务端环境，就是说你必须要在添加一套组件，多跑一套应用才能使用。
+另外还有一些是基于客户端技术的，例如flash，css/js等，对于服务端来说只要提供数据就可以了，非常方便。因为这个原因，我更加推荐使用客户端技术。</p>
+
+<h2>flash图形报表的可用性</h2>
+
+<p>看了一些基于客户端的实现方式，个人是比较赞赏flash实现方式的。我是看重flash表现力非常强大，组件化，不懂flash也可以轻松弄出非常漂亮的报表。
+如果要推荐一个的话，我觉得基于flash技术的FusionChart可以满足绝大多数的需求。像什么直线图，曲线图、区域图、区域曲线图、柱状图、饼图都可以轻松实现。
+如果使用收费版本的话还有更加强大的功能(当然你也可以选择在网上找破解版)，这类工具还可以轻松打印，提供多种格式转换，还可以动态改变报表。
+这样你就发挥你的创造力了，例如配合ajax来展示个股分时图等等。</p>
+
+<h2>集成不是个问题</h2>
+
+<p>接上面的flash报表的话题。如果我们选择flash报表的话，我们可以预见的是，它本身就提供了一套适用性非常强的接口。
+再加上这本来就是服务端语言无关的实现方式，从我的工作经验上看，单单这点不会是什么难题的。我觉得flash报表能解决90%的问题，
+但是如何补充flash报表在功能上的缺陷?这才是我们要考虑的问题吧。我的想法是，一套flash报表不行，我用多一套其他的总可以了吧？
+现在服务端主要的功能是提供数据，而客户端做的是接受数据并展示。如果使用多套客户端技术的话，那么服务端的数据再经过一套适配器转换即可。
+管你使用的是flash，还是css/js，你只要定义数据适配器即可。虽然现在这些只是一些想法，而FusionChart也的确是满足了我所有的需求，但是我还是觉得这是完全可行的。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -596,70 +667,6 @@ Service只关心Dao是否发生异常(例如统一的Dao异常接口DataAccessEx
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20121202_framework-improve-base-library.html">从某维护系统的架构改造谈起–公用代码库(旧)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-12-02T00:00:00+08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2012</time>
-        
-         | <a href="/blog/20121202_framework-improve-base-library.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>这是刚到公司时写的~</p>
-
-<p>有时候真是不看不知道，这样一个每月数亿业务量，数十亿营收的大型系统，原来也就是这样的质量。
-我们可以想象这种系统一开始都是美好的，只是渐渐的变味了。就拿我们这边java的来说，原来也应该是有公用代码库的，只是那么久每人去维护，项目赶工，
-自立山寨的情况多了，这些东西的反向价值就越来越明显了。典型的表现有：
-* 自立门户的现象很突出，经常可以找到n个方法是做同样事情的；
-* 神级的类很多，例如某个类可以提供字符串，时间，web，业务相关的操作；
-* 公用类代码质量良莠不齐，有很多明显写得不好的地方(曾经有个数千行的类就给我砍倒1/3代码)；
-* 缺乏公用库的document和quickstart</p>
-
-<p>这样造成浪费，花了很多冤枉时间去实现已有功能，缺乏统一规划。大家都有体会，维护一个杂乱无章的系统是多么的困难，
-在这种系统想写出漂亮的代码是很考水平的。现在代码库又特别庞大，怪不得很多同事慢慢地就给系统同化了，
-缺乏持续改进的动力。在上次retro会议的时候，针对缺乏统一的公用代码库的问题，针对质量和维护的问题，我提了一些做法：</p>
-
-<p><img src="/assets/images/common_lib.jpg" alt="公共代码库迁移" /></p>
-
-<ol>
-<li>方向是在保留现有逻辑的基础上，针对新添加的功能和修改的功能，逐渐迁移到新的公用库。</li>
-<li>至于公用库的选材，主要是从各大现有公用库进行提炼，对神级类进行拆分，并结合开发人员提需求的做法，形成我们的公用库。</li>
-<li>为了避免山寨的出现，培训和文档是必须有的。</li>
-<li>针对如何让程序员接受并找到新公用库的问题，建立新的source目录，并在文档上通过目录－包结构－类的层次做好文档(javadoc)。</li>
-<li>除了必要的培训之外，主要的审查方式还是通过每天的code diff和定期的code review来做到大家对公用库的认同和理解。</li>
-<li>维护是要靠大家去推动的，就像上面说的，由程序员反馈需求或提供补丁的方式，保证公用库的持续改进。</li>
-</ol>
-
-
-<p>现在工作进展还算顺利，过段时间再看看效果怎样，或许咨询一下顾问看看有没有改进的地方。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/18/">&larr; Older</a>
@@ -675,6 +682,10 @@ Service只关心Dao是否发生异常(例如统一的Dao异常接口DataAccessEx
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160607_log4j-source-study.html">log4j源码心得</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160602_java-object-unknown-state.html">避免对象未知状态</a>
@@ -710,10 +721,6 @@ Service只关心Dao是否发生异常(例如统一的Dao异常接口DataAccessEx
     
       <li class="post">
         <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
       </li>
     
   </ul>

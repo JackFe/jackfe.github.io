@@ -9,9 +9,9 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="github page不支持.htaccess功能(参考Blogging on Jekyll: URL Redirects)，
-所以发生URL调整的时候，无法让原有路径自动跳转到新路径。
-Alias generator这个插件提供了一个解决方案，就是生成多一个页面，采用auto &hellip;">
+  <meta name="description" content="本博客已经在2013-3-9转换成octopress了,比这种手动方式要方便很多。 github page是个不错的应用，可惜对jekyll有比较多的限制，特别是插件方面。
+为了解决这个问题，我选择了分支来处理这个，大约就是source分支保存未编译的内容，
+master分支保留生成的网站。 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +66,138 @@ Alias generator这个插件提供了一个解决方案，就是生成多一个�
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130127_jekyll-plugin-with-git-branch.html">Git分支让github Page用上jekyll插件</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-27T00:00:00+08:00" pubdate data-updated="true">Jan 27<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130127_jekyll-plugin-with-git-branch.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><img src="/assets/images/2013/jekyll-plugin-with-git-branch.png" alt="git分支让github page用上jekyll插件" /></p>
+
+<p><strong>本博客已经在2013-3-9转换成octopress了,比这种手动方式要方便很多。</strong></p>
+
+<p>github page是个不错的应用，可惜对jekyll有比较多的限制，特别是插件方面。
+为了解决这个问题，我选择了分支来处理这个，大约就是source分支保存未编译的内容，
+master分支保留生成的网站。下面是大概的操作过程，针对已有博客的迁移。</p>
+
+<h3>迁移过程</h3>
+
+<p>首先，到github上手动打一个分支出来，叫source分支。</p>
+
+<p>接着，处理master分支，清除所有内容。注意git pull的功能是让本地可以识别到远程分支。
+<strong>.nojekyll文件</strong>是让github page不启用jekyll生成网站，而是直接使用目录下的内容。
+并把所有带下划线的目录都过滤掉。</p>
+
+<div class="highlight"><pre><code class="bash"><span class="nb">cd </span>mccxj.github.com
+git rm -fr *
+
+touch .nojekyll
+git add .nojekyll
+
+<span class="c"># add _*/* to .gitignore</span>
+vi .gitignore
+
+git commit -a -m <span class="s2">&quot;remote all pages&quot;</span>
+</code></pre></div>
+
+
+<p>下面，继续处理source分支，其实基本保持不变就可以了，主要是生成网站内容。
+<strong>带t的参数是让source跟踪远程source分支</strong>。我的jekyll是采用最新源码装的，命令参数有些变化，
+请参考jekyll帮助，</p>
+
+<div class="highlight"><pre><code class="bash">git checkout -t origin/source
+
+<span class="nv">$ </span>git branch -a
+  master
+* <span class="nb">source</span>
+<span class="nb">  </span>remotes/origin/HEAD -&gt; origin/master
+  remotes/origin/master
+  remotes/origin/source
+
+<span class="c"># generate page to _site</span>
+jekyll build
+</code></pre></div>
+
+
+<p>最后，切回master分支，并<strong>拷贝网站内容</strong>到根目录，然后把内容提交并push到远程即可。</p>
+
+<div class="highlight"><pre><code class="bash">git checkout master
+
+cp -r _site/* .
+
+<span class="c"># add then commit</span>
+git add / git commit
+
+<span class="c"># push to remote branch</span>
+git push origin master
+</code></pre></div>
+
+
+<h3>新写作流程</h3>
+
+<p>现在已经迁移完成了，下面介绍一些新写作流程。</p>
+
+<p>首先，<strong>注意要在source分支上工作</strong>，在提交到远程之前都是一样。</p>
+
+<div class="highlight"><pre><code class="bash">git checkout <span class="nb">source</span>
+
+<span class="c"># rake post title=&quot;xxxx&quot;</span>
+<span class="c"># write something</span>
+git add xxxx.md
+git commit -m <span class="s2">&quot;add new post&quot;</span>
+
+<span class="c"># jekyll build</span>
+jekyll serve
+</code></pre></div>
+
+
+<p>当你确认完成，并生成网站内容后，切换到master分支处理。
+<strong>注意需要提交两个分支</strong>，例如使用git push可以同时提交两个分支。</p>
+
+<div class="highlight"><pre><code class="bash">git checkout master
+
+cp -r _site/* .
+
+<span class="c"># add then commit</span>
+git add / git commit
+
+<span class="c"># push to remote branch</span>
+git push
+</code></pre></div>
+
+
+<p>还不算麻烦吧，其实我是尝试切换到<a href="http://octopress.org/">octopress</a>，发现有不少地方出现问题，才采用这种方式的。Enjoy It!</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -596,61 +728,6 @@ async在有些插件化的js时async可能可以用到，其他就很难用到�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130120_github-across-gfw.html">抢票插件搞得上github Page都要轻功</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-01-20T00:00:00+08:00" pubdate data-updated="true">Jan 20<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20130120_github-across-gfw.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><img src="/assets/images/2013/acrossgfw.jpg" alt="抢票插件搞得上github page都要轻功" /></p>
-
-<p>春运临近，浏览器抢票软件也变得流行，没回来那几天就看到新闻说:<a href="http://www.oschina.net/news/36770/12306_ticket_helper">12306 抢票版插件拖垮 Github 服务器</a>
-，没想到回来之后就发现github page不能用了，正确的说应该是github的子域名都不能用了，看来是贴倒部和宫刑部的新春贺礼来的。</p>
-
-<h2>抢票插件和github什么关系</h2>
-
-<p>抢票插件引用了github上的一个js文件，但github有个安全检测，当访问比较频繁的时候就会直接返回403 forbidden。
-然后作者没多想就在插件里加了个重试机制。如果返回的是403就每5秒重试一次，并且是永久重试，结果github认为你访问的更频繁了于是一直返回403。
-可想而知这就成了死循环，使用插件的用户一多，对github而言就产生DDOS了。
-换句话说，这是github的一种安全机制而已，抢票插件和github基本没什么关系，有关部门的做法更是弱智得不行呀。:)</p>
-
-<h2>轻功之ssh</h2>
-
-<p>以前用过free gate这种东西，不过不大稳定，而且感觉风险比较高。呵呵，你懂的。<br/>
-<a href="http://www.ssh110.com/help.html">ssh使用帮助</a>,跟人感觉用ssh命令行配合chrome插件是最方便的。<br/>
-<a href="http://blog.onlybird.com/%E5%85%8D%E8%B4%B9ssh%E4%BB%A3%E7%90%86">免费ssh代理</a>,速度还不错，不过不是特别稳定。<br/>
-<a href="http://wendal.net/2013/0108.html">Nutz福利之轻功</a>,应该不错,不过我还没用上。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/15/">&larr; Older</a>
@@ -666,6 +743,10 @@ async在有些插件化的js时async可能可以用到，其他就很难用到�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160607_log4j-source-study.html">log4j源码心得</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160602_java-object-unknown-state.html">避免对象未知状态</a>
@@ -701,10 +782,6 @@ async在有些插件化的js时async可能可以用到，其他就很难用到�
     
       <li class="post">
         <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20151011_websphere-sharelib-loading.html">Websphere共享库加载顺序问题</a>
       </li>
     
   </ul>
