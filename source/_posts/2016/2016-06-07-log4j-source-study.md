@@ -30,4 +30,69 @@ Logger 1--* Appender 1--* Layout
 1. 加载配置文件的时候，使用context class loader，它不是用标准的api，而是采用反射。
 2. 处理FileAppender的时候，针对父级目录不存在的时候需要创建目录，如果是我就直接使用mkdirs，它确是手工处理。
 3. Logger的名字是通过CategoryKey作为key存储到HashTable的，按理说用String作为key就可以了，估计是很早之前String的hashcode是不带缓存实现的吧。
+4. 
 
+### 其他细节
+
+#### 没有配置文件的时候，如何优雅处理?
+
+正常的时候，会在static初始化的时候得到LogRepositorySelector，如果失败的话，这个值就是空的。  
+然后就生成一个repositorySelector = new DefaultRepositorySelector(new NOPLoggerRepository());，这个处理方式就是进行空输出。
+
+#### log4j配置中的占位符处理
+
+log4j配置中的占位符处理是在OptionConverter的substVars方法处理。优先使用系统变量，然后才是properties配置的定义
+log4j.threshold用来配置log level的阀值，就是最低级别。默认是不设置。
+
+#### log4j在重复加载文件时的处理
+
+log4j在重复加载的时候，有个做法可以学习一下。这个做法和commons-logging的方式是一样的。
+
+```
+  void doConfigure(java.net.URL configURL, LoggerRepository hierarchy) {
+    Properties props = new Properties();
+    LogLog.debug("Reading configuration from URL " + configURL);
+    InputStream istream = null;
+    URLConnection uConn = null;
+    try {
+      uConn = configURL.openConnection();
+      uConn.setUseCaches(false);
+      istream = uConn.getInputStream();
+      props.load(istream);
+    }
+```
+
+#### layout或者appender的参数设置
+
+log4j配置中的有时候组成一个layout或者appender，都是可以设置参数的，这些是怎么对应到类中的变量的? 实现在
+```
+ PropertySetter.setProperties(layout, props, layoutPrefix + ".");
+```
+通常还需要实现OptionHandler来做一些后续的初始化动作.
+
+#### appender filter如何排序?
+
+log4j的appender filter是可以配置多个的，处理顺序是按照对应的key的排序来的
+
+```
+    // sort filters by IDs, insantiate filters, set filter options,
+    // add filters to the appender
+    Enumeration g = new SortedKeyEnumeration(filters);
+```
+
+但是它为什么不使用内置的Arrays sort或者Collections sort呢?
+```
+  public SortedKeyEnumeration(Hashtable ht) {
+    Enumeration f = ht.keys();
+    Vector keys = new Vector(ht.size());
+    for (int i, last = 0; f.hasMoreElements(); ++last) {
+      String key = (String) f.nextElement();
+      for (i = 0; i < last; ++i) {
+        String s = (String) keys.get(i);
+        if (key.compareTo(s) <= 0) break;
+      }
+      keys.add(i, key);
+    }
+    e = keys.elements();
+  }
+```
