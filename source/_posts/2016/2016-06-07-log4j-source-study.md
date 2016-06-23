@@ -96,3 +96,89 @@ log4j的appender filter是可以配置多个的，处理顺序是按照对应的
     e = keys.elements();
   }
 ```
+
+#### 输出编码没有设置会有什么问题? 
+
+如果默认编码不支持中文，可能就乱码。其他不会乱码，只是写的文件是不同编码。编码这块参考WriterAppender
+```
+  protected
+  OutputStreamWriter createWriter(OutputStream os) {
+    OutputStreamWriter retval = null;
+
+    String enc = getEncoding();
+    if(enc != null) {
+      try {
+	retval = new OutputStreamWriter(os, enc);
+      } catch(IOException e) {
+          if (e instanceof InterruptedIOException) {
+              Thread.currentThread().interrupt();
+          }
+	      LogLog.warn("Error initializing output writer.");
+	      LogLog.warn("Unsupported encoding?");
+      }
+    }
+    if(retval == null) {
+      retval = new OutputStreamWriter(os);
+    }
+    return retval;
+  }
+```
+
+#### bufferedIO和bufferSize、immediateFlush有什么关联?
+
+bufferSize只有在bufferIO开启的时候才生效，对应的是BufferedWriter对象。  
+如果开启了bufferIO那么immediateFlush就会重置成false。
+
+#### RollingFileAppender多进程写的情况?
+
+RollingFileAppender存在一个rollOver的操作，如果文件大小超过限制，就会进行切换。  
+如果存在多个进程写的时候，就很可能出现文件大小明显超过限制的情况。  
+原因在于RollingFileAppender初始化的时候就记录当前文件的大小，每次比较的依据是文件大小+曾经写入的文件大小。
+
+```
+  protected
+  void subAppend(LoggingEvent event) {
+    super.subAppend(event);
+    if(fileName != null && qw != null) {
+        long size = ((CountingQuietWriter) qw).getCount();
+        if (size >= maxFileSize && size >= nextRollover) {
+            rollOver();
+        }
+    }
+   }
+```
+
+另外，这里的文件大小限制是字节，但统计大小的时候，用的是字符串的长度，两者是有些区别的。
+
+```
+  public
+  void write(String string) {
+    try {
+      out.write(string);
+      count += string.length();
+    }
+    catch(IOException e) {
+      errorHandler.error("Write failure.", e, ErrorCode.WRITE_FAILURE);
+    }
+  }
+```
+
+#### DailyRollingFileAppender切换
+
+基于一种时间窗口的算法。  
+首先，如何知道是按分钟、小时还是天数来切换呢？就是靠猜，例如猜测是否是小时，那么就是给一个时间去格式化，再加上一小时去格式化。
+如果两个格式化的字符串一样，那么说明不是。按时间间隔，从小到大判断就可以做到。  
+接下来，根据日期格式，就可以计算下次切换的时间点(文件名)。  
+最后，判断切换的时候，根据当前时间去格式化，看看是不是不一样了，如果是，那么就开始切换了。
+
+不过，如果多个进程写的话，就很容易出现问题。因为下面的renameTo很容易失败，然后就会继续写到原来的文件。
+
+```
+    File file = new File(fileName);
+    boolean result = file.renameTo(target);
+    if(result) {
+      LogLog.debug(fileName +" -> "+ scheduledFilename);
+    } else {
+      LogLog.error("Failed to rename ["+fileName+"] to ["+scheduledFilename+"].");
+    }
+```
