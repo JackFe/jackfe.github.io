@@ -9,7 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="补充的内容，主要是一些细节的问题，备忘. 编译netcat android上自己好像带了一个，不过也可以自己编译一个。 我这里使用cygwin来编译的，首先去下载源码。 1
+  <meta name="description" content="类加载和程序运行是有些关系的，不妨来测试一下。
+难度:中级 独立进程篇 假设有下面的类文件： 1
 2
 3
 4
@@ -29,10 +30,8 @@
 18
 19
 20
-21
-22
-23
-24 &hellip;">
+// Main.java
+package com.github.mccxj.test; public &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -87,6 +86,291 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20131227_classloader-test.html">考察对类加载的理解(问题篇)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-12-27T00:00:00+08:00" pubdate data-updated="true">Dec 27<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20131227_classloader-test.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>类加载和程序运行是有些关系的，不妨来测试一下。<br/>
+难度:中级</p>
+
+<h2>独立进程篇</h2>
+
+<p>假设有下面的类文件：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">// Main.java</span>
+</span><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">mccxj</span><span class="o">.</span><span class="na">test</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">){</span>
+</span><span class='line'>    <span class="k">new</span> <span class="nf">TestServlet</span><span class="o">().</span><span class="na">test</span><span class="o">();</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c1">// TestServlet.Java</span>
+</span><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">mccxj</span><span class="o">.</span><span class="na">test</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">TestServlet</span> <span class="o">{</span>
+</span><span class='line'>  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">test</span><span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">InputStream</span> <span class="n">is</span> <span class="o">=</span> <span class="n">TestServlet</span><span class="o">.</span><span class="na">class</span><span class="o">.</span><span class="na">getClassLoader</span><span class="o">().</span><span class="na">getResourceAsStream</span><span class="o">(</span><span class="s">&quot;config.properties&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="k">if</span><span class="o">(</span><span class="n">is</span> <span class="o">==</span> <span class="kc">null</span><span class="o">){</span>
+</span><span class='line'>      <span class="k">throw</span> <span class="k">new</span> <span class="nf">RuntimeException</span><span class="o">(</span><span class="s">&quot;couId not found config.properties&quot;</span><span class="o">);</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>  <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>假设目录结构是这样的，其中jar下面的表示是在jar包里边的内容:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">test</span>
+</span><span class='line'>    -lib
+</span><span class='line'>        -test.jar
+</span><span class='line'>          -com/github/mccxj/test/Main.class
+</span><span class='line'>    -main.jar
+</span><span class='line'>        -com/github/mccxj/test/TestServlet.class
+</span><span class='line'>        -config.properties
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>请问：</p>
+
+<ol>
+<li>执行java -cp main.jar;lib/test.jar com.github.mccxj.test.Main会出错么？</li>
+<li>执行java -cp main.jar -Djava.ext.dirs=./lib com.github.mccxj.test.Main结果是怎样？</li>
+</ol>
+
+
+<p>继续调整目录结果如下：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">test</span>
+</span><span class='line'>    -lib
+</span><span class='line'>        -test.jar
+</span><span class='line'>            -com/github/mccxj/test/Main.class
+</span><span class='line'>        -main.jar
+</span><span class='line'>            -com/github/mccxj/test/TestServlet.class
+</span><span class='line'>            -config.properties
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>再请问</p>
+
+<ol>
+<li>执行java -Djava.ext.dirs=./lib com.github.mccxj.test.Main结果是怎样？</li>
+</ol>
+
+
+<p>继续调整一下TestServlet的代码：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class='diff'><span class='line'>// TestServlet.Java
+</span><span class='line'>package com.github.mccxj.test;
+</span><span class='line'>
+</span><span class='line'>public class TestServlet {
+</span><span class='line'>  public void test() {
+</span><span class='line'><span class="gd">-    InputStream is = TestServlet.class.getClassLoader().getResourceAsStream(&quot;config.properties&quot;);</span>
+</span><span class='line'><span class="gi">+    InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(&quot;config.properties&quot;);</span>
+</span><span class='line'>    if(is == null){
+</span><span class='line'>      throw new RuntimeException(&quot;couId not found config.properties&quot;);
+</span><span class='line'>    }
+</span><span class='line'>  }
+</span><span class='line'>}
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>把目录结构恢复成：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">test</span>
+</span><span class='line'>    -lib
+</span><span class='line'>        -test.jar
+</span><span class='line'>          -com/github/mccxj/test/Main.class
+</span><span class='line'>    -main.jar
+</span><span class='line'>        -com/github/mccxj/test/TestServlet.class
+</span><span class='line'>        -config.properties
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>请问:</p>
+
+<ol>
+<li>执行java -cp   main.jar;lib/test.jar com.github.mccxj.test.Main会出错么？</li>
+<li>执行java   -cp main.jar -Djava.ext.dirs=./lib com.github.mccxj.test.Main结果又是怎样？</li>
+</ol>
+
+
+<p>最后调整目录结果如下：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nb">test</span>
+</span><span class='line'>    -lib
+</span><span class='line'>        -test.jar
+</span><span class='line'>            -com/github/mccxj/test/Main.class
+</span><span class='line'>        -main.jar
+</span><span class='line'>            -com/github/mccxj/test/TestServlet.class
+</span><span class='line'>            -config.properties
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>执行java -Djava.ext.dirs=./lib com.github.mccxj.test.Main结果是怎样？</li>
+</ol>
+
+
+<h2>Web应用服务器篇</h2>
+
+<p>下面的例子，以tomcat为例。
+假设有下面的Servlet文件，并打包成test.jar:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">// TestServlet.java</span>
+</span><span class='line'><span class="kn">package</span> <span class="n">com</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">mccxj</span><span class="o">.</span><span class="na">test</span><span class="o">;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">TestServlet</span> <span class="kd">extends</span> <span class="n">HttpServlet</span> <span class="o">{</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="kd">static</span> <span class="n">Atomiclnteger</span> <span class="n">al</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AtomicInteger</span><span class="o">();</span>
+</span><span class='line'>    <span class="kd">private</span> <span class="n">Atomiclnteger</span> <span class="n">a2</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AtomicInteger</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="nd">@Override</span>
+</span><span class='line'>    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">service</span><span class="o">(</span><span class="n">ServletRequest</span> <span class="n">arg0</span><span class="o">,</span> <span class="n">ServletResponse</span> <span class="n">arg1</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Servlet</span> <span class="n">Exception</span><span class="o">,</span> <span class="n">IOException</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printIn</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">al</span><span class="o">.</span><span class="na">incrementAndGet</span><span class="o">()));</span>
+</span><span class='line'>        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">printIn</span><span class="o">(</span><span class="n">String</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">a2</span><span class="o">.</span><span class="na">incrementAndGet</span><span class="o">()));</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>并部署两个应用程序appa、appb,在他们的WEB_INF/web.xml添加了下面的内容</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;servlet&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;servlet-name&gt;</span>test<span class="nt">&lt;/servlet-name&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;display-name&gt;</span>test servlet<span class="nt">&lt;/display-name&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;servlet-class&gt;</span>com.huawei.test.TestServlet<span class="nt">&lt;/servlet-class&gt;</span>
+</span><span class='line'><span class="nt">&lt;/servlet&gt;</span>
+</span><span class='line'><span class="nt">&lt;servlet-mapping&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;servlet-name&gt;</span>test<span class="nt">&lt;/servlet-name&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;url-pattern&gt;</span>/test<span class="nt">&lt;/url-pattern&gt;</span>
+</span><span class='line'><span class="nt">&lt;/servlet-mapping&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>大家应该听说过Servlet是单例的概念，也可能听过Web应用服务器有共享类的机制。那么，请问：</p>
+
+<ol>
+<li>现在把test.jar扔到appa和appb的WEB_INF/lib目录中，启动tomcat，先访问/appa/test两次，再访问/appb/test, 此时会输出什么？</li>
+<li>继续把test.jar都移除掉，只添加到TOMCAT_HOME/lib目录中，启动tomcat，先访问/appa/test两次，再访问/appb/test, 此时会输出什么？</li>
+<li>最后把test.jar拷贝一份到appa的WEB_INF/lib目录中，启动tomcat，先访问/appa/test两次，再访问/appb/test, 此时会输出什么？</li>
+</ol>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -456,65 +740,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20131108_mission-estimate.html">谈任务分解与评估</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-11-08T00:00:00+08:00" pubdate data-updated="true">Nov 8<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20131108_mission-estimate.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>平时工作，做需求的时候，总有有时间限制，俗称工作量评估，通常用x天或者x个单位点数来表示。在现实中，评估都是很随意的，实际结果经常有很大出入。
-在这里不评论，这种做法有多科学。只是单个任务工作量越大，越需要细分，直到有足够的清晰度，这样才能评估得比较靠谱。这里我们用一个例子来解释一下。</p>
-
-<p>我最近想做一个andriod上的死活题app，至少第一期的目标是这样的。我们先来做一下分解，看看需要那些工具，需要做什么工作。</p>
-
-<p>总体来说，用android，优先考虑使用java开发。这需要java的编程经验和一些android的经验。我认为，这个不是难点，还是比较有信心的。</p>
-
-<p>既然是围棋的死活题，需要了解死活题的存储格式，这是一种基于文本的格式，用树型分支的形式。
-这个程序需要能够识别这种格式，这要求我们需要实现一个解释器，不过我考虑使用现成的词法分析器来实现，例如javacc，当然如果不懂这个，还得去学习一下。</p>
-
-<p>另外，这是一个围棋游戏，肯定需要实现游戏规则，最重要的就是落子，吃子的判断。这个是最重要的算法部分。</p>
-
-<p>还有就是，由于涉及棋盘显示，可能需要实现自定义控件或者绘图功能。如果不熟悉，也是要多花些时间的。</p>
-
-<p>还有一些不那么明显的细节部分，举例如下:</p>
-
-<p>死活题通常只用了棋盘的一小部分，手机屏幕又小，如何只是集中显示部分？<br/>
-另外，在显示所有死活题列表的时候，能不能显示预览图？</p>
-
-<p>举例子，是想说明，一些看似简单的任务，其实并没有那么简单。除了仔细分解任务，还有个常用的手法就是原型，把认为最难的部分先做一下，看看心里有没有底。</p>
-
-<p>当然，所有的任务都跟你的熟悉程度有关，经常做一件事情就是这样(日常的工作就是这样)。但这些工作经验，在切换到非舒适区的时候，并不能减少心里的担忧。对于做技术的人来说，需要做的事，往往是要敢于打破技术舒适区。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/8/">&larr; Older</a>
@@ -530,6 +755,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160906_java-books.html">java相关技术书推荐</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160607_log4j-source-study.html">log4j源码心得</a>
@@ -565,10 +794,6 @@
     
       <li class="post">
         <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
       </li>
     
   </ul>

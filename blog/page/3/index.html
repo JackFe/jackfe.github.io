@@ -9,7 +9,7 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="问题描述 昨天收到有个童鞋发来的一个问题咨询，如下图所示。 提到几个疑问: 配置如图所示,然后共享库和项目自身lib下都有一个“xxxx-common.jar”，如果项目用到jar包里面的一个类，将会是共享库的还是自身lib的呢？发现是用的lib里边的。 &hellip;">
+  <meta name="description" content="本人在此之前甚少接触weblogic，家里的weblogic也是第一次安装的。如果发现错误，敬请指正。 问题描述 XX局点升级weblogic为11g，重新发包出错。现在记录一下处理的各种问题总结。 错误1: apache commons某些包的方法没有找到 这是最早出现的问题， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -64,6 +64,296 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20151023_weblogic-11g-classloader-prefer.html">Weblogic 11g类加载问题总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-10-23T00:00:00+08:00" pubdate data-updated="true">Oct 23<span>rd</span>, 2015</time>
+        
+         | <a href="/blog/20151023_weblogic-11g-classloader-prefer.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><strong>本人在此之前甚少接触weblogic，家里的weblogic也是第一次安装的。如果发现错误，敬请指正。</strong></p>
+
+<h2>问题描述</h2>
+
+<p>XX局点升级weblogic为11g，重新发包出错。现在记录一下处理的各种问题总结。</p>
+
+<h3>错误1: apache commons某些包的方法没有找到</h3>
+
+<p>这是最早出现的问题，会出现类似下面的错误信息。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>&lt;2015-10-14 下午05时57分30秒 CST&gt; &lt;Error&gt; &lt;HTTP&gt; &lt;BEA-101017&gt; &lt;[ServletContext@1385406679[app:XXService module:XXService path:/XXService spec-version:2.5]] Root cause of ServletException.
+</span><span class='line'>java.lang.NoSuchMethodError: org.apache.commons.io.FileUtils.copyInputStreamToFile(Ljava/io/InputStream;Ljava/io/File;)V
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>原因分析</li>
+</ul>
+
+
+<p>这是weblogic部署最常见的问题，因为weblogic会自带I一些commons-*的包，这些包的版本还比较旧。具体可以见WEBLOGIC_HOME/modules目录的jar包。</p>
+
+<ul>
+<li>此次采用的处理方式</li>
+</ul>
+
+
+<p>添加weblogic.xml并设置prefer-web-inf-classes，即优先加载web应用下的类</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+</span><span class='line'><span class="nt">&lt;weblogic-web-app&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;container-descriptor&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;prefer-web-inf-classes&gt;</span>true<span class="nt">&lt;/prefer-web-inf-classes&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/container-descriptor&gt;</span>
+</span><span class='line'><span class="nt">&lt;/weblogic-web-app&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>错误2: jsp使用jstl时出现SAXParserFactory的ClassCastException</h3>
+
+<p>这是使用prefer-web-inf-classes为true之后出现的问题，会出现类似下面的错误信息。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>The validator class: &quot;org.apache.taglibs.standard.tlv.JstlCoreTLV&quot; has failed with the following exception: &quot;java.lang.ClassCastException: weblogic.xml.jaxp.RegistrySAXParserFactory cannot be cast to javax.xml.parsers.SAXParserFactory&quot;.
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>原因分析</li>
+</ul>
+
+
+<p>这是weblogic部署很常见的问题，jstl会调用sax，sax是通过spi机制加载实现，获取是weblogic的实现，但它使用的是jdk自带的javax.xml.parsers.SAXParserFactory接口。
+刚好web应用下也带了jar包xml-apis-1.x.jar，它也有javax.xml.parsers.SAXParserFactory这个接口。根据prefer-web-inf-classes的设置，jstl代码中用的是这个接口。
+由此可知，使用classloader并不一样，无法转换。</p>
+
+<ul>
+<li>此次采用的处理方式</li>
+</ul>
+
+
+<p>删除WEB-INF/lib/xml-apis-1.x.jar后本地测试该问题恢复。</p>
+
+<h3>错误3: 出现QName的LinkageError</h3>
+
+<p>这是错误2解决后，继续解析spring时出现的问题。</p>
+
+<ul>
+<li>原因分析</li>
+</ul>
+
+
+<p>这个问题和上面的差不多，太细就不深究了。</p>
+
+<ul>
+<li>此次采用的处理方式</li>
+</ul>
+
+
+<p>这种情况下，如果使用prefer-web-inf-classes为true，则需要排除存在QName的jar包并删除，但最后没有采用(改动太大，得不偿失)。<br/>
+所以这次重新设置了prefer-web-inf-classes为false，但仍然优先加载commons，如下:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+</span><span class='line'><span class="nt">&lt;weblogic-web-app&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;container-descriptor&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;prefer-web-inf-classes&gt;</span>false<span class="nt">&lt;/prefer-web-inf-classes&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;prefer-application-packages&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;package-name&gt;</span>org.apache.commons.*<span class="nt">&lt;/package-name&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/prefer-application-packages&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/container-descriptor&gt;</span>
+</span><span class='line'><span class="nt">&lt;/weblogic-web-app&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>修改后本地测试ok，但发布到生产仍然失败。</p>
+
+<h3>错误4: MemCachedClient获取key失败(序列化问题)</h3>
+
+<p>错误3处理后，发布到生产仍然出错，报错信息如下:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>18:44:57.337 [[ACTIVE] ExecuteThread: &#39;0&#39; for queue: &#39;weblogic.kernel.Default (self-tuning)&#39;] ERROR com.danga.MemCached.MemCachedClient - ++++ exception thrown while trying to get object from cache for key: init_error_key_0098
+</span><span class='line'>18:44:57.351 [[ACTIVE] ExecuteThread: &#39;0&#39; for queue: &#39;weblogic.kernel.Default (self-tuning)&#39;] ERROR com.danga.MemCached.MemCachedClient - com.xxx.hnxx.mybatis.entity.PlaterrorCodeBean
+</span><span class='line'>java.io.IOException: com.xxx.hnxx.mybatis.entity.PlaterrorCodeBean
+</span><span class='line'>  at com.schooner.MemCached.ObjectTransCoder.decode(Unknown Source) ~[MemCached-2.6.6.jar:na]
+</span><span class='line'>  at com.schooner.MemCached.AscIIClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
+</span><span class='line'>  at com.schooner.MemCached.AscIIClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
+</span><span class='line'>  at com.schooner.MemCached.AscIIClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
+</span><span class='line'>  at com.danga.MemCached.MemCachedClient.get(Unknown Source) [MemCached-2.6.6.jar:na]
+</span><span class='line'>  at com.xxx.hnxx.cache.mencached.MemcacheManagerClient.get(MemcacheManagerClient.java:162) [MemcacheManagerClient.class:na]
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>上面的错误信息表示获取init_error_key_0098这个可以的时候失败，实际上这个key是在应用启动的时候就塞进去的。</p>
+
+<ul>
+<li>原因分析</li>
+</ul>
+
+
+<p>这里有很多意想不到的事情，所以详细解释一下。</p>
+
+<p>首先，这个出现了IOException让人联想到是否memcached服务器连接的问题。<br/>
+实际上是因为库在实现java对象放入memcached的时候，有一个序列化/反序列化的过程(就是java自带的那个)，在反序列化的时候找不到类会出现ClassNotFoundException，然后库将错误信息(就是一个类名)取出重新包装为IOException。<br/>
+所以，这实际上是一个类找不到的问题。</p>
+
+<p>再者，这个问题一开始在家里的weblogic没法重现。后来我重新检查了生产上weblogic的启动日志才发现了一些差异。<br/>
+关键信息如下所示，生产上的weblogic在domain的lib目录也是有jar包的，而家里的是没有的。尝试修改把jar包也拷贝一份，果然重现。</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>&lt;2015-10-14 下午06时44分36秒 CST&gt; &lt;Notice&gt; &lt;WebLogicServer&gt; &lt;BEA-000395&gt; &lt;Following extensions directory contents added to the end of the classpath:/weblogic/bea/user_projects/domains/PLATFORM_DOM/lib/MemCached-2.6.6.jar:/weblogic/bea/user_projects/domains/PLATFORM_DOM/lib/MyXMLSerializer-1.0.0.jar...
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>最后，这个问题就好解释多了。</p>
+
+<ol>
+<li>需要序列化/反序列化的类是在com.huawei下面的，这部分类指在web应用中存在。在system classloader是找不到的。</li>
+<li>序列化/反序列化时候，都是由web应用中的类，调用memcached库去实现的(虽然web应用中也有，但是根据prefer-web-inf-classes设置，加载的是domain中lib目录的)</li>
+<li><p>序列化只是没什么特别。但是反序列化需要加载类，很明显system classloader(memcached库的classloader)是加载不到web应用中的类的。</p></li>
+<li><p>此次采用的处理方式</p></li>
+</ol>
+
+
+<p>有好几种方式，都列举一下:</p>
+
+<ol>
+<li>删除domain中的jar包，这样就会加载到web应用中的类，让库和需要序列化的类都有web classloader加载</li>
+<li>让库也由web优先加载，如下所示</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="cp">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;</span>
+</span><span class='line'><span class="nt">&lt;weblogic-web-app&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;container-descriptor&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;prefer-web-inf-classes&gt;</span>false<span class="nt">&lt;/prefer-web-inf-classes&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;prefer-application-packages&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;package-name&gt;</span>org.apache.commons.*<span class="nt">&lt;/package-name&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;package-name&gt;</span>com.danga.*<span class="nt">&lt;/package-name&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;package-name&gt;</span>com.schooner.*<span class="nt">&lt;/package-name&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/prefer-application-packages&gt;</span>
+</span><span class='line'>  <span class="nt">&lt;/container-descriptor&gt;</span>
+</span><span class='line'><span class="nt">&lt;/weblogic-web-app&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ol>
+<li>指定memcached库进行反序列化时的classloader，如下所示:</li>
+</ol>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'>    <span class="n">ClassLoader</span> <span class="n">classLoader</span> <span class="o">=</span> <span class="n">Thread</span><span class="o">.</span><span class="na">currentThread</span><span class="o">().</span><span class="na">getContextClassLoader</span><span class="o">();</span>
+</span><span class='line'>    <span class="c1">// MemCachedClient实例化时，会持有SockIOPool.getInstance()单利的引用</span>
+</span><span class='line'>    <span class="n">cachedClient</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MemCachedClient</span><span class="o">((</span><span class="n">String</span><span class="o">)</span><span class="kc">null</span><span class="o">,</span> <span class="kc">true</span><span class="o">,</span> <span class="kc">false</span><span class="o">,</span> <span class="n">classLoader</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>个人推荐的优先级是2 - 3 - 1, 尽量做到容器无关，并少动全局的东西。<strong>由于目前生产上的weblogic版本已经回退，待后续上生产验证。</strong></p>
+
+<h2>weblogic的类加载器介绍</h2>
+
+<ul>
+<li>整体的类加载器层次如下(只关注war部分)，并采用标准的双亲委托加载机制</li>
+</ul>
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">WebLogic</span> <span class="n">Server</span> <span class="n">System</span> <span class="nf">classloader</span> <span class="o">(</span><span class="n">classpath</span><span class="err">、</span><span class="o">&lt;</span><span class="n">domain</span><span class="o">&gt;/</span><span class="n">lib</span><span class="o">)</span>
+</span><span class='line'><span class="n">Filtering</span> <span class="nf">classloader</span> <span class="o">(</span><span class="err">空</span><span class="o">)</span>
+</span><span class='line'><span class="n">Application</span> <span class="nf">classloader</span> <span class="o">(</span><span class="n">EJB</span> <span class="n">JARs</span><span class="err">、</span><span class="n">APP</span><span class="o">-</span><span class="n">INF</span><span class="o">/</span><span class="n">lib</span><span class="err">、</span><span class="n">APP</span><span class="o">-</span><span class="n">INF</span><span class="o">/</span><span class="n">classes</span><span class="err">、</span><span class="n">Manifest</span> <span class="n">Class</span><span class="o">-</span><span class="n">Path</span> <span class="n">in</span> <span class="n">EJB</span> <span class="n">JARs</span><span class="o">)</span>
+</span><span class='line'><span class="n">Web</span> <span class="n">application</span> <span class="nf">classloader</span> <span class="o">(</span><span class="n">WAR</span><span class="err">、</span><span class="n">Manifest</span> <span class="n">Class</span><span class="o">-</span><span class="n">Path</span> <span class="n">in</span> <span class="n">WAR</span><span class="o">)</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>Web application classloader可以通过weblogic.xml中的prefer-web-inf-classes优先加载war中的类，找不到才向上请求</li>
+<li>Filtering classloader并不会加载任何类，而是起到控制类加载优先级的作用。通过配置<prefer-application-packages>可以限制对于指定的类不再向上请求，也就是限制范围内加载</li>
+<li>配置prefer-application-packages/prefer-application-resources的话，prefer-web-inf-classes必须配置为false</li>
+<li>资源(resource)的加载顺序，在开启Filtering之后，顺序为App - Web - System(App、Web仍然是符合双亲委托的)</li>
+</ul>
+
+
+<h2>参考材料</h2>
+
+<ul>
+<li>http://docs.oracle.com/cd/E23943_01/web.1111/e13712/weblogic_xml.htm#WBAPP599</li>
+<li>http://docs.oracle.com/cd/E12839_01/web.1111/e13706/classloading.htm#WLPRG284</li>
+<li>http://tobato.iteye.com/blog/1845969</li>
+<li>http://tobato.iteye.com/blog/1483020</li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1153,105 +1443,6 @@ XX设计模式不要硬套，从过程式演变出来更加自然(经验性的�
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20150114_java-charset-problem.html">Java字符编码问题</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2015-01-14T00:00:00+08:00" pubdate data-updated="true">Jan 14<span>th</span>, 2015</time>
-        
-         | <a href="/blog/20150114_java-charset-problem.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>1.假设文件用UTF-8保存了中文&#8221;操作计算机&#8221;，然后使用GBK编码进行读取?</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">String</span> <span class="n">str</span> <span class="o">=</span> <span class="n">FileUtils</span><span class="o">.</span><span class="na">readFileToString</span><span class="o">(</span><span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="s">&quot;/myfile&quot;</span><span class="o">),</span> <span class="s">&quot;GBK&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">str</span><span class="o">);</span>
-</span><span class='line'><span class="n">str</span> <span class="o">=</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="n">str</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;GBK&quot;</span><span class="o">),</span> <span class="s">&quot;UTF-8&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">str</span><span class="o">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>可以发现，后续转成UTF-8仍然有部分乱码，如果保存的内容是&#8221;操作计算&#8221;就不会乱码。为什么?</p>
-
-<p>2.继续上述问题，如果使用ISO-8859-1进行读取?</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">String</span> <span class="n">str</span> <span class="o">=</span> <span class="n">FileUtils</span><span class="o">.</span><span class="na">readFileToString</span><span class="o">(</span><span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="s">&quot;/myfile&quot;</span><span class="o">),</span> <span class="s">&quot;ISO-8859-1&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">str</span><span class="o">);</span>
-</span><span class='line'><span class="n">str</span> <span class="o">=</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="n">str</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;ISO-8859-1&quot;</span><span class="o">),</span> <span class="s">&quot;UTF-8&quot;</span><span class="o">);</span>
-</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">str</span><span class="o">);</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>可以发现，可以发现无论是&#8221;操作计算机&#8221;还是&#8221;操作计算&#8221;、&#8221;操 作计算&#8221;，都不会乱码。为什么?</p>
-
-<p>3.如果文件采用GBK编码保存中文，但是使用UTF-8读取，就会发现怎么转都是乱码? 为什么?</p>
-
-<p>4.假设代码如下，为什么前面3行都是输出乱码?</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;123你&quot;</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;ISO-8859-1&quot;</span><span class="o">),</span> <span class="s">&quot;ISO-8859-1&quot;</span><span class="o">));</span>
-</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;123你&quot;</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;ISO-8859-1&quot;</span><span class="o">),</span> <span class="s">&quot;GBK&quot;</span><span class="o">));</span>
-</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;123你&quot;</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;ISO-8859-1&quot;</span><span class="o">),</span> <span class="s">&quot;UTF-8&quot;</span><span class="o">));</span>
-</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;123你&quot;</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;GBK&quot;</span><span class="o">),</span> <span class="s">&quot;GBK&quot;</span><span class="o">));</span>
-</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;123你&quot;</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;UTF-8&quot;</span><span class="o">),</span> <span class="s">&quot;UTF-8&quot;</span><span class="o">));</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>5.请思考，下面的同样掺和了ISO-8859-1，为什么却能正常?</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;123你&quot;</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;GBK&quot;</span><span class="o">),</span> <span class="s">&quot;ISO-8859-1&quot;</span><span class="o">)</span>
-</span><span class='line'>        <span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;ISO-8859-1&quot;</span><span class="o">),</span> <span class="s">&quot;GBK&quot;</span><span class="o">));</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>6.假设使用http发送xml，那么xml报文采用何种编码发送和xml的编码头部指定的编码有什么关系?</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">&lt;?</span><span class="n">xml</span> <span class="n">version</span><span class="o">=</span><span class="s">&quot;1.0&quot;</span> <span class="n">encoding</span><span class="o">=</span><span class="s">&quot;GBK&quot;</span> <span class="o">?&gt;</span>
-</span></code></pre></td></tr></table></div></figure>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/4/">&larr; Older</a>
@@ -1267,6 +1458,10 @@ XX设计模式不要硬套，从过程式演变出来更加自然(经验性的�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160906_java-books.html">java相关技术书推荐</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160607_log4j-source-study.html">log4j源码心得</a>
@@ -1302,10 +1497,6 @@ XX设计模式不要硬套，从过程式演变出来更加自然(经验性的�
     
       <li class="post">
         <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
       </li>
     
   </ul>

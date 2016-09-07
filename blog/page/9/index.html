@@ -9,9 +9,9 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="这几天发烧很反复，反而有点时间用来整理一下思路。想了很多以前的事情，回忆的感觉是很复杂的。
-突然想写写接触的技术书，现在工作的时间占据了大多数，看书的时间并不多，
-但是每年看的书是有点越来越多的感觉，只是很少有特别深刻的，大概是因为平时的读书习惯就是不求甚解，又或者是这种方式很适合我。 C程序设计 &hellip;">
+  <meta name="description" content="DES是广泛使用的分组对称加密算法，它要求待加密数据要8位对齐，所以在数据不足8位时候会出现padding的情况，
+所以有可能因为padding不同，而出现加解密结果不一样，这种情况在异构系统间的数据通信特别容易出现，例如java和cpp系统之间的通信。
+如果在开发过程中， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +66,63 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130930_des.html">DES加解密总结</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-09-30T00:00:00+08:00" pubdate data-updated="true">Sep 30<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20130930_des.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>DES是广泛使用的分组对称加密算法，它要求待加密数据要8位对齐，所以在数据不足8位时候会出现padding的情况，
+所以有可能因为padding不同，而出现加解密结果不一样，这种情况在异构系统间的数据通信特别容易出现，例如java和cpp系统之间的通信。
+如果在开发过程中，遇到不同语言加解密结果不一样的情况，应该关注一下补齐方式。
+关于补齐方式，请参考http://en.wikipedia.org/wiki/Padding_%28cryptography%29</p>
+
+<p>先说说java这里，java api已经集成了DES加解密算法，如果不指定补齐方式的话，默认的补齐方式是使用PKCS5Padding，
+这种情况下，长度不足8字节的部分，填充“0x01”—“0x08”，如不
+足1字节，则填充1个“0x01”，如不足2字节，则填充2个“0x02”，以此类推。更具
+体的描述，参考<a href="http://www.herongyang.com/Cryptography/DES-JDK-What-Is-PKCS5Padding.html">What Is PKCS5Padding?</a>
+如果我们指定补齐方式，如使用DES/ECB/NoPadding的话(其中ECB是加密的模式，也是默认的加密方式)，就需要自己手动补齐，例如补空格字符。
+现在的代码为了和后台的加解密结果一致，采用的是手动补齐的方式，即NoPadding方式。</p>
+
+<p>如果cpp实现的padding方式和java的不一致，就可能导致加解密失败。在我们的系统里边，cpp实现的padding是补\0的。
+这个字符在显示的时候就直接被当成结束符了，无需特殊处理。所以，如果使用java加密，cpp解密的话，
+java这边也要使用补\0的做法，如果使用java解密的话，就只能使用trim进行处理了。</p>
+
+<p>以我们这边使用的两个DES相关的接口为例，用户鉴权接口在配置里边有使用trim进行处理，而wlan密码认证接口没有使用trim处理。
+因此按现在使用补空格的方法，在用户鉴权接口是能成功的，但在wlan密码认证接口里边是会导致认证失败的。</p>
+
+<p>如果需要更多关于加密补齐的资料，可以参考<a href="http://www.di-mgt.com.au/cryptopad.html">Using Padding in Encryption</a></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -1044,188 +1101,6 @@ redis的所有功能就是将数据以其固有的几种结构保存，并提供
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20130821_java-hell-stream-close.html">从流关闭说起</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-08-21T00:00:00+08:00" pubdate data-updated="true">Aug 21<span>st</span>, 2013</time>
-        
-         | <a href="/blog/20130821_java-hell-stream-close.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>基本原则: 谁生产谁销毁</h3>
-
-<p>这个是用来解决责任权的问题，例如你的方法接收一个InputStream作为参数，通常就不应该在方法内去关闭它，而由客户端代码去处理。如果要关闭，通常应该在方法签名上明确说明，具体样例参考commons-io的IOUtils类。</p>
-
-<p>还有另外一个例子，就是经常使用的Servlet的输入输出流，根据这个原则，也是不应该在代码中进行关闭的，这个工作是由Web容器负责的。</p>
-
-<h3>关闭的是什么?</h3>
-
-<p>java本身是带GC的，所以对象在消除引用之后，按正常是能够被回收的，那么为什么会有关闭操作?</p>
-
-<p>这是为了回收系统资源，主要是端口(网络IO),文件句柄(输入输出)等，通常涉及的场景也是操作文件，网络操作、数据库应用等。对于类unix系统，所有东西都是抽象成文件的，所以可以通过lsof来观察。</p>
-
-<p>为了更详细的说明这点，我们可以测试一下下面的代码:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Hello</span> <span class="o">{</span>
-</span><span class='line'>    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
-</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
-</span><span class='line'>            <span class="n">FileInputStream</span> <span class="n">is</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FileInputStream</span><span class="o">(</span><span class="s">&quot;/tmp/data/data&quot;</span><span class="o">+</span><span class="n">i</span><span class="o">);</span>
-</span><span class='line'>            <span class="kt">byte</span><span class="o">[]</span> <span class="n">bs</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="mi">512</span><span class="o">];</span>
-</span><span class='line'>            <span class="kt">int</span> <span class="n">len</span><span class="o">;</span>
-</span><span class='line'>            <span class="k">while</span> <span class="o">((</span><span class="n">len</span> <span class="o">=</span> <span class="n">is</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">bs</span><span class="o">))</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="o">)</span> <span class="o">;</span>
-</span><span class='line'>            <span class="n">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="mi">1000L</span><span class="o">);</span>
-</span><span class='line'>        <span class="o">}</span>
-</span><span class='line'>        <span class="n">Thread</span><span class="o">.</span><span class="na">sleep</span><span class="o">(</span><span class="mi">10000L</span><span class="o">);</span>
-</span><span class='line'>    <span class="o">}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>运行之后，通过losf或进程目录查看相关的文件句柄数量是不断增长的:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='bash'><span class='line'>lsof -p 25945 |grep /tmp/data | wc -l
-</span><span class='line'>88
-</span><span class='line'>
-</span><span class='line'>ls  /proc/25945/fd | wc -l
-</span><span class='line'>93
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>如果有关闭操作的话，就会发现打开文件数一直都处于很低的位置。如果持续出现未关闭的情况，积累到一定程度就可能超过系统限制，出现too many open files的错误。</p>
-
-<h3>如何确保关闭</h3>
-
-<p>关闭通常是调用close()方法来实现的，并且需要在finally来进行处理。另外，我们经常会遇到多个资源的关闭情况，因为IO库是采用修饰器模式的，所以基本原则是先关闭外层对象，再关闭内层对象，每个close调用都需要处理异常情况，例如:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">InputStream</span> <span class="n">is</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'><span class="n">OutputStream</span> <span class="n">os</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
-</span><span class='line'><span class="k">try</span><span class="o">{</span>
-</span><span class='line'>   <span class="c1">// ...</span>
-</span><span class='line'><span class="o">}</span>
-</span><span class='line'><span class="k">finally</span><span class="o">{</span>
-</span><span class='line'>  <span class="k">if</span><span class="o">(</span><span class="n">is</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
-</span><span class='line'>     <span class="k">try</span><span class="o">{</span>
-</span><span class='line'>       <span class="n">is</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
-</span><span class='line'>     <span class="o">}</span>
-</span><span class='line'>     <span class="k">catch</span><span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">){}</span>
-</span><span class='line'>
-</span><span class='line'>  <span class="k">if</span><span class="o">(</span><span class="n">os</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
-</span><span class='line'>     <span class="k">try</span><span class="o">{</span>
-</span><span class='line'>       <span class="n">os</span><span class="o">.</span><span class="na">close</span><span class="o">()</span>
-</span><span class='line'>     <span class="o">}</span>
-</span><span class='line'>     <span class="k">catch</span><span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">){}</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<h3>实践</h3>
-
-<ul>
-<li>上面的关闭处理的确是比较繁琐的，可以考虑进行封装或者直接使用IOUtils.closeQuietly方法，节约不少代码行。</li>
-<li>自从JDK5之后，需要进行关闭处理的对象可以考虑实现java.io.Closeable接口。这个可以让资源关闭使用同一套代码。</li>
-</ul>
-
-
-<h3>JDK7改进及其他思路</h3>
-
-<p>在JDK7里，你只需要将资源定义在try()里，Java7就会在readLine抛异常时，自动关闭资源。
-但是资源类必须实现java.lang.AutoCloseable接口，同时支持管理多个资源,释放次序与声明次序相反。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="k">try</span> <span class="o">(</span><span class="n">BufferedReader</span> <span class="n">br</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BufferedReader</span><span class="o">(</span><span class="k">new</span> <span class="n">FileReader</span><span class="o">(</span><span class="n">path</span><span class="o">))</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">return</span> <span class="n">br</span><span class="o">.</span><span class="na">readLine</span><span class="o">();</span>
-</span><span class='line'><span class="o">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>虽然感觉总是很繁琐，语法糖味道重，但比以前倒是进步不少了。
-不过我们还是来看看Go中的做法，它提供了defer操作，用于在脱离方法作用域的时候自动调用，有点析构的味道。
-看下面的示例:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
-</span><span class='line'>    <span class="nx">files</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nx">Open</span><span class="p">(</span><span class="s">&quot;testqq.txt&quot;</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-</span><span class='line'>        <span class="nx">fmt</span><span class="p">.</span><span class="nx">Printf</span><span class="p">(</span><span class="s">&quot;Error is:%s&quot;</span><span class="p">,</span> <span class="s">&quot;Game Over!&quot;</span><span class="p">)</span>
-</span><span class='line'>        <span class="k">return</span>
-</span><span class='line'>    <span class="p">}</span>
-</span><span class='line'>    <span class="k">defer</span> <span class="nx">files</span><span class="p">.</span><span class="nx">Close</span><span class="p">()</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/10/">&larr; Older</a>
@@ -1241,6 +1116,10 @@ redis的所有功能就是将数据以其固有的几种结构保存，并提供
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160906_java-books.html">java相关技术书推荐</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160607_log4j-source-study.html">log4j源码心得</a>
@@ -1276,10 +1155,6 @@ redis的所有功能就是将数据以其固有的几种结构保存，并提供
     
       <li class="post">
         <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
       </li>
     
   </ul>

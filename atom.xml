@@ -4,7 +4,7 @@
   <title><![CDATA[小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-06-23T13:28:42+08:00</updated>
+  <updated>2016-09-07T22:31:22+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -12,6 +12,89 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[java相关技术书推荐]]></title>
+    <link href="http://mccxj.github.com/blog/20160906_java-books.html"/>
+    <updated>2016-09-06T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/java-books</id>
+    <content type="html"><![CDATA[<p>有个同事叫我推荐点Java书籍，仅供参考.</p>
+
+<h2>基础入门</h2>
+
+<ul>
+<li>Java编程思想 不推荐。要入门随便找本书就行了。</li>
+<li>effective java 属于惯用法类，属于学习语法之后优先应该阅读的，适合有一定java基础的进阶，难度中级。</li>
+</ul>
+
+
+<h2>编码规范</h2>
+
+<ul>
+<li>重构  学习优秀代码的基本技巧，难度初级</li>
+<li>clean code 代码整洁之道 有中文版的，比上一本偏实战点，难度初中级</li>
+<li>重构与模式 结合重构理解模式，适合有重构基础和设计模式概念之后的学习，提高设计模式理解，难度中级</li>
+<li>修改代码的艺术 这是完全实战的重构技巧，需要有一定重构经验后学习，难度高级</li>
+</ul>
+
+
+<h2>java具体应用</h2>
+
+<ul>
+<li>深入理解Java虚拟机：JVM高级特性与最佳实践 国产书籍，科普 难度中级</li>
+<li>Java并发编程 Doug Lea大神的并发基础书，难度中级</li>
+<li>Java并发编程实战 一群并发大神写的书， 难度中高级</li>
+<li>Java性能优化权威指南 不知道翻译得怎样， 内容全面， 难度中级</li>
+</ul>
+
+
+<h2>web</h2>
+
+<ul>
+<li>JavaScript语言精粹 学习什么是好的javascript 难度初中级</li>
+<li>JavaScript高级程序设计 可当参考书 专业搞前端的应该都看过 难度中级</li>
+<li>HTTP权威指南 web开发进阶，参考书 难度初中级</li>
+</ul>
+
+
+<h2>软件行业，进入专业程序员，反复也读仍会有收获的经典</h2>
+
+<ul>
+<li>程序员修炼之道 : 从小工到专家 难度中级</li>
+<li>代码大全 很厚一本，内容也很全面，要坚持才能看完，可当参考书 难度中级</li>
+</ul>
+
+
+<p>上面的都比较厚，也可以考虑程序员的思维修炼、卓有成效的程序员、高效程序员的45个习惯等比较小篇幅的书</p>
+
+<h2>设计、架构</h2>
+
+<ul>
+<li>设计模式 以GOF为经典，不过非java描述，难度中高级</li>
+<li>head first设计模式 java描述，适合经验不多的童鞋，难度初中级</li>
+<li>expert one-on-one J2EE Development without EJB 只有这本和流行框架直接关联，估计已经绝版了，在图书馆可以找到，是spring作者描述spring设计思路，难度中高级</li>
+<li>架构之美 专家的案例分析  难度高级</li>
+<li>企业应用架构模式 感觉一般，不过也可以看看， 难度中高级</li>
+</ul>
+
+
+<h2>杂书、理论化</h2>
+
+<ul>
+<li>UNIX编程艺术 其实是本计算机历史书</li>
+<li>深入理解计算机系统 如题，计算机系统底层原理，难度中高级</li>
+<li>计算机网络 黑色书皮，国外教材，每8年一新版，介绍整个计算机网络，难度中级</li>
+<li>算法 红色书皮，java描述，介绍基本算法，难度中级</li>
+<li>数据库系统导论 同理，介绍数据库原理 ，难度中级</li>
+<li>现代操作系统 介绍操作系统理论， 难度中级</li>
+<li>Linux系统管理技术手册 内容全面，扫盲书，， 难度中级</li>
+</ul>
+
+
+<p>上面的基本都是大部头，而且理论化，不是合适每个人
+那可以参考图解HTTP、图解TCP/IP、啊哈!算法、大话数据结构、Linux操作系统之奥秘等相对比较通俗的书.</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[log4j源码心得]]></title>
@@ -3122,31 +3205,6 @@ XX设计模式不要硬套，从过程式演变出来更加自然(经验性的�
 <li>commons-logging 日志包装实现，在开源项目中使用广泛，项目中一般直接用log4j等。</li>
 </ul>
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[使用org.json库进行xml和json转换存在的问题]]></title>
-    <link href="http://mccxj.github.com/blog/20141126_org-json-and-xml.html"/>
-    <updated>2014-11-26T00:00:00+08:00</updated>
-    <id>http://mccxj.github.com/blog/org-json-and-xml</id>
-    <content type="html"><![CDATA[<p>org.json库中提供一个xml和json进行转换的工具类，XML.java</p>
-
-<p>使用方式如下：
-* xmlstr = XML.toString(jsonstr)
-* jsonstr = XML.toJSONObject(xmlstr).toString()</p>
-
-<p>中间层原有代码使用这种方式进行格式转换，不过存在一些问题：
-* json转换为xml的时候，对带content字段的节点，是直接生成文本，而不是<content>xx</content>
-* xml转换为json的时候，会对指为整形(还有true/false/null等)的字符串尝试进行转换，变成原生类型</p>
-
-<p>为了避免这两个问题，对org.json库的XML.java进行了一些修改:
-* 去掉content字段的特殊处理
-* 去掉整形字符串尝试转换的逻辑</p>
-
-<p>见https://github.com/mccxj/JSON-java</p>
-
-<p>经验教训: 以后引用第三方库的时候，要小心呀，避免触碰到一些特殊开关。</p>
 ]]></content>
   </entry>
   

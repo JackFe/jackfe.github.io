@@ -4,7 +4,7 @@
   <title><![CDATA[Category: jekyll | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/jekyll/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-06-23T13:28:42+08:00</updated>
+  <updated>2016-09-07T22:31:22+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -128,6 +128,10 @@ git commit -m <span class="s2">&quot;add new post&quot;</span>&lt;/p&gt;
 
 <blockquote><p>SET LANG=zh_CN.UTF-8<br/>
 SET LC_ALL=zh_CN.UTF-8</p></blockquote>
+
+<p>最近发现一个新的方法</p>
+
+<blockquote><p>chcp 65001</p></blockquote>
 
 <h3>tags不能正常发布</h3>
 

@@ -9,9 +9,9 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="这是刚到公司时写的~ 有时候真是不看不知道，这样一个每月数亿业务量，数十亿营收的大型系统，原来也就是这样的质量。
-我们可以想象这种系统一开始都是美好的，只是渐渐的变味了。就拿我们这边java的来说，原来也应该是有公用代码库的，只是那么久每人去维护，项目赶工，
-自立山寨的情况多了， &hellip;">
+  <meta name="description" content="这是刚到公司时写的~ Java 提供了两类主要的异常：runtime exception和checked exception。
+所有的checked exception是从java.lang.Exception类衍生出来的，
+而runtime exception则是从java.lang. &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +66,72 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20121202_framework-improve-exception-handle.html">从某维护系统的架构改造谈起–异常处理(旧)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-12-02T00:00:00+08:00" pubdate data-updated="true">Dec 2<span>nd</span>, 2012</time>
+        
+         | <a href="/blog/20121202_framework-improve-exception-handle.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>这是刚到公司时写的~</p>
+
+<p>Java 提供了两类主要的异常：runtime exception和checked exception。
+所有的checked exception是从java.lang.Exception类衍生出来的，
+而runtime exception则是从java.lang.RuntimeException或java.lang.Error类衍生出来的。</p>
+
+<p>如果你希望强制你的类调用者来处理异常，那么就用Checked Exception;
+如果你不希望强制你的类调用者来处理异常，就用UnChecked。
+那么究竟强制还是不强制，权衡的依据在于从业务系统的逻辑规则来考虑，
+如果业务规则定义了调用者应该处理，那么就必须Checked，如果业务规则没有定义，就应该用UnChecked。</p>
+
+<p>至于类调用者catch到NoSuchUserException和PasswordNotMatchException怎么处理，也要根据他自己具体的业务逻辑了。
+或者他有能力也应该处理，就自己处理掉了；或者他不关心这个异常，也不希望上面的类调用者关心，就转化为RuntimeException；
+或者他希望上面的类调用者处理，而不是自己处理，就转化为本层的异常继续往上抛出来。
+根据上面的一些观点在现有的系统上建立基于三层架构的异常处理模型，主要有以下做法：</p>
+
+<ul>
+<li>Dao层次关注底层异常，当很多SQLException无法恢复，转换成统一的RuntimeException交给Service处理</li>
+<li>Service层关心某些有业务含义的业务处理，并转化成相应的业务异常(同样也是RuntimeException)交给Action处理</li>
+<li>Action层可能对某些特定的业务异常感兴趣，感兴趣就处理(或许尝试修复)，不感兴趣就交给统一业务异常处理器处理</li>
+<li>统一业务异常处理器会记录exception log，并负责相应的错误展现页面</li>
+</ul>
+
+
+<p>实现思路(待续)：
+* exception util:提供一些异常处理的工具,例如转换异常
+* exception wrapper:作为统一的异常类，可以用来保存原始的exception信息
+* exception collector:可以保存多个exception信息的异常类，用于某些特殊场合
+* exception handler:用于处理exception的统一处理，主要是日志与错误页面</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -517,165 +583,6 @@ maven实战迷你书(http://www.infoq.com/cn/minibooks/maven-in-action)</p></li>
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20121130_ibatis-more-config.html">Ibatis进阶(旧)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-11-30T00:00:00+08:00" pubdate data-updated="true">Nov 30<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20121130_ibatis-more-config.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>Ibatis比较少人使用的配置语法</h2>
-
-<p>简单来说，ibatis3虽然没有ognl,不过也支持基本的表达式（看起来有点像el表达式的样子) 上次有个问题，说到两个表单数据(两个javabean)，入同一个表，传参就应该不成问题了</p>
-
-<h4>java代码1:</h4>
-
-<div class="highlight"><pre><code class="java">   <span class="n">Map</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">();</span>
-   <span class="n">ComplexBean</span> <span class="n">bean</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ComplexBean</span><span class="o">();</span>
-   <span class="n">bean</span><span class="o">.</span><span class="na">setMap</span><span class="o">(</span><span class="k">new</span> <span class="n">HashMap</span><span class="o">());</span>
-   <span class="n">bean</span><span class="o">.</span><span class="na">getMap</span><span class="o">().</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;id&quot;</span><span class="o">,</span> <span class="k">new</span> <span class="n">Integer</span><span class="o">(</span><span class="mi">1</span><span class="o">));</span>
-   <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;bean&quot;</span><span class="o">,</span> <span class="n">bean</span><span class="o">);</span>
-   <span class="n">Account</span> <span class="n">account</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Account</span><span class="o">();</span>
-   <span class="n">account</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
-   <span class="n">Account</span> <span class="n">anotherAccount</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Account</span><span class="o">();</span>
-   <span class="n">anotherAccount</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">3</span><span class="o">);</span>
-   <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;accounts&quot;</span><span class="o">,</span> <span class="k">new</span> <span class="n">Account</span><span class="o">[]</span> <span class="o">{</span><span class="n">account</span><span class="o">,</span> <span class="n">anotherAccount</span><span class="o">});</span>
-   <span class="n">Integer</span> <span class="n">id</span> <span class="o">=</span> <span class="o">(</span><span class="n">Integer</span><span class="o">)</span> <span class="n">sqlMap</span><span class="o">.</span><span class="na">queryForObject</span><span class="o">(</span><span class="s">&quot;mapBeanMap&quot;</span><span class="o">,</span> <span class="n">map</span><span class="o">);</span>
-</code></pre></div>
-
-
-<h4>ibatis配置1:</h4>
-
-<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;select</span> <span class="na">id=</span><span class="s">&quot;mapBeanMap&quot;</span>
-   <span class="na">parameterClass=</span><span class="s">&quot;map&quot;</span>
-   <span class="na">resultClass=</span><span class="s">&quot;int&quot;</span> <span class="nt">&gt;</span>
-   select count(ACC_ID) from Account where ACC_ID in (#bean.map.id#,#accounts[0].id#,#accounts[1].id#)
- <span class="nt">&lt;/select&gt;</span>
-</code></pre></div>
-
-
-<h4>java代码2:</h4>
-
-<div class="highlight"><pre><code class="java">   <span class="n">Map</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">();</span>
-   <span class="n">ComplexBean</span> <span class="n">bean</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ComplexBean</span><span class="o">();</span>
-   <span class="n">bean</span><span class="o">.</span><span class="na">setMap</span><span class="o">(</span><span class="k">new</span> <span class="n">HashMap</span><span class="o">());</span>
-   <span class="n">Account</span> <span class="n">account</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Account</span><span class="o">();</span>
-   <span class="n">account</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
-   <span class="n">Account</span> <span class="n">anotherAccount</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Account</span><span class="o">();</span>
-   <span class="n">anotherAccount</span><span class="o">.</span><span class="na">setId</span><span class="o">(</span><span class="mi">3</span><span class="o">);</span>
-   <span class="n">bean</span><span class="o">.</span><span class="na">getMap</span><span class="o">().</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;accounts&quot;</span><span class="o">,</span> <span class="k">new</span> <span class="n">Account</span><span class="o">[]</span> <span class="o">{</span><span class="n">account</span><span class="o">,</span> <span class="n">anotherAccount</span><span class="o">});</span>
-   <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">&quot;bean&quot;</span><span class="o">,</span> <span class="n">bean</span><span class="o">);</span>
-</code></pre></div>
-
-
-<h4>ibatis配置2:</h4>
-
-<div class="highlight"><pre><code class="xml"> <span class="nt">&lt;select</span> <span class="na">id=</span><span class="s">&quot;mapBeanMap2&quot;</span>
-   <span class="na">parameterClass=</span><span class="s">&quot;map&quot;</span>
-   <span class="na">resultClass=</span><span class="s">&quot;int&quot;</span> <span class="nt">&gt;</span>
-   select count(ACC_ID) from Account where ACC_ID in
-   <span class="nt">&lt;iterate</span> <span class="na">close=</span><span class="s">&quot;)&quot;</span> <span class="na">open=</span><span class="s">&quot;(&quot;</span> <span class="na">conjunction=</span><span class="s">&quot;,&quot;</span> <span class="na">property=</span><span class="s">&quot;bean.map.accounts&quot;</span><span class="nt">&gt;</span>
-     #bean.map.accounts[].id#
-   <span class="nt">&lt;/iterate&gt;</span>
- <span class="nt">&lt;/select&gt;</span>
-</code></pre></div>
-
-
-<h2>ibatis与泛型</h2>
-
-<p>当使用复杂配置并且参数带有泛型的时候，使用比较标签有可能导致如下错误:There is no READABLE property named ‘XXX’ in class ‘java.lang.Object’.这是因为进行比较的时候，ibatis是通过反射获取类型而不是先计算值的,这样泛型的时候会获取到Object类而不能得到真实的类型,自己简单打个补丁先:</p>
-
-<div class="highlight"><pre><code class="diff"><span class="gh">Index: src/com/ibatis/sqlmap/engine/mapping/sql/dynamic/elements/ConditionalTagHandler.java</span>
-<span class="gh">===================================================================</span>
-<span class="gd">--- src/com/ibatis/sqlmap/engine/mapping/sql/dynamic/elements/ConditionalTagHandler.java (revision 1079874)</span>
-<span class="gi">+++ src/com/ibatis/sqlmap/engine/mapping/sql/dynamic/elements/ConditionalTagHandler.java (working copy)</span>
-<span class="gu">@@ -72,14 +72,13 @@</span>
-
-     if (prop != null) {
-       value1 = PROBE.getObject(parameterObject, prop);
-<span class="gd">-      type = PROBE.getPropertyTypeForGetter(parameterObject, prop);</span>
-     } else {
-       value1 = parameterObject;
-<span class="gd">-      if (value1 != null) {</span>
-<span class="gd">-        type = parameterObject.getClass();</span>
-<span class="gd">-      } else {</span>
-<span class="gd">-        type = Object.class;</span>
-<span class="gd">-      }</span>
-<span class="gi">+    }</span>
-<span class="gi">+    if (value1 != null) {</span>
-<span class="gi">+     type = value1.getClass();</span>
-<span class="gi">+    } else {</span>
-<span class="gi">+     type = Object.class;</span>
-     }
-     if (comparePropertyName != null) {
-       Object value2 = PROBE.getObject(parameterObject, comparePropertyName);
-</code></pre></div>
-
-
-<h2>关于inlineParameterMap</h2>
-
-<p>例如#name#(标准配置),#name:NUMBER#(以:分割),#myVar:javaType=int#都是有效的
-其中以:分割的有两种方式，#name:jdbcTypeName#,#name:jdbcTypeName:nullvalue#(如果后面还有则会被加到nullvalue上去) 这是老配置方法，个人不推荐使用。
-最后一种是新的配置方式,可以带上javaType,jdbcType,mode,nullValue,numericScale,handler等参数(这个文档有详细描述)</p>
-
-<h2>jdbcType,javaType和TypeHandler</h2>
-
-<p>首先要说明一点的是,配置里边的jdbcType和javaType两个配置参数是为了生成TypeHandler(如果没有指定的话);
-查找typeHandler的内部结构是Map&lt;javaType, Map&lt;jdbcType, typeHandler&gt;&gt;,其中javaType是一个类,jdbcType是一个字符串;
-所以jdbcType其实和数据库的字段类型没什么关系,只要能找到相应的TypeHandler即可(当然通常都会对应上);
-typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择setString/setInt还是getString/getObject之类</p>
-
-<h2>只指定resultClass，没有resultMap</h2>
-
-<p>如果没有指定resultMap，ibatis会根据parameterClass生成一个AutoResultMap对象;
-对于AutoResultMap,里边的每个属性的映射对应的typeHandler是什么?</p>
-
-<table markdown="1" class="table">
-  <tr><td>resultClass</td><td>TypeHandler</td></tr>
-  <tr><td>Map</td><td>ObjectTypeHandler</td></tr>
-  <tr><td>原型类型</td><td>相应类对应的typeHandler(javaType=?,jdbcType=null)</td></tr>
-  <tr><td>Bean</td><td>会对实例变量名称进行大写并和ResultSetMetaData信息进行对比,最后生成typeHandler(javaType=?,jdbcType=null)</td></tr>
-</table>
-
-
-<p>所以使用parameterClass是map的时候，某些字段的处理可能会有点问题,例如oracle的NUMBER类型会被转成BigDecimal类;</p>
-
-<h2>只指定parameterClass，没有parameterMap</h2>
-
-<p>如果没有指定parameterMap，就会根据配置的sql解析inlineParameterMap;
-其中每个参数的TypeHandler如果没有指定，会根据参数的类型来寻找，例如#name,jdbcType=NUMBER# 会根据name计算后的类型来制定javaType
-这个typeHandler的好处可以对jdbc api友好，例如对于int默认会采用IntegerTypeHandler，这样会调用PreparedStatement#setInt, 而不是统统setString或者setObject。
-通常参数类型和jdbc类型不对应的时候，需要考虑设置typeHandler或者使用更强类型的Bean而不是统统使用map;</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/19/">&larr; Older</a>
@@ -691,6 +598,10 @@ typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160906_java-books.html">java相关技术书推荐</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160607_log4j-source-study.html">log4j源码心得</a>
@@ -726,10 +637,6 @@ typeHandler主要是做什么用的呢?无非就是使用jdbc api的时候选择
     
       <li class="post">
         <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
       </li>
     
   </ul>

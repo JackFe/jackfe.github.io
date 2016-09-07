@@ -9,14 +9,11 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="问题描述 1
+  <meta name="description" content="1.假设文件用UTF-8保存了中文&#8221;操作计算机&#8221;，然后使用GBK编码进行读取? 1
 2
 3
 4
-5
-6
-7
-String content = &quot;{\&quot;response_head\&quot;:{\&quot;menuid\&quot;:\&quot;xxx\&quot;,\&quot;process_code\&quot;:\&quot;xxx &hellip;">
+String str = FileUtils.readFileToString(new File(&quot;/myfile&quot;), &quot;GBK&quot;); &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -71,6 +68,105 @@ String content = &quot;{\&quot;response_head\&quot;:{\&quot;menuid\&quot;:\&quot
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20150114_java-charset-problem.html">Java字符编码问题</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2015-01-14T00:00:00+08:00" pubdate data-updated="true">Jan 14<span>th</span>, 2015</time>
+        
+         | <a href="/blog/20150114_java-charset-problem.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>1.假设文件用UTF-8保存了中文&#8221;操作计算机&#8221;，然后使用GBK编码进行读取?</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">String</span> <span class="n">str</span> <span class="o">=</span> <span class="n">FileUtils</span><span class="o">.</span><span class="na">readFileToString</span><span class="o">(</span><span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="s">&quot;/myfile&quot;</span><span class="o">),</span> <span class="s">&quot;GBK&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">str</span><span class="o">);</span>
+</span><span class='line'><span class="n">str</span> <span class="o">=</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="n">str</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;GBK&quot;</span><span class="o">),</span> <span class="s">&quot;UTF-8&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">str</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可以发现，后续转成UTF-8仍然有部分乱码，如果保存的内容是&#8221;操作计算&#8221;就不会乱码。为什么?</p>
+
+<p>2.继续上述问题，如果使用ISO-8859-1进行读取?</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">String</span> <span class="n">str</span> <span class="o">=</span> <span class="n">FileUtils</span><span class="o">.</span><span class="na">readFileToString</span><span class="o">(</span><span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="s">&quot;/myfile&quot;</span><span class="o">),</span> <span class="s">&quot;ISO-8859-1&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">str</span><span class="o">);</span>
+</span><span class='line'><span class="n">str</span> <span class="o">=</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="n">str</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;ISO-8859-1&quot;</span><span class="o">),</span> <span class="s">&quot;UTF-8&quot;</span><span class="o">);</span>
+</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">str</span><span class="o">);</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>可以发现，可以发现无论是&#8221;操作计算机&#8221;还是&#8221;操作计算&#8221;、&#8221;操 作计算&#8221;，都不会乱码。为什么?</p>
+
+<p>3.如果文件采用GBK编码保存中文，但是使用UTF-8读取，就会发现怎么转都是乱码? 为什么?</p>
+
+<p>4.假设代码如下，为什么前面3行都是输出乱码?</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;123你&quot;</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;ISO-8859-1&quot;</span><span class="o">),</span> <span class="s">&quot;ISO-8859-1&quot;</span><span class="o">));</span>
+</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;123你&quot;</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;ISO-8859-1&quot;</span><span class="o">),</span> <span class="s">&quot;GBK&quot;</span><span class="o">));</span>
+</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;123你&quot;</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;ISO-8859-1&quot;</span><span class="o">),</span> <span class="s">&quot;UTF-8&quot;</span><span class="o">));</span>
+</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;123你&quot;</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;GBK&quot;</span><span class="o">),</span> <span class="s">&quot;GBK&quot;</span><span class="o">));</span>
+</span><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;123你&quot;</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;UTF-8&quot;</span><span class="o">),</span> <span class="s">&quot;UTF-8&quot;</span><span class="o">));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>5.请思考，下面的同样掺和了ISO-8859-1，为什么却能正常?</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="s">&quot;123你&quot;</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;GBK&quot;</span><span class="o">),</span> <span class="s">&quot;ISO-8859-1&quot;</span><span class="o">)</span>
+</span><span class='line'>        <span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="s">&quot;ISO-8859-1&quot;</span><span class="o">),</span> <span class="s">&quot;GBK&quot;</span><span class="o">));</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>6.假设使用http发送xml，那么xml报文采用何种编码发送和xml的编码头部指定的编码有什么关系?</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="o">&lt;?</span><span class="n">xml</span> <span class="n">version</span><span class="o">=</span><span class="s">&quot;1.0&quot;</span> <span class="n">encoding</span><span class="o">=</span><span class="s">&quot;GBK&quot;</span> <span class="o">?&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -747,60 +843,6 @@ String content = &quot;{\&quot;response_head\&quot;:{\&quot;menuid\&quot;:\&quot
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20141126_org-json-and-xml.html">使用org.json库进行xml和json转换存在的问题</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-11-26T00:00:00+08:00" pubdate data-updated="true">Nov 26<span>th</span>, 2014</time>
-        
-         | <a href="/blog/20141126_org-json-and-xml.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>org.json库中提供一个xml和json进行转换的工具类，XML.java</p>
-
-<p>使用方式如下：
-* xmlstr = XML.toString(jsonstr)
-* jsonstr = XML.toJSONObject(xmlstr).toString()</p>
-
-<p>中间层原有代码使用这种方式进行格式转换，不过存在一些问题：
-* json转换为xml的时候，对带content字段的节点，是直接生成文本，而不是<content>xx</content>
-* xml转换为json的时候，会对指为整形(还有true/false/null等)的字符串尝试进行转换，变成原生类型</p>
-
-<p>为了避免这两个问题，对org.json库的XML.java进行了一些修改:
-* 去掉content字段的特殊处理
-* 去掉整形字符串尝试转换的逻辑</p>
-
-<p>见https://github.com/mccxj/JSON-java</p>
-
-<p>经验教训: 以后引用第三方库的时候，要小心呀，避免触碰到一些特殊开关。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/5/">&larr; Older</a>
@@ -816,6 +858,10 @@ String content = &quot;{\&quot;response_head\&quot;:{\&quot;menuid\&quot;:\&quot
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160906_java-books.html">java相关技术书推荐</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160607_log4j-source-study.html">log4j源码心得</a>
@@ -851,10 +897,6 @@ String content = &quot;{\&quot;response_head\&quot;:{\&quot;menuid\&quot;:\&quot
     
       <li class="post">
         <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20151023_weblogic-11g-classloader-prefer.html">weblogic 11g类加载问题总结</a>
       </li>
     
   </ul>
