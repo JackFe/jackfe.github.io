@@ -9,8 +9,9 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="备注: 示例中的代码并不是真实代码的完全拷贝 偶然的发现 今天好奇浏览了一下N项目的代码变更历史，发现有人提交了一段关于校验文件格式的代码。
-其中包括一段校验日期格式的java代码。代码是这样的： String validDateStr = // read from file lines &hellip;">
+  <meta name="description" content="备注: 示例中的代码并不是真实代码的完全拷贝 一段分批处理的逻辑 周六做code diff的时候发现B项目一段颇长的处理逻辑(40行左右)。处理流程是这样的，
+从页面上取到一批数据之后，用这批数据封装参数进行后台调用(远程调用)。为了避免数据调用超时，
+对这批数据进行分批多次调用。代码如下所示( &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +66,178 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20120729_improve-bitter-code-4.html">Improve Bitter Code: &#8216;不可避免&#8217;的重复</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-07-29T00:00:00+08:00" pubdate data-updated="true">Jul 29<span>th</span>, 2012</time>
+        
+         | <a href="/blog/20120729_improve-bitter-code-4.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><strong>备注: 示例中的代码并不是真实代码的完全拷贝</strong></p>
+
+<h3>一段分批处理的逻辑</h3>
+
+<p>周六做code diff的时候发现B项目一段颇长的处理逻辑(40行左右)。处理流程是这样的，
+从页面上取到一批数据之后，用这批数据封装参数进行后台调用(远程调用)。为了避免数据调用超时，
+对这批数据进行分批多次调用。代码如下所示(现实的代码比这个要复杂些，并且没有使用subList方法)：</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">List</span> <span class="n">batchdatas</span> <span class="o">=</span> <span class="o">...;</span>
+<span class="kt">int</span> <span class="n">batchsize</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span> <span class="c1">// load from parameter</span>
+
+<span class="kt">int</span> <span class="n">datasize</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+<span class="k">if</span><span class="o">(</span><span class="n">datasize</span> <span class="o">&gt;</span> <span class="n">batchsize</span><span class="o">){</span>
+    <span class="kt">int</span> <span class="n">batch</span> <span class="o">=</span> <span class="n">datasize</span> <span class="o">/</span> <span class="n">batchsize</span><span class="o">;</span>
+    <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">i</span><span class="o">&lt;</span><span class="n">batch</span><span class="o">;</span><span class="n">i</span><span class="o">++){</span>
+        <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+        <span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">batchsize</span><span class="o">*</span><span class="n">i</span><span class="o">,</span> <span class="n">batchsize</span><span class="o">*(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="o">));</span>
+        <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
+        <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kt">int</span> <span class="n">left</span> <span class="o">=</span> <span class="n">datasize</span> <span class="o">%</span> <span class="n">batchsize</span><span class="o">;</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">left</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">){</span>
+        <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+        <span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">batchsize</span><span class="o">*</span><span class="n">batch</span><span class="o">,</span> <span class="n">datasize</span><span class="o">);</span>
+        <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
+        <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="k">else</span> <span class="o">{</span>
+    <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+    <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdatas</span><span class="o">));</span>
+    <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>从代码的实现看，思路还是比较清晰的。如果不足一次，就一次提交。否则计算出一共要分多少次，
+然后逐次处理提交，最后还要判断是否还有剩余的，如果有就再处理一次。</p>
+
+<p>代码显现出来的问题也比较明显，就是远程调用的逻辑出现了重复。</p>
+
+<h3>算法小调整，避免重复</h3>
+
+<p>有没什么办法可以避免重复? 或许有些童鞋第一反应是给这几句代码抽取成小方法。
+不过这里有更好的办法，首先细想一下就会发现不足一次的判断(datasize > batchsize)不是必要的，
+如果计算批次而是计算每次的起始点和结束点，上面两个分支也可以合并一下。调整后代码如下：</p>
+
+<div class="highlight"><pre><code class="java"><span class="n">List</span> <span class="n">batchdatas</span> <span class="o">=</span> <span class="o">...;</span>
+<span class="kt">int</span> <span class="n">batchsize</span> <span class="o">=</span> <span class="mi">10</span><span class="o">;</span> <span class="c1">// load from parameter</span>
+
+<span class="kt">int</span> <span class="n">datasize</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+<span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">startidx</span><span class="o">=</span><span class="mi">0</span><span class="o">;</span><span class="n">startidx</span><span class="o">&lt;</span><span class="n">datasize</span><span class="o">;</span><span class="n">startidx</span><span class="o">+=</span><span class="n">batchsize</span><span class="o">){</span>
+    <span class="kt">int</span> <span class="n">endidx</span> <span class="o">=</span> <span class="o">(</span><span class="n">startidx</span><span class="o">+</span><span class="n">batchsize</span><span class="o">)</span> <span class="o">&gt;</span> <span class="n">datasize</span> <span class="o">?</span> <span class="n">datasize</span> <span class="o">:</span> <span class="o">(</span><span class="n">startidx</span><span class="o">+</span><span class="n">batchsize</span><span class="o">);</span>
+
+    <span class="n">List</span> <span class="n">inparams</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">();</span>
+    <span class="n">List</span> <span class="n">batchdata</span> <span class="o">=</span> <span class="n">batchdatas</span><span class="o">.</span><span class="na">subList</span><span class="o">(</span><span class="n">startidx</span><span class="o">,</span> <span class="n">endidx</span><span class="o">);</span>
+    <span class="n">inparams</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">CEntityList</span><span class="o">(</span><span class="n">batchdata</span><span class="o">));</span>
+    <span class="n">RemoteCall</span><span class="o">.</span><span class="na">commonInvoke</span><span class="o">(</span><span class="n">operator</span><span class="o">,</span> <span class="n">inparams</span><span class="o">,</span> <span class="s">&quot;CheckCmd&quot;</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre></div>
+
+
+<p>其中计算endidx使用了一个三元表达式，使用三元表达式用来替代一些简单的if-else语句是个实用的小技巧。
+代码量缩小为原来的三分之一，代码少了，维护量也轻松了。</p>
+
+<p>类似这样的代码也并不少见，例如计算总页数的分页逻辑有下面的写法</p>
+
+<div class="highlight"><pre><code class="java"><span class="c1">// 常用做法</span>
+<span class="kt">int</span> <span class="n">totalpage</span> <span class="o">=</span> <span class="n">totalsize</span> <span class="o">/</span> <span class="n">pagesize</span><span class="o">;</span>
+<span class="k">if</span><span class="o">(</span><span class="n">totalsize</span> <span class="o">%</span> <span class="n">pagesize</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">){</span>
+    <span class="n">totalpage</span><span class="o">++;</span>
+<span class="o">}</span>
+
+<span class="c1">// 另外一种写法</span>
+<span class="kt">int</span> <span class="n">totalpage</span> <span class="o">=</span> <span class="o">(</span><span class="n">totalsize</span> <span class="o">+</span> <span class="n">pagesize</span> <span class="o">-</span> <span class="mi">1</span><span class="o">)</span> <span class="o">/</span> <span class="n">pagesize</span><span class="o">;</span>
+</code></pre></div>
+
+
+<h3>基本功很重要</h3>
+
+<p>java是一门比较古板的语言，大多数情况下，写出来的代码也是大同小异的。
+同时，java相关框架又特别的多，很容易拣了芝麻丢了西瓜。
+以来面试的童鞋为例，连基本算法的时间复杂度都没弄清楚的人不在少数，所以
+在项目代码中，经常看到化简为繁的代码，现在也很习惯了。</p>
+
+<h2>&#8220;improve bitter code&#8221;系列文章:</h2>
+
+
+<ul>
+ 
+  
+  <li><a href="/blog/20120721_improve-bitter-code.html">2012-07-21 improve bitter code</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-1.html">2012-07-24 improve bitter code: 迷惑的boolean参数</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120724_improve-bitter-code-2.html">2012-07-24 improve bitter code: 更友好的链式写法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120728_improve-bitter-code-3.html">2012-07-28 improve bitter code: 看不懂的正则表达式</a></li>
+  
+ 
+  
+  <li>2012-07-29 improve bitter code: &#8216;不可避免&#8217;的重复</li>
+  
+ 
+  
+  <li><a href="/blog/20120729_improve-bitter-code-5.html">2012-07-29 improve bitter code: 拘泥于单出口方法</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120731_improve-bitter-code-6.html">2012-07-31 improve bitter code: 对付魔鬼数字</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120804_improve-bitter-code-7.html">2012-08-04 improve bitter code: 多掌握一门语言</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120807_improve-bitter-code-8.html">2012-08-07 improve bitter code: 判空的处理</a></li>
+  
+ 
+  
+  <li><a href="/blog/20120815_improve-bitter-code-9.html">2012-08-15 improve bitter code: 没有行为的封装</a></li>
+  
+
+</ul>
+
+
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -675,238 +848,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20120721_hello-erlang-4.html">Hello Erlang, Part 4</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-07-21T00:00:00+08:00" pubdate data-updated="true">Jul 21<span>st</span>, 2012</time>
-        
-         | <a href="/blog/20120721_hello-erlang-4.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h3>练习重点</h3>
-
-<p>列表解析和高阶函数是erlang的基本用法之一，熟练掌握还是很有必要的。
-作为一个阶段的学习总结，按照书上的一个练习题，尝试实现列表模块中的一些方法。</p>
-
-<h3>后续学习计划</h3>
-
-<p>再找时间总结一下位匹配用法，然后就开始客户端服务器编程模型，
-网络和分布式方面的内容。</p>
-
-<p>相关内容虽然都看过一下，但是没有敲过代码，感觉心里没底。还是那个硬道理：纸上得来终觉浅呀。</p>
-
-<h3>简单的测试用例</h3>
-
-<p>作为另外一个章节的内容，单元测试。我顺便实践一下erlang的单元测试框架eunit，
-里边使用了宏来作为assert语句(使用eclipse插件可以有很好的提示)，
-总的来说，xunit的基本风格都差不多，注意import eunit的包，方法名采用_test结束。
-执行的时候调用模块的test方法就可以了。我简单写了一些测试用例:</p>
-
-<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">myliststest</span><span class="p">).</span>
-<span class="p">-</span><span class="ni">include_lib</span><span class="p">(</span><span class="s">&quot;eunit/include/eunit.hrl&quot;</span><span class="p">).</span>
-<span class="p">-</span><span class="ni">import_all</span><span class="p">(</span><span class="n">mylists</span><span class="p">).</span>
-
-<span class="c">%% EUnit TestCase</span>
-
-<span class="c">%% all/2</span>
-<span class="nf">all_empty_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assert</span><span class="p">(</span><span class="nn">mylists</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">end</span><span class="p">,</span> <span class="p">[])).</span>
-<span class="nf">all_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertNot</span><span class="p">(</span><span class="nn">mylists</span><span class="p">:</span><span class="nf">all</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">10</span><span class="p">])).</span>
-
-<span class="c">%% any/2</span>
-<span class="nf">any_empty_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertNot</span><span class="p">(</span><span class="nn">mylists</span><span class="p">:</span><span class="nf">any</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">end</span><span class="p">,</span> <span class="p">[])).</span>
-<span class="nf">any_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assert</span><span class="p">(</span><span class="nn">mylists</span><span class="p">:</span><span class="nf">any</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">10</span><span class="p">])).</span>
-
-<span class="c">%% append/1</span>
-<span class="nf">append_1_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">append</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]])).</span>
-
-<span class="c">%% append/2</span>
-<span class="nf">append_2_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">(</span><span class="s">&quot;abcdef&quot;</span><span class="p">,</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">append</span><span class="p">(</span><span class="s">&quot;abc&quot;</span><span class="p">,</span> <span class="s">&quot;def&quot;</span><span class="p">)).</span>
-
-<span class="c">%% delete/2</span>
-<span class="nf">delete_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">delete</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])).</span>
-
-<span class="c">%% dropwhile/2</span>
-<span class="nf">dropwhile_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">dropwhile</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])).</span>
-
-<span class="c">%% duplicate/2</span>
-<span class="nf">duplicate_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">duplicate</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">x</span><span class="p">)).</span>
-
-<span class="c">%% filter/2</span>
-<span class="nf">filter_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">filter</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">E</span> <span class="o">&gt;=</span> <span class="mi">3</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])).</span>
-
-<span class="c">%% reverse/1</span>
-<span class="nf">reverse_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">reverse</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])).</span>
-
-<span class="c">%% min/1</span>
-<span class="nf">min_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">min</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">])).</span>
-
-<span class="c">%% zip/2</span>
-<span class="nf">zip_2_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([{</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">},{</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">}],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">zip</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])).</span>
-
-<span class="c">%% zip/3</span>
-<span class="nf">zip_3_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([{</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">},{</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">7</span><span class="p">}],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">zip3</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">])).</span>
-
-<span class="c">%% zipwith/3</span>
-<span class="nf">zipwith_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">9</span><span class="p">],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">zipwith</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span> <span class="nv">Y</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nv">X</span><span class="o">+</span><span class="nv">Y</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">])).</span>
-
-<span class="c">%% zipwith/4</span>
-<span class="nf">zipwith3_test</span><span class="p">()</span> <span class="o">-&gt;</span>
-  <span class="o">?</span><span class="n">assertEqual</span><span class="p">([[</span><span class="n">a</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="n">b</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="mi">2</span><span class="p">],[</span><span class="n">c</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="mi">3</span><span class="p">]],</span> <span class="nn">mylists</span><span class="p">:</span><span class="nf">zipwith3</span><span class="p">(</span><span class="k">fun</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span> <span class="nv">Y</span><span class="p">,</span> <span class="nv">Z</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">,</span><span class="nv">Z</span><span class="p">]</span> <span class="k">end</span><span class="p">,</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">],</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])).</span>
-</code></pre></div>
-
-
-<h3>示例代码</h3>
-
-<p>根据上面的测试用例，我写了实现代码，如下所示。注意的时候，我偷懒使用了export_all,
-但是min/2好像默认有一个已经被引入了，所以需要去除这个模块。就export_all本身来说，
-也不是推荐方式，还是应该严格区分public api和local api。</p>
-
-<div class="highlight"><pre><code class="erlang"><span class="p">-</span><span class="ni">module</span><span class="p">(</span><span class="n">mylists</span><span class="p">).</span>
-<span class="p">-</span><span class="ni">compile</span><span class="p">(</span><span class="n">export_all</span><span class="p">).</span>
-<span class="p">-</span><span class="ni">compile</span><span class="p">({</span><span class="n">no_auto_import</span><span class="p">,[</span><span class="n">min</span><span class="o">/</span><span class="mi">2</span><span class="p">]}).</span>
-
-<span class="c">%% all/2</span>
-<span class="nf">all</span><span class="p">(_</span><span class="nv">P</span><span class="p">,</span> <span class="p">[])</span> <span class="o">-&gt;</span> 
-  <span class="n">true</span><span class="p">;</span>
-<span class="nf">all</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">])</span> <span class="o">-&gt;</span>
-  <span class="k">case</span> <span class="nv">P</span><span class="p">(</span><span class="nv">H</span><span class="p">)</span> <span class="k">of</span>
-    <span class="n">true</span> <span class="o">-&gt;</span> <span class="n">all</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">T</span><span class="p">);</span>
-    <span class="n">false</span> <span class="o">-&gt;</span> <span class="n">false</span>
-  <span class="k">end</span><span class="p">.</span>
-
-<span class="c">%% any/2</span>
-<span class="nf">any</span><span class="p">(_</span><span class="nv">P</span><span class="p">,</span> <span class="p">[])</span> <span class="o">-&gt;</span>
-  <span class="n">false</span><span class="p">;</span>
-<span class="nf">any</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">])</span> <span class="o">-&gt;</span>
-  <span class="k">case</span> <span class="nv">P</span><span class="p">(</span><span class="nv">H</span><span class="p">)</span> <span class="k">of</span>
-    <span class="n">true</span> <span class="o">-&gt;</span> <span class="n">true</span><span class="p">;</span>
-    <span class="n">false</span> <span class="o">-&gt;</span> <span class="n">any</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">T</span><span class="p">)</span>
-  <span class="k">end</span><span class="p">.</span>
-
-<span class="c">%% append/1</span>
-<span class="nf">append</span><span class="p">(</span><span class="nv">LL</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="p">[</span><span class="nv">X</span> <span class="p">||</span> <span class="nv">L</span> <span class="o">&lt;-</span> <span class="nv">LL</span><span class="p">,</span> <span class="nv">X</span> <span class="o">&lt;-</span> <span class="nv">L</span><span class="p">].</span>
-
-<span class="c">%% append/2</span>
-<span class="nf">append</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">LA</span> <span class="o">++</span> <span class="nv">LB</span><span class="p">.</span>
-
-<span class="c">%% delete/2</span>
-<span class="nf">delete</span><span class="p">(</span><span class="nv">E</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="p">[</span><span class="nv">X</span> <span class="p">||</span> <span class="nv">X</span> <span class="o">&lt;-</span> <span class="nv">L</span><span class="p">,</span> <span class="nv">E</span> <span class="o">/=</span> <span class="nv">X</span><span class="p">].</span>
-
-<span class="c">%% dropwhile/2</span>
-<span class="nf">dropwhile</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="p">[</span><span class="nv">X</span> <span class="p">||</span> <span class="nv">X</span> <span class="o">&lt;-</span> <span class="nv">L</span><span class="p">,</span> <span class="ow">not</span> <span class="nv">P</span><span class="p">(</span><span class="nv">X</span><span class="p">)].</span>
-
-<span class="c">%% duplicate/2</span>
-<span class="nf">duplicate</span><span class="p">(</span><span class="nv">N</span><span class="p">,</span> <span class="nv">E</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="n">duplicate</span><span class="p">(</span><span class="nv">N</span><span class="p">,</span> <span class="nv">E</span><span class="p">,</span> <span class="p">[]).</span>
-<span class="nf">duplicate</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">_</span><span class="nv">E</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">L</span><span class="p">;</span>
-<span class="nf">duplicate</span><span class="p">(</span><span class="nv">N</span><span class="p">,</span> <span class="nv">E</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="k">when</span> <span class="nv">N</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">-&gt;</span>
-  <span class="n">duplicate</span><span class="p">(</span><span class="nv">N</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="nv">E</span><span class="p">,</span> <span class="p">[</span><span class="nv">E</span><span class="p">|</span><span class="nv">L</span><span class="p">]).</span>
-
-<span class="c">%% filter/2</span>
-<span class="nf">filter</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="p">[</span><span class="nv">X</span> <span class="p">||</span> <span class="nv">X</span> <span class="o">&lt;-</span> <span class="nv">L</span><span class="p">,</span> <span class="nv">P</span><span class="p">(</span><span class="nv">X</span><span class="p">)].</span>
-
-<span class="c">%% reverse/1</span>
-<span class="nf">reverse</span><span class="p">(</span><span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="n">reverse</span><span class="p">(</span><span class="nv">L</span><span class="p">,</span> <span class="p">[]).</span>
-<span class="nf">reverse</span><span class="p">([],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">L</span><span class="p">;</span>
-<span class="nf">reverse</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="n">reverse</span><span class="p">(</span><span class="nv">T</span><span class="p">,</span> <span class="p">[</span><span class="nv">H</span><span class="p">|</span><span class="nv">L</span><span class="p">]).</span>
-
-<span class="c">%% min/1</span>
-<span class="nf">min</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">])</span> <span class="o">-&gt;</span>
-  <span class="n">min</span><span class="p">(</span><span class="nv">T</span><span class="p">,</span> <span class="nv">H</span><span class="p">).</span>
-<span class="nf">min</span><span class="p">([],</span> <span class="nv">M</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">M</span><span class="p">;</span>
-<span class="nf">min</span><span class="p">([</span><span class="nv">H</span><span class="p">|</span><span class="nv">T</span><span class="p">],</span> <span class="nv">M</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="k">if</span>
-    <span class="nv">H</span> <span class="o">&lt;</span> <span class="nv">M</span> <span class="o">-&gt;</span> <span class="n">min</span><span class="p">(</span><span class="nv">T</span><span class="p">,</span> <span class="nv">H</span><span class="p">);</span>
-    <span class="n">true</span> <span class="o">-&gt;</span> <span class="n">min</span><span class="p">(</span><span class="nv">T</span><span class="p">,</span> <span class="nv">M</span><span class="p">)</span>
-  <span class="k">end</span><span class="p">.</span>
-
-<span class="c">%% zip/2</span>
-<span class="nf">zip</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="n">reverse</span><span class="p">(</span><span class="n">zip</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="p">[])).</span>
-<span class="nf">zip</span><span class="p">([],</span> <span class="p">_</span><span class="nv">LB</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">L</span><span class="p">;</span>
-<span class="nf">zip</span><span class="p">(_</span><span class="nv">LA</span><span class="p">,</span> <span class="p">[],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">L</span><span class="p">;</span>
-<span class="nf">zip</span><span class="p">([</span><span class="nv">HA</span><span class="p">|</span><span class="nv">TA</span><span class="p">],</span> <span class="p">[</span><span class="nv">HB</span><span class="p">|</span><span class="nv">TB</span><span class="p">],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="n">zip</span><span class="p">(</span><span class="nv">TA</span><span class="p">,</span> <span class="nv">TB</span><span class="p">,</span> <span class="p">[{</span><span class="nv">HA</span><span class="p">,</span><span class="nv">HB</span><span class="p">}|</span><span class="nv">L</span><span class="p">]).</span>
-
-<span class="c">%% zip/3</span>
-<span class="nf">zip3</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="nv">LC</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="n">reverse</span><span class="p">(</span><span class="n">zip3</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="nv">LC</span><span class="p">,</span> <span class="p">[])).</span>
-<span class="nf">zip3</span><span class="p">([],</span> <span class="p">_</span><span class="nv">LB</span><span class="p">,</span> <span class="p">_</span><span class="nv">LC</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">L</span><span class="p">;</span>
-<span class="nf">zip3</span><span class="p">(_</span><span class="nv">LA</span><span class="p">,</span> <span class="p">[],</span> <span class="p">_</span><span class="nv">LC</span><span class="p">,</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">L</span><span class="p">;</span>
-<span class="nf">zip3</span><span class="p">(_</span><span class="nv">LA</span><span class="p">,</span> <span class="p">_</span><span class="nv">LB</span><span class="p">,</span> <span class="p">[],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="nv">L</span><span class="p">;</span>
-<span class="nf">zip3</span><span class="p">([</span><span class="nv">HA</span><span class="p">|</span><span class="nv">TA</span><span class="p">],</span> <span class="p">[</span><span class="nv">HB</span><span class="p">|</span><span class="nv">TB</span><span class="p">],</span> <span class="p">[</span><span class="nv">HC</span><span class="p">|</span><span class="nv">TC</span><span class="p">],</span> <span class="nv">L</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="n">zip3</span><span class="p">(</span><span class="nv">TA</span><span class="p">,</span> <span class="nv">TB</span><span class="p">,</span> <span class="nv">TC</span><span class="p">,</span> <span class="p">[{</span><span class="nv">HA</span><span class="p">,</span><span class="nv">HB</span><span class="p">,</span><span class="nv">HC</span><span class="p">}|</span><span class="nv">L</span><span class="p">]).</span>
-
-<span class="c">%% zipwith/3</span>
-<span class="nf">zipwith</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="p">[</span><span class="nv">P</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">)</span> <span class="p">||</span> <span class="p">{</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">}</span> <span class="o">&lt;-</span> <span class="n">zip</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">)].</span>
-
-<span class="c">%% zipwith/4</span>
-<span class="nf">zipwith3</span><span class="p">(</span><span class="nv">P</span><span class="p">,</span> <span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="nv">LC</span><span class="p">)</span> <span class="o">-&gt;</span>
-  <span class="p">[</span><span class="nv">P</span><span class="p">(</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">,</span><span class="nv">Z</span><span class="p">)</span> <span class="p">||</span> <span class="p">{</span><span class="nv">X</span><span class="p">,</span><span class="nv">Y</span><span class="p">,</span><span class="nv">Z</span><span class="p">}</span> <span class="o">&lt;-</span> <span class="n">zip3</span><span class="p">(</span><span class="nv">LA</span><span class="p">,</span> <span class="nv">LB</span><span class="p">,</span> <span class="nv">LC</span><span class="p">)].</span>
-</code></pre></div>
-
-
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/24/">&larr; Older</a>
@@ -922,6 +863,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160909_java-xml.html">java xml技术简单总结</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160906_java-books.html">java相关技术书推荐</a>
@@ -957,10 +902,6 @@
     
       <li class="post">
         <a href="/blog/20151216_aes256-Illegal-key-size-or-default-parameters.html">AES256算法遇到 Illegal key size or default parameters的解决办法</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
       </li>
     
   </ul>

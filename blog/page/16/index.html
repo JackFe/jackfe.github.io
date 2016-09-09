@@ -9,9 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="转眼2012年就结束了，开启2013年的旅程了。按照惯例还是要给2012年做个总结，
-顺便给2013年定些目标和计划。 2012年的工作 2012年工作的情况还是比较顺利的，大概是完全习惯了公司的工作环境和节奏的原因吧，
-在项目的开发工作上没什么特别的变化，主要是在日常需求开发外有了比较大的变化 &hellip;">
+  <meta name="description" content="完整的ppt来源于Node.js Best practices,作者Felix Geisendörfer,需翻越 Callbacks 下面是关于解析json文件的示例代码: var fs = require(&#39;fs);
+function readJSON(path, cb){ fs. &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +65,267 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20130102_nodejs-best-practices.html">Node.js Best Practices</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-01-02T00:00:00+08:00" pubdate data-updated="true">Jan 2<span>nd</span>, 2013</time>
+        
+         | <a href="/blog/20130102_nodejs-best-practices.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><strong>完整的ppt来源于<a href="http://www.slideshare.net/the_undefined/nodejs-best-practices-10428790">Node.js Best practices</a>,作者<a href="http://www.slideshare.net/the_undefined">Felix Geisendörfer</a>,需翻越</strong></p>
+
+<h3>Callbacks</h3>
+
+<p>下面是关于解析json文件的示例代码:</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs);</span>
+<span class="s1">function readJSON(path, cb){</span>
+<span class="s1">  fs.readFile(path, &#39;</span><span class="nx">utf8</span><span class="err">&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span>
+    <span class="nx">cb</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">));</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+
+<p>显然，上面的代码没有处理异常情况，因此再加个异常处理逻辑上去:</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs);</span>
+<span class="s1">function readJSON(path, cb){</span>
+<span class="s1">  fs.readFile(path, &#39;</span><span class="nx">utf8</span><span class="err">&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span>
+    <span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+    <span class="nx">cb</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">));</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+
+<p>还没有结束，我们还没考虑到文件内容不是json这种情况，会导致parse出现异常，因此再处理一下：</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs);</span>
+<span class="s1">function readJSON(path, cb){</span>
+<span class="s1">  fs.readFile(path, &#39;</span><span class="nx">utf8</span><span class="err">&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span>
+    <span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+    <span class="k">try</span><span class="p">{</span>
+      <span class="nx">cb</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">));</span>
+    <span class="p">}</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+      <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+
+<p>对于cb来说，仍然无法区分正常结果和异常内容，这个问题通常可以通过增加一个err参数来处理，如:</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">fs</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;fs);</span>
+<span class="s1">function readJSON(path, cb){</span>
+<span class="s1">  fs.readFile(path, &#39;</span><span class="nx">utf8</span><span class="err">&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">data</span><span class="p">){</span>
+    <span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+    <span class="k">try</span><span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">json</span> <span class="o">=</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">parse</span><span class="p">(</span><span class="nx">data</span><span class="p">);</span>
+    <span class="p">}</span><span class="k">catch</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+      <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">json</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+
+
+<p><strong>这个示例告诉我们，对于callback，需要时刻准备应付正常结果和异常情况的处理。</strong></p>
+
+<p>再来看看另外一个常见错误:</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">readJSONFiles</span><span class="p">(</span><span class="nx">files</span><span class="p">,</span> <span class="nx">cb</span><span class="p">){</span>
+  <span class="kd">var</span> <span class="nx">results</span> <span class="o">=</span> <span class="p">{};</span>
+  <span class="kd">var</span> <span class="nx">remaining</span> <span class="o">=</span> <span class="nx">files</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+  
+  <span class="nx">files</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">file</span><span class="p">){</span>
+    <span class="nx">readJSON</span><span class="p">(</span><span class="nx">file</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">json</span><span class="p">){</span>
+      <span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="k">return</span> <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+      
+      <span class="nx">results</span><span class="p">[</span><span class="nx">file</span><span class="p">]</span> <span class="o">=</span> <span class="nx">json</span><span class="p">;</span>
+      <span class="k">if</span><span class="p">(</span><span class="o">!--</span><span class="nx">remaining</span><span class="p">)</span> <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">results</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div>
+
+
+<p>这里隐含了一个常见的场景:<strong>批量处理时，任意一个失败，及时退出</strong>。有时候可以用标识符，这里采用另外一种手法：<strong>重置回调方法</strong>。</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">readJSONFiles</span><span class="p">(</span><span class="nx">files</span><span class="p">,</span> <span class="nx">cb</span><span class="p">){</span>
+  <span class="kd">var</span> <span class="nx">results</span> <span class="o">=</span> <span class="p">{};</span>
+  <span class="kd">var</span> <span class="nx">remaining</span> <span class="o">=</span> <span class="nx">files</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+  
+  <span class="nx">files</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">file</span><span class="p">){</span>
+    <span class="nx">readJSON</span><span class="p">(</span><span class="nx">file</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">json</span><span class="p">){</span>
+      <span class="k">if</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+        <span class="nx">cb</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+        <span class="nx">cb</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){};</span>
+        <span class="k">return</span><span class="p">;</span>
+      <span class="p">}</span>
+      
+      <span class="nx">results</span><span class="p">[</span><span class="nx">file</span><span class="p">]</span> <span class="o">=</span> <span class="nx">json</span><span class="p">;</span>
+      <span class="k">if</span><span class="p">(</span><span class="o">!--</span><span class="nx">remaining</span><span class="p">)</span> <span class="nx">cb</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span> <span class="nx">results</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div>
+
+
+<h3>Nested Callbacks</h3>
+
+<p>先看看一个恐怖的例子:</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT A ...&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+  <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT B ...&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT C ...&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+      <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT D ...&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+      <span class="p">});</span>
+    <span class="p">});</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</code></pre></div>
+
+
+<p>活生生就是一个怪物:)，多层嵌套的回调不是很好的风格，我们需要一些流程控制的东西来辅助，例如Control Flow Libs:</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="kd">var</span> <span class="nx">async</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">&#39;async&#39;</span><span class="p">);</span>
+
+<span class="nx">async</span><span class="p">.</span><span class="nx">series</span><span class="p">({</span>
+  <span class="nx">queryA</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">next</span><span class="p">){</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT A ...&#39;</span><span class="p">,</span> <span class="nx">next</span><span class="p">);</span>
+  <span class="p">},</span>
+  <span class="nx">queryB</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">next</span><span class="p">){</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT B ...&#39;</span><span class="p">,</span> <span class="nx">next</span><span class="p">);</span>
+  <span class="p">},</span>
+  <span class="nx">queryA</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">next</span><span class="p">){</span>
+    <span class="nx">db</span><span class="p">.</span><span class="nx">query</span><span class="p">(</span><span class="s1">&#39;SELECT C ...&#39;</span><span class="p">,</span> <span class="nx">next</span><span class="p">);</span>
+  <span class="p">}</span>
+  <span class="c1">// ...</span>
+<span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">results</span><span class="p">){</span>
+  <span class="c1">//...</span>
+<span class="p">});</span>
+</code></pre></div>
+
+
+<p>像上面的代码，最明显的地方就是异常处理被完全隔离出来。<strong>如果要把代码分布到很多小方法里边的话，Node.js的确不是很容易做到</strong>。</p>
+
+<h3>Exceptions</h3>
+
+<p>通常throw new Error(msg)可以让你的程序进行异常退出，并在控制台上输入错误信息和堆栈信息。</p>
+
+<p>但有时候我们要考虑的是，<strong>一些未知的bug</strong>，例如下面一个有bug的示例:</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="kd">function</span> <span class="nx">MyClass</span><span class="p">(){}</span>
+
+<span class="nx">MyClass</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">myMethod</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+  <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">myOtherMethod</span><span class="p">();</span>
+  <span class="p">},</span> <span class="mi">10</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="nx">MyClass</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">myOtherMethod</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){};</span>
+
+<span class="p">(</span><span class="k">new</span> <span class="nx">MyClass</span><span class="p">).</span><span class="nx">myMethod</span><span class="p">();</span>
+</code></pre></div>
+
+
+<p>我们可以采用Global Catch的方式:</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;uncaughtException&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+  <span class="nx">console</span><span class="p">.</span><span class="nx">err</span><span class="p">(</span><span class="s1">&#39;uncaught exception: &#39;</span> <span class="o">+</span> <span class="nx">err</span><span class="p">.</span><span class="nx">stack</span><span class="p">);</span> 
+<span class="p">});</span>
+</code></pre></div>
+
+
+<p>更好的处理方式是:<strong>进程挂了，认栽了，到更高层面上去处理</strong>。</p>
+
+<div class="highlight"><pre><code class="javascript"><span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;uncaughtException&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">){</span>
+  <span class="c1">// You could use node-airbake for this</span>
+  <span class="nx">sendErrorToLog</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+    <span class="c1">// Once the error was logged, kill the process</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">err</span><span class="p">(</span><span class="nx">err</span><span class="p">.</span><span class="nx">stack</span><span class="p">);</span>
+    <span class="nx">process</span><span class="p">.</span><span class="nx">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">});</span>
+</code></pre></div>
+
+
+<h3>Deployment</h3>
+
+<p>比较初级的方式是采用node直接运行或在后台运行。老手可能会采用一个脚本来搞:</p>
+
+<div class="highlight"><pre><code class="bash"><span class="c">#! /bin/bash</span>
+
+<span class="k">while</span> :
+<span class="k">do</span>
+<span class="k">  </span>node server.js
+  <span class="nb">echo</span> <span class="s2">&quot;Server crashed!&quot;</span>
+  sleep 1
+<span class="k">done</span>
+</code></pre></div>
+
+
+<p>专家级采用的方式可能是(借助成熟的集成工具):</p>
+
+<div class="highlight"><pre><code class="bash"><span class="c">#!upstart</span>
+
+description <span class="s2">&quot;myapp&quot;</span>
+author <span class="s2">&quot;felix&quot;</span>
+
+start on<span class="o">(</span><span class="nb">local</span>-filesystems and net-device-up <span class="nv">IFACE</span><span class="o">=</span>eth0<span class="o">)</span>
+stop on shutdown
+
+respawn <span class="c"># restart when job dies</span>
+respawn limit 5 60 <span class="c"># give up restart after 5 respawns in 60 seconds</span>
+
+script
+  <span class="nb">exec </span>sudo -u www-data /path/to/server.js &gt;&gt; /var/log/myapp.log 2&gt;&amp;1
+end script
+</code></pre></div>
+
+
+<p>当然，还有些创新风格的(基于托管平台的):</p>
+
+<div class="highlight"><pre><code class="bash"><span class="nv">$git</span> push joyent master
+<span class="nv">$git</span> push nodejitsu master
+<span class="nv">$git</span> push heroku master
+</code></pre></div>
+
+
+<p><strong>没有托管平台的话，借助成熟的工具应该是最好的选择，性价比高。</strong></p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -397,162 +657,6 @@ and </em>LARGEFILE_SOURCE is in the glibc manual (run e.g. &#8220;info libc &#82
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20121208_servlet-study-log.html">学习和理解servlet(旧)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2012-12-08T00:00:00+08:00" pubdate data-updated="true">Dec 8<span>th</span>, 2012</time>
-        
-         | <a href="/blog/20121208_servlet-study-log.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>08年写的笔记，看上去很不是太烂:)</p>
-
-<h2>简单应用服务器</h2>
-
-<p>经常会听到应用服务器的说法，主要作用就是能够根据http请求来分配资源。在java里边，就是跟java.net.*相关的socket编程。
-更详细的内容需要查看相关内容。这里只是不想上当受骗，以为是某某魔术来着。</p>
-
-<h2>什么是规范</h2>
-
-<p>为了方便开发，应用服务器开发商只要实现相关的规范，使用者在使用这些api的时候根本不用考虑对应的服务器是怎样的。
-简单来说，就是定义好的接口。而servlet和jsp就是这样一类规范。tomcat6.0.18是支持servlet2.5和jsp2.1的规范的。在源码里边实现了这套规范，相关的包是javax.servlet.*.</p>
-
-<h2>学习和理解servlet</h2>
-
-<p>servlet是一套比较简单的规范，单从tomcat的实现代码就可以知道。从可以得到的资料上看，
-也没有多少复杂的内容。窃以为从书上就可以获取到基本的内容了，有个感性印象的基础读一遍
-api doc就基本ok了。再多的东西，具体的应用实现，查阅cookbook之类的guice。
-这部分内容相当重要，是java web最重要的基础</p>
-
-<p>接下去的部分，基本上是api doc和tomcat实现的内容的梳理。即使再怎样，我都要经常翻阅资料，这是免不了的。
-可以注意到servlet一共有两个包，javax.servlet和javax.servlet.http,明显就是一个是基础接口，一个是http协议的实现，
-从里边的类名也可以看出，http包的类前面基本都加上Http前缀的。先对他们进行更详细的分类，
-大概就是各个基础组件(context,request,response,servlet,filter,stream,listener)，还有一系列对应的listener,几个http特殊的东西(session,cookie).下面分别来说，就怕有些乱，请见谅：</p>
-
-<h4>ServletConfig</h4>
-
-<p>servlet初始化的时候，web容器传递的一个servlet configuration object。</p>
-
-<h4>ServletContext</h4>
-
-<p>我们知道，每个jvm里边一个web应用（通常是一个war包，具有特定的部署结构）就对应一个context，
-这个接口就是定义了context和servlet容器交互的一些方法。context是web应用全局可见的，因此ServletConfig就有个方法getServletContext来获取对应的context。</p>
-
-<h4>Servlet</h4>
-
-<p>所有的Servlet必须实现Servlet接口。一个servlet是一个跑在web服务器的java程序，用来接受请求，并做出响应，
-对应的请求和响应就是ServletRequest和ServletResponse了。这个生命周期主要有三部分，对于一个jvm来说，
-servlet初始化的时候会调用init方法，容器负责把ServletConfig作为参数传递给这个方法，这个步骤对于一个生命周期来说只会做一次。
-初始化之后，任何请求调用都会调用service方法，而ServletRequest和ServletResponse就作为两个参数传递进去了。
-在容器关闭的时候，servlet将会给销毁，这个时候就会调用destroy方法，这个步骤跟init一样，也是调用一次的。
-为了方便使用，已经GenericServlet和HttpServlet做了部分的实现，特别是HttpServlet，根据Http请求方法，分发给doGet，doPost等方法，
-这就是为什么继承HttpServlet做servlet实现的时候，一般只是覆盖doGet或doPost方法就可以的原因，</p>
-
-<h4>ServletRequest,ServletResponse</h4>
-
-<p>在调用Servlet的service的方法时，会涉及ServletRequest和ServletResponse，这两个object是
-由容器负责生成并传递进来的。简单的解释，ServletRequest是用来提供客户端的请求信息的，例如请求方法，参数，ip等等，
-而ServletResponse就是用来返回给客户端的响应信息，一般来说，我们会通过getWriter(字符数据)或者getOutputStream(二进制)来输出信息。
-当然，character encoding和content type也是放在ServletResponse的，你可以进行改变。一般来说，我们处理浏览器请求，几乎都是http协议，
-所以几乎都是HttpServletRequest和HttpServletResponse。</p>
-
-<h4>FilterConfig,Filter，FilterChain</h4>
-
-<p>过滤器，在web.xml经常看到元素，它就是实现Filter的一些类而已。。可以注意到Filter接口跟Servlet有些像，
-在初始化的时候，容器传递一个FilterConfig对象作为init方法的参数，而在销毁的时候会调用destroy方法。当有请求过来的时候，容器会拦截符合要求的请求（根据请求路径），
-并调用doFilter方法，可以注意到除了平时看到的request和response参数，还有个FilterChain参数。这个对象是由容器负责维护，可以看做是这次请求需要经过的filter链。一般来说</p>
-
-<div class="highlight"><pre><code class="bash">before_filter :dosoming with request and response
-chain.doFilter<span class="o">(</span>request,response<span class="o">)</span>;//进入其他Filter
-after_filter :dosoming with request and response
-</code></pre></div>
-
-
-<p>上面前后两部分不一定都会存在，大家有机会看看例子就知道了。filter的作用范围很大，一般用来做验证权限，记录日志，响应内容压缩，内容加密，特殊参数过滤，转换编码格式等等</p>
-
-<h4>Cookie,HttpSession</h4>
-
-<p>Http协议是一种无状态协议，所以有必要做点其他东西来保留状态。cookie带有简单信息的东东（key/value对，看起来就像个Map），
-用来保存在浏览器的，然后每次请求的时候，又把cookie发送到服务器。可以通过ServletResponse的addCookie方法加入cookie。
-需要注意的是，cookie具有一些特殊性，可以设置保留时间，是否加密等等，鉴于安全性考虑，一般只用来对付那些不是很重要的数据。
-HttpSession说的是session，他的数据其实是保存在服务器的，服务器根据每个sessionid，保留一份对应的数据，客户端就是根据这个sessionid来作为钥匙的。
-这个钥匙也是要像cookie那样传来传去的，这个时候的sessionid一般有两种交互方式，基于cookie（作为cookie的key/value对）
-和基于url rewrite（在url后边带上个参数而已），常用的方法：setAttribute,getAttribute（跟ServletRequest的方法差不多）,invalidate等等</p>
-
-<h4>Listener,Event</h4>
-
-<p>经常会在web.xml里边看到元素，对应的类是实现ServletContextListener接口的。其实这类Listener有不少，在servlet2.5规范里边有8个，而且有对应的Event类</p>
-
-<p><strong>ServletContextListener,ServletContextEvent</strong>
-这是用来监听servlet context的，是在初始化和销毁的时候会触发相应的事件，并会有个ServletContextEvent对象
-参数，通过这个参数的getServletContext方法就可以获取相应的ServletContext对象了。</p>
-
-<p><strong>ServletContextAttributeListener，ServletContextAttributeEvent</strong>
-这个也是用来监听servlet context的，关注点是它里边的attribute的改变。一个类如果实现了
-这个接口，那么在attribut发生变化的时候，就会触发相应的方法。</p>
-
-<p><strong>ServletRequestListener,ServletRequestEvent,ServletRequestAttributeListener,ServletRequestAttributeEvent</strong>
-这些都是类似的，只不过这里是ServletRequest</p>
-
-<p><strong>HttpSessionListener,HttpSessionEvent,HttpSessionAttributeListener,HttpSessionEvent</strong>
-类似，就是这两个listener用的是同一个Event</p>
-
-<p><strong>HttpSessionBindingListener,HttpSessionBindingEvent</strong>
-一个类如果实现了这个接口，那么在他和session绑定或者解绑的时候就会触发相应的方法。</p>
-
-<p><strong>HttpSessionActivationListener,HttpSessionEvent</strong>
-注意这里使用的也是那个Event。此接口处理从一个服务器移动到另一个服务器的会话，貌似是用在分布式环境的。</p>
-
-<p>监听器还是很多类型的，注意区分，貌似需要用到的时候也不是很多，感觉没filter用得多</p>
-
-<h4>RequestDispatcher,SingleThreadModel</h4>
-
-<p>貌似这个dispatcher经常用来做请求转发(forward)或者资源内嵌(include)的工作。可以通过ServletRequest来获得一个转发对象。
-使用forward可以确保attribute里边的信息不丢失，实现信息传递。
-SingleThreadModel，因为Servlet并非线程安全，所以才有这么个东东来保证一个jvm只有一个线程可以同时访问。具体的看资料，这个东西是不推荐使用的，
-理由很简单，性能不好罗。既然非线程安全，那么就要保留servlet的无状态性。。。。</p>
-
-<p><strong>要点：区分各个对象的生命周期和作用</strong></p>
-
-<h4>其他讨论</h4>
-
-<ul>
-<li>能否在一个ServletRequest对象中获取ServletConfig对象，为什么?</li>
-<li>讨论何时使用context,cookie，session，request传递信息。他们的存活期是怎样的？</li>
-<li>SingleThreadModel的弊端和解决办法？</li>
-<li>上传文件和提交普通表单的处理方式？如何避免重复sumbit form？</li>
-<li>重定向和转发的区别，在servlet的里边的使用方法？</li>
-</ul>
-
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/17/">&larr; Older</a>
@@ -568,6 +672,10 @@ SingleThreadModel，因为Servlet并非线程安全，所以才有这么个东�
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160909_java-xml.html">java xml技术简单总结</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160906_java-books.html">java相关技术书推荐</a>
@@ -603,10 +711,6 @@ SingleThreadModel，因为Servlet并非线程安全，所以才有这么个东�
     
       <li class="post">
         <a href="/blog/20151216_aes256-Illegal-key-size-or-default-parameters.html">AES256算法遇到 Illegal key size or default parameters的解决办法</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
       </li>
     
   </ul>

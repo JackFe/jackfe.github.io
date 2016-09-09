@@ -9,8 +9,8 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="平时工作，做需求的时候，总有有时间限制，俗称工作量评估，通常用x天或者x个单位点数来表示。在现实中，评估都是很随意的，实际结果经常有很大出入。
-在这里不评论，这种做法有多科学。只是单个任务工作量越大，越需要细分，直到有足够的清晰度，这样才能评估得比较靠谱。这里我们用一个例子来解释一下。 &hellip;">
+  <meta name="description" content="上周在京东商城买了一个HP的笔记本，没有带系统，本来以为装个系统不麻烦，没想到整了一天才装好。 事情是这样的，网上推荐使用USB安装，可是我手头上只有一个2G的USB，心想装个xp凑合使用着。我使用了老毛桃的装机工具，
+发现无论是使用ghost还是原版安装，都没法成功， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +65,54 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20131120_notebook-system-install.html">周日笔记本系统安装记事</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-11-20T00:00:00+08:00" pubdate data-updated="true">Nov 20<span>th</span>, 2013</time>
+        
+         | <a href="/blog/20131120_notebook-system-install.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>上周在京东商城买了一个HP的笔记本，没有带系统，本来以为装个系统不麻烦，没想到整了一天才装好。</p>
+
+<p>事情是这样的，网上推荐使用USB安装，可是我手头上只有一个2G的USB，心想装个xp凑合使用着。我使用了老毛桃的装机工具，
+发现无论是使用ghost还是原版安装，都没法成功，重启之后到了xp启动界面就蓝屏了。</p>
+
+<p>尝试了好几次之后，并且测试chkdsk /f 后无效，我还是上网查找一下。<strong>错误码是0X0000007B</strong>，网上说这个是和硬盘有关,是设置问题或者病毒造成的硬盘引导分区错误。
+如果是在用原版系统盘安装系统的时候出这个问题，那说明机器配置还是比较新的，作为老的系统盘，不认这么新的硬盘接口，所以得进BIOS把硬盘模式改成IDE兼容模式。</p>
+
+<p>我这机器是新的，硬盘也重新格式化并分区了，应该不是什么病毒的问题。那应该是硬盘接口的问题，不过我发现BIOS里边没有硬盘的设置项目，上网搜索发现的确是没有这个设置的。</p>
+
+<p>看来xp是没希望了，只好换win7系统，win7的iso有2G多，只能分两次拷贝到笔记本硬盘上，再安装系统。果然，这次就很顺利了，整整折腾了一天。看来，装机也是技术活呀。</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -346,53 +394,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20131025_how-to-excel.html">Excel读书心得</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-10-25T00:00:00+08:00" pubdate data-updated="true">Oct 25<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20131025_how-to-excel.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>上周因为要处理一些数据的统计分析，没有自己写脚本分析，而是采用了excel进行处理。
-不过，我以前没用过excel的统计分析功能，于是找了本书来学习一下，现学现用。这本书的书名叫&lt;&lt;你早该这么学excel>>。</p>
-
-<p>我想很多人学excel，都感觉需要好多技巧，外边大多数的书籍也是教技巧的。可惜这本书没介绍什么技巧，只是介绍了处理数据的一些原则。
-反正，我感觉效果挺好的，根据这本书学习了一下，也能完成我想做的事情，并且显得有模有样，这就行了。</p>
-
-<p>书里边介绍了作者伍昊的三大表理论。其中天下第一表，就是原始数据表，首要就是表格规范，数据格式化，无统计信息，表格列要齐全。
-所有的统计都是根据原始数据表，并通过透视表来做的。当然，对于稳定的数据，他使用参数表的概念，采用自动生成方式。</p>
-
-<p>这套原则很简单，并且有效。推荐大家看看，特别是经常接触excel的童鞋。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/9/">&larr; Older</a>
@@ -408,6 +409,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160909_java-xml.html">java xml技术简单总结</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160906_java-books.html">java相关技术书推荐</a>
@@ -443,10 +448,6 @@
     
       <li class="post">
         <a href="/blog/20151216_aes256-Illegal-key-size-or-default-parameters.html">AES256算法遇到 Illegal key size or default parameters的解决办法</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
       </li>
     
   </ul>

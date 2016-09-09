@@ -9,9 +9,9 @@
   <meta name="author" content="蔡晓建">
 
   
-  <meta name="description" content="ruby元编程 作者Paolo Perrotta
-阅读于2014-04-22,大约5天
-适合有一定ryby/rails开发经验的同学,对认识ruby魔法很有帮助 最近看这本书，主要是跟别人谈起这本书，一时兴起又阅读一下，主要是复习复习。毕竟自己搞ruby/rails有好几个年头了， &hellip;">
+  <meta name="description" content="着重介绍与项目使用相关的xml知识 常见节点 虽然xml节点是可以带属性的，但是我们项目中使用的通常没有带属性。
+常见节点有带子节点的节点(非内容节点)、带文本的节点。
+协议中表示可选的节点，通常是指文本为空的节点，如，而不能不带。 节点的顺序 非列表节点，通常是不需要限定顺序的， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -66,6 +66,105 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/20140814_xml-intro.html">Xml格式须知</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-14T00:00:00+08:00" pubdate data-updated="true">Aug 14<span>th</span>, 2014</time>
+        
+         | <a href="/blog/20140814_xml-intro.html#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>着重介绍与项目使用相关的xml知识</p>
+
+<h3>常见节点</h3>
+
+<ul>
+<li>虽然xml节点是可以带属性的，但是我们项目中使用的通常没有带属性。</li>
+<li>常见节点有带子节点的节点(非内容节点)、带文本的节点。</li>
+<li>协议中表示可选的节点，通常是指文本为空的节点，如<name></name>，而不能不带。</li>
+</ul>
+
+
+<h3>节点的顺序</h3>
+
+<ul>
+<li>非列表节点，通常是不需要限定顺序的，但不排除有一些SB系统处理不了，所以最好按协议顺序来。</li>
+<li>带列表节点，最好保证子节点按业务要求的顺序排列，即使有标示顺序的子节点。</li>
+</ul>
+
+
+<h3>命名空间</h3>
+
+<ul>
+<li>通常是有命名空间的话，所有节点都会带，不带通常是不对的。</li>
+<li>命名空间是通过xmlns:n0=&#8221;http://www.gmcc.net/ngcrm/&#8221; 来进行别名的，理论上应该认URI而不是别名，但实际使用却常用别名来识别。</li>
+<li>解析时可以考虑忽略命名空间处理，例如xpath，可以用doc.selectNodes(&#8220;//*[local-name()=&#8217;Service&#8217;]&#8221;)找到Service节点。</li>
+</ul>
+
+
+<h3>编码格式</h3>
+
+<ul>
+<li>xml是一种自编码文本，是由第一行决定整个xml的编码格式。</li>
+<li>上面只是规范，但像http一样，总有系统不是这么玩的，需要双方协商和确认。</li>
+<li>有的xml就是没有第一行的编码描述，更是应该协商确认。</li>
+</ul>
+
+
+<h3>合法的值</h3>
+
+<ul>
+<li>除了内置xml文本作为文本节点，或者明显可能特殊字符的文本(如密码，各种属性用某符号拼接)，大多数情况不需要关注。</li>
+<li>和html一样，某些特殊字符是需要转移的，见下面的转义列表。</li>
+<li>如果不想转义，需要用&lt;![CDATA[]]>括起来，需要注意的是，里边的内容需要保持不转义。</li>
+<li>&lt;![CDATA[]]>里边的内容是原封不动获取的，即使内容带了回车、空格，如果需要对内容二次处理的话，需要注意某些留空可能导致无法处理。</li>
+<li>&lt;![CDATA[]]>不能嵌套两次，只能用转义来规避。</li>
+</ul>
+
+
+<p>常见的特殊字符</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>lt <span class="ni">&amp;lt;</span> <span class="err">&lt;</span>（小于号）
+</span><span class='line'>gt <span class="ni">&amp;gt;</span> &gt;（大于号）
+</span><span class='line'>amp <span class="err">&amp;</span>  <span class="err">&amp;</span>（“and”符）
+</span><span class='line'>apos &#39; &#39;（撇号或单引号）
+</span><span class='line'>quot &quot; &quot;（双引号）
+</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -826,103 +925,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/20131228_classloader-answer.html">考察对类加载的理解(答案篇)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2013-12-28T00:00:00+08:00" pubdate data-updated="true">Dec 28<span>th</span>, 2013</time>
-        
-         | <a href="/blog/20131228_classloader-answer.html#disqus_thread">Comments</a>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2>独立进程篇</h2>
-
-<p>首先需要知道类加载器是怎么回事? 在Java里边，类加载器就是用来加载类的，然后才是执行代码。<br/>
-Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类加载器(app)。<br/>
-其中boot就是用来加载最开始的虚拟机和最基本的java类，ext是用来加载一些扩展类，默认是在jre/lib/ext目录下的。<br/>
-最后一个才是你真正会用到的。cp参数就是用来指定应用类加载器找类的地方，java.ext.dirs就是用来指定
-扩展类加载器找类的地方。
-这三种类加载器是有层级关系的，类似于继承关系(父子关系)。</p>
-
-<p>另外一个需要知道的概念是，类加载器在找类的时候，默认是采用双亲委派机制的。<br/>
-例如应用类加载器加载类的时候，会先叫ext去加载，ext就会叫boot去加载，只有加载不到才尝试自己去加载。<br/>
-这种做法是有个重要的因素，就是为了安全性考虑。</p>
-
-<p>最后需要知道的是，TestServlet.class.getClassLoader()获取到的时候，加载TestServlet类所使用的实际的类加载器。</p>
-
-<p>回到上面的问题。</p>
-
-<p>第一个很简单，指定了应用类加载器加载的路径，所以main方法能找到，TestServlet也能找到，config.properties也能被应用类加载器找到。
-启动是正常的。</p>
-
-<p>第二个问题，TestServlet是被扩展类加载器加载的，所以通过它来找config.properties会找不到(在应用类加载器中才能被加载到)。</p>
-
-<p>第三个问题，调整目录后，这个时候扩展类加载器的加载路径上也有config.properties，所以启动也会正常。</p>
-
-<p>现在调整了代码，换成了Thread.currentThread().getContextClassLoader()的实现。<br/>
-这个是有一点不一样的，上下文类加载器默认就是应用类加载器(如果通过代码进行修改的话)。
-上下文类加载器还是一个很有用的技术，
-可以用在JDBC这种SPI(Service Provider Interface)接口与实现分离的技术上，有兴趣可以去找找资料。</p>
-
-<p>在这种情况下，后面的三个命令都是能够正常的，因为config.properties能够被正常识别的。</p>
-
-<p>再说一点，用eclipse可以运行的程序，用命令行不一定可以，这点必须要认准最后的启动参数，通过这个来确认。
-我们这边写独立进程的时候，贪方便喜欢用java.ext.dirs这个虚拟机参数，但这个有时候会有奇怪的问题。
-大家要注意区分这个参数和cp参数的区别，这样就分析有思路，找问题很happy。</p>
-
-<h2>Web应用服务器篇</h2>
-
-<p>像tomcat这种应用服务器，本身也是一个java程序，但它可以把我们放上去的各个web应用隔离开来。
-你没法调用其他web应用中的类，看上去好像是完全不相干的。这种技巧就充分利用了自定义类加载器的功能。
-像tomcat会对每个应用单独定义一个类加载器(继承应用类加载器)，并且修改双亲委派机制。
-而是采用先从应用中的lib目录、classes目录尝试加载，没找到才到上面去找。(像was这种就跟复杂了，加载顺序也是可选的)</p>
-
-<p>所以通常我们会有共享库的概念，在tomcat中对应的就是tomcat_home/lib这个目录(老版本的话还有更多目录可选)。
-把一些第三方库放到这里，可以减少加载类的数量，从而减少内存占用。</p>
-
-<p>这里要说明的是，类可以被不同的类加载器加载，虽然是在同一个jvm里边，但是是被当成不同的类(唯一标识是类加载器+类名)。</p>
-
-<p>现在回到问题。虽然一开始就有人告诉我们，servlet是属于单例运行的。但是在这里有点小变化。</p>
-
-<p>第一个问题，这个应该最常规的做法了，appa和appb是不相干的，所以访问appb，输出的是&#8221;1 1&#8221;，因为两个类是通过不同的类加载器加载的(就是说不一样的类)，肯定生成的servlet实例是不一样的。</p>
-
-<p>第二个问题，这种是共享库的做法，所以实际上他们使用的是同一个类，但是对于不同的app，用的是不同的servlet实例。
-所以会出现静态变量有影响，当实例变量是独立的。所以最后会输出&#8221;3 1&#8221;。所以有维护静态变量的话，使用共享库是有不一样的。</p>
-
-<p>第三个问题，这种其实在生产中也很常见，上新程序的时候就可能变成这样了。其实这个跟第一种情况是一样的。
-不过，在was上加载顺序是可选的，所以情况也可能变成第二种情况。</p>
-
-<h2>后话</h2>
-
-<p>这里讲解的只是皮毛，有兴趣的童鞋，可以google更多资料和书籍，加以研究。</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/7/">&larr; Older</a>
@@ -938,6 +940,10 @@ Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/20160909_java-xml.html">java xml技术简单总结</a>
+      </li>
     
       <li class="post">
         <a href="/blog/20160906_java-books.html">java相关技术书推荐</a>
@@ -973,10 +979,6 @@ Java里边默认有启动类加载器(boot),扩展类加载器(ext),和应用类
     
       <li class="post">
         <a href="/blog/20151216_aes256-Illegal-key-size-or-default-parameters.html">AES256算法遇到 Illegal key size or default parameters的解决办法</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/20151028_android-ndk-jni.html">关于android ndk的jni总结</a>
       </li>
     
   </ul>

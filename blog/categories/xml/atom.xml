@@ -4,7 +4,7 @@
   <title><![CDATA[Category: xml | 小毛的胡思乱想]]></title>
   <link href="http://mccxj.github.com/blog/categories/xml/atom.xml" rel="self"/>
   <link href="http://mccxj.github.com/"/>
-  <updated>2016-09-07T22:31:22+08:00</updated>
+  <updated>2016-09-10T00:14:54+08:00</updated>
   <id>http://mccxj.github.com/</id>
   <author>
     <name><![CDATA[蔡晓建]]></name>
@@ -12,6 +12,126 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[java xml技术简单总结]]></title>
+    <link href="http://mccxj.github.com/blog/20160909_java-xml.html"/>
+    <updated>2016-09-09T00:00:00+08:00</updated>
+    <id>http://mccxj.github.com/blog/java-xml</id>
+    <content type="html"><![CDATA[<h2>XML概述</h2>
+
+<ul>
+<li>XML，就是可扩展标记语言Extensible Markup Language，包括XML/DTD/XSD/XPATH的w3c规范,在webservice方面主要应用有SOAP/WSDL等(WSDL还不是w3c规范)</li>
+<li>JAVA规范API统称JAXP,主要有DOM/SAX/STAX/XPATH等标准API,并内置默认实现。并在JAXP的基础上建立了JAXB/JAX-WS等规范</li>
+<li>常见的JAXP API(解析器)实现有xerces/crimson/woodstox/xalan等开源实现，也有一些厂商的实现(如IBM)。常用的XML操作库如dom4j/jdom是JAXP API的二次封装(其实也封装了其他一些非规范的实现)</li>
+<li>常见的webservice库如axis2/xfire/cxf等，按自己的方式实现了SOAP/WSDL等功能(XML相关功能基于JAXP)，由于JAX-WS规范的兴起，这些库也实现了JAX-WS规范</li>
+<li>运行期实现类的查找模式都是类似，基本都是参数、配置、SPI、默认实现的顺序。如果有需要(如存在bug/性能问题)，可以根据这个查找顺序更换不同的实现方式。</li>
+</ul>
+
+
+<h2>XML标准</h2>
+
+<ul>
+<li>平时常用的有校验和查找相关的标准</li>
+<li>校验方面主要是DTD(Document Type Definition)，后来的XSD(XML Schema Define)则支持更好</li>
+<li>查找方面除了通用的DOM模型，常见的就是XPATH了，而不是很常见的XQUERY和XPOINTER是建立在XPATH基础上的</li>
+</ul>
+
+
+<h2>XML常见应用</h2>
+
+<ul>
+<li>SOAP Simple Object Access Protocol的首字母缩写，即简单对象访问协议</li>
+<li>WSDL 网络服务描述语言，Web Services Description Language</li>
+<li>UDDI</li>
+<li>RSS Rich Site Summary 简易资讯聚合</li>
+<li>WAP无线应用协议（Wireless Application Protocol，WAP）</li>
+</ul>
+
+
+<h2>Java XML相关的API规范</h2>
+
+<ul>
+<li>JAXP(Java API for XMLProcessing)，定义了处理XML的通用接口，常见的包括DOM/SAX/STAX/XPATH等标准API</li>
+<li>JAXB(Java Architecture for XML Binding),基于JAXP，定义了XML和Java对象的映射处理关系</li>
+<li>JAX-WS，基于JAXP/JAXB,定义了一套XML webservice的标准接口</li>
+</ul>
+
+
+<p>上面只是定义了规范，就是标准接口，具体的实现通常是不需要关心的。<br/>
+下面再介绍一下，在运行期是如何确定采用哪种具体实现的，在定位某些问题的时候有帮助。<br/>
+以oracle jdk为例，其他jdk实现基本是差不多的，主要是默认实现有所差异。</p>
+
+<h3>DOM</h3>
+
+<ul>
+<li>首先，有没有系统参数javax.xml.parsers.DocumentBuilderFactory</li>
+<li>如果没有找到，就检查JRE/lib/jaxp.properties是否有配置该参数</li>
+<li>如果没有找到，就通过SPI机制查找有没有实现: META-INF/services/javax.xml.parsers.DocumentBuilderFactory</li>
+<li>如果没有找到，选择默认xerces实现(oracle JDK):com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl</li>
+</ul>
+
+
+<h3>SAX</h3>
+
+<ul>
+<li>首先，有没有系统参数javax.xml.parsers.SAXParserFactory</li>
+<li>如果没有找到，就检查JRE/lib/jaxp.properties是否有配置该参数</li>
+<li>如果没有找到，就通过SPI机制查找有没有实现: META-INF/services/javax.xml.parsers.SAXParserFactory</li>
+<li>如果没有找到，选择默认xerces实现(oracle JDK):com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl</li>
+</ul>
+
+
+<h3>STAX</h3>
+
+<ul>
+<li>和上面有点不同，它是区分输入输出的:javax.xml.stream.XMLInputFactory、javax.xml.stream.XMLOutputFactory</li>
+<li>首先，有没有系统参数javax.xml.stream.XMLInputFactory、javax.xml.stream.XMLOutputFactory</li>
+<li>如果没有找到，就检查JRE/lib/stax.properties、jaxp.properties是否有配置该参数</li>
+<li>如果没有找到，就通过SPI机制查找有没有实现: META-INF/services/javax.xml.stream.XMLInputFactory、javax.xml.stream.XMLOutputFactory</li>
+<li>如果没有找到，选择默认内部实现(oracle JDK):com.sun.xml.internal.stream.XMLInputFactoryImpl、com.sun.xml.internal.stream.XMLOutputFactoryImpl</li>
+</ul>
+
+
+<h3>XPATH</h3>
+
+<ul>
+<li>首先，有没有系统参数javax.xml.xpath.XPathFactory:http://java.sun.com/jaxp/xpath/dom，注意这个是有点特别的</li>
+<li>如果没有找到，就检查JRE/lib/jaxp.properties查找javax.xml.xpath.XPathFactory是否有配置该参数</li>
+<li>如果没有找到，就通过SPI机制查找有没有实现: META-INF/services/javax.xml.xpath.XPathFactory</li>
+<li>如果没有找到，选择默认xalan实现(oracle JDK):com.sun.org.apache.xpath.internal.jaxp.XPathFactoryImpl</li>
+</ul>
+
+
+<h3>JAXB</h3>
+
+<ul>
+<li>首先，检查配置文件jaxb.properties有没有定义javax.xml.bind.context.factory工厂类，通过createContext生成</li>
+<li>如果没有找到，就通过SPI机制查找有没有实现: META-INF/services/javax.xml.ws.spi.Provider</li>
+<li>如果没有找到，选择默认内部实现(oracle JDK):com.sun.xml.internal.bind.v2.ContextFactory</li>
+</ul>
+
+
+<h3>JAX-WS</h3>
+
+<ul>
+<li>首先，通过SPI机制查找有没有实现: META-INF/services/javax.xml.ws.spi.Provider</li>
+<li>如果没有找到，选择默认内部实现(oracle JDK):com.sun.xml.internal.ws.spi.ProviderImpl</li>
+</ul>
+
+
+<h2>第三方库实现</h2>
+
+<ul>
+<li>开源的解析器(xerces, crimson, woodstox, xalan)主要是实现JAXP中的规范API</li>
+<li>还有一些专业厂商的实现，例如IBM的JAXP实现(XL XP-J, XML4J),在websphere的plugins目录就可以找到</li>
+<li>非JAXP的实现，如xpp3也实现了类似STAX的pull模式，在android sdk中内置</li>
+<li>二次封装库(dom4j, jdom),主要是包装了JAXP，提供统一处理模型(DOM/SAX/STAX等)和简易的用法</li>
+<li>WebService(Axis,Axis2,XFire,CXF(XFire升级版)),实现基于SOAP的Web服务，有些库也实现JAX-WS规范</li>
+</ul>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[使用org.json库进行xml和json转换存在的问题]]></title>
